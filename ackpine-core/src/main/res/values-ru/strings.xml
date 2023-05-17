@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="ackpine_prompt_install_message">Пожалуйста, подтвердите установку.</string>
+	<string name="ackpine_prompt_install_message_with_label">Пожалуйста, подтвердите установку %s.</string>
+	<string name="ackpine_prompt_install_title">Установка</string>
+	<string name="ackpine_prompt_uninstall_message">Пожалуйста, подтвердите деинсталляцию.</string>
+	<string name="ackpine_prompt_uninstall_message_with_label">Пожалуйста, подтвердите деинсталляцию %s.</string>
+	<string name="ackpine_prompt_uninstall_title">Деинсталляция</string>
+	<string name="ackpine_notification_channel_description">При отключении нарушает функциональность установки пакетов</string>
+	<string name="ackpine_notification_channel_name">Установка и деинсталляция</string>
+</resources>
