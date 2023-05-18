@@ -3,13 +3,24 @@ package ru.solrudev.ackpine
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 
 /**
  * Parameters for creating install session.
  */
 public class InstallParameters private constructor(
-	public val apks: List<Uri>,
+
+	/**
+	 * List of APKs [URIs][Uri] to install in one session.
+	 */
+	public val apks: ApkList,
+
+	/**
+	 * Type of the package installer implementation.
+	 *
+	 * Default value is [InstallerType.DEFAULT].
+	 */
 	public val installerType: InstallerType,
 
 	/**
@@ -57,13 +68,45 @@ public class InstallParameters private constructor(
 	 * Builder for [InstallParameters].
 	 */
 	@SessionParametersDslMarker
-	public class Builder(baseApk: Uri) : ConfirmationExtension {
+	public class Builder : ConfirmationExtension {
+
+		@SuppressLint("NewApi")
+		public constructor(baseApk: Uri) {
+			this.apks = RealMutableApkList(baseApk)
+		}
 
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-		public val apks: ApkUriList = ApkUriList(baseApk)
+		public constructor(apks: Iterable<Uri>) {
+			this.apks = RealMutableApkList(apks)
+		}
 
+		/**
+		 * Mutable list of APKs [URIs][Uri] to install in one session.
+		 */
+		@get:JvmSynthetic
+		@get:JvmName("getMutableApks")
+		public val apks: MutableApkList
+
+		/**
+		 * Type of the package installer implementation.
+		 *
+		 * Default value is [InstallerType.DEFAULT].
+		 *
+		 * When getting/setting the value of this property, the following invariants are taken into account:
+		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always returned/set regardless of the
+		 * current/provided value;
+		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
+		 * returned/set regardless of the current/provided value.
+		 */
 		@set:JvmSynthetic
 		public var installerType: InstallerType = InstallerType.DEFAULT
+			get() {
+				field = applyInstallerTypeInvariants(field)
+				return field
+			}
+			set(value) {
+				field = applyInstallerTypeInvariants(value)
+			}
 
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
@@ -84,6 +127,11 @@ public class InstallParameters private constructor(
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
 
 		/**
+		 * List of APKs [URIs][Uri] to install in one session.
+		 */
+		public fun getApks(): ApkList = apks
+
+		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -100,7 +148,10 @@ public class InstallParameters private constructor(
 		}
 
 		/**
-		 * Sets [InstallParameters.installerType].
+		 * Sets [InstallParameters.installerType], taking into account the following invariants:
+		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always set regardless of the provided value;
+		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
+		 * set regardless of the provided value.
 		 */
 		public fun setInstallerType(installerType: InstallerType): Builder = apply {
 			this.installerType = installerType
@@ -125,7 +176,57 @@ public class InstallParameters private constructor(
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			return InstallParameters(apks.toList(), installerType, confirmationStrategy, notificationData)
+			return InstallParameters(apks, installerType, confirmationStrategy, notificationData)
+		}
+
+		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
+			!areSplitPackagesSupported -> InstallerType.INTENT_BASED
+			apks.size > 1 && areSplitPackagesSupported -> InstallerType.SESSION_BASED
+			else -> value
 		}
 	}
 }
+
+private class RealMutableApkList : MutableApkList {
+
+	constructor(baseApk: Uri) {
+		this.apks = mutableListOf(baseApk)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	constructor(apks: Iterable<Uri>) {
+		checkSplitPackagesSupport()
+		require(apks.any()) { "No APKs provided. It's required to have at least one base APK to create a session." }
+		this.apks = apks.toMutableList()
+	}
+
+	override val size: Int
+		get() = apks.size
+
+	private val apks: MutableList<Uri>
+
+	override fun add(apk: Uri) {
+		checkSplitPackagesSupport()
+		this.apks.add(apk)
+	}
+
+	override fun addAll(apks: Iterable<Uri>) {
+		checkSplitPackagesSupport()
+		this.apks.addAll(apks)
+	}
+
+	override fun toList() = apks.toList()
+	override fun equals(other: Any?) = apks == other
+	override fun hashCode() = apks.hashCode()
+	override fun toString() = "ApkList($apks)"
+
+	private fun checkSplitPackagesSupport() {
+		if (!areSplitPackagesSupported) {
+			throw SplitPackagesNotSupportedException()
+		}
+	}
+}
+
+private val areSplitPackagesSupported: Boolean
+	@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+	get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
