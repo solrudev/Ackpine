@@ -4,6 +4,10 @@ package ru.solrudev.ackpine
  * Parameters for creating uninstall session.
  */
 public class UninstallParameters private constructor(
+
+	/**
+	 * Name of the package to be uninstalled.
+	 */
 	public val packageName: String,
 
 	/**
@@ -49,7 +53,13 @@ public class UninstallParameters private constructor(
 	 * Builder for [UninstallParameters].
 	 */
 	@SessionParametersDslMarker
-	public class Builder(public val packageName: String) : ConfirmationExtension {
+	public class Builder(
+		/**
+		 * Name of the package to be uninstalled.
+		 */
+		@set:JvmSynthetic
+		public var packageName: String
+	) : ConfirmationExtension {
 
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
@@ -70,21 +80,28 @@ public class UninstallParameters private constructor(
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
 
 		/**
-		 * Sets [InstallParameters.confirmationStrategy].
+		 * Sets [UninstallParameters.packageName].
+		 */
+		public fun setPackageName(packageName: String): Builder = apply {
+			this.packageName = packageName
+		}
+
+		/**
+		 * Sets [UninstallParameters.confirmationStrategy].
 		 */
 		public fun setConfirmationStrategy(confirmationStrategy: ConfirmationStrategy): Builder = apply {
 			this.confirmationStrategy = confirmationStrategy
 		}
 
 		/**
-		 * Sets [InstallParameters.notificationData].
+		 * Sets [UninstallParameters.notificationData].
 		 */
 		public fun setNotificationData(notificationData: NotificationData): Builder = apply {
 			this.notificationData = notificationData
 		}
 
 		/**
-		 * Constructs a new instance of [InstallParameters].
+		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
 			return UninstallParameters(packageName, confirmationStrategy, notificationData)
