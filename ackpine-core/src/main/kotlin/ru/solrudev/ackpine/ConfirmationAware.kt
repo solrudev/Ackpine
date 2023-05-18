@@ -5,16 +5,16 @@ public sealed interface ConfirmationAware {
 	/**
 	 * A strategy for handling user's confirmation of installation or uninstallation.
 	 *
-	 * Default strategy is [ConfirmationStrategy.DEFERRED].
+	 * Default strategy is [Confirmation.DEFERRED].
 	 */
-	public val confirmationStrategy: ConfirmationStrategy
+	public val confirmation: Confirmation
 
 	/**
 	 * Data for a high-priority notification which launches confirmation activity.
 	 *
 	 * Default value is [NotificationData.DEFAULT].
 	 *
-	 * Ignored when [confirmationStrategy] is [ConfirmationStrategy.IMMEDIATE].
+	 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 	 */
 	public val notificationData: NotificationData
 }

@@ -6,7 +6,7 @@ package ru.solrudev.ackpine
 public sealed interface ConfirmationExtension : ConfirmationAware {
 
 	@set:JvmSynthetic
-	override var confirmationStrategy: ConfirmationStrategy
+	override var confirmation: Confirmation
 
 	@set:JvmSynthetic
 	override var notificationData: NotificationData

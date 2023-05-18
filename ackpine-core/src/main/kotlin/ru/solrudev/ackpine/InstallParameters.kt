@@ -26,16 +26,16 @@ public class InstallParameters private constructor(
 	/**
 	 * A strategy for handling user's confirmation of installation or uninstallation.
 	 *
-	 * Default strategy is [ConfirmationStrategy.DEFERRED].
+	 * Default strategy is [Confirmation.DEFERRED].
 	 */
-	public override val confirmationStrategy: ConfirmationStrategy,
+	public override val confirmation: Confirmation,
 
 	/**
 	 * Data for a high-priority notification which launches confirmation activity.
 	 *
 	 * Default value is [NotificationData.DEFAULT].
 	 *
-	 * Ignored when [confirmationStrategy] is [ConfirmationStrategy.IMMEDIATE].
+	 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 	 */
 	public override val notificationData: NotificationData
 ) : ConfirmationAware {
@@ -46,7 +46,7 @@ public class InstallParameters private constructor(
 		other as InstallParameters
 		if (apks != other.apks) return false
 		if (installerType != other.installerType) return false
-		if (confirmationStrategy != other.confirmationStrategy) return false
+		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		return true
 	}
@@ -54,14 +54,14 @@ public class InstallParameters private constructor(
 	override fun hashCode(): Int {
 		var result = apks.hashCode()
 		result = 31 * result + installerType.hashCode()
-		result = 31 * result + confirmationStrategy.hashCode()
+		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "InstallParameters(packages=$apks, installerType=$installerType, " +
-				"confirmationStrategy=$confirmationStrategy, notificationData=$notificationData)"
+		return "InstallParameters(apks=$apks, installerType=$installerType, " +
+				"confirmation=$confirmation, notificationData=$notificationData)"
 	}
 
 	/**
@@ -111,17 +111,17 @@ public class InstallParameters private constructor(
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
 		 *
-		 * Default strategy is [ConfirmationStrategy.DEFERRED].
+		 * Default strategy is [Confirmation.DEFERRED].
 		 */
 		@set:JvmSynthetic
-		public override var confirmationStrategy: ConfirmationStrategy = ConfirmationStrategy.DEFERRED
+		public override var confirmation: Confirmation = Confirmation.DEFERRED
 
 		/**
 		 * Data for a high-priority notification which launches confirmation activity.
 		 *
 		 * Default value is [NotificationData.DEFAULT].
 		 *
-		 * Ignored when [confirmationStrategy] is [ConfirmationStrategy.IMMEDIATE].
+		 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 		 */
 		@set:JvmSynthetic
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
@@ -158,10 +158,10 @@ public class InstallParameters private constructor(
 		}
 
 		/**
-		 * Sets [InstallParameters.confirmationStrategy].
+		 * Sets [InstallParameters.confirmation].
 		 */
-		public fun setConfirmationStrategy(confirmationStrategy: ConfirmationStrategy): Builder = apply {
-			this.confirmationStrategy = confirmationStrategy
+		public fun setConfirmation(confirmation: Confirmation): Builder = apply {
+			this.confirmation = confirmation
 		}
 
 		/**
@@ -176,7 +176,7 @@ public class InstallParameters private constructor(
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			return InstallParameters(apks, installerType, confirmationStrategy, notificationData)
+			return InstallParameters(apks, installerType, confirmation, notificationData)
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {

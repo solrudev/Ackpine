@@ -13,16 +13,16 @@ public class UninstallParameters private constructor(
 	/**
 	 * A strategy for handling user's confirmation of installation or uninstallation.
 	 *
-	 * Default strategy is [ConfirmationStrategy.DEFERRED].
+	 * Default strategy is [Confirmation.DEFERRED].
 	 */
-	public override val confirmationStrategy: ConfirmationStrategy,
+	public override val confirmation: Confirmation,
 
 	/**
 	 * Data for a high-priority notification which launches confirmation activity.
 	 *
 	 * Default value is [NotificationData.DEFAULT].
 	 *
-	 * Ignored when [confirmationStrategy] is [ConfirmationStrategy.IMMEDIATE].
+	 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 	 */
 	public override val notificationData: NotificationData
 ) : ConfirmationAware {
@@ -32,20 +32,20 @@ public class UninstallParameters private constructor(
 		if (javaClass != other?.javaClass) return false
 		other as UninstallParameters
 		if (packageName != other.packageName) return false
-		if (confirmationStrategy != other.confirmationStrategy) return false
+		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
 		var result = packageName.hashCode()
-		result = 31 * result + confirmationStrategy.hashCode()
+		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "UninstallParameters(packageName=$packageName, confirmationStrategy=$confirmationStrategy, " +
+		return "UninstallParameters(packageName=$packageName, confirmation=$confirmation, " +
 				"notificationData=$notificationData)"
 	}
 
@@ -64,17 +64,17 @@ public class UninstallParameters private constructor(
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
 		 *
-		 * Default strategy is [ConfirmationStrategy.DEFERRED].
+		 * Default strategy is [Confirmation.DEFERRED].
 		 */
 		@set:JvmSynthetic
-		public override var confirmationStrategy: ConfirmationStrategy = ConfirmationStrategy.DEFERRED
+		public override var confirmation: Confirmation = Confirmation.DEFERRED
 
 		/**
 		 * Data for a high-priority notification which launches confirmation activity.
 		 *
 		 * Default value is [NotificationData.DEFAULT].
 		 *
-		 * Ignored when [confirmationStrategy] is [ConfirmationStrategy.IMMEDIATE].
+		 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 		 */
 		@set:JvmSynthetic
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
@@ -87,10 +87,10 @@ public class UninstallParameters private constructor(
 		}
 
 		/**
-		 * Sets [UninstallParameters.confirmationStrategy].
+		 * Sets [UninstallParameters.confirmation].
 		 */
-		public fun setConfirmationStrategy(confirmationStrategy: ConfirmationStrategy): Builder = apply {
-			this.confirmationStrategy = confirmationStrategy
+		public fun setConfirmation(confirmation: Confirmation): Builder = apply {
+			this.confirmation = confirmation
 		}
 
 		/**
@@ -104,7 +104,7 @@ public class UninstallParameters private constructor(
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			return UninstallParameters(packageName, confirmationStrategy, notificationData)
+			return UninstallParameters(packageName, confirmation, notificationData)
 		}
 	}
 }
