@@ -104,13 +104,13 @@ public sealed class InstallFailure(public open val message: String?) : Failure {
 		public val storagePath: String? = null
 	) : InstallFailure(message)
 
-	public companion object {
+	internal companion object {
 
 		/**
 		 * Converts Android's [PackageInstaller] failure status code to [InstallFailure] object.
 		 */
-		@JvmStatic
-		public fun fromStatusCode(
+		@JvmSynthetic
+		internal fun fromStatusCode(
 			statusCode: Int,
 			message: String? = null,
 			otherPackageName: String? = null,
