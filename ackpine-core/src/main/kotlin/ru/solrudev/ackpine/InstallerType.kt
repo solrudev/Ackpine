@@ -1,6 +1,7 @@
 package ru.solrudev.ackpine
 
 import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 
 /**
@@ -21,10 +22,10 @@ public enum class InstallerType {
 		 * On API level >= 21, the default value is [InstallerType.SESSION_BASED].
 		 */
 		@JvmField
-		public val DEFAULT: InstallerType = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-			INTENT_BASED
-		} else {
-			SESSION_BASED
-		}
+		public val DEFAULT: InstallerType = if (areSplitPackagesSupported()) SESSION_BASED else INTENT_BASED
 	}
 }
+
+@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+@JvmSynthetic
+internal fun areSplitPackagesSupported(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP

@@ -3,7 +3,6 @@ package ru.solrudev.ackpine
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.os.Build
-import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 
 /**
@@ -180,8 +179,8 @@ public class InstallParameters private constructor(
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
-			!areSplitPackagesSupported -> InstallerType.INTENT_BASED
-			apks.size > 1 && areSplitPackagesSupported -> InstallerType.SESSION_BASED
+			!areSplitPackagesSupported() -> InstallerType.INTENT_BASED
+			apks.size > 1 && areSplitPackagesSupported() -> InstallerType.SESSION_BASED
 			else -> value
 		}
 	}
@@ -221,12 +220,8 @@ private class RealMutableApkList : MutableApkList {
 	override fun toString() = "ApkList($apks)"
 
 	private fun checkSplitPackagesSupport() {
-		if (!areSplitPackagesSupported) {
+		if (!areSplitPackagesSupported()) {
 			throw SplitPackagesNotSupportedException()
 		}
 	}
 }
-
-private val areSplitPackagesSupported: Boolean
-	@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-	get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
