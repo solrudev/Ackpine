@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val publishGroupId: String by rootProject.extra
 val publishVersion: String by rootProject.extra
-val publishArtifactId = "ackpine-splitszip"
+val publishArtifactId = "ackpine-splits"
 
 plugins {
 	id("com.android.library")
@@ -55,7 +55,6 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
 	api(project(":ackpine-core"))
-	implementation("androidx.annotation:annotation:1.6.0")
 }
 
 signing {

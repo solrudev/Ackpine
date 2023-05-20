@@ -60,6 +60,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
 	api("androidx.startup:startup-runtime:1.1.1")
+	api("androidx.annotation:annotation:1.6.0")
 	implementation("androidx.appcompat:appcompat:1.6.1")
 	implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 }

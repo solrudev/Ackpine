@@ -55,7 +55,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
 	api(project(":ackpine-core"))
-	implementation("androidx.annotation:annotation:1.6.0")
+	api("androidx.annotation:annotation:1.6.0")
 }
 
 signing {

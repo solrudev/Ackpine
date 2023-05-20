@@ -2,7 +2,7 @@ rootProject.name = "Ackpine"
 include(":ackpine-core")
 include(":ackpine-ktx")
 include(":ackpine-coroutines")
-include(":ackpine-splitszip")
+include(":ackpine-splits")
 include(":sample")
 
 pluginManagement {
