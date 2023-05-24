@@ -46,15 +46,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	override fun openFile(uri: Uri, mode: String, signal: CancellationSignal?): ParcelFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
-			thread {
-				val zipStream = zipEntryStream(uri)
-				outputFd.safeWrite { outputStream ->
-					zipStream.buffered().use { zipStream ->
-						zipStream.copyTo(outputStream, signal)
-						outputStream.flush()
-					}
-				}
-			}
+			openZipEntry(uri, outputFd, signal)
 			return inputFd
 		}
 	}
@@ -65,16 +57,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
-			val zipStream = zipEntryStream(uri)
-			val size = zipStream.size
-			thread {
-				outputFd.safeWrite { outputStream ->
-					zipStream.buffered().use { zipStream ->
-						zipStream.copyTo(outputStream, signal)
-						outputStream.flush()
-					}
-				}
-			}
+			val size = openZipEntry(uri, outputFd, signal)
 			return AssetFileDescriptor(inputFd, 0, size)
 		}
 	}
@@ -116,27 +99,24 @@ public class ZippedFileProvider : ContentProvider() {
 		}
 	}
 
-	private inline fun ParcelFileDescriptor.safeWrite(block: (outputStream: OutputStream) -> Unit) {
-		var exception: Throwable? = null
-		try {
-			FileOutputStream(fileDescriptor).buffered().use(block)
-		} catch (t: Throwable) {
-			exception = t
-		} finally {
-			try {
-				if (exception != null) {
-					closeWithError(exception.message)
-				} else {
-					close()
+	/**
+	 * @return zip entry size.
+	 */
+	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
+		val zipStream = openZipEntryStream(uri)
+		val size = zipStream.size
+		thread {
+			outputFd.safeWrite { outputStream ->
+				zipStream.buffered().use { zipStream ->
+					zipStream.copyTo(outputStream, signal)
+					outputStream.flush()
 				}
-			} catch (t: Throwable) {
-				exception?.addSuppressed(t)
-				exception?.printStackTrace()
 			}
 		}
+		return size
 	}
 
-	private fun zipEntryStream(uri: Uri): ZipEntryStream {
+	private fun openZipEntryStream(uri: Uri): ZipEntryStream {
 		val zipFileUri = zipFileUri(uri)
 		val file = context?.let(zipFileUri::toFile)
 		if (file?.canRead() == true) {
@@ -174,6 +154,26 @@ public class ZippedFileProvider : ContentProvider() {
 			.encodedFragment(uriFromPath.encodedFragment)
 			.build() // creates opaque uri
 			.toString().toUri() // converting to hierarchical uri
+	}
+
+	private inline fun ParcelFileDescriptor.safeWrite(block: (outputStream: OutputStream) -> Unit) {
+		var exception: Throwable? = null
+		try {
+			FileOutputStream(fileDescriptor).buffered().use(block)
+		} catch (t: Throwable) {
+			exception = t
+		} finally {
+			try {
+				if (exception != null) {
+					closeWithError(exception.message)
+				} else {
+					close()
+				}
+			} catch (t: Throwable) {
+				exception?.addSuppressed(t)
+				exception?.printStackTrace()
+			}
+		}
 	}
 
 	private fun InputStream.copyTo(out: OutputStream, signal: CancellationSignal?) {
