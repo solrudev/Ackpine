@@ -22,7 +22,7 @@ android {
 	namespace = "ru.solrudev.ackpine"
 
 	defaultConfig {
-		minSdk = 16
+		minSdk = 21
 		version = publishVersion
 		consumerProguardFiles("consumer-rules.pro")
 	}
