@@ -55,6 +55,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
 	api(project(":ackpine-core"))
+	implementation("androidx.core:core:1.10.1")
 }
 
 signing {

@@ -1,0 +1,217 @@
+package ru.solrudev.ackpine
+
+import android.content.ClipDescription
+import android.content.ContentProvider
+import android.content.ContentResolver
+import android.content.ContentValues
+import android.content.Context
+import android.content.pm.ProviderInfo
+import android.content.res.AssetFileDescriptor
+import android.database.Cursor
+import android.net.Uri
+import android.os.Bundle
+import android.os.CancellationSignal
+import android.os.ParcelFileDescriptor
+import android.webkit.MimeTypeMap
+import java.io.FileInputStream
+import java.io.FileNotFoundException
+import java.io.FileOutputStream
+import java.io.InputStream
+import java.io.OutputStream
+import java.util.zip.ZipInputStream
+import kotlin.concurrent.thread
+
+/**
+ * [ContentProvider] which allows to open files inside of ZIP archives.
+ */
+public class ZippedFileProvider : ContentProvider() {
+
+	override fun attachInfo(context: Context, info: ProviderInfo) {
+		super.attachInfo(context, info)
+		authority = info.authority
+	}
+
+	override fun onCreate(): Boolean = true
+
+	override fun getType(uri: Uri): String? {
+		return uri.encodedQuery
+			?.substringAfterLast('.', "")
+			?.let { extension -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) }
+	}
+
+	override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
+		return openFile(uri, mode, signal = null)
+	}
+
+	override fun openFile(uri: Uri, mode: String, signal: CancellationSignal?): ParcelFileDescriptor {
+		preparePipe(mode, signal) { inputFd, outputFd ->
+			thread {
+				val zipStream = ZipInputStream(openInputStream(uri))
+				try {
+					zipStream.entries().first { it.name == uri.encodedQuery }
+				} catch (t: Throwable) {
+					zipStream.close()
+					throw t
+				}
+				outputFd.safeWrite { outputStream ->
+					zipStream.buffered().use { zipStream ->
+						zipStream.copyTo(outputStream, signal)
+						outputStream.flush()
+					}
+				}
+			}
+			return inputFd
+		}
+	}
+
+	override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor {
+		return openAssetFile(uri, mode, signal = null)
+	}
+
+	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor {
+		preparePipe(mode, signal) { inputFd, outputFd ->
+			val zipStream = ZipInputStream(openInputStream(uri))
+			val size = try {
+				zipStream.entries().first { it.name == uri.encodedQuery }.size
+			} catch (t: Throwable) {
+				zipStream.close()
+				throw t
+			}
+			thread {
+				outputFd.safeWrite { outputStream ->
+					zipStream.buffered().use { zipStream ->
+						zipStream.copyTo(outputStream, signal)
+						outputStream.flush()
+					}
+				}
+			}
+			return AssetFileDescriptor(inputFd, 0, size)
+		}
+	}
+
+	override fun openTypedAssetFile(uri: Uri, mimeTypeFilter: String, opts: Bundle?): AssetFileDescriptor {
+		return openTypedAssetFile(uri, mimeTypeFilter, opts, null)
+	}
+
+	// Copied from default ContentProvider implementation, but here we use CancellationSignal
+	override fun openTypedAssetFile(
+		uri: Uri,
+		mimeTypeFilter: String,
+		opts: Bundle?,
+		signal: CancellationSignal?
+	): AssetFileDescriptor {
+		if ("*/*" == mimeTypeFilter) {
+			return openAssetFile(uri, "r", signal)
+		}
+		val baseType = getType(uri)
+		if (baseType != null && ClipDescription.compareMimeTypes(baseType, mimeTypeFilter)) {
+			return openAssetFile(uri, "r", signal)
+		}
+		throw FileNotFoundException("Can't open $uri as type $mimeTypeFilter")
+	}
+
+	private inline fun <R> preparePipe(
+		mode: String,
+		signal: CancellationSignal?,
+		block: (inputFd: ParcelFileDescriptor, outputFd: ParcelFileDescriptor) -> R
+	): R {
+		try {
+			if ('w' in mode || 'W' in mode) {
+				throw UnsupportedOperationException("Write mode is not supported by ZippedFileProvider")
+			}
+			val (inputFd, outputFd) = ParcelFileDescriptor.createReliablePipe()
+			return block(inputFd, outputFd)
+		} finally {
+			signal?.throwIfCanceled()
+		}
+	}
+
+	private inline fun ParcelFileDescriptor.safeWrite(block: (outputStream: OutputStream) -> Unit) {
+		var exception: Throwable? = null
+		try {
+			FileOutputStream(fileDescriptor).buffered().use(block)
+		} catch (t: Throwable) {
+			exception = t
+		} finally {
+			try {
+				if (exception != null) {
+					closeWithError(exception.message)
+				} else {
+					close()
+				}
+			} catch (t: Throwable) {
+				exception?.addSuppressed(t)
+				exception?.printStackTrace()
+			}
+		}
+	}
+
+	private fun openInputStream(uri: Uri): InputStream? {
+		val path = uri.encodedPath?.drop(1) ?: throw FileNotFoundException("uri=$uri")
+		val uriFromPath = Uri.parse(path)
+		if (uriFromPath.scheme == null || uriFromPath.scheme == ContentResolver.SCHEME_FILE) {
+			return FileInputStream("/$path")
+		}
+		val encodedSchemeSpecificPart = uriFromPath.encodedSchemeSpecificPart
+		val authorityIndex = encodedSchemeSpecificPart.indexOfFirst { it != '/' }
+		val opaquePart = "//${encodedSchemeSpecificPart.substring(authorityIndex)}"
+		val finalUri = Uri.Builder()
+			.scheme(uriFromPath.scheme)
+			.encodedOpaquePart(opaquePart)
+			.encodedFragment(uriFromPath.encodedFragment)
+			.build() // creates opaque uri
+			.toString().toUri() // converting to hierarchical uri
+		return context?.contentResolver?.openInputStream(finalUri)
+	}
+
+	private fun InputStream.copyTo(out: OutputStream, signal: CancellationSignal?) {
+		val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+		var bytesRead = read(buffer)
+		while (bytesRead >= 0 && (signal == null || !signal.isCanceled)) {
+			out.write(buffer, 0, bytesRead)
+			bytesRead = read(buffer)
+		}
+	}
+
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+		sortOrder: String?
+	): Cursor? {
+		throw UnsupportedOperationException("Querying not supported by ZippedFileProvider")
+	}
+
+	override fun insert(uri: Uri, values: ContentValues?): Uri? {
+		throw UnsupportedOperationException("Inserting not supported by ZippedFileProvider")
+	}
+
+	override fun delete(uri: Uri, selection: String?, selectionArgs: Array<out String>?): Int {
+		throw UnsupportedOperationException("Deleting not supported by ZippedFileProvider")
+	}
+
+	override fun update(uri: Uri, values: ContentValues?, selection: String?, selectionArgs: Array<out String>?): Int {
+		throw UnsupportedOperationException("Updating not supported by ZippedFileProvider")
+	}
+
+	public companion object {
+
+		private lateinit var authority: String
+
+		@JvmStatic
+		public fun isZippedFileProviderUri(uri: Uri): Boolean {
+			return uri.authority == authority && uri.encodedPath != null && uri.encodedQuery != null
+		}
+
+		@JvmStatic
+		public fun getUriForZipEntry(zipPath: String, zipEntryName: String): Uri {
+			return Uri.Builder()
+				.scheme(ContentResolver.SCHEME_CONTENT)
+				.authority(authority)
+				.encodedPath(zipPath)
+				.encodedQuery(zipEntryName)
+				.build()
+		}
+	}
+}
