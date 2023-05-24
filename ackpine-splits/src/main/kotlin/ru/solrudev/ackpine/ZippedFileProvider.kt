@@ -13,11 +13,12 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.webkit.MimeTypeMap
-import java.io.FileInputStream
+import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 import kotlin.concurrent.thread
 
@@ -46,13 +47,7 @@ public class ZippedFileProvider : ContentProvider() {
 	override fun openFile(uri: Uri, mode: String, signal: CancellationSignal?): ParcelFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
 			thread {
-				val zipStream = ZipInputStream(openInputStream(uri))
-				try {
-					zipStream.entries().first { it.name == uri.encodedQuery }
-				} catch (t: Throwable) {
-					zipStream.close()
-					throw t
-				}
+				val zipStream = zipEntryStream(uri)
 				outputFd.safeWrite { outputStream ->
 					zipStream.buffered().use { zipStream ->
 						zipStream.copyTo(outputStream, signal)
@@ -70,13 +65,8 @@ public class ZippedFileProvider : ContentProvider() {
 
 	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
-			val zipStream = ZipInputStream(openInputStream(uri))
-			val size = try {
-				zipStream.entries().first { it.name == uri.encodedQuery }.size
-			} catch (t: Throwable) {
-				zipStream.close()
-				throw t
-			}
+			val zipStream = zipEntryStream(uri)
+			val size = zipStream.size
 			thread {
 				outputFd.safeWrite { outputStream ->
 					zipStream.buffered().use { zipStream ->
@@ -146,22 +136,44 @@ public class ZippedFileProvider : ContentProvider() {
 		}
 	}
 
-	private fun openInputStream(uri: Uri): InputStream? {
+	private fun zipEntryStream(uri: Uri): ZipEntryStream {
+		val zipFileUri = zipFileUri(uri)
+		val file = context?.let(zipFileUri::toFile)
+		if (file?.canRead() == true) {
+			val zipFile = ZipFile(file)
+			return try {
+				val zipEntry = zipFile.getEntry(uri.encodedQuery)
+				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.size)
+			} catch (t: Throwable) {
+				zipFile.close()
+				throw t
+			}
+		}
+		val zipStream = ZipInputStream(context?.contentResolver?.openInputStream(zipFileUri))
+		val zipEntry = try {
+			zipStream.entries().first { it.name == uri.encodedQuery }
+		} catch (t: Throwable) {
+			zipStream.close()
+			throw t
+		}
+		return ZipEntryStream(zipFile = null, zipStream, zipEntry.size)
+	}
+
+	private fun zipFileUri(uri: Uri): Uri {
 		val path = uri.encodedPath?.drop(1) ?: throw FileNotFoundException("uri=$uri")
 		val uriFromPath = Uri.parse(path)
 		if (uriFromPath.scheme == null || uriFromPath.scheme == ContentResolver.SCHEME_FILE) {
-			return FileInputStream("/$path")
+			return Uri.fromFile(File("/$path"))
 		}
 		val encodedSchemeSpecificPart = uriFromPath.encodedSchemeSpecificPart
 		val authorityIndex = encodedSchemeSpecificPart.indexOfFirst { it != '/' }
 		val opaquePart = "//${encodedSchemeSpecificPart.substring(authorityIndex)}"
-		val finalUri = Uri.Builder()
+		return Uri.Builder()
 			.scheme(uriFromPath.scheme)
 			.encodedOpaquePart(opaquePart)
 			.encodedFragment(uriFromPath.encodedFragment)
 			.build() // creates opaque uri
 			.toString().toUri() // converting to hierarchical uri
-		return context?.contentResolver?.openInputStream(finalUri)
 	}
 
 	private fun InputStream.copyTo(out: OutputStream, signal: CancellationSignal?) {
@@ -214,4 +226,29 @@ public class ZippedFileProvider : ContentProvider() {
 				.build()
 		}
 	}
+}
+
+private class ZipEntryStream(
+	private val zipFile: ZipFile?,
+	private val inputStream: InputStream,
+	val size: Long
+) : InputStream() {
+
+	override fun read(): Int = inputStream.read()
+	override fun available(): Int = inputStream.available()
+	override fun markSupported(): Boolean = inputStream.markSupported()
+	override fun mark(readlimit: Int) = inputStream.mark(readlimit)
+	override fun read(b: ByteArray?): Int = inputStream.read(b)
+	override fun read(b: ByteArray?, off: Int, len: Int): Int = inputStream.read(b, off, len)
+	override fun reset() = inputStream.reset()
+	override fun skip(n: Long): Long = inputStream.skip(n)
+
+	override fun close() {
+		zipFile?.close()
+		inputStream.close()
+	}
+
+	override fun hashCode(): Int = inputStream.hashCode()
+	override fun equals(other: Any?): Boolean = inputStream == other
+	override fun toString(): String = inputStream.toString()
 }
