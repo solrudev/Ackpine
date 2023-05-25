@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine
+package ru.solrudev.ackpine.helpers
 
 import android.content.ContentResolver
 import android.content.Context

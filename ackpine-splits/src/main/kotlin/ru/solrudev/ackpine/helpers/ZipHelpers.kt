@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine
+package ru.solrudev.ackpine.helpers
 
 import java.util.zip.ZipInputStream
 
