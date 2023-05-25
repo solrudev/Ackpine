@@ -106,11 +106,10 @@ public enum class Abi {
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Abi? {
 			val abiPart = splitTypePart(name) ?: return null
-			return if (abiPart in abis) {
-				Abi.valueOf(abiPart.uppercase())
-			} else {
-				null
+			if (abiPart in abis) {
+				return Abi.valueOf(abiPart.uppercase())
 			}
+			return null
 		}
 	}
 }
@@ -140,11 +139,10 @@ public enum class Dpi {
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Dpi? {
 			val dpiPart = splitTypePart(name) ?: return null
-			return if (dpiPart in dpis) {
-				Dpi.valueOf(dpiPart.uppercase())
-			} else {
-				null
+			if (dpiPart in dpis) {
+				return Dpi.valueOf(dpiPart.uppercase())
 			}
+			return null
 		}
 	}
 }
