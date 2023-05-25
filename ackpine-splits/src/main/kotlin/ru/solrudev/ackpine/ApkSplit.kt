@@ -20,19 +20,34 @@ public sealed class ApkSplit(
 	public data class Other(
 		override val uri: Uri,
 		override val name: String
-	) : ApkSplit(uri, name, name)
+	) : ApkSplit(uri, name, name) {
 
-	public data class ScreenDensity(
-		override val uri: Uri,
-		override val name: String,
-		public val dpi: Dpi
-	) : ApkSplit(uri, name, dpi.name.lowercase())
+		override fun isCompatible(context: Context): Boolean {
+			return true
+		}
+	}
 
 	public data class Libs(
 		override val uri: Uri,
 		override val name: String,
 		public val abi: Abi
-	) : ApkSplit(uri, name, abi.name.lowercase())
+	) : ApkSplit(uri, name, abi.name.lowercase()) {
+
+		override fun isCompatible(context: Context): Boolean {
+			return abi in Abi.deviceAbis
+		}
+	}
+
+	public data class ScreenDensity(
+		override val uri: Uri,
+		override val name: String,
+		public val dpi: Dpi
+	) : ApkSplit(uri, name, dpi.name.lowercase()) {
+
+		override fun isCompatible(context: Context): Boolean {
+			return dpi == context.dpi
+		}
+	}
 
 	public data class Localization(
 		override val uri: Uri,
@@ -42,21 +57,14 @@ public sealed class ApkSplit(
 
 		override val description: String
 			get() = locale.displayLanguage
+
+		override fun isCompatible(context: Context): Boolean {
+			val systemLocale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.ENGLISH
+			return locale.language == systemLocale.language
+		}
 	}
 
-	@JvmSynthetic
-	internal fun isCompatible(context: Context): Boolean = when (this) {
-		is Other -> true
-		is Libs -> abi in Abi.deviceAbis
-		is ScreenDensity -> dpi == context.dpi
-		is Localization -> locale.languageEquals(
-			ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.ENGLISH
-		)
-	}
-
-	private fun Locale.languageEquals(other: Locale): Boolean {
-		return language == other.language
-	}
+	public abstract fun isCompatible(context: Context): Boolean
 
 	public companion object {
 
