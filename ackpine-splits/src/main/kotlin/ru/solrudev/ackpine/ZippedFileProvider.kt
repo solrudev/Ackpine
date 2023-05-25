@@ -128,7 +128,7 @@ public class ZippedFileProvider : ContentProvider() {
 			val zipFile = ZipFile(file)
 			return try {
 				val zipEntry = zipFile.getEntry(uri.encodedQuery)
-				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.name, zipEntry.size)
+				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.size)
 			} catch (t: Throwable) {
 				zipFile.close()
 				throw t
@@ -143,7 +143,7 @@ public class ZippedFileProvider : ContentProvider() {
 			zipStream.close()
 			throw t
 		}
-		return ZipEntryStream(zipFile = null, zipStream, zipEntry.name, zipEntry.size)
+		return ZipEntryStream(zipFile = null, zipStream, zipEntry.size)
 	}
 
 	private fun zipFileUri(uri: Uri): Uri {
@@ -212,12 +212,14 @@ public class ZippedFileProvider : ContentProvider() {
 			return cursor
 		}
 		val row = arrayOfNulls<Any>(columnNames.size)
-		openZipEntryStream(uri, signal).use { zipStream ->
-			row.setColumn(OpenableColumns.DISPLAY_NAME, zipStream.name)
-			row.setColumn(OpenableColumns.SIZE, zipStream.size)
-			cursor.addRow(row)
-			return cursor
+		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.encodedQuery)
+		if (OpenableColumns.SIZE in columnNames) {
+			openZipEntryStream(uri, signal).use { zipStream ->
+				row.setColumn(OpenableColumns.SIZE, zipStream.size)
+			}
 		}
+		cursor.addRow(row)
+		return cursor
 	}
 
 	override fun query(
@@ -277,7 +279,6 @@ public class ZippedFileProvider : ContentProvider() {
 private class ZipEntryStream(
 	private val zipFile: ZipFile?,
 	private val inputStream: InputStream,
-	val name: String,
 	val size: Long
 ) : InputStream() {
 
