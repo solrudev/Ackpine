@@ -50,7 +50,7 @@ public sealed class SplitApk(
 	@JvmSynthetic
 	internal fun isCompatible(context: Context): Boolean = when (this) {
 		is Other -> true
-		is Libs -> abi in Abi.deviceAbis()
+		is Libs -> abi in Abi.deviceAbis
 		is ScreenDensity -> dpi == context.dpi
 		is Localization -> locale.languageEquals(
 			ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.ENGLISH
@@ -98,9 +98,9 @@ public enum class Abi {
 
 	internal companion object {
 
-		@JvmSynthetic
-		internal fun deviceAbis(): List<Abi> {
-			return Build.SUPPORTED_ABIS.map { valueOf(it.replace(oldChar = '-', newChar = '_').uppercase()) }
+		@get:JvmSynthetic
+		internal val deviceAbis: List<Abi> by lazy(LazyThreadSafetyMode.NONE) {
+			Build.SUPPORTED_ABIS.map { valueOf(it.replace(oldChar = '-', newChar = '_').uppercase()) }
 		}
 
 		@JvmSynthetic
