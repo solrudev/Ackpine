@@ -95,13 +95,9 @@ public enum class Abi {
 	internal companion object {
 
 		@JvmSynthetic
-		internal fun deviceAbis(): List<Abi> = listOf(
-			Build.SUPPORTED_ABIS.first().replace(oldChar = '-', newChar = '_').uppercase(),
-			Build.SUPPORTED_ABIS.getOrNull(1).orEmpty().replace(oldChar = '-', newChar = '_').uppercase(),
-			Build.SUPPORTED_ABIS.getOrNull(2).orEmpty().replace(oldChar = '-', newChar = '_').uppercase()
-		)
-			.filter { it.isNotEmpty() }
-			.map { valueOf(it) }
+		internal fun deviceAbis(): List<Abi> {
+			return Build.SUPPORTED_ABIS.map { valueOf(it.replace(oldChar = '-', newChar = '_').uppercase()) }
+		}
 
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Abi? {
