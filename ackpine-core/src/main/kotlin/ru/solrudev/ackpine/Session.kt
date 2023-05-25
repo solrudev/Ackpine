@@ -7,6 +7,7 @@ public interface Session<F : Failure> {
 	public val id: UUID
 	public val isActive: Boolean
 	public fun launch()
+	public fun commit()
 	public fun cancel()
 	public fun addStateListener(listener: StateListener<F>): DisposableSubscription
 	public fun removeStateListener(listener: StateListener<F>)
@@ -20,6 +21,8 @@ public interface Session<F : Failure> {
 
 		public data object Pending : State<Nothing>
 		public data object Active : State<Nothing>
+		public data object Awaiting : State<Nothing>
+		public data object Committed : State<Nothing>
 		public data object Cancelled : State<Nothing>, Terminal
 		public data object Succeeded : State<Nothing>, Terminal
 		public data class Failed<F : Failure>(public val failure: F) : State<F>, Terminal
