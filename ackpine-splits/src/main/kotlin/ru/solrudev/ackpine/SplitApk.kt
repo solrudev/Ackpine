@@ -17,7 +17,7 @@ private val abis = Abi.values().map { it.name.lowercase() }.toSet()
 public sealed class SplitApk(
 	public open val uri: Uri,
 	public open val name: String,
-	public val description: String
+	public open val description: String
 ) {
 
 	public data class Other(
@@ -25,7 +25,7 @@ public sealed class SplitApk(
 		override val name: String
 	) : SplitApk(uri, name, name)
 
-	public data class Resources(
+	public data class ScreenDensity(
 		override val uri: Uri,
 		override val name: String,
 		public val dpi: Dpi
@@ -41,13 +41,17 @@ public sealed class SplitApk(
 		override val uri: Uri,
 		override val name: String,
 		public val locale: Locale
-	) : SplitApk(uri, name, locale.displayLanguage)
+	) : SplitApk(uri, name, "") {
+
+		override val description: String
+			get() = locale.displayLanguage
+	}
 
 	@JvmSynthetic
 	internal fun isCompatible(context: Context): Boolean = when (this) {
 		is Other -> true
 		is Libs -> abi in Abi.deviceAbis()
-		is Resources -> dpi == context.dpi
+		is ScreenDensity -> dpi == context.dpi
 		is Localization -> locale.languageEquals(
 			ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.ENGLISH
 		)
@@ -69,7 +73,7 @@ public sealed class SplitApk(
 			val abi = Abi.fromSplitName(name)
 			val locale = localeFromSplitName(name)
 			return when {
-				dpi != null -> Resources(uri, name, dpi)
+				dpi != null -> ScreenDensity(uri, name, dpi)
 				abi != null -> Libs(uri, name, abi)
 				locale != null -> Localization(uri, name, locale)
 				else -> Other(uri, name)
@@ -77,7 +81,7 @@ public sealed class SplitApk(
 		}
 
 		private fun localeFromSplitName(name: String): Locale? {
-			val localePart = typePart(name) ?: return null
+			val localePart = splitTypePart(name) ?: return null
 			val locale = try {
 				Locale.Builder().setLanguageTag(localePart).build()
 			} catch (_: IllformedLocaleException) {
@@ -101,7 +105,7 @@ public enum class Abi {
 
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Abi? {
-			val abiPart = typePart(name) ?: return null
+			val abiPart = splitTypePart(name) ?: return null
 			return if (abiPart in abis) {
 				Abi.valueOf(abiPart.uppercase())
 			} else {
@@ -135,7 +139,7 @@ public enum class Dpi {
 
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Dpi? {
-			val dpiPart = typePart(name) ?: return null
+			val dpiPart = splitTypePart(name) ?: return null
 			return if (dpiPart in dpis) {
 				Dpi.valueOf(dpiPart.uppercase())
 			} else {
@@ -145,7 +149,7 @@ public enum class Dpi {
 	}
 }
 
-private fun typePart(name: String): String? {
+private fun splitTypePart(name: String): String? {
 	if (!name.contains(CONFIG_PART, ignoreCase = true) && !name.contains(".$CONFIG_PART", ignoreCase = true)) {
 		return null
 	}
