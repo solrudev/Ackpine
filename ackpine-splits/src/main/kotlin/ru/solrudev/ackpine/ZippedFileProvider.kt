@@ -8,10 +8,12 @@ import android.content.Context
 import android.content.pm.ProviderInfo
 import android.content.res.AssetFileDescriptor
 import android.database.Cursor
+import android.database.MatrixCursor
 import android.net.Uri
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
+import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
@@ -106,7 +108,7 @@ public class ZippedFileProvider : ContentProvider() {
 	 * @return zip entry size.
 	 */
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
-		val zipStream = openZipEntryStream(uri)
+		val zipStream = openZipEntryStream(uri, signal)
 		val size = zipStream.size
 		thread {
 			outputFd.safeWrite { outputStream ->
@@ -119,14 +121,14 @@ public class ZippedFileProvider : ContentProvider() {
 		return size
 	}
 
-	private fun openZipEntryStream(uri: Uri): ZipEntryStream {
+	private fun openZipEntryStream(uri: Uri, signal: CancellationSignal?): ZipEntryStream {
 		val zipFileUri = zipFileUri(uri)
 		val file = context?.let(zipFileUri::toFile)
 		if (file?.canRead() == true) {
 			val zipFile = ZipFile(file)
 			return try {
 				val zipEntry = zipFile.getEntry(uri.encodedQuery)
-				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.size)
+				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.name, zipEntry.size)
 			} catch (t: Throwable) {
 				zipFile.close()
 				throw t
@@ -134,12 +136,14 @@ public class ZippedFileProvider : ContentProvider() {
 		}
 		val zipStream = ZipInputStream(context?.contentResolver?.openInputStream(zipFileUri))
 		val zipEntry = try {
-			zipStream.entries().first { it.name == uri.encodedQuery }
+			zipStream.entries()
+				.onEach { signal?.throwIfCanceled() }
+				.first { it.name == uri.encodedQuery }
 		} catch (t: Throwable) {
 			zipStream.close()
 			throw t
 		}
-		return ZipEntryStream(zipFile = null, zipStream, zipEntry.size)
+		return ZipEntryStream(zipFile = null, zipStream, zipEntry.name, zipEntry.size)
 	}
 
 	private fun zipFileUri(uri: Uri): Uri {
@@ -191,11 +195,50 @@ public class ZippedFileProvider : ContentProvider() {
 	override fun query(
 		uri: Uri,
 		projection: Array<out String>?,
+		queryArgs: Bundle?,
+		signal: CancellationSignal?
+	): Cursor {
+		val columnNames = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
+
+		fun Array<Any?>.setColumn(columnName: String, value: Any?) {
+			val index = columnNames.indexOf(columnName)
+			if (index != -1) {
+				set(index, value)
+			}
+		}
+
+		val cursor = MatrixCursor(columnNames, 1)
+		if (columnNames.isEmpty()) {
+			return cursor
+		}
+		val row = arrayOfNulls<Any>(columnNames.size)
+		openZipEntryStream(uri, signal).use { zipStream ->
+			row.setColumn(OpenableColumns.DISPLAY_NAME, zipStream.name)
+			row.setColumn(OpenableColumns.SIZE, zipStream.size)
+			cursor.addRow(row)
+			return cursor
+		}
+	}
+
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
 		selection: String?,
 		selectionArgs: Array<out String>?,
 		sortOrder: String?
-	): Cursor? {
-		throw UnsupportedOperationException("Querying not supported by ZippedFileProvider")
+	): Cursor {
+		return query(uri, projection, queryArgs = null, signal = null)
+	}
+
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+		sortOrder: String?,
+		signal: CancellationSignal?
+	): Cursor {
+		return query(uri, projection, queryArgs = null, signal)
 	}
 
 	override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -234,6 +277,7 @@ public class ZippedFileProvider : ContentProvider() {
 private class ZipEntryStream(
 	private val zipFile: ZipFile?,
 	private val inputStream: InputStream,
+	val name: String,
 	val size: Long
 ) : InputStream() {
 
