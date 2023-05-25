@@ -41,14 +41,26 @@ public object ZippedSplits {
 		zipPath: String,
 		filterIncompatible: Boolean
 	): Sequence<SplitApk> {
-		return mapNotNull { zipEntry ->
+		val splitApks = mapNotNull { zipEntry ->
 			SplitApk.fromZipEntry(zipPath, zipEntry)
-		}.run {
-			if (filterIncompatible) {
-				filter { it.isCompatible(context) }
-			} else {
-				this
-			}
+		}
+		if (!filterIncompatible) {
+			return splitApks
+		}
+		return sequence {
+			val abiSplitApks = mutableListOf<SplitApk.Libs>()
+			splitApks
+				.onEach { apk ->
+					if (apk is SplitApk.Libs && apk.isCompatible(context)) {
+						abiSplitApks += apk
+					}
+				}
+				.filter { apk ->
+					apk !is SplitApk.Libs && apk.isCompatible(context)
+				}
+				.forEach { yield(it) }
+			abiSplitApks.sortBy { libs -> Abi.deviceAbis.indexOf(libs.abi) }
+			abiSplitApks.firstOrNull()?.let { yield(it) }
 		}
 	}
 }
