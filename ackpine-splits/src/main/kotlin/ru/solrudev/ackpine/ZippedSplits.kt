@@ -3,31 +3,34 @@ package ru.solrudev.ackpine
 import android.content.Context
 import android.net.Uri
 import java.io.File
-import java.io.IOException
 import java.util.zip.ZipEntry
-import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 public object ZippedSplits {
 
-	@Throws(ZipException::class, IOException::class)
 	@JvmStatic
 	public fun getApksForFile(context: Context, file: File, filterIncompatible: Boolean): Sequence<SplitApk> {
-		val zipFilePath = file.absolutePath
-		return ZipFile(file).entries()
-			.asSequence()
-			.toSplitApkSequence(context.applicationContext, zipFilePath, filterIncompatible)
+		val applicationContext = context.applicationContext // avoid capturing context into closure
+		return sequence {
+			ZipFile(file).use { zipFile ->
+				zipFile.entries()
+					.asSequence()
+					.toSplitApkSequence(applicationContext, file.absolutePath, filterIncompatible)
+					.forEach { yield(it) }
+			}
+		}
 	}
 
 	@JvmStatic
 	public fun getApksForUri(context: Context, uri: Uri, filterIncompatible: Boolean): Sequence<SplitApk> {
-		val file = uri.toFile(context)
-		if (file.canRead()) {
-			return getApksForFile(context, file, filterIncompatible)
-		}
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
+			val file = uri.toFile(applicationContext)
+			if (file.canRead()) {
+				yieldAll(getApksForFile(applicationContext, file, filterIncompatible))
+				return@sequence
+			}
 			ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
 				zipStream.entries()
 					.toSplitApkSequence(applicationContext, uri.toString(), filterIncompatible)
