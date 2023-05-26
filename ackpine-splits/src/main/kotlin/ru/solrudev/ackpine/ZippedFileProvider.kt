@@ -88,6 +88,57 @@ public class ZippedFileProvider : ContentProvider() {
 		throw FileNotFoundException("Can't open $uri as type $mimeTypeFilter")
 	}
 
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+		sortOrder: String?
+	): Cursor {
+		return query(uri, projection, queryArgs = null, signal = null)
+	}
+
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		selection: String?,
+		selectionArgs: Array<out String>?,
+		sortOrder: String?,
+		signal: CancellationSignal?
+	): Cursor {
+		return query(uri, projection, queryArgs = null, signal)
+	}
+
+	override fun query(
+		uri: Uri,
+		projection: Array<out String>?,
+		queryArgs: Bundle?,
+		signal: CancellationSignal?
+	): Cursor {
+		val columnNames = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
+
+		fun Array<Any?>.setColumn(columnName: String, value: Any?) {
+			val index = columnNames.indexOf(columnName)
+			if (index != -1) {
+				set(index, value)
+			}
+		}
+
+		val cursor = MatrixCursor(columnNames, 1)
+		if (columnNames.isEmpty()) {
+			return cursor
+		}
+		val row = arrayOfNulls<Any>(columnNames.size)
+		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.encodedQuery)
+		if (OpenableColumns.SIZE in columnNames) {
+			openZipEntryStream(uri, signal).use { zipStream ->
+				row.setColumn(OpenableColumns.SIZE, zipStream.size)
+			}
+		}
+		cursor.addRow(row)
+		return cursor
+	}
+
 	private inline fun <R> preparePipe(
 		mode: String,
 		signal: CancellationSignal?,
@@ -190,57 +241,6 @@ public class ZippedFileProvider : ContentProvider() {
 			out.write(buffer, 0, bytesRead)
 			bytesRead = read(buffer)
 		}
-	}
-
-	override fun query(
-		uri: Uri,
-		projection: Array<out String>?,
-		queryArgs: Bundle?,
-		signal: CancellationSignal?
-	): Cursor {
-		val columnNames = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
-
-		fun Array<Any?>.setColumn(columnName: String, value: Any?) {
-			val index = columnNames.indexOf(columnName)
-			if (index != -1) {
-				set(index, value)
-			}
-		}
-
-		val cursor = MatrixCursor(columnNames, 1)
-		if (columnNames.isEmpty()) {
-			return cursor
-		}
-		val row = arrayOfNulls<Any>(columnNames.size)
-		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.encodedQuery)
-		if (OpenableColumns.SIZE in columnNames) {
-			openZipEntryStream(uri, signal).use { zipStream ->
-				row.setColumn(OpenableColumns.SIZE, zipStream.size)
-			}
-		}
-		cursor.addRow(row)
-		return cursor
-	}
-
-	override fun query(
-		uri: Uri,
-		projection: Array<out String>?,
-		selection: String?,
-		selectionArgs: Array<out String>?,
-		sortOrder: String?
-	): Cursor {
-		return query(uri, projection, queryArgs = null, signal = null)
-	}
-
-	override fun query(
-		uri: Uri,
-		projection: Array<out String>?,
-		selection: String?,
-		selectionArgs: Array<out String>?,
-		sortOrder: String?,
-		signal: CancellationSignal?
-	): Cursor {
-		return query(uri, projection, queryArgs = null, signal)
 	}
 
 	override fun insert(uri: Uri, values: ContentValues?): Uri? {
