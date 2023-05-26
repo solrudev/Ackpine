@@ -8,7 +8,7 @@ version = publishVersion
 plugins {
 	id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 	id("com.android.library") version "8.0.1" apply false
-	id("org.jetbrains.kotlin.android") version "1.8.20" apply false
+	id("org.jetbrains.kotlin.android") version "1.8.21" apply false
 }
 
 buildscript {
@@ -19,7 +19,7 @@ buildscript {
 	}
 	dependencies {
 		classpath("com.android.tools.build:gradle:$androidGradleVersion")
-		classpath(kotlin("gradle-plugin", "1.8.20"))
+		classpath(kotlin("gradle-plugin", "1.8.21"))
 	}
 }
 
