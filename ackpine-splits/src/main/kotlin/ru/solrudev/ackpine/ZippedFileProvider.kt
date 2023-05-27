@@ -174,7 +174,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	private fun openZipEntryStream(uri: Uri, signal: CancellationSignal?): ZipEntryStream {
 		val zipFileUri = zipFileUri(uri)
-		val file = context?.let(zipFileUri::toFile)
+		val file = context?.let { context -> zipFileUri.toFile(context, signal) }
 		if (file?.canRead() == true) {
 			val zipFile = ZipFile(file)
 			return try {
