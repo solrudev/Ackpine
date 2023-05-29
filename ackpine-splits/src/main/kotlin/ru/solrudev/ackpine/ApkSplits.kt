@@ -1,6 +1,8 @@
 package ru.solrudev.ackpine
 
 import android.content.Context
+import ru.solrudev.ackpine.helpers.deviceLocales
+import kotlin.math.abs
 
 public object ApkSplits {
 
@@ -8,17 +10,23 @@ public object ApkSplits {
 	public fun Sequence<ApkSplit>.filterIncompatible(context: Context): Sequence<ApkSplit> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
-			val libsApks = mutableListOf<ApkSplit.Libs>()
+			val libsSplits = mutableListOf<ApkSplit.Libs>()
+			val densitySplits = mutableListOf<ApkSplit.ScreenDensity>()
+			val localizationSplits = mutableListOf<ApkSplit.Localization>()
 			this@filterIncompatible
-				.onEach { apk ->
-					if (apk is ApkSplit.Libs && apk.isCompatible(applicationContext)) {
-						libsApks += apk
-					}
-				}
-				.filter { apk -> apk !is ApkSplit.Libs && apk.isCompatible(applicationContext) }
+				.addSplitsOfTypeTo(libsSplits, applicationContext)
+				.addSplitsOfTypeTo(densitySplits, applicationContext)
+				.addSplitsOfTypeTo(localizationSplits, applicationContext)
+				.filter { apk -> apk is ApkSplit.Other }
 				.forEach { yield(it) }
-			libsApks.sortBy { apk -> Abi.deviceAbis.indexOf(apk.abi) }
-			libsApks.firstOrNull()?.let { yield(it) }
+			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
+			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
+			libsSplits.sortBy { apk -> Abi.deviceAbis.indexOf(apk.abi) }
+			densitySplits.sortBy { apk -> abs(deviceDensity - apk.dpi.density) }
+			localizationSplits.sortBy { apk -> deviceLanguages.indexOf(apk.locale.language).takeIf { it != -1 } }
+			libsSplits.firstOrNull()?.let { yield(it) }
+			densitySplits.firstOrNull()?.let { yield(it) }
+			localizationSplits.firstOrNull()?.let { yield(it) }
 		}
 	}
 
@@ -30,5 +38,14 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Array<ApkSplit>.filterIncompatible(context: Context): Array<ApkSplit> {
 		return asSequence().filterIncompatible(context).toList().toTypedArray()
+	}
+
+	private inline fun <reified SplitType : ApkSplit> Sequence<ApkSplit>.addSplitsOfTypeTo(
+		splits: MutableList<SplitType>,
+		applicationContext: Context
+	): Sequence<ApkSplit> = onEach { apk ->
+		if (apk is SplitType && apk.isCompatible(applicationContext)) {
+			splits += apk
+		}
 	}
 }

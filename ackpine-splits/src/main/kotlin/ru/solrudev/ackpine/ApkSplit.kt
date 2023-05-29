@@ -3,8 +3,8 @@ package ru.solrudev.ackpine
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
-import androidx.core.os.ConfigurationCompat
 import ru.solrudev.ackpine.Dpi.Companion.dpi
+import ru.solrudev.ackpine.helpers.deviceLocales
 import ru.solrudev.ackpine.helpers.splitTypePart
 import java.io.File
 import java.util.IllformedLocaleException
@@ -53,14 +53,13 @@ public sealed class ApkSplit(
 		override val uri: Uri,
 		override val name: String,
 		public val locale: Locale
-	) : ApkSplit(uri, name, "") {
+	) : ApkSplit(uri, name, description = "") {
 
 		override val description: String
 			get() = locale.displayLanguage
 
 		override fun isCompatible(context: Context): Boolean {
-			val systemLocale = ConfigurationCompat.getLocales(context.resources.configuration)[0] ?: Locale.ENGLISH
-			return locale.language == systemLocale.language
+			return locale.language in deviceLocales(context).map { it.language }
 		}
 	}
 

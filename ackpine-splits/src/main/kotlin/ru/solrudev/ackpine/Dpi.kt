@@ -4,9 +4,15 @@ import android.content.Context
 import android.util.DisplayMetrics
 import ru.solrudev.ackpine.helpers.splitTypePart
 
-public enum class Dpi {
+public enum class Dpi(public val density: Int) {
 
-	LDPI, MDPI, TVDPI, HDPI, XHDPI, XXHDPI, XXXHDPI;
+	LDPI(DisplayMetrics.DENSITY_LOW),
+	MDPI(DisplayMetrics.DENSITY_MEDIUM),
+	TVDPI(DisplayMetrics.DENSITY_TV),
+	HDPI(DisplayMetrics.DENSITY_HIGH),
+	XHDPI(DisplayMetrics.DENSITY_XHIGH),
+	XXHDPI(DisplayMetrics.DENSITY_XXHIGH),
+	XXXHDPI(DisplayMetrics.DENSITY_XXXHIGH);
 
 	public companion object {
 
