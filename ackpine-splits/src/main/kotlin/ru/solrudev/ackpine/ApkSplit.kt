@@ -2,9 +2,9 @@ package ru.solrudev.ackpine
 
 import android.content.Context
 import android.net.Uri
-import android.provider.OpenableColumns
 import ru.solrudev.ackpine.Dpi.Companion.dpi
 import ru.solrudev.ackpine.helpers.deviceLocales
+import ru.solrudev.ackpine.helpers.name
 import ru.solrudev.ackpine.helpers.splitTypePart
 import java.io.File
 import java.util.IllformedLocaleException
@@ -20,7 +20,7 @@ public sealed class ApkSplit(
 	public data class Other(
 		override val uri: Uri,
 		override val name: String
-	) : ApkSplit(uri, name, name) {
+	) : ApkSplit(uri, name, description = name) {
 
 		override fun isCompatible(context: Context): Boolean {
 			return true
@@ -31,7 +31,7 @@ public sealed class ApkSplit(
 		override val uri: Uri,
 		override val name: String,
 		public val abi: Abi
-	) : ApkSplit(uri, name, abi.name.lowercase()) {
+	) : ApkSplit(uri, name, description = abi.name.lowercase()) {
 
 		override fun isCompatible(context: Context): Boolean {
 			return abi in Abi.deviceAbis
@@ -42,7 +42,7 @@ public sealed class ApkSplit(
 		override val uri: Uri,
 		override val name: String,
 		public val dpi: Dpi
-	) : ApkSplit(uri, name, dpi.name.lowercase()) {
+	) : ApkSplit(uri, name, description = dpi.name.lowercase()) {
 
 		override fun isCompatible(context: Context): Boolean {
 			return dpi == context.dpi
@@ -126,19 +126,6 @@ public sealed class ApkSplit(
 
 		private fun Uri.isApk(context: Context): Boolean {
 			return context.contentResolver.getType(this) == "application/vnd.android.package-archive"
-		}
-
-		private fun Uri.name(context: Context): String? {
-			return context.contentResolver.query(
-				this,
-				arrayOf(OpenableColumns.DISPLAY_NAME),
-				null, null, null
-			)?.use { cursor ->
-				if (!cursor.moveToFirst()) {
-					return null
-				}
-				return cursor.getString(0)
-			}
 		}
 	}
 }
