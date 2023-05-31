@@ -1,6 +1,9 @@
 package ru.solrudev.ackpine
 
 import android.content.Context
+import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException
+import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
+import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.helpers.deviceLocales
 import kotlin.math.abs
 
@@ -17,7 +20,7 @@ public object ApkSplits {
 				.addSplitsOfTypeTo(libsSplits, applicationContext)
 				.addSplitsOfTypeTo(densitySplits, applicationContext)
 				.addSplitsOfTypeTo(localizationSplits, applicationContext)
-				.filter { apk -> apk is ApkSplit.Other }
+				.filter { apk -> apk is ApkSplit.Base || apk is ApkSplit.Feature || apk is ApkSplit.Other }
 				.forEach { yield(it) }
 			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
 			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
@@ -31,13 +34,44 @@ public object ApkSplits {
 	}
 
 	@JvmStatic
+	public fun Sequence<ApkSplit>.throwOnConflictingPackageName(): Sequence<ApkSplit> {
+		return throwOnConflictingProperty(
+			exceptionInitializer = { expected, actual -> ConflictingPackageNameException(expected, actual) },
+			selector = { apk -> apk.packageName }
+		)
+	}
+
+	@JvmStatic
+	public fun Sequence<ApkSplit>.throwOnConflictingVersionCode(): Sequence<ApkSplit> {
+		return throwOnConflictingProperty(
+			exceptionInitializer = { expected, actual -> ConflictingVersionCodeException(expected, actual) },
+			selector = { apk -> apk.versionCode }
+		)
+	}
+
+	@JvmStatic
+	public fun Sequence<ApkSplit>.throwOnConflictingPackageNameOrVersionCode(): Sequence<ApkSplit> {
+		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
+	}
+
+	@JvmStatic
 	public fun Iterable<ApkSplit>.filterIncompatible(context: Context): List<ApkSplit> {
 		return asSequence().filterIncompatible(context).toList()
 	}
 
 	@JvmStatic
-	public fun Array<ApkSplit>.filterIncompatible(context: Context): Array<ApkSplit> {
-		return asSequence().filterIncompatible(context).toList().toTypedArray()
+	public fun Iterable<ApkSplit>.throwOnConflictingPackageName(): List<ApkSplit> {
+		return asSequence().throwOnConflictingPackageName().toList()
+	}
+
+	@JvmStatic
+	public fun Iterable<ApkSplit>.throwOnConflictingVersionCode(): List<ApkSplit> {
+		return asSequence().throwOnConflictingVersionCode().toList()
+	}
+
+	@JvmStatic
+	public fun Iterable<ApkSplit>.throwOnConflictingPackageNameOrVersionCode(): List<ApkSplit> {
+		return asSequence().throwOnConflictingPackageNameOrVersionCode().toList()
 	}
 
 	private inline fun <reified SplitType : ApkSplit> Sequence<ApkSplit>.addSplitsOfTypeTo(
@@ -46,6 +80,45 @@ public object ApkSplits {
 	): Sequence<ApkSplit> = onEach { apk ->
 		if (apk is SplitType && apk.isCompatible(applicationContext)) {
 			splits += apk
+		}
+	}
+
+	private inline fun <reified Property> Sequence<ApkSplit>.throwOnConflictingProperty(
+		crossinline exceptionInitializer: (expected: Property, actual: Property) -> Exception,
+		crossinline selector: (ApkSplit) -> Property
+	): Sequence<ApkSplit> {
+		var seenBaseApk = false
+		var baseApkProperty: Property? = null
+		val propertyValues = mutableListOf<Property>()
+		return onEach { apk ->
+			val apkProperty = selector(apk)
+			if (apk is ApkSplit.Base) {
+				if (seenBaseApk) {
+					throw ConflictingBaseApkException()
+				}
+				seenBaseApk = true
+				baseApkProperty = apkProperty
+			}
+			val expectedProperty = baseApkProperty
+			if (expectedProperty != null) {
+				checkApkProperty(expectedProperty, apkProperty, exceptionInitializer)
+				propertyValues.forEach { property ->
+					checkApkProperty(expectedProperty, property, exceptionInitializer)
+				}
+				propertyValues.clear()
+			} else {
+				propertyValues += apkProperty
+			}
+		}
+	}
+
+	private inline fun <Property> checkApkProperty(
+		baseProperty: Property,
+		apkProperty: Property,
+		exceptionInitializer: (expected: Property, actual: Property) -> Exception
+	) {
+		if (baseProperty != apkProperty) {
+			throw exceptionInitializer(baseProperty, apkProperty)
 		}
 	}
 }

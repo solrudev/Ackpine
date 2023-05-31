@@ -15,7 +15,11 @@ public object ZippedApkSplits {
 		ZipFile(file).use { zipFile ->
 			zipFile.entries()
 				.asSequence()
-				.mapNotNull { zipEntry -> ApkSplit.fromZipEntry(file.absolutePath, zipEntry) }
+				.mapNotNull { zipEntry ->
+					zipFile.getInputStream(zipEntry).use { entryStream ->
+						ApkSplit.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+					}
+				}
 				.forEach { yield(it) }
 		}
 	}
@@ -31,7 +35,7 @@ public object ZippedApkSplits {
 			}
 			ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
 				zipStream.entries()
-					.mapNotNull { zipEntry -> ApkSplit.fromZipEntry(uri.toString(), zipEntry) }
+					.mapNotNull { zipEntry -> ApkSplit.fromZipEntry(uri.toString(), zipEntry, zipStream) }
 					.forEach { yield(it) }
 			}
 		}

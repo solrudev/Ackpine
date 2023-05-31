@@ -7,6 +7,7 @@ import android.os.CancellationSignal
 import android.os.Process
 import android.provider.OpenableColumns
 import java.io.File
+import java.io.FileNotFoundException
 
 @JvmSynthetic
 internal fun String.toUri(): Uri = Uri.parse(this)
@@ -16,25 +17,31 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): F
 	if (scheme == ContentResolver.SCHEME_FILE) {
 		return File(requireNotNull(path) { "Uri path is null: $this" })
 	}
-	context.contentResolver.openFileDescriptor(this, "r", signal).use { fileDescriptor ->
-		if (fileDescriptor == null) {
-			throw NullPointerException("ParcelFileDescriptor was null: $this")
+	try {
+		context.contentResolver.openFileDescriptor(this, "r", signal).use { fileDescriptor ->
+			if (fileDescriptor == null) {
+				throw NullPointerException("ParcelFileDescriptor was null: $this")
+			}
+			val path = "/proc/${Process.myPid()}/fd/${fileDescriptor.fd}"
+			val canonicalPath = File(path).canonicalPath.replace("mnt/media_rw", "storage")
+			return File(canonicalPath)
 		}
-		val path = "/proc/${Process.myPid()}/fd/${fileDescriptor.fd}"
-		val canonicalPath = File(path).canonicalPath.replace("mnt/media_rw", "storage")
-		return File(canonicalPath)
+	} catch (_: FileNotFoundException) {
+		return File("")
 	}
 }
 
 @JvmSynthetic
-internal fun Uri.name(context: Context): String? {
-	context.contentResolver.query(this, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null).use { cursor ->
-		if (cursor == null) {
-			return null
-		}
+internal fun Uri.displayNameAndSize(context: Context): Pair<String, Long> {
+	context.contentResolver.query(
+		this,
+		arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE),
+		null, null, null
+	).use { cursor ->
+		cursor ?: return "" to -1L
 		if (!cursor.moveToFirst()) {
-			return null
+			return "" to -1L
 		}
-		return cursor.getString(0)
+		return cursor.getString(0).orEmpty() to cursor.getLong(1)
 	}
 }

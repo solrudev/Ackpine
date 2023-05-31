@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 val publishGroupId: String by rootProject.extra
 val publishVersion: String by rootProject.extra
+val androidGradleVersion: String by rootProject.extra
 val publishArtifactId = "ackpine-splits"
 
 plugins {
@@ -55,6 +56,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 
 dependencies {
 	implementation("androidx.core:core:1.10.1")
+	implementation("com.android.tools.build:apksig:$androidGradleVersion")
 }
 
 signing {
