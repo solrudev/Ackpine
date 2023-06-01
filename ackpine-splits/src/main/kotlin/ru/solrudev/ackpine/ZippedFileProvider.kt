@@ -264,6 +264,10 @@ public class ZippedFileProvider : ContentProvider() {
 			return uri.authority == authority && uri.encodedPath != null && uri.encodedQuery != null
 		}
 
+		/**
+		 * @param zipPath string representation of [Uri] or path to the ZIP file containing [zip entry][zipEntryName].
+		 * @param zipEntryName name of the ZIP entry inside of the ZIP archive.
+		 */
 		@JvmStatic
 		public fun getUriForZipEntry(zipPath: String, zipEntryName: String): Uri {
 			return Uri.Builder()
