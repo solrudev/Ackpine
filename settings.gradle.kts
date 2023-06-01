@@ -3,6 +3,7 @@ include(":ackpine-core")
 include(":ackpine-ktx")
 include(":ackpine-coroutines")
 include(":ackpine-splits")
+include(":ackpine-assets")
 include(":sample")
 
 pluginManagement {
