@@ -36,16 +36,16 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Sequence<ApkSplit>.throwOnConflictingPackageName(): Sequence<ApkSplit> {
 		return throwOnConflictingProperty(
-			exceptionInitializer = { expected, actual -> ConflictingPackageNameException(expected, actual) },
-			selector = { apk -> apk.packageName }
+			exceptionInitializer = ::ConflictingPackageNameException,
+			propertySelector = { apk -> apk.packageName }
 		)
 	}
 
 	@JvmStatic
 	public fun Sequence<ApkSplit>.throwOnConflictingVersionCode(): Sequence<ApkSplit> {
 		return throwOnConflictingProperty(
-			exceptionInitializer = { expected, actual -> ConflictingVersionCodeException(expected, actual) },
-			selector = { apk -> apk.versionCode }
+			exceptionInitializer = ::ConflictingVersionCodeException,
+			propertySelector = { apk -> apk.versionCode }
 		)
 	}
 
@@ -84,14 +84,14 @@ public object ApkSplits {
 	}
 
 	private inline fun <reified Property> Sequence<ApkSplit>.throwOnConflictingProperty(
-		crossinline exceptionInitializer: (expected: Property, actual: Property) -> Exception,
-		crossinline selector: (ApkSplit) -> Property
+		crossinline exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
+		crossinline propertySelector: (ApkSplit) -> Property
 	): Sequence<ApkSplit> {
 		var seenBaseApk = false
 		var baseApkProperty: Property? = null
 		val propertyValues = mutableListOf<Property>()
 		return onEach { apk ->
-			val apkProperty = selector(apk)
+			val apkProperty = propertySelector(apk)
 			if (apk is ApkSplit.Base) {
 				if (seenBaseApk) {
 					throw ConflictingBaseApkException()
@@ -101,9 +101,9 @@ public object ApkSplits {
 			}
 			val expectedProperty = baseApkProperty
 			if (expectedProperty != null) {
-				checkApkProperty(expectedProperty, apkProperty, exceptionInitializer)
+				checkApkProperty(expectedProperty, apkProperty, apk.name, exceptionInitializer)
 				propertyValues.forEach { property ->
-					checkApkProperty(expectedProperty, property, exceptionInitializer)
+					checkApkProperty(expectedProperty, property, apk.name, exceptionInitializer)
 				}
 				propertyValues.clear()
 			} else {
@@ -115,10 +115,11 @@ public object ApkSplits {
 	private inline fun <Property> checkApkProperty(
 		baseProperty: Property,
 		apkProperty: Property,
-		exceptionInitializer: (expected: Property, actual: Property) -> Exception
+		name: String,
+		exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception
 	) {
 		if (baseProperty != apkProperty) {
-			throw exceptionInitializer(baseProperty, apkProperty)
+			throw exceptionInitializer(baseProperty, apkProperty, name)
 		}
 	}
 }
