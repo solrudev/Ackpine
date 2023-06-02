@@ -1,6 +1,6 @@
 package ru.solrudev.ackpine.exceptions
 
-public open class SplitPackageException(message: String) : Exception(message)
+public sealed class SplitPackageException(message: String) : Exception(message)
 
 public class ConflictingBaseApkException : SplitPackageException("More than one base APK found")
 
