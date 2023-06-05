@@ -8,6 +8,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.library"
 			implementationClass = "ru.solrudev.ackpine.gradle.AckpineLibraryPlugin"
 		}
+		register("ackpine-artifact") {
+			id = "ru.solrudev.ackpine.artifact"
+			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpineArtifactPlugin"
+		}
 		register("ackpine-publishing") {
 			id = "ru.solrudev.ackpine.publishing"
 			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin"
