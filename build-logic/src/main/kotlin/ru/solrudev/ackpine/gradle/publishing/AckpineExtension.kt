@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.gradle
+package ru.solrudev.ackpine.gradle.publishing
 
 interface AckpineExtension {
 	var moduleName: String

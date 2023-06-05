@@ -7,7 +7,6 @@ import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
 import org.gradle.plugins.signing.SigningExtension
-import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.Constants
 
 class AckpineArtifactPlugin : Plugin<Project> {
