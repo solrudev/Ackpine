@@ -9,6 +9,9 @@ import kotlin.math.abs
 
 public object ApkSplits {
 
+	/**
+	 * The operation is _intermediate_ and _stateful_.
+	 */
 	@JvmStatic
 	public fun Sequence<ApkSplit>.filterIncompatible(context: Context): Sequence<ApkSplit> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
@@ -33,6 +36,9 @@ public object ApkSplits {
 		}
 	}
 
+	/**
+	 * The operation is _intermediate_ and _stateful_.
+	 */
 	@JvmStatic
 	public fun Sequence<ApkSplit>.throwOnConflictingPackageName(): Sequence<ApkSplit> {
 		return throwOnConflictingProperty(
@@ -41,6 +47,9 @@ public object ApkSplits {
 		)
 	}
 
+	/**
+	 * The operation is _intermediate_ and _stateful_.
+	 */
 	@JvmStatic
 	public fun Sequence<ApkSplit>.throwOnConflictingVersionCode(): Sequence<ApkSplit> {
 		return throwOnConflictingProperty(
@@ -49,6 +58,12 @@ public object ApkSplits {
 		)
 	}
 
+	/**
+	 * Shortcut for
+	 * [throwOnConflictingPackageName()][throwOnConflictingPackageName]`.`[throwOnConflictingVersionCode()][throwOnConflictingVersionCode].
+	 *
+	 * The operation is _intermediate_ and _stateful_.
+	 */
 	@JvmStatic
 	public fun Sequence<ApkSplit>.throwOnConflictingPackageNameOrVersionCode(): Sequence<ApkSplit> {
 		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
@@ -83,6 +98,9 @@ public object ApkSplits {
 		}
 	}
 
+	/**
+	 * The operation is _intermediate_ and _stateful_.
+	 */
 	private inline fun <reified Property> Sequence<ApkSplit>.throwOnConflictingProperty(
 		crossinline exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
 		crossinline propertySelector: (ApkSplit) -> Property

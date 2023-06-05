@@ -10,6 +10,9 @@ import java.util.zip.ZipInputStream
 
 public object ZippedApkSplits {
 
+	/**
+	 * The returned sequence is constrained to be iterated only once.
+	 */
 	@JvmStatic
 	public fun getApksForFile(file: File): Sequence<ApkSplit> = sequence {
 		ZipFile(file).use { zipFile ->
@@ -24,6 +27,9 @@ public object ZippedApkSplits {
 		}
 	}
 
+	/**
+	 * The returned sequence is constrained to be iterated only once.
+	 */
 	@JvmStatic
 	public fun getApksForUri(context: Context, uri: Uri): Sequence<ApkSplit> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
