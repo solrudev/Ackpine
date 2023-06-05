@@ -51,5 +51,4 @@ dependencies {
 	implementation("androidx.activity:activity-ktx:1.7.2")
 	implementation("com.google.android.material:material:1.9.0")
 	implementation(project(":ackpine-ktx"))
-	implementation(project(":ackpine-coroutines"))
 }
