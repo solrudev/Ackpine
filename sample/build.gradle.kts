@@ -1,12 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-val androidGradleVersion: String by rootProject.extra
 val packageName = "ru.solrudev.ackpine.sample"
 
 plugins {
 	id("com.android.application")
 	kotlin("android")
-	kotlin("kapt")
 }
 
 kotlin {
@@ -39,7 +37,6 @@ android {
 	}
 
 	buildFeatures {
-		dataBinding = true
 		viewBinding = true
 	}
 }
@@ -51,8 +48,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 }
 
 dependencies {
-	kapt("androidx.databinding:databinding-compiler:$androidGradleVersion")
-	implementation("androidx.activity:activity-ktx:1.7.1")
+	implementation("androidx.activity:activity-ktx:1.7.2")
 	implementation("com.google.android.material:material:1.9.0")
 	implementation(project(":ackpine-ktx"))
 	implementation(project(":ackpine-coroutines"))

@@ -1,0 +1,6 @@
+[libraries]
+annotation = { module = "androidx.annotation:annotation", version = "1.6.0" }
+appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
+core = { module = "androidx.core:core", version = "1.10.1" }
+lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.6.1" }
+startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
