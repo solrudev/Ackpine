@@ -7,6 +7,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
@@ -17,6 +18,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
+		val ackpineExtension = extensions.create<AckpineExtension>("ackpine")
+		afterEvaluate {
+			description = ackpineExtension.moduleDescription
+		}
 		group = rootProject.group
 		version = rootProject.version
 		pluginManager.run {

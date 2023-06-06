@@ -6,20 +6,22 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
+import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.Constants
 
 class AckpineArtifactPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
-		val ackpineExtension = extensions.create<AckpineExtension>("ackpine")
 		if (rootProject.pluginManager.hasPlugin("${Constants.packageName}.publishing")) {
-			configurePublishing(ackpineExtension)
+			configurePublishing()
 			configureSigning()
 		}
 	}
 
-	private fun Project.configurePublishing(ackpineExtension: AckpineExtension) = afterEvaluate {
+	private fun Project.configurePublishing() = afterEvaluate {
+		val ackpineExtension = extensions.getByType<AckpineExtension>()
 		val artifactName = ackpineExtension.moduleName
 		val artifactDescription = ackpineExtension.moduleDescription
 		extensions.configure<PublishingExtension>("publishing") {

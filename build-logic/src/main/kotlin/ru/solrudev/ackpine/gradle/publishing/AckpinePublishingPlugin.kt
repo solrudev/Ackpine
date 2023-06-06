@@ -15,9 +15,7 @@ class AckpinePublishingPlugin : Plugin<Project> {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.packageName
 		version = versionFromPropertiesFile()
-		pluginManager.run {
-			apply(NexusPublishPlugin::class)
-		}
+		pluginManager.apply(NexusPublishPlugin::class)
 		val publishingProperties = publishingFromPropertiesFile()
 		val ossrhUsername = System.getenv("OSSRH_USERNAME")
 			?: publishingProperties["ossrhUsername"]

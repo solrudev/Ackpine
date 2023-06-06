@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.gradle.publishing
+package ru.solrudev.ackpine.gradle
 
 open class AckpineExtension {
 	var moduleName: String = ""
