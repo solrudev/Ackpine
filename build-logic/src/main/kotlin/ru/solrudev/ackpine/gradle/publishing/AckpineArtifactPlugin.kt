@@ -14,15 +14,14 @@ class AckpineArtifactPlugin : Plugin<Project> {
 	override fun apply(target: Project) = target.run {
 		val ackpineExtension = extensions.create<AckpineExtension>("ackpine")
 		if (rootProject.pluginManager.hasPlugin("${Constants.packageName}.publishing")) {
-			configurePublishing(
-				artifactName = ackpineExtension.moduleName,
-				artifactDescription = ackpineExtension.moduleDescription
-			)
+			configurePublishing(ackpineExtension)
 			configureSigning()
 		}
 	}
 
-	private fun Project.configurePublishing(artifactName: String, artifactDescription: String) = afterEvaluate {
+	private fun Project.configurePublishing(ackpineExtension: AckpineExtension) = afterEvaluate {
+		val artifactName = ackpineExtension.moduleName
+		val artifactDescription = ackpineExtension.moduleDescription
 		extensions.configure<PublishingExtension>("publishing") {
 			publications {
 				create<MavenPublication>("release") {
