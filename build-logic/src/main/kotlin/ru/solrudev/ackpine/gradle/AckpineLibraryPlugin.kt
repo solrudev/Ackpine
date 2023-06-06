@@ -17,6 +17,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
+		group = rootProject.group
 		version = rootProject.version
 		pluginManager.run {
 			apply(LibraryPlugin::class)
