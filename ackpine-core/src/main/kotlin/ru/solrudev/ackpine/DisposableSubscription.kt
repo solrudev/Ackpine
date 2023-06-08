@@ -23,10 +23,14 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 		}
 	}
 
+	public fun clear() {
+		subscriptions.forEach { it.dispose() }
+		subscriptions.clear()
+	}
+
 	public override fun dispose() {
 		if (!isDisposed) {
-			subscriptions.forEach { it.dispose() }
-			subscriptions.clear()
+			clear()
 			isDisposed = true
 		}
 	}
