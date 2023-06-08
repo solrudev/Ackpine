@@ -7,8 +7,8 @@ import androidx.annotation.RequiresApi
 /**
  * Creates an install session.
  *
- * Split packages are not supported on Android versions lower than Lollipop (5.0).
- * Attempting to add additional APKs on these versions will produce [SplitPackagesNotSupportedException].
+ * Split packages are not supported on API levels < 21.
+ * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
  *
  * @see PackageInstaller.createSession
  * @param baseApk [URI][Uri] of base APK.
@@ -25,8 +25,8 @@ public inline fun PackageInstaller.createSession(
 /**
  * Creates an install session.
  *
- * Split packages are not supported on Android versions lower than Lollipop (5.0).
- * Attempting to add additional APKs on these versions will produce [SplitPackagesNotSupportedException].
+ * Split packages are not supported on API levels < 21.
+ * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
  *
  * @see PackageInstaller.createSession
  * @param apks [URIs][Uri] of split APKs.
