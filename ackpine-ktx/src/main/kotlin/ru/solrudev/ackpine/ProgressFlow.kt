@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.emptyFlow
 import java.util.UUID
 
-public fun PackageInstaller.progressOf(sessionId: UUID): Flow<Progress> {
+public fun PackageInstaller.getProgressFlow(sessionId: UUID): Flow<Progress> {
 	val session = getSession(sessionId) ?: return emptyFlow()
 	return callbackFlow {
 		val subscriptionContainer = DisposableSubscriptionContainer()
