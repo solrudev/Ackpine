@@ -7,9 +7,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
-import ru.solrudev.ackpine.session.parameters.ConfirmationExtension
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 
 /**
  * Parameters for creating install session.
@@ -72,8 +70,7 @@ public class InstallParameters private constructor(
 	/**
 	 * Builder for [InstallParameters].
 	 */
-	@SessionParametersDsl
-	public class Builder : ConfirmationExtension {
+	public class Builder : ConfirmationAware {
 
 		@SuppressLint("NewApi")
 		public constructor(baseApk: Uri) {
@@ -88,9 +85,7 @@ public class InstallParameters private constructor(
 		/**
 		 * Mutable list of APKs [URIs][Uri] to install in one session.
 		 */
-		@get:JvmSynthetic
-		@get:JvmName("getMutableApks")
-		public val apks: MutableApkList
+		private val apks: MutableApkList
 
 		/**
 		 * Type of the package installer implementation.
@@ -103,13 +98,12 @@ public class InstallParameters private constructor(
 		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
 		 * returned/set regardless of the current/provided value.
 		 */
-		@set:JvmSynthetic
 		public var installerType: InstallerType = InstallerType.DEFAULT
 			get() {
 				field = applyInstallerTypeInvariants(field)
 				return field
 			}
-			set(value) {
+			private set(value) {
 				field = applyInstallerTypeInvariants(value)
 			}
 
@@ -118,8 +112,8 @@ public class InstallParameters private constructor(
 		 *
 		 * Default strategy is [Confirmation.DEFERRED].
 		 */
-		@set:JvmSynthetic
 		public override var confirmation: Confirmation = Confirmation.DEFERRED
+			private set
 
 		/**
 		 * Data for a high-priority notification which launches confirmation activity.
@@ -128,8 +122,8 @@ public class InstallParameters private constructor(
 		 *
 		 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 		 */
-		@set:JvmSynthetic
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
+			private set
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.

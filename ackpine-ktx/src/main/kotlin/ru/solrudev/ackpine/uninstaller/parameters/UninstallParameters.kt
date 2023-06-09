@@ -5,7 +5,7 @@ package ru.solrudev.ackpine.uninstaller.parameters
  */
 public inline fun UninstallParameters(
 	packageName: String,
-	initializer: UninstallParameters.Builder.() -> Unit
+	configure: UninstallParametersDsl.() -> Unit
 ): UninstallParameters {
-	return UninstallParameters.Builder(packageName).apply(initializer).build()
+	return UninstallParametersDslBuilder(packageName).apply(configure).build()
 }

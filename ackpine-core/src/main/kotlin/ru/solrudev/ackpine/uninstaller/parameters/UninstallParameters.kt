@@ -2,9 +2,7 @@ package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
-import ru.solrudev.ackpine.session.parameters.ConfirmationExtension
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 
 /**
  * Parameters for creating uninstall session.
@@ -58,22 +56,21 @@ public class UninstallParameters private constructor(
 	/**
 	 * Builder for [UninstallParameters].
 	 */
-	@SessionParametersDsl
-	public class Builder(
+	public class Builder(packageName: String) : ConfirmationAware {
+
 		/**
 		 * Name of the package to be uninstalled.
 		 */
-		@set:JvmSynthetic
-		public var packageName: String
-	) : ConfirmationExtension {
+		public var packageName: String = packageName
+			private set
 
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
 		 *
 		 * Default strategy is [Confirmation.DEFERRED].
 		 */
-		@set:JvmSynthetic
 		public override var confirmation: Confirmation = Confirmation.DEFERRED
+			private set
 
 		/**
 		 * Data for a high-priority notification which launches confirmation activity.
@@ -82,8 +79,8 @@ public class UninstallParameters private constructor(
 		 *
 		 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 		 */
-		@set:JvmSynthetic
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
+			private set
 
 		/**
 		 * Sets [UninstallParameters.packageName].

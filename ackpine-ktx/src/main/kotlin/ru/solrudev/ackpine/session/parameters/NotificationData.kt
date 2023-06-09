@@ -3,6 +3,6 @@ package ru.solrudev.ackpine.session.parameters
 /**
  * Constructs a new instance of [NotificationData].
  */
-public inline fun NotificationData(initializer: NotificationData.Builder.() -> Unit): NotificationData {
-	return NotificationData.Builder().apply(initializer).build()
+public inline fun NotificationData(configure: NotificationDataDsl.() -> Unit): NotificationData {
+	return NotificationDataDslBuilder().apply(configure).build()
 }

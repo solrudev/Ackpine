@@ -9,9 +9,9 @@ import androidx.annotation.RequiresApi
  */
 public inline fun InstallParameters(
 	baseApk: Uri,
-	initializer: InstallParameters.Builder.() -> Unit
+	configure: InstallParametersDsl.() -> Unit
 ): InstallParameters {
-	return InstallParameters.Builder(baseApk).apply(initializer).build()
+	return InstallParametersDslBuilder(baseApk).apply(configure).build()
 }
 
 /**
@@ -20,7 +20,7 @@ public inline fun InstallParameters(
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public inline fun InstallParameters(
 	apks: Iterable<Uri>,
-	initializer: InstallParameters.Builder.() -> Unit
+	configure: InstallParametersDsl.() -> Unit
 ): InstallParameters {
-	return InstallParameters.Builder(apks).apply(initializer).build()
+	return InstallParametersDslBuilder(apks).apply(configure).build()
 }

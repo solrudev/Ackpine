@@ -69,7 +69,6 @@ public class NotificationData private constructor(
 	/**
 	 * Builder for [NotificationData].
 	 */
-	@SessionParametersDsl
 	public class Builder {
 
 		/**
@@ -77,25 +76,25 @@ public class NotificationData private constructor(
 		 *
 		 * Default value is [android.R.drawable.ic_dialog_alert].
 		 */
-		@set:JvmSynthetic
 		@DrawableRes
 		public var icon: Int = DEFAULT.icon
+			private set
 
 		/**
 		 * Notification title.
 		 *
 		 * Empty by default. If empty, default title is used when notification is displayed.
 		 */
-		@set:JvmSynthetic
 		public var title: NotificationString = DEFAULT.title
+			private set
 
 		/**
 		 * Notification text.
 		 *
 		 * Empty by default. If empty, default text is used when notification is displayed.
 		 */
-		@set:JvmSynthetic
 		public var contentText: NotificationString = DEFAULT.contentText
+			private set
 
 		/**
 		 * Sets [NotificationData.icon].
