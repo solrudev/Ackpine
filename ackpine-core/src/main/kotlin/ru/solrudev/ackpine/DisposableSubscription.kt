@@ -35,7 +35,3 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 		}
 	}
 }
-
-public operator fun DisposableSubscriptionContainer.plusAssign(subscription: DisposableSubscription) {
-	add(subscription)
-}
