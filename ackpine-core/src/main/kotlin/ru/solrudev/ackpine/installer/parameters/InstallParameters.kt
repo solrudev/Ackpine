@@ -74,18 +74,24 @@ public class InstallParameters private constructor(
 
 		@SuppressLint("NewApi")
 		public constructor(baseApk: Uri) {
-			this.apks = RealMutableApkList(baseApk)
+			_apks = RealMutableApkList(baseApk)
 		}
 
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 		public constructor(apks: Iterable<Uri>) {
-			this.apks = RealMutableApkList(apks)
+			_apks = RealMutableApkList(apks)
 		}
 
 		/**
 		 * Mutable list of APKs [URIs][Uri] to install in one session.
 		 */
-		private val apks: MutableApkList
+		private val _apks: MutableApkList
+
+		/**
+		 * List of APKs [URIs][Uri] to install in one session.
+		 */
+		public val apks: ApkList
+			get() = _apks
 
 		/**
 		 * Type of the package installer implementation.
@@ -126,16 +132,11 @@ public class InstallParameters private constructor(
 			private set
 
 		/**
-		 * List of APKs [URIs][Uri] to install in one session.
-		 */
-		public fun getApks(): ApkList = apks
-
-		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 		public fun addApk(apk: Uri): Builder = apply {
-			this.apks.add(apk)
+			_apks.add(apk)
 		}
 
 		/**
@@ -143,7 +144,7 @@ public class InstallParameters private constructor(
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 		public fun addApks(apks: Iterable<Uri>): Builder = apply {
-			this.apks.addAll(apks)
+			_apks.addAll(apks)
 		}
 
 		/**

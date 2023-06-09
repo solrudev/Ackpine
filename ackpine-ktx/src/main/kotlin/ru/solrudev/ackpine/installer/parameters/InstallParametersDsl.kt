@@ -48,7 +48,7 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 	private val builder: InstallParameters.Builder
 
 	override val apks: MutableApkList
-		get() = builder.getApks() as MutableApkList
+		get() = builder.apks as MutableApkList
 
 	override var installerType: InstallerType
 		get() = builder.installerType
