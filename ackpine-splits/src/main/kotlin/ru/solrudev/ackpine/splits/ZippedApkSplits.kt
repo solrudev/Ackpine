@@ -14,13 +14,13 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForFile(file: File): Sequence<ApkSplit> = sequence {
+	public fun getApksForFile(file: File): Sequence<Apk> = sequence {
 		ZipFile(file).use { zipFile ->
 			zipFile.entries()
 				.asSequence()
 				.mapNotNull { zipEntry ->
 					zipFile.getInputStream(zipEntry).use { entryStream ->
-						ApkSplit.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+						Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
 					}
 				}
 				.forEach { yield(it) }
@@ -31,7 +31,7 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForUri(context: Context, uri: Uri): Sequence<ApkSplit> {
+	public fun getApksForUri(context: Context, uri: Uri): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
 			val file = uri.toFile(applicationContext)
@@ -41,7 +41,7 @@ public object ZippedApkSplits {
 			}
 			ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
 				zipStream.entries()
-					.mapNotNull { zipEntry -> ApkSplit.fromZipEntry(uri.toString(), zipEntry, zipStream) }
+					.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
 					.forEach { yield(it) }
 			}
 		}

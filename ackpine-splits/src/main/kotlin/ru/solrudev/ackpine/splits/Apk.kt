@@ -19,7 +19,7 @@ import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-public sealed class ApkSplit(
+public sealed class Apk(
 	public open val uri: Uri,
 	public open val name: String,
 	public open val size: Long,
@@ -35,7 +35,7 @@ public sealed class ApkSplit(
 		override val packageName: String,
 		override val versionCode: Long,
 		public val versionName: String
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = name) {
+	) : Apk(uri, name, size, packageName, versionCode, description = name) {
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
@@ -45,7 +45,7 @@ public sealed class ApkSplit(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = name) {
+	) : Apk(uri, name, size, packageName, versionCode, description = name) {
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
@@ -56,7 +56,7 @@ public sealed class ApkSplit(
 		override val packageName: String,
 		override val versionCode: Long,
 		public val abi: Abi
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = abi.name.lowercase()) {
+	) : Apk(uri, name, size, packageName, versionCode, description = abi.name.lowercase()) {
 		override fun isCompatible(context: Context): Boolean = abi in Abi.deviceAbis
 	}
 
@@ -67,7 +67,7 @@ public sealed class ApkSplit(
 		override val packageName: String,
 		override val versionCode: Long,
 		public val dpi: Dpi
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()) {
+	) : Apk(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()) {
 		override fun isCompatible(context: Context): Boolean = dpi == context.dpi
 	}
 
@@ -78,7 +78,7 @@ public sealed class ApkSplit(
 		override val packageName: String,
 		override val versionCode: Long,
 		public val locale: Locale
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = "") {
+	) : Apk(uri, name, size, packageName, versionCode, description = "") {
 
 		override val description: String
 			get() = locale.displayLanguage
@@ -94,7 +94,7 @@ public sealed class ApkSplit(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long
-	) : ApkSplit(uri, name, size, packageName, versionCode, description = name) {
+	) : Apk(uri, name, size, packageName, versionCode, description = name) {
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
@@ -103,7 +103,7 @@ public sealed class ApkSplit(
 	public companion object {
 
 		@JvmStatic
-		public fun fromFile(file: File): ApkSplit? {
+		public fun fromFile(file: File): Apk? {
 			if (!file.isApk) {
 				return null
 			}
@@ -114,7 +114,7 @@ public sealed class ApkSplit(
 		}
 
 		@JvmStatic
-		public fun fromUri(context: Context, uri: Uri): ApkSplit? {
+		public fun fromUri(context: Context, uri: Uri): Apk? {
 			val file = uri.toFile(context)
 			if (file.canRead()) {
 				return fromFile(file)
@@ -131,7 +131,7 @@ public sealed class ApkSplit(
 		}
 
 		@JvmSynthetic
-		internal fun fromZipEntry(zipPath: String, zipEntry: ZipEntry, inputStream: InputStream): ApkSplit? {
+		internal fun fromZipEntry(zipPath: String, zipEntry: ZipEntry, inputStream: InputStream): Apk? {
 			if (!zipEntry.isApk) {
 				return null
 			}
@@ -140,7 +140,7 @@ public sealed class ApkSplit(
 			return createApkSplit(inputStream, name, uri, zipEntry.size)
 		}
 
-		private fun createApkSplit(inputStream: InputStream, name: String, uri: Uri, size: Long): ApkSplit? {
+		private fun createApkSplit(inputStream: InputStream, name: String, uri: Uri, size: Long): Apk? {
 			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() } ?: return null
 			val manifest = parseAndroidManifest(androidManifest) ?: return null
 			return when {
@@ -160,7 +160,7 @@ public sealed class ApkSplit(
 			}
 		}
 
-		private fun configApkSplit(manifest: AndroidManifest, uri: Uri, size: Long): ApkSplit {
+		private fun configApkSplit(manifest: AndroidManifest, uri: Uri, size: Long): Apk {
 			val splitName = manifest.splitName
 			val dpi = Dpi.fromSplitName(splitName)
 			val abi = Abi.fromSplitName(splitName)

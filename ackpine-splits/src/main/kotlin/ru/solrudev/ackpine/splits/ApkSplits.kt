@@ -13,17 +13,17 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<ApkSplit>.filterIncompatible(context: Context): Sequence<ApkSplit> {
+	public fun Sequence<Apk>.filterIncompatible(context: Context): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
-			val libsSplits = mutableListOf<ApkSplit.Libs>()
-			val densitySplits = mutableListOf<ApkSplit.ScreenDensity>()
-			val localizationSplits = mutableListOf<ApkSplit.Localization>()
+			val libsSplits = mutableListOf<Apk.Libs>()
+			val densitySplits = mutableListOf<Apk.ScreenDensity>()
+			val localizationSplits = mutableListOf<Apk.Localization>()
 			this@filterIncompatible
 				.addSplitsOfTypeTo(libsSplits, applicationContext)
 				.addSplitsOfTypeTo(densitySplits, applicationContext)
 				.addSplitsOfTypeTo(localizationSplits, applicationContext)
-				.filter { apk -> apk is ApkSplit.Base || apk is ApkSplit.Feature || apk is ApkSplit.Other }
+				.filter { apk -> apk is Apk.Base || apk is Apk.Feature || apk is Apk.Other }
 				.forEach { yield(it) }
 			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
 			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
@@ -40,7 +40,7 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<ApkSplit>.throwOnConflictingPackageName(): Sequence<ApkSplit> {
+	public fun Sequence<Apk>.throwOnConflictingPackageName(): Sequence<Apk> {
 		return throwOnConflictingProperty(
 			exceptionInitializer = ::ConflictingPackageNameException,
 			propertySelector = { apk -> apk.packageName }
@@ -51,7 +51,7 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<ApkSplit>.throwOnConflictingVersionCode(): Sequence<ApkSplit> {
+	public fun Sequence<Apk>.throwOnConflictingVersionCode(): Sequence<Apk> {
 		return throwOnConflictingProperty(
 			exceptionInitializer = ::ConflictingVersionCodeException,
 			propertySelector = { apk -> apk.versionCode }
@@ -65,34 +65,34 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<ApkSplit>.throwOnConflictingPackageNameOrVersionCode(): Sequence<ApkSplit> {
+	public fun Sequence<Apk>.throwOnConflictingPackageNameOrVersionCode(): Sequence<Apk> {
 		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
 	}
 
 	@JvmStatic
-	public fun Iterable<ApkSplit>.filterIncompatible(context: Context): List<ApkSplit> {
+	public fun Iterable<Apk>.filterIncompatible(context: Context): List<Apk> {
 		return asSequence().filterIncompatible(context).toList()
 	}
 
 	@JvmStatic
-	public fun Iterable<ApkSplit>.throwOnConflictingPackageName(): List<ApkSplit> {
+	public fun Iterable<Apk>.throwOnConflictingPackageName(): List<Apk> {
 		return asSequence().throwOnConflictingPackageName().toList()
 	}
 
 	@JvmStatic
-	public fun Iterable<ApkSplit>.throwOnConflictingVersionCode(): List<ApkSplit> {
+	public fun Iterable<Apk>.throwOnConflictingVersionCode(): List<Apk> {
 		return asSequence().throwOnConflictingVersionCode().toList()
 	}
 
 	@JvmStatic
-	public fun Iterable<ApkSplit>.throwOnConflictingPackageNameOrVersionCode(): List<ApkSplit> {
+	public fun Iterable<Apk>.throwOnConflictingPackageNameOrVersionCode(): List<Apk> {
 		return asSequence().throwOnConflictingPackageNameOrVersionCode().toList()
 	}
 
-	private inline fun <reified SplitType : ApkSplit> Sequence<ApkSplit>.addSplitsOfTypeTo(
+	private inline fun <reified SplitType : Apk> Sequence<Apk>.addSplitsOfTypeTo(
 		splits: MutableList<SplitType>,
 		applicationContext: Context
-	): Sequence<ApkSplit> = onEach { apk ->
+	): Sequence<Apk> = onEach { apk ->
 		if (apk is SplitType && apk.isCompatible(applicationContext)) {
 			splits += apk
 		}
@@ -101,16 +101,16 @@ public object ApkSplits {
 	/**
 	 * The operation is _intermediate_ and _stateful_.
 	 */
-	private inline fun <reified Property> Sequence<ApkSplit>.throwOnConflictingProperty(
+	private inline fun <reified Property> Sequence<Apk>.throwOnConflictingProperty(
 		crossinline exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-		crossinline propertySelector: (ApkSplit) -> Property
-	): Sequence<ApkSplit> {
+		crossinline propertySelector: (Apk) -> Property
+	): Sequence<Apk> {
 		var seenBaseApk = false
 		var baseApkProperty: Property? = null
 		val propertyValues = mutableListOf<Property>()
 		return onEach { apk ->
 			val apkProperty = propertySelector(apk)
-			if (apk is ApkSplit.Base) {
+			if (apk is Apk.Base) {
 				if (seenBaseApk) {
 					throw ConflictingBaseApkException()
 				}
