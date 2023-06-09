@@ -30,7 +30,7 @@ public class NotificationData private constructor(
 ) {
 
 	override fun toString(): String {
-		return "NotificationData(title=$title, contentText=$contentText, icon=$icon)"
+		return "NotificationData(icon=$icon, title=$title, contentText=$contentText)"
 	}
 
 	override fun equals(other: Any?): Boolean {
