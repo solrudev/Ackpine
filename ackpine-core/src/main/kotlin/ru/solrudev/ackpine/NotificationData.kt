@@ -69,7 +69,7 @@ public class NotificationData private constructor(
 	/**
 	 * Builder for [NotificationData].
 	 */
-	@SessionParametersDslMarker
+	@SessionParametersDsl
 	public class Builder {
 
 		/**

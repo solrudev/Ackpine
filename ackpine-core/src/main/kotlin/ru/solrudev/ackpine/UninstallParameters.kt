@@ -52,7 +52,7 @@ public class UninstallParameters private constructor(
 	/**
 	 * Builder for [UninstallParameters].
 	 */
-	@SessionParametersDslMarker
+	@SessionParametersDsl
 	public class Builder(
 		/**
 		 * Name of the package to be uninstalled.

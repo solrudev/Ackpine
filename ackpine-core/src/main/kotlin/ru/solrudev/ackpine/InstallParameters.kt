@@ -66,7 +66,7 @@ public class InstallParameters private constructor(
 	/**
 	 * Builder for [InstallParameters].
 	 */
-	@SessionParametersDslMarker
+	@SessionParametersDsl
 	public class Builder : ConfirmationExtension {
 
 		@SuppressLint("NewApi")
