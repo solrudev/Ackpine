@@ -1,5 +1,6 @@
 package ru.solrudev.ackpine
 
-public operator fun DisposableSubscriptionContainer.plusAssign(subscription: DisposableSubscription) {
+@Suppress("NOTHING_TO_INLINE")
+public inline operator fun DisposableSubscriptionContainer.plusAssign(subscription: DisposableSubscription) {
 	add(subscription)
 }
