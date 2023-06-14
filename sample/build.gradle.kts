@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 val packageName = "ru.solrudev.ackpine.sample"
 
 plugins {
-	id("com.android.application")
-	kotlin("android")
+	id(libs.plugins.android.application.get().pluginId)
+	id(libs.plugins.kotlin.android.get().pluginId)
 }
 
 kotlin {
@@ -48,7 +48,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 }
 
 dependencies {
-	implementation("androidx.activity:activity-ktx:1.7.2")
-	implementation("com.google.android.material:material:1.9.0")
-	implementation(project(":ackpine-ktx"))
+	implementation(androidx.activity.ktx)
+	implementation(libs.materialcomponents)
+	implementation(projects.ackpineKtx)
 }

@@ -1,5 +1,7 @@
 rootProject.name = "Ackpine"
 
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
 	includeBuild("build-logic")
 

@@ -8,7 +8,7 @@ ackpine {
 }
 
 dependencies {
-	api(project(":ackpine-core"))
+	api(projects.ackpineCore)
 	api(androidx.annotation)
 	api(kotlinx.coroutines.android)
 }
