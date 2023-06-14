@@ -43,7 +43,7 @@ public object ApkSplits {
 	public fun Sequence<Apk>.throwOnConflictingPackageName(): Sequence<Apk> {
 		return throwOnConflictingProperty(
 			exceptionInitializer = ::ConflictingPackageNameException,
-			propertySelector = { apk -> apk.packageName }
+			propertySelector = Apk::packageName
 		)
 	}
 
@@ -54,7 +54,7 @@ public object ApkSplits {
 	public fun Sequence<Apk>.throwOnConflictingVersionCode(): Sequence<Apk> {
 		return throwOnConflictingProperty(
 			exceptionInitializer = ::ConflictingVersionCodeException,
-			propertySelector = { apk -> apk.versionCode }
+			propertySelector = Apk::versionCode
 		)
 	}
 
