@@ -5,6 +5,7 @@ import io.github.gradlenexus.publishplugin.NexusPublishPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.Constants
 import java.util.Properties
@@ -29,7 +30,7 @@ class AckpinePublishingPlugin : Plugin<Project> {
 			?: publishingProperties["signing.key"].orEmpty()
 		extra[Constants.signingPassword] = System.getenv("SIGNING_PASSWORD")
 			?: publishingProperties["signing.password"].orEmpty()
-		extensions.configure<NexusPublishExtension>("nexusPublishing") {
+		extensions.configure<NexusPublishExtension> {
 			repositories {
 				sonatype {
 					stagingProfileId.set(sonatypeStagingProfileId)
@@ -44,14 +45,14 @@ class AckpinePublishingPlugin : Plugin<Project> {
 
 	private fun Project.versionFromPropertiesFile(): String {
 		val versionPropertiesFile = file("version.properties")
-		return with(Properties()) {
+		Properties().run {
 			versionPropertiesFile.inputStream().use(::load)
 			val majorVersion = get("MAJOR_VERSION") as String
 			val minorVersion = get("MINOR_VERSION") as String
 			val patchVersion = get("PATCH_VERSION") as String
 			val suffix = get("SUFFIX") as String
 			val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
-			return@with buildString {
+			return buildString {
 				append("$majorVersion.$minorVersion.$patchVersion")
 				if (suffix.isNotEmpty()) {
 					append("-$suffix")

@@ -72,7 +72,7 @@ class AckpineArtifactPublishPlugin : Plugin<Project> {
 		val key = rootProject.extra[Constants.signingKey] as String
 		val password = rootProject.extra[Constants.signingPassword] as String
 		useInMemoryPgpKeys(keyId, key, password)
-		sign(publishing.publications)
+		sign(extensions.getByType<PublishingExtension>().publications)
 	}
 
 	private fun Project.configureSourcesJar() = extensions.configure<LibraryExtension> {
@@ -82,7 +82,4 @@ class AckpineArtifactPublishPlugin : Plugin<Project> {
 			}
 		}
 	}
-
-	private val Project.publishing: PublishingExtension
-		get() = extensions.getByName("publishing") as PublishingExtension
 }
