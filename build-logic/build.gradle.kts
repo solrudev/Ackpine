@@ -2,6 +2,10 @@ plugins {
 	`kotlin-dsl`
 }
 
+kotlin {
+	jvmToolchain(17)
+}
+
 gradlePlugin {
 	plugins {
 		register("ackpine") {
