@@ -2,6 +2,7 @@ package ru.solrudev.ackpine.installer
 
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 

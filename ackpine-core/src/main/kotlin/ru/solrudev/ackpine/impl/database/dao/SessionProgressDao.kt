@@ -3,7 +3,7 @@ package ru.solrudev.ackpine.impl.database.dao
 import androidx.annotation.RestrictTo
 import androidx.room.Dao
 import androidx.room.Query
-import ru.solrudev.ackpine.installer.Progress
+import ru.solrudev.ackpine.session.Progress
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @Dao

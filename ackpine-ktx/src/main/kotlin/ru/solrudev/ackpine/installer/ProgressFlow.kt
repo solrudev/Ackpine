@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.emptyFlow
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.plusAssign
+import ru.solrudev.ackpine.session.Progress
 import java.util.UUID
 
 public fun PackageInstaller.getProgressFlow(sessionId: UUID): Flow<Progress> {

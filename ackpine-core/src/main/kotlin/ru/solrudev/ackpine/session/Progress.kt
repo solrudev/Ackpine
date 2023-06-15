@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.installer
+package ru.solrudev.ackpine.session
 
 /**
  * Represents progress data.
