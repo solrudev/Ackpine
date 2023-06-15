@@ -2,10 +2,6 @@ package ru.solrudev.ackpine.session.parameters
 
 import android.content.Context
 import androidx.annotation.StringRes
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 import java.io.Serializable
 
 public sealed interface NotificationString : Serializable {
@@ -44,25 +40,6 @@ public sealed interface NotificationString : Serializable {
 		public fun resource(@StringRes stringId: Int, vararg args: Serializable): NotificationString {
 			return Resource(stringId, args)
 		}
-
-		@JvmSynthetic
-		internal fun fromByteArray(byteArray: ByteArray): NotificationString {
-			ByteArrayInputStream(byteArray).use { byteArrayInputStream ->
-				ObjectInputStream(byteArrayInputStream).use { objectInputStream ->
-					return objectInputStream.readObject() as NotificationString
-				}
-			}
-		}
-
-		@JvmSynthetic
-		internal fun toByteArray(notificationString: NotificationString): ByteArray =
-			ByteArrayOutputStream().use { byteArrayOutputStream ->
-				ObjectOutputStream(byteArrayOutputStream).use { objectOutputStream ->
-					objectOutputStream.writeObject(notificationString)
-					objectOutputStream.flush()
-				}
-				return byteArrayOutputStream.toByteArray()
-			}
 	}
 }
 

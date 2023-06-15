@@ -1,8 +1,9 @@
 package ru.solrudev.ackpine.uninstaller
 
 import ru.solrudev.ackpine.session.Failure
+import java.io.Serializable
 
-public sealed interface UninstallFailure : Failure {
+public sealed interface UninstallFailure : Failure, Serializable {
 
 	/**
 	 * The operation failed in a generic way.

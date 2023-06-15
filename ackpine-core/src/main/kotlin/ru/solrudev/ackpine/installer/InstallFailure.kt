@@ -1,15 +1,9 @@
 package ru.solrudev.ackpine.installer
 
 import android.content.pm.PackageInstaller
-import ru.solrudev.ackpine.installer.InstallFailure.Aborted
-import ru.solrudev.ackpine.installer.InstallFailure.Blocked
-import ru.solrudev.ackpine.installer.InstallFailure.Conflict
-import ru.solrudev.ackpine.installer.InstallFailure.Exceptional
-import ru.solrudev.ackpine.installer.InstallFailure.Generic
-import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
-import ru.solrudev.ackpine.installer.InstallFailure.Invalid
-import ru.solrudev.ackpine.installer.InstallFailure.Storage
+import ru.solrudev.ackpine.installer.InstallFailure.*
 import ru.solrudev.ackpine.session.Failure
+import java.io.Serializable
 
 /**
  * Represents the cause of installation failure. Contains string representation in [message] property.
@@ -17,7 +11,7 @@ import ru.solrudev.ackpine.session.Failure
  * May be either [Exceptional], [Generic], [Aborted], [Blocked], [Conflict], [Incompatible], [Invalid] or [Storage].
  * @property message Detailed string representation of the status, including raw details that are useful for debugging.
  */
-public sealed class InstallFailure(public open val message: String?) : Failure {
+public sealed class InstallFailure(public open val message: String?) : Failure, Serializable {
 
 	/**
 	 * The operation failed because an exception was thrown.
