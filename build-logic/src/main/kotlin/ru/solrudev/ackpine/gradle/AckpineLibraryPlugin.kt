@@ -7,6 +7,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningPlugin
@@ -35,7 +36,7 @@ class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureKotlin() {
-		extensions.configure<KotlinAndroidProjectExtension>("kotlin") {
+		extensions.configure<KotlinAndroidProjectExtension> {
 			jvmToolchain(17)
 			sourceSets.configureEach {
 				languageSettings {
@@ -51,7 +52,7 @@ class AckpineLibraryPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureAndroid() = extensions.configure<LibraryExtension>("android") {
+	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
 		compileSdk = 33
 		buildToolsVersion = "33.0.2"
 		namespace = Constants.packageName
@@ -59,12 +60,6 @@ class AckpineLibraryPlugin : Plugin<Project> {
 		defaultConfig {
 			minSdk = 16
 			consumerProguardFiles("consumer-rules.pro")
-		}
-
-		publishing {
-			singleVariant("release") {
-				withSourcesJar()
-			}
 		}
 
 		buildTypes {

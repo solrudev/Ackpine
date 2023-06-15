@@ -1,9 +1,11 @@
 package ru.solrudev.ackpine.gradle.publishing
 
+import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
@@ -11,12 +13,15 @@ import org.gradle.plugins.signing.SigningExtension
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.Constants
 
-class AckpineArtifactPlugin : Plugin<Project> {
+class AckpineArtifactPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
 		if (rootProject.pluginManager.hasPlugin("${Constants.packageName}.publishing")) {
 			configurePublishing()
 			configureSigning()
+		}
+		if (pluginManager.hasPlugin("${Constants.packageName}.library")) {
+			configureSourcesJar()
 		}
 	}
 
@@ -24,7 +29,7 @@ class AckpineArtifactPlugin : Plugin<Project> {
 		val ackpineExtension = extensions.getByType<AckpineExtension>()
 		val artifactName = ackpineExtension.moduleName
 		val artifactDescription = ackpineExtension.moduleDescription
-		extensions.configure<PublishingExtension>("publishing") {
+		extensions.configure<PublishingExtension> {
 			publications {
 				create<MavenPublication>("release") {
 					groupId = rootProject.group.toString()
@@ -62,12 +67,20 @@ class AckpineArtifactPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureSigning() = extensions.configure<SigningExtension>("signing") {
+	private fun Project.configureSigning() = extensions.configure<SigningExtension> {
 		val keyId = rootProject.extra[Constants.signingKeyId] as String
 		val key = rootProject.extra[Constants.signingKey] as String
 		val password = rootProject.extra[Constants.signingPassword] as String
 		useInMemoryPgpKeys(keyId, key, password)
 		sign(publishing.publications)
+	}
+
+	private fun Project.configureSourcesJar() = extensions.configure<LibraryExtension> {
+		publishing {
+			singleVariant("release") {
+				withSourcesJar()
+			}
+		}
 	}
 
 	private val Project.publishing: PublishingExtension

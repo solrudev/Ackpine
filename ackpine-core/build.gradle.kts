@@ -1,6 +1,6 @@
 plugins {
 	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.artifact")
+	id("ru.solrudev.ackpine.artifact-publish")
 	alias(libs.plugins.kotlin.ksp)
 }
 
