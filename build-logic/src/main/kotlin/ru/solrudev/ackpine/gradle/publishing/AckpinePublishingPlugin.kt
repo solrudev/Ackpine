@@ -8,7 +8,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.Constants
-import java.util.Properties
+import ru.solrudev.ackpine.gradle.helpers.withProperties
 
 class AckpinePublishingPlugin : Plugin<Project> {
 
@@ -43,23 +43,19 @@ class AckpinePublishingPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.versionFromPropertiesFile(): String {
-		val versionPropertiesFile = file("version.properties")
-		Properties().run {
-			versionPropertiesFile.inputStream().use(::load)
-			val majorVersion = get("MAJOR_VERSION") as String
-			val minorVersion = get("MINOR_VERSION") as String
-			val patchVersion = get("PATCH_VERSION") as String
-			val suffix = get("SUFFIX") as String
-			val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
-			return buildString {
-				append("$majorVersion.$minorVersion.$patchVersion")
-				if (suffix.isNotEmpty()) {
-					append("-$suffix")
-				}
-				if (isSnapshot) {
-					append("-SNAPSHOT")
-				}
+	private fun Project.versionFromPropertiesFile(): String = file("version.properties").withProperties {
+		val majorVersion = get("MAJOR_VERSION") as String
+		val minorVersion = get("MINOR_VERSION") as String
+		val patchVersion = get("PATCH_VERSION") as String
+		val suffix = get("SUFFIX") as String
+		val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
+		return buildString {
+			append("$majorVersion.$minorVersion.$patchVersion")
+			if (suffix.isNotEmpty()) {
+				append("-$suffix")
+			}
+			if (isSnapshot) {
+				append("-SNAPSHOT")
 			}
 		}
 	}
@@ -67,8 +63,7 @@ class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.publishingFromPropertiesFile() = buildMap map@{
 		val secretPropertiesFile = file("local.properties")
 		if (secretPropertiesFile.exists()) {
-			Properties().run {
-				secretPropertiesFile.inputStream().use(::load)
+			secretPropertiesFile.withProperties {
 				forEach { name, value -> this@map.put(name as String, value as String) }
 			}
 		}

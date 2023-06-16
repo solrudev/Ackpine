@@ -13,7 +13,7 @@ import org.gradle.plugins.signing.SigningExtension
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.Constants
 
-class AckpineArtifactPublishPlugin : Plugin<Project> {
+class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
 		if (rootProject.pluginManager.hasPlugin("${Constants.packageName}.publishing")) {

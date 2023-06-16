@@ -1,6 +1,6 @@
 plugins {
 	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.artifact-publish")
+	id("ru.solrudev.ackpine.library-publish")
 }
 
 ackpine {
@@ -9,6 +9,5 @@ ackpine {
 
 dependencies {
 	api(projects.ackpineCore)
-	api(androidx.annotation)
 	api(kotlinx.coroutines.android)
 }
