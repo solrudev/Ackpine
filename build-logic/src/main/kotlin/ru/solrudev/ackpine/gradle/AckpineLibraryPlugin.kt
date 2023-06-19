@@ -5,12 +5,10 @@ import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
@@ -28,8 +26,6 @@ class AckpineLibraryPlugin : Plugin<Project> {
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)
-			apply(MavenPublishPlugin::class)
-			apply(SigningPlugin::class)
 		}
 		configureKotlin()
 		configureAndroid()
