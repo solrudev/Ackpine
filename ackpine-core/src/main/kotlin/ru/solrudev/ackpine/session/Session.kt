@@ -3,7 +3,7 @@ package ru.solrudev.ackpine.session
 import ru.solrudev.ackpine.DisposableSubscription
 import java.util.UUID
 
-public interface Session<F : Failure> {
+public interface Session<out F : Failure> {
 
 	public val id: UUID
 	public val isActive: Boolean
@@ -13,7 +13,7 @@ public interface Session<F : Failure> {
 	public fun addStateListener(listener: StateListener<F>): DisposableSubscription
 	public fun removeStateListener(listener: StateListener<F>)
 
-	public sealed interface State<F : Failure> {
+	public sealed interface State<out F : Failure> {
 
 		public sealed interface Terminal
 
@@ -26,10 +26,10 @@ public interface Session<F : Failure> {
 		public data object Committed : State<Nothing>
 		public data object Cancelled : State<Nothing>, Terminal
 		public data object Succeeded : State<Nothing>, Terminal
-		public data class Failed<F : Failure>(public val failure: F) : State<F>, Terminal
+		public data class Failed<out F : Failure>(public val failure: F) : State<F>, Terminal
 	}
 
-	public fun interface StateListener<F : Failure> {
+	public fun interface StateListener<in F : Failure> {
 		public fun onStateChanged(sessionId: UUID, state: State<F>)
 	}
 }
