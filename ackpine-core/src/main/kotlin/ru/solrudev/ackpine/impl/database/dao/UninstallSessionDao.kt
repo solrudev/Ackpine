@@ -10,7 +10,17 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @Dao
-internal abstract class UninstallSessionDao(private val database: AckpineDatabase) {
+internal abstract class UninstallSessionDao(private val database: AckpineDatabase) :
+	SessionFailureDao<UninstallFailure> {
+
+	@Query("SELECT failure FROM sessions_uninstall_failures WHERE session_id = :id")
+	abstract override fun getFailure(id: String): UninstallFailure?
+
+	@Transaction
+	override fun setFailure(id: String, failure: UninstallFailure) {
+		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
+		insertUninstallFailure(id, failure)
+	}
 
 	@Transaction
 	open fun insertUninstallSession(session: SessionEntity.UninstallSession) {
@@ -19,17 +29,8 @@ internal abstract class UninstallSessionDao(private val database: AckpineDatabas
 	}
 
 	@Transaction
-	open fun setFailure(id: String, failure: UninstallFailure) {
-		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
-		insertUninstallFailure(id, failure)
-	}
-
-	@Transaction
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getUninstallSession(id: String): SessionEntity.UninstallSession?
-
-	@Query("SELECT failure FROM sessions_uninstall_failures WHERE session_id = :id")
-	abstract fun getUninstallFailure(id: String): UninstallFailure?
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")
 	abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)

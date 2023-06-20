@@ -10,7 +10,16 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @Dao
-internal abstract class InstallSessionDao(private val database: AckpineDatabase) {
+internal abstract class InstallSessionDao(private val database: AckpineDatabase) : SessionFailureDao<InstallFailure> {
+
+	@Query("SELECT failure FROM sessions_install_failures WHERE session_id = :id")
+	abstract override fun getFailure(id: String): InstallFailure?
+
+	@Transaction
+	override fun setFailure(id: String, failure: InstallFailure) {
+		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
+		insertInstallFailure(id, failure)
+	}
 
 	@Transaction
 	open fun insertInstallSession(session: SessionEntity.InstallSession) {
@@ -23,17 +32,8 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 	}
 
 	@Transaction
-	open fun setFailure(id: String, failure: InstallFailure) {
-		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
-		insertInstallFailure(id, failure)
-	}
-
-	@Transaction
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getInstallSession(id: String): SessionEntity.InstallSession?
-
-	@Query("SELECT failure FROM sessions_install_failures WHERE session_id = :id")
-	abstract fun getInstallFailure(id: String): InstallFailure?
 
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
 	abstract fun insertInstallFailure(id: String, failure: InstallFailure)
