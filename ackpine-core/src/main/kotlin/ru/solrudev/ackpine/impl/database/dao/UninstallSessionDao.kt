@@ -19,6 +19,12 @@ internal abstract class UninstallSessionDao(private val database: AckpineDatabas
 	}
 
 	@Transaction
+	open fun setFailure(id: String, failure: UninstallFailure) {
+		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
+		insertUninstallFailure(id, failure)
+	}
+
+	@Transaction
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getUninstallSession(id: String): SessionEntity.UninstallSession?
 

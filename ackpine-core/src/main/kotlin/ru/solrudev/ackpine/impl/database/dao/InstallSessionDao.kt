@@ -23,6 +23,12 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 	}
 
 	@Transaction
+	open fun setFailure(id: String, failure: InstallFailure) {
+		database.sessionDao().updateSessionState(id, SessionEntity.State.FAILED)
+		insertInstallFailure(id, failure)
+	}
+
+	@Transaction
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getInstallSession(id: String): SessionEntity.InstallSession?
 
