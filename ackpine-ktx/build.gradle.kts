@@ -10,4 +10,5 @@ ackpine {
 dependencies {
 	api(projects.ackpineCore)
 	api(kotlinx.coroutines.android)
+	api(kotlinx.coroutines.guava)
 }
