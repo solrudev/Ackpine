@@ -3,10 +3,12 @@ package ru.solrudev.ackpine.installer
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import kotlinx.coroutines.guava.await
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
 import ru.solrudev.ackpine.session.Session
+import java.util.UUID
 
 /**
  * Creates an install session.
@@ -43,4 +45,8 @@ public inline fun PackageInstaller.createSession(
 	configure: InstallParametersDsl.() -> Unit
 ): Session<InstallFailure> {
 	return createSession(InstallParameters(apks, configure))
+}
+
+public suspend inline fun PackageInstaller.getSession(sessionId: UUID): Session<InstallFailure>? {
+	return getSessionAsync(sessionId).await()
 }
