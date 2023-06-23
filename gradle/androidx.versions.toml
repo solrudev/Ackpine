@@ -10,3 +10,4 @@ lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", v
 startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version = "1.1.0" }
