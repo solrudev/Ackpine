@@ -6,7 +6,6 @@ import androidx.room.*
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @Entity(
 	tableName = "sessions_install_uris",
-	indices = [Index("session_id")],
 	foreignKeys = [ForeignKey(
 		entity = SessionEntity::class,
 		parentColumns = ["id"],
@@ -19,7 +18,7 @@ internal data class InstallUriEntity internal constructor(
 	@PrimaryKey(autoGenerate = true)
 	@ColumnInfo(name = "id")
 	val id: Int = 0,
-	@ColumnInfo(name = "session_id")
+	@ColumnInfo(name = "session_id", index = true)
 	val sessionId: String,
 	@ColumnInfo(name = "uri")
 	val uri: String
