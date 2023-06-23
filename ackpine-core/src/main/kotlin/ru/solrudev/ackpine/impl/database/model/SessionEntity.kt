@@ -13,7 +13,7 @@ internal data class SessionEntity internal constructor(
 	@PrimaryKey
 	@ColumnInfo(name = "id")
 	val id: String,
-	@ColumnInfo(name = "state")
+	@ColumnInfo(name = "state", index = true)
 	val state: State,
 	@ColumnInfo(name = "confirmation")
 	val confirmation: Confirmation,
