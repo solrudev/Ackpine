@@ -10,7 +10,7 @@ import java.util.UUID
 public interface PackageInstaller {
 
 	public fun createSession(parameters: InstallParameters): Session<InstallFailure>
-	public fun getSession(sessionId: UUID): ListenableFuture<Session<InstallFailure>?>
+	public fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<InstallFailure>?>
 	public fun addProgressListener(sessionId: UUID, listener: ProgressListener): DisposableSubscription
 	public fun removeProgressListener(listener: ProgressListener)
 

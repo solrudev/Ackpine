@@ -7,5 +7,5 @@ import java.util.UUID
 
 public interface PackageUninstaller {
 	public fun createSession(parameters: UninstallParameters): Session<UninstallFailure>
-	public fun getSession(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?>
+	public fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?>
 }
