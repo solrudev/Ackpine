@@ -33,25 +33,3 @@ public interface Session<out F : Failure> {
 		public fun onStateChanged(sessionId: UUID, state: State<F>)
 	}
 }
-
-internal class StateDisposableSubscription<F : Failure> internal constructor(
-	private var session: Session<F>?,
-	private var listener: Session.StateListener<F>?
-) : DisposableSubscription {
-
-	override var isDisposed: Boolean = false
-		private set
-
-	override fun dispose() {
-		if (isDisposed) {
-			return
-		}
-		val listener = this.listener
-		if (listener != null) {
-			session?.removeStateListener(listener)
-		}
-		this.listener = null
-		session = null
-		isDisposed = true
-	}
-}
