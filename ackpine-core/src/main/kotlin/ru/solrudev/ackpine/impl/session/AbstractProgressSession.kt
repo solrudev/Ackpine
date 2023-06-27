@@ -5,26 +5,25 @@ import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.installer.PackageInstaller
+import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
+import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import java.util.concurrent.Executor
 
-internal abstract class InstallSession internal constructor(
+internal abstract class AbstractProgressSession<F : Failure> internal constructor(
 	id: UUID,
-	initialState: Session.State<InstallFailure>,
+	initialState: Session.State<F>,
 	initialProgress: Progress,
 	sessionDao: SessionDao,
-	sessionFailureDao: SessionFailureDao<InstallFailure>,
+	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
 	private val executor: Executor,
 	private val handler: Handler,
-) : AbstractSession<InstallFailure>(id, initialState, sessionDao, sessionFailureDao, executor, handler),
-	ProgressSession<InstallFailure> {
+) : AbstractSession<F>(id, initialState, sessionDao, sessionFailureDao, executor, handler), ProgressSession<F> {
 
-	private val progressListeners = mutableListOf<PackageInstaller.ProgressListener>()
+	private val progressListeners = mutableListOf<ProgressSession.ProgressListener>()
 
 	@Volatile
 	protected var progress = initialProgress
@@ -41,7 +40,7 @@ internal abstract class InstallSession internal constructor(
 			}
 		}
 
-	override fun addProgressListener(listener: PackageInstaller.ProgressListener): DisposableSubscription {
+	override fun addProgressListener(listener: ProgressSession.ProgressListener): DisposableSubscription {
 		progressListeners += listener
 		handler.post {
 			listener.onProgressChanged(id, progress)
@@ -49,7 +48,7 @@ internal abstract class InstallSession internal constructor(
 		return ProgressDisposableSubscription(this, listener)
 	}
 
-	override fun removeProgressListener(listener: PackageInstaller.ProgressListener) {
+	override fun removeProgressListener(listener: ProgressSession.ProgressListener) {
 		progressListeners -= listener
 	}
 
@@ -59,8 +58,8 @@ internal abstract class InstallSession internal constructor(
 }
 
 private class ProgressDisposableSubscription(
-	private var session: InstallSession?,
-	private var listener: PackageInstaller.ProgressListener?
+	private var session: ProgressSession<*>?,
+	private var listener: ProgressSession.ProgressListener?
 ) : DisposableSubscription {
 
 	override var isDisposed: Boolean = false

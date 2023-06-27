@@ -4,15 +4,14 @@ import android.annotation.SuppressLint
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
-import ru.solrudev.ackpine.impl.session.ProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.session.Progress
+import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -26,9 +25,8 @@ internal class PackageInstallerImpl internal constructor(
 ) : PackageInstaller {
 
 	private val sessions = mutableMapOf<UUID, ProgressSession<InstallFailure>>()
-	private val progressListeners = mutableMapOf<UUID, MutableList<PackageInstaller.ProgressListener>>()
 
-	override fun createSession(parameters: InstallParameters): Session<InstallFailure> {
+	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = UUID.randomUUID()
 		executor.execute {
 			installSessionDao.insertInstallSession(
@@ -56,8 +54,8 @@ internal class PackageInstallerImpl internal constructor(
 	}
 
 	@SuppressLint("RestrictedApi")
-	override fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<InstallFailure>?> {
-		val future = ResolvableFuture.create<Session<InstallFailure>?>()
+	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
+		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
 		sessions[sessionId]?.let(future::set) ?: try {
 			executor.execute {
 				try {
@@ -72,38 +70,6 @@ internal class PackageInstallerImpl internal constructor(
 			future.setException(t)
 		}
 		return future
-	}
-
-	override fun addProgressListener(
-		sessionId: UUID,
-		listener: PackageInstaller.ProgressListener
-	): DisposableSubscription {
-		progressListeners.getOrPut(sessionId, ::mutableListOf) += listener
-		sessions[sessionId]?.let { session ->
-			val progressSubscription = session.addProgressListener(listener)
-			return ProgressDisposableSubscription(this, listener, progressSubscription)
-		} ?: run {
-			val subscription = ProgressDisposableSubscription(this, listener, internalSubscription = null)
-			executor.execute {
-				installSessionDao.getInstallSession(sessionId.toString())?.let { session ->
-					val installSession = session.toInstallSession()
-					sessions[sessionId] = installSession
-					if (!subscription.isDisposed) {
-						subscription.internalSubscription = installSession.addProgressListener(listener)
-					}
-				}
-			}
-			return subscription
-		}
-	}
-
-	override fun removeProgressListener(listener: PackageInstaller.ProgressListener) {
-		progressListeners.values.forEach { listeners ->
-			listeners -= listener
-		}
-		sessions.values.forEach { session ->
-			session.removeProgressListener(listener)
-		}
 	}
 
 	@SuppressLint("NewApi")
@@ -138,30 +104,5 @@ internal class PackageInstallerImpl internal constructor(
 			val failure = installSessionDao.getFailure(id)
 			Session.State.Failed(failure!!)
 		}
-	}
-}
-
-private class ProgressDisposableSubscription(
-	private var packageInstaller: PackageInstaller?,
-	private var listener: PackageInstaller.ProgressListener?,
-	var internalSubscription: DisposableSubscription?
-) : DisposableSubscription {
-
-	override var isDisposed: Boolean = false
-		private set
-
-	override fun dispose() {
-		if (isDisposed) {
-			return
-		}
-		val listener = this.listener
-		if (listener != null) {
-			packageInstaller?.removeProgressListener(listener)
-		}
-		internalSubscription?.dispose()
-		internalSubscription = null
-		this.listener = null
-		packageInstaller = null
-		isDisposed = true
 	}
 }
