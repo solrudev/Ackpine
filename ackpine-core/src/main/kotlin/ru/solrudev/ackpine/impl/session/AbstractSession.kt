@@ -67,16 +67,16 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		state = Session.State.Cancelled
 	}
 
-	override fun removeStateListener(listener: Session.StateListener<F>) {
-		stateListeners -= listener
-	}
-
 	override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
 		stateListeners += listener
 		handler.post {
 			listener.onStateChanged(id, state)
 		}
 		return StateDisposableSubscription(this, listener)
+	}
+
+	override fun removeStateListener(listener: Session.StateListener<F>) {
+		stateListeners -= listener
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {

@@ -20,7 +20,7 @@ internal abstract class AbstractProgressSession<F : Failure> internal constructo
 	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
 	private val executor: Executor,
-	private val handler: Handler,
+	private val handler: Handler
 ) : AbstractSession<F>(id, initialState, sessionDao, sessionFailureDao, executor, handler), ProgressSession<F> {
 
 	private val progressListeners = mutableListOf<ProgressSession.ProgressListener>()
