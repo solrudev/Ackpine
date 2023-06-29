@@ -16,7 +16,8 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
 	private val executor: Executor,
-	private val handler: Handler
+	private val handler: Handler,
+	private val exceptionalFailureFactory: (Exception) -> F
 ) : Session<F> {
 
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
@@ -47,24 +48,42 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (state !is Session.State.Pending) {
 			return
 		}
-		executor.execute(::doLaunch)
 		state = Session.State.Active
+		executor.execute {
+			try {
+				doLaunch()
+			} catch (exception: Exception) {
+				state = Session.State.Failed(exceptionalFailureFactory(exception))
+			}
+		}
 	}
 
 	override fun commit() {
 		if (state !is Session.State.Awaiting) {
 			return
 		}
-		executor.execute(::doCommit)
 		state = Session.State.Committed
+		executor.execute {
+			try {
+				doCommit()
+			} catch (exception: Exception) {
+				state = Session.State.Failed(exceptionalFailureFactory(exception))
+			}
+		}
 	}
 
 	override fun cancel() {
 		if (state.isTerminal) {
 			return
 		}
-		executor.execute(::doCancel)
 		state = Session.State.Cancelled
+		executor.execute {
+			try {
+				doCancel()
+			} catch (exception: Exception) {
+				state = Session.State.Failed(exceptionalFailureFactory(exception))
+			}
+		}
 	}
 
 	override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
