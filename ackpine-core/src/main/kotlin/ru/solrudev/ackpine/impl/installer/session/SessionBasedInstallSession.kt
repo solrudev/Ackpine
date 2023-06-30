@@ -30,7 +30,7 @@ internal class SessionBasedInstallSession internal constructor(
 	handler: Handler,
 ) : AbstractProgressSession<InstallFailure>(
 	id, initialState, initialProgress, sessionDao, sessionFailureDao, sessionProgressDao, executor, handler,
-	InstallFailure::Exceptional
+	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
 	override fun doLaunch() {
