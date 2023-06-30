@@ -54,7 +54,7 @@ internal class IntentBasedInstallLauncherActivity : AppCompatActivity() {
 
 	override fun onDestroy() {
 		super.onDestroy()
-		subscriptions.dispose()
+		subscriptions.clear()
 		clearTurnScreenOnSettings()
 	}
 
