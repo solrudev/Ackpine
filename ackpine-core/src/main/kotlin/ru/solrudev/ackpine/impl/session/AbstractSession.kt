@@ -1,6 +1,7 @@
 package ru.solrudev.ackpine.impl.session
 
 import android.os.Handler
+import android.os.OperationCanceledException
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -21,6 +22,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 ) : Session<F> {
 
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
+
+	@Volatile
+	private var isCancelling = false
 
 	@Volatile
 	protected var state = initialState
@@ -45,13 +49,15 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun doCancel()
 
 	override fun launch() {
-		if (state !is Session.State.Pending) {
+		if (state !is Session.State.Pending || isCancelling) {
 			return
 		}
 		state = Session.State.Active
 		executor.execute {
 			try {
 				doLaunch()
+			} catch (_: OperationCanceledException) {
+				state = Session.State.Cancelled
 			} catch (exception: Exception) {
 				state = Session.State.Failed(exceptionalFailureFactory(exception))
 			}
@@ -59,13 +65,15 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	override fun commit() {
-		if (state !is Session.State.Awaiting) {
+		if (state !is Session.State.Awaiting || isCancelling) {
 			return
 		}
 		state = Session.State.Committed
 		executor.execute {
 			try {
 				doCommit()
+			} catch (_: OperationCanceledException) {
+				state = Session.State.Cancelled
 			} catch (exception: Exception) {
 				state = Session.State.Failed(exceptionalFailureFactory(exception))
 			}
@@ -73,15 +81,18 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	override fun cancel() {
-		if (state.isTerminal) {
+		if (state.isTerminal || isCancelling) {
 			return
 		}
-		state = Session.State.Cancelled
 		executor.execute {
-			try {
+			state = try {
+				isCancelling = true
 				doCancel()
+				Session.State.Cancelled
 			} catch (exception: Exception) {
-				state = Session.State.Failed(exceptionalFailureFactory(exception))
+				Session.State.Failed(exceptionalFailureFactory(exception))
+			} finally {
+				isCancelling = false
 			}
 		}
 	}
