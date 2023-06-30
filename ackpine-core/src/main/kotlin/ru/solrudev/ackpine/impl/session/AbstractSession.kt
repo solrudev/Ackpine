@@ -123,7 +123,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		this.state = state
 	}
 
-	override fun completeExceptionally(exception: Exception) = handleException(exception)
+	override fun completeExceptionally(exception: Exception) = executor.execute {
+		handleException(exception)
+	}
 
 	private fun handleCancellation() {
 		state = Session.State.Cancelled
