@@ -1,8 +1,10 @@
 package ru.solrudev.ackpine.uninstaller
 
+import ru.solrudev.ackpine.futures.await
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
+import java.util.UUID
 
 /**
  * Creates an uninstall session.
@@ -17,4 +19,8 @@ public inline fun PackageUninstaller.createSession(
 	configure: UninstallParametersDsl.() -> Unit
 ): Session<UninstallFailure> {
 	return createSession(UninstallParameters(packageName, configure))
+}
+
+public suspend inline fun PackageUninstaller.getSession(sessionId: UUID): Session<UninstallFailure>? {
+	return getSessionAsync(sessionId).await()
 }
