@@ -100,6 +100,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 				isCancelling = true
 				doCancel()
 				state = Session.State.Cancelled
+				cleanup()
 			} catch (exception: Exception) {
 				handleException(exception)
 			} finally {
