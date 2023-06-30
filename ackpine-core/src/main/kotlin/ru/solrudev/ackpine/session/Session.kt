@@ -21,6 +21,9 @@ public interface Session<out F : Failure> {
 		public val isTerminal: Boolean
 			get() = this is Terminal
 
+		public val isCompleted: Boolean
+			get() = this is Completed
+
 		public data object Pending : State<Nothing>
 		public data object Active : State<Nothing>
 		public data object Awaiting : State<Nothing>
