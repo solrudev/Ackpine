@@ -5,11 +5,6 @@ public interface DisposableSubscription {
 	public fun dispose()
 }
 
-internal object DummyDisposableSubscription : DisposableSubscription {
-	override val isDisposed: Boolean = true
-	override fun dispose() {}
-}
-
 public class DisposableSubscriptionContainer : DisposableSubscription {
 
 	override var isDisposed: Boolean = false
