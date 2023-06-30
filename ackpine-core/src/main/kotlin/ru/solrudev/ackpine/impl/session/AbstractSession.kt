@@ -20,7 +20,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F
-) : SettableStateSession<F> {
+) : CompletableSession<F> {
 
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
 
@@ -28,7 +28,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	private var isCancelling = false
 
 	@Volatile
-	override var state = initialState
+	private var state = initialState
 		set(value) {
 			if (field == value) {
 				return
@@ -117,6 +117,10 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	override fun removeStateListener(listener: Session.StateListener<F>) {
 		stateListeners -= listener
+	}
+
+	override fun complete(state: Session.State.Completed<F>) {
+		this.state = state
 	}
 
 	private fun handleCancellation() {

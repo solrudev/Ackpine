@@ -16,6 +16,7 @@ public interface Session<out F : Failure> {
 	public sealed interface State<out F : Failure> {
 
 		public sealed interface Terminal
+		public sealed interface Completed<out F : Failure> : State<F>
 
 		public val isTerminal: Boolean
 			get() = this is Terminal
@@ -25,8 +26,8 @@ public interface Session<out F : Failure> {
 		public data object Awaiting : State<Nothing>
 		public data object Committed : State<Nothing>
 		public data object Cancelled : State<Nothing>, Terminal
-		public data object Succeeded : State<Nothing>, Terminal
-		public data class Failed<out F : Failure>(public val failure: F) : State<F>, Terminal
+		public data object Succeeded : State<Nothing>, Terminal, Completed<Nothing>
+		public data class Failed<out F : Failure>(public val failure: F) : State<F>, Terminal, Completed<F>
 	}
 
 	public fun interface StateListener<in F : Failure> {
