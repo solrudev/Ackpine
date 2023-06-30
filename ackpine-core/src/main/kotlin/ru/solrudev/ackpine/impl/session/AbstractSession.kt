@@ -30,7 +30,8 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	@Volatile
 	private var state = initialState
 		set(value) {
-			if (field == value) {
+			val currentValue = field
+			if (currentValue == value || currentValue.isTerminal) {
 				return
 			}
 			field = value
@@ -99,8 +100,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			try {
 				isCancelling = true
 				doCancel()
-				state = Session.State.Cancelled
-				cleanup()
+				handleCancellation()
 			} catch (exception: Exception) {
 				handleException(exception)
 			} finally {
