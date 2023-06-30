@@ -9,6 +9,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 
 internal abstract class AbstractSession<F : Failure> internal constructor(
@@ -47,6 +48,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun doLaunch()
 	protected abstract fun doCommit()
 	protected abstract fun doCancel()
+	protected abstract fun cleanup()
 
 	override fun launch() {
 		if (state !is Session.State.Pending || isCancelling) {
@@ -57,9 +59,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			try {
 				doLaunch()
 			} catch (_: OperationCanceledException) {
-				state = Session.State.Cancelled
+				handleCancellation()
+			} catch (_: CancellationException) {
+				handleCancellation()
+			} catch (_: InterruptedException) {
+				handleCancellation()
 			} catch (exception: Exception) {
-				state = Session.State.Failed(exceptionalFailureFactory(exception))
+				handleException(exception)
 			}
 		}
 	}
@@ -73,9 +79,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			try {
 				doCommit()
 			} catch (_: OperationCanceledException) {
-				state = Session.State.Cancelled
+				handleCancellation()
+			} catch (_: CancellationException) {
+				handleCancellation()
+			} catch (_: InterruptedException) {
+				handleCancellation()
 			} catch (exception: Exception) {
-				state = Session.State.Failed(exceptionalFailureFactory(exception))
+				handleException(exception)
 			}
 		}
 	}
@@ -85,12 +95,12 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			return
 		}
 		executor.execute {
-			state = try {
+			try {
 				isCancelling = true
 				doCancel()
-				Session.State.Cancelled
+				state = Session.State.Cancelled
 			} catch (exception: Exception) {
-				Session.State.Failed(exceptionalFailureFactory(exception))
+				handleException(exception)
 			} finally {
 				isCancelling = false
 			}
@@ -107,6 +117,16 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	override fun removeStateListener(listener: Session.StateListener<F>) {
 		stateListeners -= listener
+	}
+
+	private fun handleCancellation() {
+		state = Session.State.Cancelled
+		cleanup()
+	}
+
+	private fun handleException(exception: Exception) {
+		state = Session.State.Failed(exceptionalFailureFactory(exception))
+		cleanup()
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
