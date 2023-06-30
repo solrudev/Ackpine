@@ -58,6 +58,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		executor.execute {
 			try {
 				doLaunch()
+				state = Session.State.Awaiting
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (_: CancellationException) {
