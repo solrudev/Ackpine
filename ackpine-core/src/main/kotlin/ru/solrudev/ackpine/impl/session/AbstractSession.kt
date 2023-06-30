@@ -121,6 +121,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	override fun complete(state: Session.State.Completed<F>) {
 		this.state = state
+		executor.execute {
+			cleanup()
+		}
 	}
 
 	override fun completeExceptionally(exception: Exception) = executor.execute {
