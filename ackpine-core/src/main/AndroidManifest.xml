@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools">
 
 	<uses-permission
 		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
 		android:maxSdkVersion="20" />
+
 	<uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
 	<uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 	<uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
@@ -11,4 +13,16 @@
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+	<application>
+		<activity
+			android:name=".impl.installer.activity.IntentBasedInstallLauncherActivity"
+			android:exported="false"
+			android:launchMode="singleTask"
+			android:showForAllUsers="true"
+			android:showOnLockScreen="true"
+			android:showWhenLocked="true"
+			android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+			tools:ignore="UnusedAttribute" />
+
+	</application>
 </manifest>
