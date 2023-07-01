@@ -46,10 +46,9 @@ internal class IntentBasedInstallLauncherActivity : AppCompatActivity() {
 		turnScreenOnWhenLocked()
 		abortSessionOnBackPressed()
 		finishActivityOnTerminalSessionState()
-		if (savedInstanceState != null) {
-			return
+		if (savedInstanceState == null) {
+			launchInstallActivity()
 		}
-		launchInstallActivity()
 	}
 
 	override fun onDestroy() {
