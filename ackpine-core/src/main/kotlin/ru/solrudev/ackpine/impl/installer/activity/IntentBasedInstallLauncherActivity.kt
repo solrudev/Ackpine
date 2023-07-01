@@ -78,7 +78,7 @@ internal class IntentBasedInstallLauncherActivity : AppCompatActivity() {
 		getCompletableSession { session ->
 			session?.complete(
 				Session.State.Failed(
-					InstallFailure.Aborted(message = "InstallLauncherActivity was finished by user")
+					InstallFailure.Aborted(message = "IntentBasedInstallLauncherActivity was finished by user")
 				)
 			)
 		}
