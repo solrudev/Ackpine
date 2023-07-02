@@ -14,6 +14,6 @@ android {
 }
 
 dependencies {
-	implementation(androidx.core)
+	implementation(androidx.core.ktx)
 	implementation(libs.apksig)
 }

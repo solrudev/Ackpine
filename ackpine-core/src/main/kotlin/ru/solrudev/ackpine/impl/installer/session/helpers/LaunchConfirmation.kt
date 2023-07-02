@@ -1,11 +1,11 @@
 package ru.solrudev.ackpine.impl.installer.session.helpers
 
+import android.app.Activity
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.activity.ComponentActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.R
@@ -23,14 +23,14 @@ internal const val UNINSTALLER_NOTIFICATION_TAG = "ru.solrudev.ackpine.UNINSTALL
 internal const val INSTALLER_REQUEST_CODE = 247164518
 
 @get:JvmSynthetic
-internal val INSTALLER_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 	PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
 } else {
 	PendingIntent.FLAG_CANCEL_CURRENT
 }
 
 @get:JvmSynthetic
-internal val UNINSTALLER_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 	PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
 } else {
 	PendingIntent.FLAG_UPDATE_CURRENT
@@ -39,7 +39,7 @@ internal val UNINSTALLER_INTENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSI
 private val notificationId = AtomicInteger(18475)
 
 @JvmSynthetic
-internal inline fun <reified T : ComponentActivity> Context.launchConfirmation(
+internal inline fun <reified T : Activity> Context.launchConfirmation(
 	confirmation: Confirmation,
 	notificationData: NotificationData,
 	tag: String,

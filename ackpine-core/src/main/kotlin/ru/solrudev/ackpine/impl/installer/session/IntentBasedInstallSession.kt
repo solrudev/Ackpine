@@ -8,8 +8,9 @@ import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallLauncherActivity
-import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_INTENT_FLAGS
+import ru.solrudev.ackpine.impl.installer.activity.InstallActivity
+import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
+import ru.solrudev.ackpine.impl.installer.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_NOTIFICATION_TAG
 import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_REQUEST_CODE
 import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
@@ -53,20 +54,21 @@ internal class IntentBasedInstallSession internal constructor(
 		if (mustCopy) {
 			copyApkTo(apkFile)
 		}
+		notifyAwaiting()
 	}
 
 	override fun doCommit() {
 		val (apkFile, _) = getApkFile()
-		context.launchConfirmation<IntentBasedInstallLauncherActivity>(
+		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation,
 			notificationData,
 			INSTALLER_NOTIFICATION_TAG,
 			INSTALLER_REQUEST_CODE,
-			INSTALLER_INTENT_FLAGS
+			CANCEL_CURRENT_FLAGS
 		) { intent ->
 			intent.run {
-				putExtra(IntentBasedInstallLauncherActivity.APK_URI_KEY, apkFile.toUri())
-				putExtra(IntentBasedInstallLauncherActivity.SESSION_ID_KEY, id)
+				putExtra(InstallActivity.SESSION_ID_KEY, id)
+				putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkFile.toUri())
 			}
 		}
 	}

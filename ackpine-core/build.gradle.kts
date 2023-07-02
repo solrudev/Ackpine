@@ -14,7 +14,6 @@ dependencies {
 	api(androidx.annotation)
 	api(libs.listenablefuture)
 	implementation(androidx.concurrent.futures)
-	implementation(androidx.appcompat)
-	implementation(androidx.lifecycle.runtime.ktx)
-	implementation(androidx.room.ktx)
+	implementation(androidx.core.ktx)
+	implementation(androidx.room.runtime)
 }

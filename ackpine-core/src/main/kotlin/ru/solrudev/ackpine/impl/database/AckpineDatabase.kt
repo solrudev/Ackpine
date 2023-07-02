@@ -8,6 +8,7 @@ import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
 import ru.solrudev.ackpine.impl.database.converters.NotificationStringConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
+import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
@@ -22,7 +23,8 @@ import ru.solrudev.ackpine.impl.database.model.*
 		UninstallFailureEntity::class,
 		InstallUriEntity::class,
 		PackageNameEntity::class,
-		SessionProgressEntity::class
+		SessionProgressEntity::class,
+		NativeSessionIdEntity::class
 	],
 	version = 1
 )
@@ -34,4 +36,5 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun sessionProgressDao(): SessionProgressDao
 	abstract fun installSessionDao(): InstallSessionDao
 	abstract fun uninstallSessionDao(): UninstallSessionDao
+	abstract fun nativeSessionIdDao(): NativeSessionIdDao
 }

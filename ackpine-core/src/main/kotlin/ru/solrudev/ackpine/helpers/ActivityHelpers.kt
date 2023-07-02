@@ -5,8 +5,6 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
-import androidx.activity.OnBackPressedCallback
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
@@ -47,11 +45,4 @@ internal fun Activity.clearTurnScreenOnSettings() {
 			window.clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
 		}
 	}
-}
-
-@JvmSynthetic
-internal inline fun ComponentActivity.onBackPressed(crossinline action: () -> Unit) {
-	onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-		override fun handleOnBackPressed() = action()
-	})
 }

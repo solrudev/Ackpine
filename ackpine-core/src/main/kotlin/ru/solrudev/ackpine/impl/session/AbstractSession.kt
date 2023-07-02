@@ -59,7 +59,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		executor.execute {
 			try {
 				doLaunch()
-				state = Session.State.Awaiting
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (_: CancellationException) {
@@ -76,7 +75,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (state !is Session.State.Awaiting || isCancelling) {
 			return
 		}
-		state = Session.State.Committed
 		executor.execute {
 			try {
 				doCommit()
@@ -121,6 +119,10 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		stateListeners -= listener
 	}
 
+	override fun notifyCommitted() {
+		state = Session.State.Committed
+	}
+
 	override fun complete(state: Session.State.Completed<F>) {
 		this.state = state
 		executor.execute {
@@ -130,6 +132,10 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	override fun completeExceptionally(exception: Exception) = executor.execute {
 		handleException(exception)
+	}
+
+	protected fun notifyAwaiting() {
+		state = Session.State.Awaiting
 	}
 
 	private fun handleCancellation() {

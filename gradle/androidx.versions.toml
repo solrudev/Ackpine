@@ -4,10 +4,8 @@ room = "2.5.1"
 [libraries]
 activity-ktx = { module = "androidx.activity:activity-ktx", version = "1.7.2" }
 annotation = { module = "androidx.annotation:annotation", version = "1.6.0" }
-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
-core = { module = "androidx.core:core", version = "1.10.1" }
-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version = "2.6.1" }
+core-ktx = { module = "androidx.core:core-ktx", version = "1.10.1" }
 startup-runtime = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version = "1.1.0" }

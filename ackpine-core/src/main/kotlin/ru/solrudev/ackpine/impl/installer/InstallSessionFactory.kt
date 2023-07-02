@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Handler
 import ru.solrudev.ackpine.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
+import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -36,6 +37,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<InstallFailure>,
 	private val sessionProgressDao: SessionProgressDao,
+	private val nativeSessionIdDao: NativeSessionIdDao,
 	private val executor: Executor,
 	private val handler: Handler
 ) : InstallSessionFactory {
@@ -62,7 +64,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id, initialState, initialProgress,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(),
-			sessionDao, sessionFailureDao, sessionProgressDao, executor, handler
+			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, executor, handler
 		)
 	}
 

@@ -15,14 +15,33 @@
 
 	<application>
 		<activity
-			android:name=".impl.installer.activity.IntentBasedInstallLauncherActivity"
+			android:name=".impl.installer.activity.IntentBasedInstallActivity"
 			android:exported="false"
-			android:launchMode="singleTask"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
 			android:showWhenLocked="true"
-			android:theme="@style/Theme.AppCompat.DayNight.NoActionBar"
+			android:theme="@style/Theme.Ackpine.InstallActivity"
 			tools:ignore="UnusedAttribute" />
+		<activity
+			android:name=".impl.installer.activity.SessionBasedInstallLauncherActivity"
+			android:exported="false"
+			android:showForAllUsers="true"
+			android:showOnLockScreen="true"
+			android:showWhenLocked="true"
+			android:theme="@style/Theme.Ackpine.InstallActivity"
+			tools:ignore="UnusedAttribute" />
+		<activity
+			android:name=".impl.installer.activity.SessionBasedInstallConfirmationActivity"
+			android:exported="false"
+			android:showForAllUsers="true"
+			android:showOnLockScreen="true"
+			android:showWhenLocked="true"
+			android:theme="@style/Theme.Ackpine.InstallActivity"
+			tools:ignore="UnusedAttribute" />
+
+		<receiver
+			android:name=".impl.installer.receiver.InstallationEventsReceiver"
+			android:exported="false" />
 
 	</application>
 </manifest>
