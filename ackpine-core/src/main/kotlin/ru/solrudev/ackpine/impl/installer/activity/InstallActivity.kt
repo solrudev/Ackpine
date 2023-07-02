@@ -75,15 +75,13 @@ internal abstract class InstallActivity(
 		)
 	}
 
-	private fun finishActivityOnTerminalSessionState() {
-		ackpineSessionFuture.handleResult { session ->
-			val subscription = session?.addStateListener { _, state ->
-				if (state.isTerminal) {
-					finishWithLaunchedActivity()
-				}
+	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
+		val subscription = session?.addStateListener { _, state ->
+			if (state.isTerminal) {
+				finishWithLaunchedActivity()
 			}
-			subscription?.let(subscriptions::add)
 		}
+		subscription?.let(subscriptions::add)
 	}
 
 	private fun finishWithLaunchedActivity() {
