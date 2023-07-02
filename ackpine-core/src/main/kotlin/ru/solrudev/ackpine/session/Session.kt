@@ -36,4 +36,26 @@ public interface Session<out F : Failure> {
 	public fun interface StateListener<in F : Failure> {
 		public fun onStateChanged(sessionId: UUID, state: State<F>)
 	}
+
+	public abstract class DefaultStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
+
+		public open fun onSuccess() {}
+		public open fun onFailure(failure: F) {}
+		public open fun onCancelled() {}
+
+		final override fun onStateChanged(sessionId: UUID, state: State<F>) {
+			if (state.isTerminal) {
+				session.removeStateListener(this)
+			}
+			when (state) {
+				State.Pending -> session.launch()
+				State.Active -> {}
+				State.Awaiting -> session.commit()
+				State.Committed -> {}
+				State.Cancelled -> onCancelled()
+				State.Succeeded -> onSuccess()
+				is State.Failed -> onFailure(state.failure)
+			}
+		}
+	}
 }
