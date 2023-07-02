@@ -17,6 +17,7 @@ import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.installer.activity.InstallActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallLauncherActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_NOTIFICATION_TAG
@@ -136,7 +137,12 @@ internal class SessionBasedInstallSession internal constructor(
 			INSTALLER_NOTIFICATION_TAG,
 			INSTALLER_REQUEST_CODE,
 			CANCEL_CURRENT_FLAGS
-		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
+		) { intent ->
+			intent.run {
+				putExtra(InstallActivity.SESSION_ID_KEY, id)
+				putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+			}
+		}
 	}
 
 	override fun doCancel() {
