@@ -73,6 +73,9 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun doLaunch() {
+		if (nativeSessionId != -1) {
+			abandonSession()
+		}
 		val sessionParams = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)

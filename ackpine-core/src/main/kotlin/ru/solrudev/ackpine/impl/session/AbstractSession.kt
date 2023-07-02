@@ -28,6 +28,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	private var isCancelling = false
 
 	@Volatile
+	private var isPreparing = false
+
+	@Volatile
 	private var state = initialState
 		set(value) {
 			val currentValue = field
@@ -44,7 +47,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 
 	override val isActive: Boolean
-		get() = with(state) { this !is Session.State.Pending && !isTerminal }
+		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
 	protected abstract fun doLaunch()
 	protected abstract fun doCommit()
@@ -52,12 +55,17 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun cleanup()
 
 	override fun launch() {
-		if (state !is Session.State.Pending || isCancelling) {
+		if (isPreparing || isCancelling) {
+			return
+		}
+		val currentState = state
+		if (currentState !is Session.State.Pending && currentState !is Session.State.Active) {
 			return
 		}
 		state = Session.State.Active
 		executor.execute {
 			try {
+				isPreparing = true
 				doLaunch()
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
@@ -135,6 +143,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	protected fun notifyAwaiting() {
+		isPreparing = false
 		state = Session.State.Awaiting
 	}
 
