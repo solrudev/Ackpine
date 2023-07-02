@@ -81,8 +81,7 @@ internal class SessionBasedInstallSession internal constructor(
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback()
 		packageInstaller.openSession(sessionId).use { session ->
-			val future = session.writeApks()
-			future.handleResult {
+			session.writeApks().handleResult {
 				notifyAwaiting()
 			}
 		}
