@@ -94,7 +94,7 @@ internal class SessionBasedInstallSession internal constructor(
 	@SuppressLint("RestrictedApi")
 	private fun PackageInstaller.Session.writeApks(): ListenableFuture<Unit> {
 		val future = ResolvableFuture.create<Unit>()
-		val isThrown = AtomicBoolean()
+		val isThrown = AtomicBoolean(false)
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val max = apks.size * STREAM_COPY_PROGRESS_MAX
