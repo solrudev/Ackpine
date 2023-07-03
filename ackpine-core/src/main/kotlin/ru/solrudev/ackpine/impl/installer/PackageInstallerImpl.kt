@@ -36,7 +36,7 @@ internal class PackageInstallerImpl internal constructor(
 				SessionEntity.InstallSession(
 					session = SessionEntity(
 						id.toString(),
-						SessionEntity.State.CREATING,
+						SessionEntity.State.PENDING,
 						parameters.confirmation,
 						parameters.notificationData.title,
 						parameters.notificationData.contentText,
@@ -49,7 +49,7 @@ internal class PackageInstallerImpl internal constructor(
 		}
 		val session = installSessionFactory.create(
 			parameters, id,
-			initialState = Session.State.Creating,
+			initialState = Session.State.Pending,
 			initialProgress = Progress()
 		)
 		sessions[id] = session

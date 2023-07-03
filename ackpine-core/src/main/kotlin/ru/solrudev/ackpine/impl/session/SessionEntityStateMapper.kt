@@ -10,7 +10,6 @@ internal fun <F : Failure> SessionEntity.State.toSessionState(
 	id: String,
 	sessionFailureDao: SessionFailureDao<F>
 ): Session.State<F> = when (this) {
-	SessionEntity.State.CREATING -> Session.State.Creating
 	SessionEntity.State.PENDING -> Session.State.Pending
 	SessionEntity.State.ACTIVE -> Session.State.Active
 	SessionEntity.State.AWAITING -> Session.State.Awaiting

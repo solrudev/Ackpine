@@ -31,7 +31,7 @@ internal class PackageUninstallerImpl internal constructor(
 				SessionEntity.UninstallSession(
 					session = SessionEntity(
 						id.toString(),
-						SessionEntity.State.CREATING,
+						SessionEntity.State.PENDING,
 						parameters.confirmation,
 						parameters.notificationData.title,
 						parameters.notificationData.contentText,
@@ -43,7 +43,7 @@ internal class PackageUninstallerImpl internal constructor(
 		}
 		val session = uninstallSessionFactory.create(
 			parameters, id,
-			initialState = Session.State.Creating
+			initialState = Session.State.Pending
 		)
 		sessions[id] = session
 		return session

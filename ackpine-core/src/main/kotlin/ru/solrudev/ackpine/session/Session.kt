@@ -24,7 +24,6 @@ public interface Session<out F : Failure> {
 		public val isCompleted: Boolean
 			get() = this is Completed
 
-		public data object Creating : State<Nothing>
 		public data object Pending : State<Nothing>
 		public data object Active : State<Nothing>
 		public data object Awaiting : State<Nothing>
@@ -49,7 +48,6 @@ public interface Session<out F : Failure> {
 				session.removeStateListener(this)
 			}
 			when (state) {
-				State.Creating -> {}
 				State.Pending -> session.launch()
 				State.Active -> {}
 				State.Awaiting -> session.commit()

@@ -56,6 +56,13 @@ internal class SessionBasedInstallSession internal constructor(
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
+	init {
+		executor.execute {
+			nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
+
+		}
+	}
+
 	@Volatile
 	private var nativeSessionId = -1
 
@@ -64,10 +71,6 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private val cancellationSignal = CancellationSignal()
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
-
-	override fun init() {
-		nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
-	}
 
 	override fun doLaunch() {
 		if (nativeSessionId != -1) {
