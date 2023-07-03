@@ -35,7 +35,7 @@ internal class PackageInstallerImpl internal constructor(
 				SessionEntity.InstallSession(
 					session = SessionEntity(
 						id.toString(),
-						SessionEntity.State.PENDING,
+						SessionEntity.State.CREATING,
 						parameters.confirmation,
 						parameters.notificationData.title,
 						parameters.notificationData.contentText,
