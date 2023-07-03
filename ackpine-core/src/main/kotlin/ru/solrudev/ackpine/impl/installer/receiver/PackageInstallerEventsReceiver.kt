@@ -20,13 +20,12 @@ import java.util.UUID
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class InstallationEventsReceiver : BroadcastReceiver() {
 
-	lateinit var packageInstaller: ru.solrudev.ackpine.installer.PackageInstaller
-
 	@Suppress("UNCHECKED_CAST")
 	override fun onReceive(context: Context, intent: Intent) {
 		if (intent.action != getAction(context)) {
 			return
 		}
+		val packageInstaller = ru.solrudev.ackpine.installer.PackageInstaller.getInstance(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(InstallActivity.SESSION_ID_KEY)!!
 		val session = packageInstaller.getSessionAsync(ackpineSessionId).get() as? CompletableSession<InstallFailure>
 		val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)

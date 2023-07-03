@@ -22,7 +22,7 @@ internal abstract class InstallActivity(
 	private val requestCode: Int = -1
 ) : Activity() {
 
-	lateinit var ackpinePackageInstaller: PackageInstaller
+	private lateinit var ackpinePackageInstaller: PackageInstaller
 
 	protected val ackpineSessionId by lazy {
 		intent.extras?.getSerializableCompat<UUID>(SESSION_ID_KEY)
@@ -40,6 +40,7 @@ internal abstract class InstallActivity(
 		turnScreenOnWhenLocked()
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
+		ackpinePackageInstaller = PackageInstaller.getInstance(this)
 	}
 
 	override fun onDestroy() {
