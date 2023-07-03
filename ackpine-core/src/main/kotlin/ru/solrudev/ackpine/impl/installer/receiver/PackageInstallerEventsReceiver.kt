@@ -15,6 +15,7 @@ import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -25,7 +26,7 @@ internal class InstallationEventsReceiver : BroadcastReceiver() {
 		if (intent.action != getAction(context)) {
 			return
 		}
-		val packageInstaller = ru.solrudev.ackpine.installer.PackageInstaller.getInstance(context)
+		val packageInstaller = AckpinePackageInstaller.getInstance(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(InstallActivity.SESSION_ID_KEY)!!
 		val session = packageInstaller.getSessionAsync(ackpineSessionId).get() as? CompletableSession<InstallFailure>
 		val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
