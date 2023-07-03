@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
+import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import androidx.core.net.toUri
@@ -47,7 +48,17 @@ internal class IntentBasedInstallSession internal constructor(
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
-	private val copyFile = File(context.filesDir, "ackpine/sessions/$id/0.apk")
+	private val Context.externalDir: File
+		get() {
+			val externalFilesDir = getExternalFilesDir(null)
+			return if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
+				externalFilesDir
+			} else {
+				filesDir
+			}
+		}
+
+	private val copyFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
 	private val cancellationSignal = CancellationSignal()
 
 	override fun doLaunch() {
