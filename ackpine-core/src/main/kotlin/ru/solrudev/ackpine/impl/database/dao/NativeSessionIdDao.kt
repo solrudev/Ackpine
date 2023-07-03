@@ -4,7 +4,7 @@ import androidx.annotation.RestrictTo
 import androidx.room.Dao
 import androidx.room.Query
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
 internal interface NativeSessionIdDao {
 

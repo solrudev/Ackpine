@@ -7,7 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
 	tableName = "sessions_installer_types",
 	foreignKeys = [ForeignKey(

@@ -1,6 +1,7 @@
 package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
+import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
@@ -17,6 +18,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.Executor
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
 	private val sessionProgressDao: SessionProgressDao,

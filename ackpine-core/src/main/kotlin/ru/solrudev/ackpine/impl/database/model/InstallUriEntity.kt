@@ -3,7 +3,7 @@ package ru.solrudev.ackpine.impl.database.model
 import androidx.annotation.RestrictTo
 import androidx.room.*
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
 	tableName = "sessions_install_uris",
 	foreignKeys = [ForeignKey(

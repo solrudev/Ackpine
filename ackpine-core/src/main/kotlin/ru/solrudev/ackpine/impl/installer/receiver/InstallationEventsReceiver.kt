@@ -16,8 +16,8 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class InstallationEventsReceiver : BroadcastReceiver() {
 
 	lateinit var packageInstaller: ru.solrudev.ackpine.installer.PackageInstaller

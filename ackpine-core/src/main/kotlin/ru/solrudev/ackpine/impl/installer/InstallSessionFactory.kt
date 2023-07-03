@@ -3,6 +3,7 @@ package ru.solrudev.ackpine.impl.installer
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
@@ -22,6 +23,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 import java.util.concurrent.Executor
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface InstallSessionFactory {
 
 	fun create(
@@ -32,6 +34,7 @@ internal interface InstallSessionFactory {
 	): ProgressSession<InstallFailure>
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
 	private val sessionDao: SessionDao,

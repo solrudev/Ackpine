@@ -7,7 +7,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationString
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
 internal data class SessionEntity internal constructor(
 	@PrimaryKey

@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.CancellationSignal
 import android.os.Handler
+import androidx.annotation.RestrictTo
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -28,6 +29,7 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallSession internal constructor(
 	private val context: Context,
 	private val apk: Uri,

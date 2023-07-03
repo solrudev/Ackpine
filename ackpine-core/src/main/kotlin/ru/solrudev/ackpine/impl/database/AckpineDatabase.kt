@@ -21,7 +21,7 @@ import java.util.concurrent.Executor
 
 private const val ACKPINE_DATABASE_NAME = "ackpine.sessiondb"
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Database(
 	entities = [
 		SessionEntity::class,

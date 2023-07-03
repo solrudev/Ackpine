@@ -7,7 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
 	tableName = "sessions_uninstall_failures",
 	foreignKeys = [ForeignKey(

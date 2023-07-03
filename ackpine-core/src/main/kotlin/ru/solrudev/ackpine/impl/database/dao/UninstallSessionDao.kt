@@ -8,7 +8,7 @@ import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
 internal abstract class UninstallSessionDao(private val database: AckpineDatabase) :
 	SessionFailureDao<UninstallFailure> {

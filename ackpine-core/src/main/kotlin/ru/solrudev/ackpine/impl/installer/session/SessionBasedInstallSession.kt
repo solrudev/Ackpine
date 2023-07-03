@@ -10,6 +10,7 @@ import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import androidx.annotation.RequiresApi
+import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.handleResult
@@ -37,6 +38,7 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
 	private val context: Context,

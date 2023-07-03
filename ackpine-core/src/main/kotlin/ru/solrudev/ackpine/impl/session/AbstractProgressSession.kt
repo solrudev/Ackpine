@@ -1,6 +1,7 @@
 package ru.solrudev.ackpine.impl.session
 
 import android.os.Handler
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -12,6 +13,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import java.util.concurrent.Executor
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> internal constructor(
 	id: UUID,
 	initialState: Session.State<F>,

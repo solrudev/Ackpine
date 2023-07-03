@@ -8,7 +8,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
 internal abstract class InstallSessionDao(private val database: AckpineDatabase) : SessionFailureDao<InstallFailure> {
 

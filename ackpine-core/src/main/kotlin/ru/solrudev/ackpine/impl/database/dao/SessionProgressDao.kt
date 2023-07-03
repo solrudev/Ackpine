@@ -5,7 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import ru.solrudev.ackpine.session.Progress
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
 internal interface SessionProgressDao {
 
