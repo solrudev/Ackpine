@@ -44,7 +44,7 @@ internal abstract class AbstractProgressSession<F : Failure> internal constructo
 			}
 		}
 
-	override fun addProgressListener(listener: ProgressSession.ProgressListener): DisposableSubscription {
+	final override fun addProgressListener(listener: ProgressSession.ProgressListener): DisposableSubscription {
 		progressListeners += listener
 		handler.post {
 			listener.onProgressChanged(id, progress)
@@ -52,7 +52,7 @@ internal abstract class AbstractProgressSession<F : Failure> internal constructo
 		return ProgressDisposableSubscription(this, listener)
 	}
 
-	override fun removeProgressListener(listener: ProgressSession.ProgressListener) {
+	final override fun removeProgressListener(listener: ProgressSession.ProgressListener) {
 		progressListeners -= listener
 	}
 

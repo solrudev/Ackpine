@@ -48,7 +48,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			}
 		}
 
-	override val isActive: Boolean
+	final override val isActive: Boolean
 		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
 	protected abstract fun doLaunch()
@@ -56,7 +56,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun doCancel()
 	protected abstract fun cleanup()
 
-	override fun launch() {
+	final override fun launch() {
 		if (isPreparing || isCancelling) {
 			return
 		}
@@ -81,7 +81,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 	}
 
-	override fun commit() {
+	final override fun commit() {
 		if (state !is Session.State.Awaiting || isCancelling) {
 			return
 		}
@@ -100,7 +100,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 	}
 
-	override fun cancel() {
+	final override fun cancel() {
 		if (state.isTerminal || isCancelling) {
 			return
 		}
@@ -117,7 +117,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 	}
 
-	override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
+	final override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
 		stateListeners += listener
 		handler.post {
 			listener.onStateChanged(id, state)
@@ -125,22 +125,22 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		return StateDisposableSubscription(this, listener)
 	}
 
-	override fun removeStateListener(listener: Session.StateListener<F>) {
+	final override fun removeStateListener(listener: Session.StateListener<F>) {
 		stateListeners -= listener
 	}
 
-	override fun notifyCommitted() {
+	final override fun notifyCommitted() {
 		state = Session.State.Committed
 	}
 
-	override fun complete(state: Session.State.Completed<F>) {
+	final override fun complete(state: Session.State.Completed<F>) {
 		this.state = state
 		executor.execute {
 			cleanup()
 		}
 	}
 
-	override fun completeExceptionally(exception: Exception) = executor.execute {
+	final override fun completeExceptionally(exception: Exception) = executor.execute {
 		handleException(exception)
 	}
 
