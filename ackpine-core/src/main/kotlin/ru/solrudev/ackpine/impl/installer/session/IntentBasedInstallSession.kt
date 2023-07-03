@@ -2,6 +2,7 @@ package ru.solrudev.ackpine.impl.installer.session
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
@@ -52,15 +53,15 @@ internal class IntentBasedInstallSession internal constructor(
 	private val cancellationSignal = CancellationSignal()
 
 	override fun doLaunch() {
-		val (apkFile, mustCopy) = getApkFile()
+		val (_, mustCopy) = getApkUri()
 		if (mustCopy) {
-			copyApkTo(apkFile)
+			createApkCopy()
 		}
 		notifyAwaiting()
 	}
 
 	override fun doCommit() {
-		val (apkFile, _) = getApkFile()
+		val (apkUri, _) = getApkUri()
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation,
 			notificationData,
@@ -70,7 +71,7 @@ internal class IntentBasedInstallSession internal constructor(
 		) { intent ->
 			intent.run {
 				putExtra(InstallActivity.SESSION_ID_KEY, id)
-				putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkFile.toUri())
+				putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri)
 			}
 		}
 	}
@@ -83,23 +84,26 @@ internal class IntentBasedInstallSession internal constructor(
 		copyFile.delete()
 	}
 
-	private fun getApkFile(): ApkFile {
-		val file = apk.toFile(context, cancellationSignal)
-		if (file.canRead()) {
-			return ApkFile(file, mustCopy = false)
+	private fun getApkUri(): ApkUri {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
+			val file = apk.toFile(context, cancellationSignal)
+			if (file.canRead()) {
+				return ApkUri(file.toUri(), mustCopy = false)
+			}
+			return ApkUri(copyFile.toUri(), mustCopy = true)
 		}
-		return ApkFile(copyFile, mustCopy = true)
+		return ApkUri(apk, mustCopy = false)
 	}
 
-	private fun copyApkTo(apkFile: File) {
-		if (apkFile.exists()) {
-			apkFile.delete()
+	private fun createApkCopy() {
+		if (copyFile.exists()) {
+			copyFile.delete()
 		}
-		apkFile.createNewFile()
+		copyFile.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: error("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
-			apkFile.outputStream().buffered().use { outputStream ->
+			copyFile.outputStream().buffered().use { outputStream ->
 				var currentProgress = 0
 				apkStream.copyTo(outputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
 					currentProgress += delta
@@ -109,5 +113,5 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 	}
 
-	private data class ApkFile(val file: File, val mustCopy: Boolean)
+	private data class ApkUri(val uri: Uri, val mustCopy: Boolean)
 }
