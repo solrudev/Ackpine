@@ -24,6 +24,15 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	private val exceptionalFailureFactory: (Exception) -> F
 ) : CompletableSession<F> {
 
+	init {
+		executor.execute {
+			init()
+			if (initialState is Session.State.Creating) {
+				state = Session.State.Pending
+			}
+		}
+	}
+
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
 
 	@Volatile
@@ -51,6 +60,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override val isActive: Boolean
 		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
+	protected open fun init() {}
 	protected abstract fun doLaunch()
 	protected abstract fun doCommit()
 	protected abstract fun doCancel()
@@ -167,6 +177,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	private fun Session.State<F>.toSessionEntityState() = when (this) {
+		Session.State.Creating -> SessionEntity.State.CREATING
 		Session.State.Pending -> SessionEntity.State.PENDING
 		Session.State.Active -> SessionEntity.State.ACTIVE
 		Session.State.Awaiting -> SessionEntity.State.AWAITING

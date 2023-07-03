@@ -7,6 +7,7 @@ import kotlin.coroutines.resumeWithException
 public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendCancellableCoroutine { continuation ->
 	val subscription = addStateListener { _, state ->
 		when (state) {
+			Session.State.Creating -> {}
 			Session.State.Pending -> launch()
 			Session.State.Active -> {}
 			Session.State.Awaiting -> commit()

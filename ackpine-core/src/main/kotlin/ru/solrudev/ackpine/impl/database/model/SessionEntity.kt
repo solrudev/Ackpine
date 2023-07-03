@@ -28,7 +28,7 @@ internal data class SessionEntity internal constructor(
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 	internal enum class State {
-		PENDING, ACTIVE, AWAITING, COMMITTED, CANCELLED, SUCCEEDED, FAILED
+		CREATING, PENDING, ACTIVE, AWAITING, COMMITTED, CANCELLED, SUCCEEDED, FAILED
 	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

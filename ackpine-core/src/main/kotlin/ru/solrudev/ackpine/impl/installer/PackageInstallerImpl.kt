@@ -48,7 +48,7 @@ internal class PackageInstallerImpl internal constructor(
 		}
 		val session = installSessionFactory.create(
 			parameters, id,
-			initialState = Session.State.Pending,
+			initialState = Session.State.Creating,
 			initialProgress = Progress()
 		)
 		sessions[id] = session
@@ -96,6 +96,7 @@ internal class PackageInstallerImpl internal constructor(
 	}
 
 	private fun SessionEntity.State.toSessionState(id: String): Session.State<InstallFailure> = when (this) {
+		SessionEntity.State.CREATING -> Session.State.Creating
 		SessionEntity.State.PENDING -> Session.State.Pending
 		SessionEntity.State.ACTIVE -> Session.State.Active
 		SessionEntity.State.AWAITING -> Session.State.Awaiting

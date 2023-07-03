@@ -68,10 +68,8 @@ internal class SessionBasedInstallSession internal constructor(
 	private val cancellationSignal = CancellationSignal()
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
-	init {
-		executor.execute {
-			nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
-		}
+	override fun init() {
+		nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
 	}
 
 	override fun doLaunch() {
@@ -91,6 +89,30 @@ internal class SessionBasedInstallSession internal constructor(
 				notifyAwaiting()
 			}
 		}
+	}
+
+	override fun doCommit() {
+		context.launchConfirmation<SessionBasedInstallLauncherActivity>(
+			confirmation,
+			notificationData,
+			INSTALLER_NOTIFICATION_TAG,
+			INSTALLER_REQUEST_CODE,
+			CANCEL_CURRENT_FLAGS
+		) { intent ->
+			intent.run {
+				putExtra(InstallActivity.SESSION_ID_KEY, id)
+				putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+			}
+		}
+	}
+
+	override fun doCancel() {
+		cancellationSignal.cancel()
+	}
+
+	override fun cleanup() {
+		abandonSession()
+		sessionCallback?.let(packageInstaller::unregisterSessionCallback)
 	}
 
 	@SuppressLint("RestrictedApi")
@@ -133,30 +155,6 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 		}
 		return future
-	}
-
-	override fun doCommit() {
-		context.launchConfirmation<SessionBasedInstallLauncherActivity>(
-			confirmation,
-			notificationData,
-			INSTALLER_NOTIFICATION_TAG,
-			INSTALLER_REQUEST_CODE,
-			CANCEL_CURRENT_FLAGS
-		) { intent ->
-			intent.run {
-				putExtra(InstallActivity.SESSION_ID_KEY, id)
-				putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
-			}
-		}
-	}
-
-	override fun doCancel() {
-		cancellationSignal.cancel()
-	}
-
-	override fun cleanup() {
-		abandonSession()
-		sessionCallback?.let(packageInstaller::unregisterSessionCallback)
 	}
 
 	private fun PackageInstaller.createAndRegisterSessionCallback(): PackageInstaller.SessionCallback {
