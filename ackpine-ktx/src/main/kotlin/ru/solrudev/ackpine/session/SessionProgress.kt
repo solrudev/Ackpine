@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.conflate
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.plusAssign
 
-public val <F : Failure> ProgressSession<F>.progress: Flow<Progress>
+public val ProgressSession<*>.progress: Flow<Progress>
 	get() = callbackFlow {
 		val subscriptionContainer = DisposableSubscriptionContainer()
 		subscriptionContainer += addProgressListener { _, progress ->
