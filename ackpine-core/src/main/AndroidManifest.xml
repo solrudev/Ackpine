@@ -40,7 +40,7 @@
 			tools:ignore="UnusedAttribute" />
 
 		<receiver
-			android:name=".impl.installer.receiver.InstallationEventsReceiver"
+			android:name=".impl.installer.receiver.PackageInstallerEventsReceiver"
 			android:exported="false" />
 
 	</application>

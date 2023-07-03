@@ -19,7 +19,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal class InstallationEventsReceiver : BroadcastReceiver() {
+internal class PackageInstallerEventsReceiver : BroadcastReceiver() {
 
 	@Suppress("UNCHECKED_CAST")
 	override fun onReceive(context: Context, intent: Intent) {
@@ -60,6 +60,6 @@ internal class InstallationEventsReceiver : BroadcastReceiver() {
 	internal companion object {
 
 		@JvmSynthetic
-		internal fun getAction(context: Context) = "${context.packageName}.INSTALLATION_STATUS"
+		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
 	}
 }

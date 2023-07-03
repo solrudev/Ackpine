@@ -10,7 +10,7 @@ import android.os.Bundle
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
-import ru.solrudev.ackpine.impl.installer.receiver.InstallationEventsReceiver
+import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerEventsReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
@@ -33,8 +33,8 @@ internal class SessionBasedInstallLauncherActivity : InstallActivity(LAUNCHER_TA
 	}
 
 	private fun commitSession() {
-		val receiverIntent = Intent(applicationContext, InstallationEventsReceiver::class.java).apply {
-			action = InstallationEventsReceiver.getAction(applicationContext)
+		val receiverIntent = Intent(applicationContext, PackageInstallerEventsReceiver::class.java).apply {
+			action = PackageInstallerEventsReceiver.getAction(applicationContext)
 			putExtra(SESSION_ID_KEY, ackpineSessionId)
 		}
 		val receiverPendingIntent = PendingIntent.getBroadcast(
