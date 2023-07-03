@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutionException
 internal inline fun <V> ListenableFuture<V>.handleResult(crossinline block: (V) -> Unit) {
 	if (isDone) {
 		block(getAndUnwrapException())
+		return
 	}
 	addListener({ block(getAndUnwrapException()) }, DirectExecutor.INSTANCE)
 }
