@@ -14,6 +14,7 @@ android {
 }
 
 dependencies {
+	api(projects.ackpineCore)
 	implementation(androidx.core.ktx)
 	implementation(libs.apksig)
 }

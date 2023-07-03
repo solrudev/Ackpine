@@ -15,17 +15,20 @@ import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.helpers.toUri
+import ru.solrudev.ackpine.plugin.AckpinePlugin
+import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.concurrent.Executor
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
-import kotlin.concurrent.thread
 
 /**
  * [ContentProvider] which allows to open files inside of ZIP archives.
@@ -37,7 +40,10 @@ public class ZippedFileProvider : ContentProvider() {
 		authority = info.authority
 	}
 
-	override fun onCreate(): Boolean = true
+	override fun onCreate(): Boolean {
+		AckpinePluginRegistry.register(ZippedFileProvider)
+		return true
+	}
 
 	override fun getType(uri: Uri): String? {
 		return uri.encodedQuery
@@ -161,7 +167,7 @@ public class ZippedFileProvider : ContentProvider() {
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
 		val zipStream = openZipEntryStream(uri, signal)
 		val size = zipStream.size
-		thread {
+		executor.execute {
 			outputFd.safeWrite { outputStream ->
 				zipStream.buffered().use { zipStream ->
 					zipStream.copyTo(outputStream, signal)
@@ -255,8 +261,9 @@ public class ZippedFileProvider : ContentProvider() {
 		throw UnsupportedOperationException("Updating not supported by ZippedFileProvider")
 	}
 
-	public companion object {
+	public companion object : AckpinePlugin {
 
+		private lateinit var executor: Executor
 		private lateinit var authority: String
 
 		@JvmStatic
@@ -276,6 +283,12 @@ public class ZippedFileProvider : ContentProvider() {
 				.encodedPath(zipPath)
 				.encodedQuery(zipEntryName)
 				.build()
+		}
+
+		@RestrictTo(RestrictTo.Scope.LIBRARY)
+		@JvmSynthetic
+		override fun setExecutor(executor: Executor) {
+			this.executor = executor
 		}
 	}
 }
