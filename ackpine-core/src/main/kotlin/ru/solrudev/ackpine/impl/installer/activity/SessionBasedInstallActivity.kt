@@ -11,7 +11,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerEventsReceiver
-import ru.solrudev.ackpine.impl.installer.session.helpers.UPDATE_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 

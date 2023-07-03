@@ -20,14 +20,12 @@ import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.installer.activity.InstallActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallLauncherActivity
-import ru.solrudev.ackpine.impl.installer.session.helpers.CANCEL_CURRENT_FLAGS
-import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_NOTIFICATION_TAG
-import ru.solrudev.ackpine.impl.installer.session.helpers.INSTALLER_REQUEST_CODE
 import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
-import ru.solrudev.ackpine.impl.installer.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
+import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session

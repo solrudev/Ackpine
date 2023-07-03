@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.impl.installer.session.helpers
+package ru.solrudev.ackpine.impl.session.helpers
 
 import android.app.Activity
 import android.app.NotificationManager
@@ -12,15 +12,6 @@ import ru.solrudev.ackpine.R
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.concurrent.atomic.AtomicInteger
-
-@get:JvmSynthetic
-internal const val INSTALLER_NOTIFICATION_TAG = "ru.solrudev.ackpine.INSTALLER_NOTIFICATION"
-
-@get:JvmSynthetic
-internal const val UNINSTALLER_NOTIFICATION_TAG = "ru.solrudev.ackpine.UNINSTALLER_NOTIFICATION"
-
-@get:JvmSynthetic
-internal const val INSTALLER_REQUEST_CODE = 247164518
 
 @get:JvmSynthetic
 internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
