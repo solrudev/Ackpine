@@ -11,7 +11,6 @@ import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.installer.activity.InstallActivity
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
@@ -74,15 +73,11 @@ internal class IntentBasedInstallSession internal constructor(
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation,
 			notificationData,
+			id,
 			INSTALLER_NOTIFICATION_TAG,
 			INSTALLER_REQUEST_CODE,
 			CANCEL_CURRENT_FLAGS
-		) { intent ->
-			intent.run {
-				putExtra(InstallActivity.SESSION_ID_KEY, id)
-				putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri)
-			}
-		}
+		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }
 	}
 
 	override fun doCancel() {

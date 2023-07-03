@@ -9,8 +9,10 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.R
+import ru.solrudev.ackpine.impl.activity.LauncherActivity
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
+import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
 @get:JvmSynthetic
@@ -33,12 +35,15 @@ private val notificationId = AtomicInteger(18475)
 internal inline fun <reified T : Activity> Context.launchConfirmation(
 	confirmation: Confirmation,
 	notificationData: NotificationData,
+	sessionId: UUID,
 	tag: String,
 	requestCode: Int,
 	flags: Int,
 	putExtra: (Intent) -> Unit
 ) {
-	val intent = Intent(this, T::class.java).also(putExtra)
+	val intent = Intent(this, T::class.java)
+		.apply { putExtra(LauncherActivity.SESSION_ID_KEY, sessionId) }
+		.also(putExtra)
 	when (confirmation) {
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 		Confirmation.DEFERRED -> showNotification(

@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
@@ -90,22 +91,8 @@ internal class PackageInstallerImpl internal constructor(
 		return installSessionFactory.create(
 			parameters,
 			UUID.fromString(session.id),
-			initialState = session.state.toSessionState(session.id),
+			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress()
 		)
-	}
-
-	private fun SessionEntity.State.toSessionState(id: String): Session.State<InstallFailure> = when (this) {
-		SessionEntity.State.CREATING -> Session.State.Creating
-		SessionEntity.State.PENDING -> Session.State.Pending
-		SessionEntity.State.ACTIVE -> Session.State.Active
-		SessionEntity.State.AWAITING -> Session.State.Awaiting
-		SessionEntity.State.COMMITTED -> Session.State.Committed
-		SessionEntity.State.CANCELLED -> Session.State.Cancelled
-		SessionEntity.State.SUCCEEDED -> Session.State.Succeeded
-		SessionEntity.State.FAILED -> {
-			val failure = installSessionDao.getFailure(id)
-			Session.State.Failed(failure!!)
-		}
 	}
 }

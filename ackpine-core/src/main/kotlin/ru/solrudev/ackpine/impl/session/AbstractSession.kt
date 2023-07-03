@@ -64,7 +64,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun doLaunch()
 	protected abstract fun doCommit()
 	protected abstract fun doCancel()
-	protected abstract fun cleanup()
+	protected open fun cleanup() {}
 
 	final override fun launch() {
 		if (isPreparing || isCancelling) {
