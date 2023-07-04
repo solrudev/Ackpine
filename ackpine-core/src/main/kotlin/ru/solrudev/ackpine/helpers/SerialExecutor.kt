@@ -17,7 +17,7 @@ internal class SerialExecutor(private val executor: Executor) : Executor {
 		}
 	}
 
-	internal fun scheduleNext() {
+	private fun scheduleNext() {
 		if (tasks.removeFirstOrNull().also { activeCommand = it } != null) {
 			executor.execute(activeCommand)
 		}
