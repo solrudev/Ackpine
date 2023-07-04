@@ -42,6 +42,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
 	private val executor: Executor,
+	private val serialExecutor: Executor,
 	private val handler: Handler
 ) : InstallSessionFactory {
 
@@ -58,7 +59,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id, initialState, initialProgress,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(),
-			sessionDao, sessionFailureDao, sessionProgressDao, executor, handler
+			sessionDao, sessionFailureDao, sessionProgressDao, serialExecutor, handler
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -67,7 +68,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id, initialState, initialProgress,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(),
-			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, executor, handler
+			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, executor, serialExecutor, handler
 		)
 	}
 

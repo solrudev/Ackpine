@@ -19,7 +19,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
-	private val executor: Executor,
+	private val serialExecutor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F
 ) : CompletableSession<F> {
@@ -65,7 +65,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			return
 		}
 		state = Session.State.Active
-		executor.execute {
+		serialExecutor.execute {
 			try {
 				isPreparing = true
 				doLaunch()
@@ -85,7 +85,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (state !is Session.State.Awaiting || isCancelling) {
 			return
 		}
-		executor.execute {
+		serialExecutor.execute {
 			try {
 				doCommit()
 			} catch (_: OperationCanceledException) {
@@ -104,7 +104,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (state.isTerminal || isCancelling) {
 			return
 		}
-		executor.execute {
+		serialExecutor.execute {
 			try {
 				isCancelling = true
 				doCancel()
@@ -135,12 +135,12 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	final override fun complete(state: Session.State.Completed<F>) {
 		this.state = state
-		executor.execute {
+		serialExecutor.execute {
 			cleanup()
 		}
 	}
 
-	final override fun completeExceptionally(exception: Exception) = executor.execute {
+	final override fun completeExceptionally(exception: Exception) = serialExecutor.execute {
 		handleException(exception)
 	}
 
@@ -159,7 +159,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		cleanup()
 	}
 
-	private fun persistSessionState(value: Session.State<F>) = executor.execute {
+	private fun persistSessionState(value: Session.State<F>) = serialExecutor.execute {
 		when (value) {
 			is Session.State.Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())

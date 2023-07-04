@@ -50,16 +50,16 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
 	private val executor: Executor,
+	serialExecutor: Executor,
 	private val handler: Handler,
 ) : AbstractProgressSession<InstallFailure>(
-	id, initialState, initialProgress, sessionDao, sessionFailureDao, sessionProgressDao, executor, handler,
+	id, initialState, initialProgress, sessionDao, sessionFailureDao, sessionProgressDao, serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
 	init {
-		executor.execute {
+		serialExecutor.execute {
 			nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
-
 		}
 	}
 
