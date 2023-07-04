@@ -19,6 +19,7 @@ public enum class Dpi(public val density: Int) {
 		private val dpis = Dpi.values().map { it.name.lowercase() }.toSet()
 
 		@JvmStatic
+		@get:JvmName("fromContext")
 		public val Context.dpi: Dpi
 			get() {
 				val dpi = resources.displayMetrics.densityDpi
