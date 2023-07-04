@@ -7,7 +7,7 @@ import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.installer.activity.InstallActivity
+import ru.solrudev.ackpine.impl.activity.LauncherActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
@@ -27,7 +27,7 @@ internal class PackageInstallerEventsReceiver : BroadcastReceiver() {
 			return
 		}
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
-		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(InstallActivity.SESSION_ID_KEY)!!
+		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(LauncherActivity.SESSION_ID_KEY)!!
 		val session = packageInstaller.getSessionAsync(ackpineSessionId).get() as? CompletableSession<InstallFailure>
 		val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
 		val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
