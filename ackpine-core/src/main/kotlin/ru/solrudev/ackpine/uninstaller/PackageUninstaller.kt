@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.impl.uninstaller.UninstallSessionFactoryImpl
@@ -47,7 +48,8 @@ public interface PackageUninstaller {
 					context.applicationContext,
 					database.sessionDao(),
 					database.uninstallSessionDao(),
-					executor,
+					database.notificationIdDao(),
+					SerialExecutor(executor),
 					Handler(context.mainLooper)
 				)
 			)

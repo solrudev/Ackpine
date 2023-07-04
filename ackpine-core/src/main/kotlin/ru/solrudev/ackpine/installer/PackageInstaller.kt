@@ -51,6 +51,7 @@ public interface PackageInstaller {
 					database.installSessionDao(),
 					database.sessionProgressDao(),
 					database.nativeSessionIdDao(),
+					database.notificationIdDao(),
 					executor,
 					SerialExecutor(executor),
 					Handler(context.mainLooper)

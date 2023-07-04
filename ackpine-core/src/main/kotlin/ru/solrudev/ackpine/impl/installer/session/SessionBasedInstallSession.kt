@@ -15,6 +15,7 @@ import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.handleResult
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
+import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -49,11 +50,15 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	notificationIdDao: NotificationIdDao,
 	private val executor: Executor,
 	serialExecutor: Executor,
 	private val handler: Handler,
 ) : AbstractProgressSession<InstallFailure>(
-	id, initialState, initialProgress, sessionDao, sessionFailureDao, sessionProgressDao, serialExecutor, handler,
+	context, INSTALLER_NOTIFICATION_TAG,
+	id, initialState, initialProgress,
+	sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
+	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
@@ -69,10 +74,9 @@ internal class SessionBasedInstallSession internal constructor(
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
 
-	private val cancellationSignal = CancellationSignal()
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
-	override fun doLaunch() {
+	override fun doLaunch(cancellationSignal: CancellationSignal) {
 		if (nativeSessionId != -1) {
 			abandonSession()
 		}
@@ -85,13 +89,13 @@ internal class SessionBasedInstallSession internal constructor(
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback()
 		packageInstaller.openSession(sessionId).use { session ->
-			session.writeApks().handleResult {
+			session.writeApks(cancellationSignal).handleResult {
 				notifyAwaiting()
 			}
 		}
 	}
 
-	override fun doCommit() {
+	override fun doCommit(cancellationSignal: CancellationSignal) {
 		context.launchConfirmation<SessionBasedInstallLauncherActivity>(
 			confirmation,
 			notificationData,
@@ -102,17 +106,13 @@ internal class SessionBasedInstallSession internal constructor(
 		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
 	}
 
-	override fun doCancel() {
-		cancellationSignal.cancel()
-	}
-
-	override fun cleanup() {
+	override fun doCleanup() {
 		abandonSession()
 		sessionCallback?.let(packageInstaller::unregisterSessionCallback)
 	}
 
 	@SuppressLint("RestrictedApi")
-	private fun PackageInstaller.Session.writeApks(): ListenableFuture<Unit> {
+	private fun PackageInstaller.Session.writeApks(cancellationSignal: CancellationSignal): ListenableFuture<Unit> {
 		val future = ResolvableFuture.create<Unit>()
 		val isThrown = AtomicBoolean(false)
 		val countdown = AtomicInteger(apks.size)

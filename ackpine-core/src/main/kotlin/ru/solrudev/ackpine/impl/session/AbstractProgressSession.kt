@@ -1,8 +1,10 @@
 package ru.solrudev.ackpine.impl.session
 
+import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -15,23 +17,23 @@ import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> internal constructor(
+	context: Context,
+	notificationTag: String,
 	id: UUID,
 	initialState: Session.State<F>,
 	initialProgress: Progress,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
+	notificationIdDao: NotificationIdDao,
 	private val serialExecutor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F
 ) : AbstractSession<F>(
-	id,
-	initialState,
-	sessionDao,
-	sessionFailureDao,
-	serialExecutor,
-	handler,
-	exceptionalFailureFactory
+	context, notificationTag,
+	id, initialState,
+	sessionDao, sessionFailureDao, notificationIdDao,
+	serialExecutor, handler, exceptionalFailureFactory
 ), ProgressSession<F> {
 
 	private val progressListeners = mutableListOf<ProgressSession.ProgressListener>()

@@ -1,8 +1,10 @@
 package ru.solrudev.ackpine.impl.uninstaller.session
 
 import android.content.Context
+import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.session.AbstractSession
@@ -26,16 +28,20 @@ internal class UninstallSession internal constructor(
 	private val notificationData: NotificationData,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
-	executor: Executor,
+	notificationIdDao: NotificationIdDao,
+	serialExecutor: Executor,
 	handler: Handler
 ) : AbstractSession<UninstallFailure>(
-	id, initialState, sessionDao, sessionFailureDao, executor, handler,
+	context, UNINSTALLER_NOTIFICATION_TAG,
+	id, initialState,
+	sessionDao, sessionFailureDao, notificationIdDao,
+	serialExecutor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional
 ) {
 
-	override fun doLaunch() {}
+	override fun doLaunch(cancellationSignal: CancellationSignal) {}
 
-	override fun doCommit() {
+	override fun doCommit(cancellationSignal: CancellationSignal) {
 		context.launchConfirmation<UninstallActivity>(
 			confirmation,
 			notificationData,
@@ -45,6 +51,4 @@ internal class UninstallSession internal constructor(
 			UPDATE_CURRENT_FLAGS
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }
 	}
-
-	override fun doCancel() {}
 }

@@ -1,9 +1,14 @@
 package ru.solrudev.ackpine.impl.session
 
+import android.app.NotificationManager
+import android.content.Context
+import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import androidx.annotation.RestrictTo
+import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -12,19 +17,37 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
+
+private val NOTIFICATION_ID = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractSession<F : Failure> internal constructor(
+	private val context: Context,
+	private val notificationTag: String,
 	override val id: UUID,
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
+	private val notificationIdDao: NotificationIdDao,
 	private val serialExecutor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F
 ) : CompletableSession<F> {
 
+	init {
+		serialExecutor.execute {
+			notificationId = notificationIdDao.getNotificationId(id.toString())
+				?: NOTIFICATION_ID.incrementAndGet().also { notificationId ->
+					notificationIdDao.setNotificationId(id.toString(), notificationId)
+				}
+		}
+	}
+
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
+	private var notificationId = 0
+	private val cancellationSignal = CancellationSignal()
 
 	@Volatile
 	private var isCancelling = false
@@ -51,10 +74,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override val isActive: Boolean
 		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
-	protected abstract fun doLaunch()
-	protected abstract fun doCommit()
-	protected abstract fun doCancel()
-	protected open fun cleanup() {}
+	protected abstract fun doLaunch(cancellationSignal: CancellationSignal)
+	protected abstract fun doCommit(cancellationSignal: CancellationSignal)
+	protected open fun doCleanup() {}
 
 	final override fun launch() {
 		if (isPreparing || isCancelling) {
@@ -68,7 +90,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		serialExecutor.execute {
 			try {
 				isPreparing = true
-				doLaunch()
+				doLaunch(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (_: CancellationException) {
@@ -87,7 +109,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 		serialExecutor.execute {
 			try {
-				doCommit()
+				doCommit(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (_: CancellationException) {
@@ -107,7 +129,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		serialExecutor.execute {
 			try {
 				isCancelling = true
-				doCancel()
+				cancellationSignal.cancel()
 				handleCancellation()
 			} catch (exception: Exception) {
 				handleException(exception)
@@ -147,6 +169,11 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected fun notifyAwaiting() {
 		isPreparing = false
 		state = Session.State.Awaiting
+	}
+
+	private fun cleanup() {
+		doCleanup()
+		context.getSystemService<NotificationManager>()?.cancel(notificationTag, notificationId)
 	}
 
 	private fun handleCancellation() {

@@ -8,6 +8,7 @@ import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -40,10 +41,14 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
+	notificationIdDao: NotificationIdDao,
 	serialExecutor: Executor,
 	handler: Handler
 ) : AbstractProgressSession<InstallFailure>(
-	id, initialState, initialProgress, sessionDao, sessionFailureDao, sessionProgressDao, serialExecutor, handler,
+	context, INSTALLER_NOTIFICATION_TAG,
+	id, initialState, initialProgress,
+	sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
+	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
@@ -58,18 +63,17 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 
 	private val copyFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
-	private val cancellationSignal = CancellationSignal()
 
-	override fun doLaunch() {
-		val (_, mustCopy) = getApkUri()
+	override fun doLaunch(cancellationSignal: CancellationSignal) {
+		val (_, mustCopy) = getApkUri(cancellationSignal)
 		if (mustCopy) {
-			createApkCopy()
+			createApkCopy(cancellationSignal)
 		}
 		notifyAwaiting()
 	}
 
-	override fun doCommit() {
-		val (apkUri, _) = getApkUri()
+	override fun doCommit(cancellationSignal: CancellationSignal) {
+		val (apkUri, _) = getApkUri(cancellationSignal)
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation,
 			notificationData,
@@ -80,15 +84,11 @@ internal class IntentBasedInstallSession internal constructor(
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }
 	}
 
-	override fun doCancel() {
-		cancellationSignal.cancel()
-	}
-
-	override fun cleanup() {
+	override fun doCleanup() {
 		copyFile.delete()
 	}
 
-	private fun getApkUri(): ApkUri {
+	private fun getApkUri(cancellationSignal: CancellationSignal): ApkUri {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
 			val file = apk.toFile(context, cancellationSignal)
 			if (file.canRead()) {
@@ -99,7 +99,7 @@ internal class IntentBasedInstallSession internal constructor(
 		return ApkUri(apk, mustCopy = false)
 	}
 
-	private fun createApkCopy() {
+	private fun createApkCopy(cancellationSignal: CancellationSignal) {
 		if (copyFile.exists()) {
 			copyFile.delete()
 		}
