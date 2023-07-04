@@ -24,7 +24,7 @@ internal abstract class UninstallActivity : LauncherActivity<Session<UninstallFa
 		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId!!)
 	}
 
-	private val packageName by lazy {
+	private val packageNameToUninstall by lazy {
 		intent.extras?.getString(PACKAGE_NAME_KEY)
 	}
 
@@ -52,15 +52,15 @@ internal abstract class UninstallActivity : LauncherActivity<Session<UninstallFa
 
 	@SuppressLint("RestrictedApi")
 	private fun launchUninstallActivity() {
-		if (packageName == null) {
+		if (packageNameToUninstall == null) {
 			withCompletableSession { session ->
 				session?.completeExceptionally(
-					IllegalStateException("$TAG: packageName was null.")
+					IllegalStateException("$TAG: packageNameToUninstall was null.")
 				)
 			}
 			return
 		}
-		val intent = uninstallPackageContract.createIntent(this, packageName!!)
+		val intent = uninstallPackageContract.createIntent(this, packageNameToUninstall!!)
 		startActivityForResult(intent, REQUEST_CODE)
 		withCompletableSession { session ->
 			session?.notifyCommitted()
