@@ -42,7 +42,7 @@ internal inline fun <reified T : Activity> Context.launchConfirmation(
 	putExtra: (Intent) -> Unit
 ) {
 	val intent = Intent(this, T::class.java)
-		.apply { putExtra(LauncherActivity.SESSION_ID_KEY, sessionId) }
+		.putExtra(LauncherActivity.SESSION_ID_KEY, sessionId)
 		.also(putExtra)
 	when (confirmation) {
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
