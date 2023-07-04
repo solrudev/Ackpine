@@ -98,7 +98,7 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun doCommit(cancellationSignal: CancellationSignal) {
 		context.launchConfirmation<SessionBasedInstallLauncherActivity>(
 			confirmation, notificationData,
-			id,
+			sessionId = id,
 			INSTALLER_NOTIFICATION_TAG, notificationId,
 			INSTALLER_REQUEST_CODE,
 			CANCEL_CURRENT_FLAGS

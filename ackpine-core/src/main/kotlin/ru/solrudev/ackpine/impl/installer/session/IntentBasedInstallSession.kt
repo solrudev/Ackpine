@@ -76,7 +76,7 @@ internal class IntentBasedInstallSession internal constructor(
 		val (apkUri, _) = getApkUri(cancellationSignal)
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
-			id,
+			sessionId = id,
 			INSTALLER_NOTIFICATION_TAG, notificationId,
 			INSTALLER_REQUEST_CODE,
 			CANCEL_CURRENT_FLAGS
