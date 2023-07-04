@@ -13,7 +13,7 @@ internal abstract class InstallActivity(
 	requestCode: Int = -1
 ) : LauncherActivity<ProgressSession<InstallFailure>, InstallFailure>(
 	tag, requestCode,
-	InstallFailure::Aborted
+	abortedStateFailureFactory = InstallFailure::Aborted
 ) {
 
 	override val ackpineSessionFuture by lazy {

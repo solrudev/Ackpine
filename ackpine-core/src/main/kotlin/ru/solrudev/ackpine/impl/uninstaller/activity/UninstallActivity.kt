@@ -17,7 +17,7 @@ private val uninstallPackageContract = UninstallPackageContract()
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class UninstallActivity : LauncherActivity<Session<UninstallFailure>, UninstallFailure>(
 	TAG, REQUEST_CODE,
-	UninstallFailure::Aborted
+	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
 
 	override val ackpineSessionFuture by lazy {
