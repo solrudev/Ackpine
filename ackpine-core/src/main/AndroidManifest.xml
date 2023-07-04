@@ -37,7 +37,7 @@
 			tools:ignore="UnusedAttribute" />
 
 		<receiver
-			android:name=".impl.installer.receiver.PackageInstallerEventsReceiver"
+			android:name=".impl.installer.receiver.PackageInstallerStatusReceiver"
 			android:exported="false" />
 
 	</application>

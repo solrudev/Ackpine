@@ -21,7 +21,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal class PackageInstallerEventsReceiver : BroadcastReceiver() {
+internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 	private lateinit var pendingResult: PendingResult
 
@@ -39,7 +39,7 @@ internal class PackageInstallerEventsReceiver : BroadcastReceiver() {
 			}
 		} catch (t: Throwable) {
 			pendingResult.finish()
-			Log.e("InstallerEventsReceiver", null, t)
+			Log.e("InstallerStatusReceiver", null, t)
 		}
 	}
 
@@ -61,7 +61,7 @@ internal class PackageInstallerEventsReceiver : BroadcastReceiver() {
 					context.startActivity(wrapperIntent)
 				} else {
 					session?.completeExceptionally(
-						IllegalArgumentException("PackageInstallerEventsReceiver: confirmationIntent was null.")
+						IllegalArgumentException("PackageInstallerStatusReceiver: confirmationIntent was null.")
 					)
 				}
 				return
