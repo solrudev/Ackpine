@@ -75,10 +75,9 @@ internal class IntentBasedInstallSession internal constructor(
 	override fun doCommit(cancellationSignal: CancellationSignal) {
 		val (apkUri, _) = getApkUri(cancellationSignal)
 		context.launchConfirmation<IntentBasedInstallActivity>(
-			confirmation,
-			notificationData,
+			confirmation, notificationData,
 			id,
-			INSTALLER_NOTIFICATION_TAG,
+			INSTALLER_NOTIFICATION_TAG, notificationId,
 			INSTALLER_REQUEST_CODE,
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }

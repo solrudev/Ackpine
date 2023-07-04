@@ -43,10 +43,9 @@ internal class UninstallSession internal constructor(
 
 	override fun doCommit(cancellationSignal: CancellationSignal) {
 		context.launchConfirmation<UninstallActivity>(
-			confirmation,
-			notificationData,
+			confirmation, notificationData,
 			id,
-			UNINSTALLER_NOTIFICATION_TAG,
+			UNINSTALLER_NOTIFICATION_TAG, notificationId,
 			UNINSTALLER_REQUEST_CODE,
 			UPDATE_CURRENT_FLAGS
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }

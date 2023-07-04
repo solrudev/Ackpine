@@ -13,7 +13,6 @@ import ru.solrudev.ackpine.impl.activity.LauncherActivity
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicInteger
 
 @get:JvmSynthetic
 internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -29,14 +28,13 @@ internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_C
 	PendingIntent.FLAG_UPDATE_CURRENT
 }
 
-private val notificationId = AtomicInteger(18475)
-
 @JvmSynthetic
 internal inline fun <reified T : Activity> Context.launchConfirmation(
 	confirmation: Confirmation,
 	notificationData: NotificationData,
 	sessionId: UUID,
 	tag: String,
+	notificationId: Int,
 	requestCode: Int,
 	flags: Int,
 	putExtra: (Intent) -> Unit
@@ -48,7 +46,7 @@ internal inline fun <reified T : Activity> Context.launchConfirmation(
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 		Confirmation.DEFERRED -> showNotification(
 			PendingIntent.getActivity(this, requestCode, intent, flags),
-			notificationData, tag
+			notificationData, tag, notificationId
 		)
 	}
 }
@@ -56,7 +54,8 @@ internal inline fun <reified T : Activity> Context.launchConfirmation(
 private fun Context.showNotification(
 	intent: PendingIntent,
 	notificationData: NotificationData,
-	notificationTag: String
+	notificationTag: String,
+	notificationId: Int
 ) {
 	val channelId = getString(R.string.ackpine_notification_channel_id)
 	val title = notificationData.title.resolve(this)
@@ -76,5 +75,5 @@ private fun Context.showNotification(
 		setFullScreenIntent(intent, true)
 		setAutoCancel(true)
 	}.build()
-	getSystemService<NotificationManager>()?.notify(notificationTag, notificationId.incrementAndGet(), notification)
+	getSystemService<NotificationManager>()?.notify(notificationTag, notificationId, notification)
 }
