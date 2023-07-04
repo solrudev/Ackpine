@@ -1,7 +1,9 @@
 package ru.solrudev.ackpine.helpers
 
+import androidx.annotation.RestrictTo
 import java.io.InputStream
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class NonClosingInputStream private constructor(private val inputStream: InputStream) : InputStream() {
 	override fun read(): Int = inputStream.read()
 	override fun available(): Int = inputStream.available()

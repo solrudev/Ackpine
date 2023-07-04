@@ -1,7 +1,10 @@
 package ru.solrudev.ackpine.splits.parsing
 
+import androidx.annotation.RestrictTo
+
 private const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class AndroidManifest internal constructor(private val manifest: Map<String, String>) {
 
 	@get:JvmSynthetic

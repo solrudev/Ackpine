@@ -19,6 +19,9 @@ import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
+/**
+ * Represents an APK split.
+ */
 public sealed class Apk(
 	public open val uri: Uri,
 	public open val name: String,
@@ -28,6 +31,9 @@ public sealed class Apk(
 	public open val description: String
 ) {
 
+	/**
+	 * Base APK.
+	 */
 	public data class Base(
 		override val uri: Uri,
 		override val name: String,
@@ -39,6 +45,9 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
+	/**
+	 * Feature split.
+	 */
 	public data class Feature(
 		override val uri: Uri,
 		override val name: String,
@@ -49,6 +58,9 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
+	/**
+	 * APK split containing native libraries.
+	 */
 	public data class Libs(
 		override val uri: Uri,
 		override val name: String,
@@ -60,6 +72,9 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean = abi in Abi.deviceAbis
 	}
 
+	/**
+	 * APK split containing graphic resources tailored to specific screen density.
+	 */
 	public data class ScreenDensity(
 		override val uri: Uri,
 		override val name: String,
@@ -71,6 +86,9 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean = dpi == context.dpi
 	}
 
+	/**
+	 * APK split containing localized resources.
+	 */
 	public data class Localization(
 		override val uri: Uri,
 		override val name: String,
@@ -88,6 +106,9 @@ public sealed class Apk(
 		}
 	}
 
+	/**
+	 * Unknown APK split.
+	 */
 	public data class Other(
 		override val uri: Uri,
 		override val name: String,
@@ -98,10 +119,18 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
+	/**
+	 * Returns whether this APK split is compatible with the device.
+	 */
 	public abstract fun isCompatible(context: Context): Boolean
 
 	public companion object {
 
+		/**
+		 * Reads provided [file], parses it and creates an [APK split][Apk] instance.
+		 *
+		 * Returns `null` if provided file is not an APK.
+		 */
 		@JvmStatic
 		public fun fromFile(file: File): Apk? {
 			if (!file.isApk) {
@@ -113,6 +142,11 @@ public sealed class Apk(
 			}
 		}
 
+		/**
+		 * Reads file at provided [uri], parses it and creates an [APK split][Apk] instance.
+		 *
+		 * Returns `null` if provided file is not an APK.
+		 */
 		@JvmStatic
 		public fun fromUri(context: Context, uri: Uri): Apk? {
 			val file = uri.toFile(context)

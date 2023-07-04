@@ -32,6 +32,8 @@ import java.util.zip.ZipInputStream
 
 /**
  * [ContentProvider] which allows to open files inside of ZIP archives.
+ *
+ * Supports querying of ZIP entries' names and sizes.
  */
 public class ZippedFileProvider : ContentProvider() {
 
@@ -191,6 +193,7 @@ public class ZippedFileProvider : ContentProvider() {
 				throw t
 			}
 		}
+		// fall back to ZipInputStream if file is not readable directly
 		val zipStream = ZipInputStream(context?.contentResolver?.openInputStream(zipFileUri))
 		val zipEntry = try {
 			zipStream.entries()
@@ -266,13 +269,19 @@ public class ZippedFileProvider : ContentProvider() {
 		private lateinit var executor: Executor
 		private lateinit var authority: String
 
+		/**
+		 * Returns whether provided [uri] was created by [ZippedFileProvider].
+		 */
 		@JvmStatic
 		public fun isZippedFileProviderUri(uri: Uri): Boolean {
 			return uri.authority == authority && uri.encodedPath != null && uri.encodedQuery != null
 		}
 
 		/**
-		 * @param zipPath string representation of [Uri] or path to the ZIP file containing [zip entry][zipEntryName].
+		 * Creates an [Uri] for a ZIP entry.
+		 *
+		 * @param zipPath string representation of [Uri] pointing to a ZIP file containing [zip entry][zipEntryName] or
+		 * absolute path to the ZIP file containing zip entry.
 		 * @param zipEntryName name of the ZIP entry inside of the ZIP archive.
 		 */
 		@JvmStatic

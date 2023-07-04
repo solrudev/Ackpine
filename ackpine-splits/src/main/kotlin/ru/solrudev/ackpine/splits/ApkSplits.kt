@@ -6,10 +6,18 @@ import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.helpers.deviceLocales
 import kotlin.math.abs
+import java.util.Locale
 
+/**
+ * Utilities for [sequences][Sequence] of [APK splits][Apk].
+ */
 public object ApkSplits {
 
 	/**
+	 * Returns a sequence containing only [APK splits][Apk] which are most compatible with the device.
+	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
+	 * matching split is chosen.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -37,6 +45,11 @@ public object ApkSplits {
 	}
 
 	/**
+	 * Returns a sequence which throws on iteration if [APK split][Apk] conflicts with [base APK][Apk.Base] by package
+	 * name.
+	 *
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -48,6 +61,11 @@ public object ApkSplits {
 	}
 
 	/**
+	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
+	 * version code.
+	 *
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -59,6 +77,11 @@ public object ApkSplits {
 	}
 
 	/**
+	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
+	 * package name or version code.
+	 *
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 *
 	 * Shortcut for
 	 * [throwOnConflictingPackageName()][throwOnConflictingPackageName]`.`[throwOnConflictingVersionCode()][throwOnConflictingVersionCode].
 	 *
@@ -69,21 +92,41 @@ public object ApkSplits {
 		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
 	}
 
+	/**
+	 * Returns a list containing only [APK splits][Apk] which are most compatible with the device.
+	 * If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen.
+	 */
 	@JvmStatic
 	public fun Iterable<Apk>.filterIncompatible(context: Context): List<Apk> {
 		return asSequence().filterIncompatible(context).toList()
 	}
 
+	/**
+	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name.
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingPackageName(): List<Apk> {
 		return asSequence().throwOnConflictingPackageName().toList()
 	}
 
+	/**
+	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by version code.
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingVersionCode(): List<Apk> {
 		return asSequence().throwOnConflictingVersionCode().toList()
 	}
 
+	/**
+	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name
+	 * or version code.
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingPackageNameOrVersionCode(): List<Apk> {
 		return asSequence().throwOnConflictingPackageNameOrVersionCode().toList()
@@ -99,6 +142,11 @@ public object ApkSplits {
 	}
 
 	/**
+	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
+	 * property specified with [propertySelector].
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	private inline fun <reified Property> Sequence<Apk>.throwOnConflictingProperty(

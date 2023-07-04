@@ -8,9 +8,17 @@ import java.io.File
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
+/**
+ * Factories for [APK splits][Apk] [sequences][Sequence].
+ */
 public object ZippedApkSplits {
 
 	/**
+	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped [file] (such as APKS, APKM, XAPK, ZIP).
+	 *
+	 * **Attention:** iteration of this sequence is blocking due to I/O operations. Make sure you move it off to another
+	 * thread.
+	 *
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
@@ -28,6 +36,12 @@ public object ZippedApkSplits {
 	}
 
 	/**
+	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at provided
+	 * [uri].
+	 *
+	 * **Attention:** iteration of this sequence is blocking due to I/O operations. Make sure you move it off to another
+	 * thread.
+	 *
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
@@ -39,6 +53,7 @@ public object ZippedApkSplits {
 				yieldAll(getApksForFile(file))
 				return@sequence
 			}
+			// fall back to ZipInputStream if file is not readable directly
 			ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
 				zipStream.entries()
 					.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }

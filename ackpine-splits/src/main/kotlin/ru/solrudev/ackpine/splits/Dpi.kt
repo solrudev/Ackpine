@@ -4,6 +4,11 @@ import android.content.Context
 import android.util.DisplayMetrics
 import ru.solrudev.ackpine.helpers.splitTypePart
 
+/**
+ * Density of [APK split][Apk] graphic resources.
+ *
+ * @property density Dots-per-inch value.
+ */
 public enum class Dpi(public val density: Int) {
 
 	LDPI(DisplayMetrics.DENSITY_LOW),
@@ -18,6 +23,9 @@ public enum class Dpi(public val density: Int) {
 
 		private val dpis = Dpi.values().map { it.name.lowercase() }.toSet()
 
+		/**
+		 * Returns device's screen density expressed as [Dpi] enum entry.
+		 */
 		@JvmStatic
 		@get:JvmName("fromContext")
 		public val Context.dpi: Dpi
