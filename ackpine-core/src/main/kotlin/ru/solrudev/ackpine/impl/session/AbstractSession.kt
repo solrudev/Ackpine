@@ -15,7 +15,6 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
-import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
@@ -93,10 +92,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 				doLaunch(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
-			} catch (_: CancellationException) {
-				handleCancellation()
-			} catch (_: InterruptedException) {
-				handleCancellation()
 			} catch (exception: Exception) {
 				handleException(exception)
 			}
@@ -111,10 +106,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			try {
 				doCommit(cancellationSignal)
 			} catch (_: OperationCanceledException) {
-				handleCancellation()
-			} catch (_: CancellationException) {
-				handleCancellation()
-			} catch (_: InterruptedException) {
 				handleCancellation()
 			} catch (exception: Exception) {
 				handleException(exception)
