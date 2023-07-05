@@ -107,7 +107,9 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun doCleanup() {
 		abandonSession()
-		sessionCallback?.let(packageInstaller::unregisterSessionCallback)
+		handler.post {
+			sessionCallback?.let(packageInstaller::unregisterSessionCallback)
+		}
 	}
 
 	@SuppressLint("RestrictedApi")
