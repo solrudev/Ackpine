@@ -71,6 +71,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 				.openHelperFactory { configuration ->
 					val configBuilder = SupportSQLiteOpenHelper.Configuration.builder(context)
 					configBuilder.name(configuration.name)
+						.callback(configuration.callback)
 						.noBackupDirectory(true)
 						.allowDataLossOnRecovery(true)
 					FrameworkSQLiteOpenHelperFactory().create(configBuilder.build())
