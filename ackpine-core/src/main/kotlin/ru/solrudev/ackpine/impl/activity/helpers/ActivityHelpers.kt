@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.impl.activity.helpers
 
 import android.app.Activity
 import android.app.KeyguardManager

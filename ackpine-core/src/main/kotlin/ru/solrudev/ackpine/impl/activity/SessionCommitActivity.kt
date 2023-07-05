@@ -7,9 +7,9 @@ import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.R
-import ru.solrudev.ackpine.helpers.clearTurnScreenOnSettings
 import ru.solrudev.ackpine.helpers.handleResult
-import ru.solrudev.ackpine.helpers.turnScreenOnWhenLocked
+import ru.solrudev.ackpine.impl.activity.helpers.clearTurnScreenOnSettings
+import ru.solrudev.ackpine.impl.activity.helpers.turnScreenOnWhenLocked
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
