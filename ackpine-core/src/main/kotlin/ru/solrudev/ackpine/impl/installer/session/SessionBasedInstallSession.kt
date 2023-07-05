@@ -19,7 +19,7 @@ import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallLauncherActivity
+import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
@@ -96,7 +96,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun doCommit(cancellationSignal: CancellationSignal) {
-		context.launchConfirmation<SessionBasedInstallLauncherActivity>(
+		context.launchConfirmation<SessionBasedInstallCommitActivity>(
 			confirmation, notificationData,
 			sessionId = id,
 			INSTALLER_NOTIFICATION_TAG, notificationId,

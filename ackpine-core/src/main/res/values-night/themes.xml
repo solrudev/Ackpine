@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<style name="Theme.Ackpine.InstallActivity" parent="android:Theme.DeviceDefault.NoActionBar" />
+	<style name="Theme.Ackpine.SessionCommitActivity" parent="android:Theme.DeviceDefault.NoActionBar" />
 </resources>

@@ -2,7 +2,7 @@ package ru.solrudev.ackpine.impl.installer.activity
 
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.activity.LauncherActivity
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.session.ProgressSession
@@ -11,7 +11,7 @@ import ru.solrudev.ackpine.session.ProgressSession
 internal abstract class InstallActivity(
 	tag: String,
 	requestCode: Int = -1
-) : LauncherActivity<ProgressSession<InstallFailure>, InstallFailure>(
+) : SessionCommitActivity<ProgressSession<InstallFailure>, InstallFailure>(
 	tag, requestCode,
 	abortedStateFailureFactory = InstallFailure::Aborted
 ) {

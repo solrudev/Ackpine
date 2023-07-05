@@ -16,12 +16,12 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
 private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
-private const val LAUNCHER_TAG = "SessionBasedInstallLauncherActivity"
+private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
 private const val CONFIRMATION_REQUEST_CODE = 240126683
 private const val RECEIVER_REQUEST_CODE = 951235122
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallLauncherActivity : InstallActivity(LAUNCHER_TAG) {
+internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG) {
 
 	private val sessionId by lazy { getSessionId(LAUNCHER_TAG) }
 

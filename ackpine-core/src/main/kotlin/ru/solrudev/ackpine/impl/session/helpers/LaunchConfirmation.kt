@@ -9,7 +9,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.R
-import ru.solrudev.ackpine.impl.activity.LauncherActivity
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -40,7 +40,7 @@ internal inline fun <reified T : Activity> Context.launchConfirmation(
 	putExtra: (Intent) -> Unit
 ) {
 	val intent = Intent(this, T::class.java)
-		.putExtra(LauncherActivity.SESSION_ID_KEY, sessionId)
+		.putExtra(SessionCommitActivity.SESSION_ID_KEY, sessionId)
 		.also(putExtra)
 	when (confirmation) {
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))

@@ -17,7 +17,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class LauncherActivity<S : Session<F>, F : Failure>(
+internal abstract class SessionCommitActivity<S : Session<F>, F : Failure>(
 	private val tag: String,
 	private val requestCode: Int = -1,
 	private val abortedStateFailureFactory: (String) -> F
@@ -33,7 +33,7 @@ internal abstract class LauncherActivity<S : Session<F>, F : Failure>(
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(R.layout.ackpine_activity_launcher)
+		setContentView(R.layout.ackpine_activity_session_commit)
 		turnScreenOnWhenLocked()
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()

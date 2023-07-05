@@ -9,7 +9,7 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.handleResult
-import ru.solrudev.ackpine.impl.activity.LauncherActivity
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
@@ -32,7 +32,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		}
 		pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
-		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(LauncherActivity.SESSION_ID_KEY)!!
+		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.SESSION_ID_KEY)!!
 		try {
 			packageInstaller.getSessionAsync(ackpineSessionId).handleResult { session ->
 				handlePackageInstallerStatus(session as? CompletableSession<InstallFailure>, intent, context)

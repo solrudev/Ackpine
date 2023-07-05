@@ -17,15 +17,15 @@
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
 			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.InstallActivity"
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 		<activity
-			android:name=".impl.installer.activity.SessionBasedInstallLauncherActivity"
+			android:name=".impl.installer.activity.SessionBasedInstallCommitActivity"
 			android:exported="false"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
 			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.InstallActivity"
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 		<activity
 			android:name=".impl.installer.activity.SessionBasedInstallConfirmationActivity"
@@ -33,7 +33,7 @@
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
 			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.InstallActivity"
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 
 		<receiver

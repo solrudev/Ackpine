@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.activity.LauncherActivity
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.uninstaller.activity.contract.UninstallPackageContract
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
@@ -15,7 +15,7 @@ private const val REQUEST_CODE = 984120586
 private val uninstallPackageContract = UninstallPackageContract()
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class UninstallActivity : LauncherActivity<Session<UninstallFailure>, UninstallFailure>(
+internal abstract class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
 	TAG, REQUEST_CODE,
 	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
