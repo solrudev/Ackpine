@@ -35,6 +35,14 @@
 			android:showWhenLocked="true"
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
+		<activity
+			android:name=".impl.uninstaller.activity.UninstallActivity"
+			android:exported="false"
+			android:showForAllUsers="true"
+			android:showOnLockScreen="true"
+			android:showWhenLocked="true"
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
+			tools:ignore="UnusedAttribute" />
 
 		<receiver
 			android:name=".impl.installer.receiver.PackageInstallerStatusReceiver"
