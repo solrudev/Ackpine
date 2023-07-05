@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.impl.uninstaller.activity.contract
+package ru.solrudev.ackpine.impl.uninstaller.activity
 
 import android.app.Activity
 import android.content.Context

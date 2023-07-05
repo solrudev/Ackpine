@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
-import ru.solrudev.ackpine.impl.uninstaller.activity.contract.UninstallPackageContract
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
