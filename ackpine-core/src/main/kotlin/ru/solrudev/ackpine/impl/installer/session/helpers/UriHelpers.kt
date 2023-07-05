@@ -12,7 +12,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 @JvmSynthetic
-internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): File {
+internal fun Uri.toFile(context: Context, signal: CancellationSignal): File {
 	if (scheme == ContentResolver.SCHEME_FILE) {
 		return File(requireNotNull(path) { "Uri path is null: $this" })
 	}
@@ -44,11 +44,11 @@ internal fun Context.openAssetFileDescriptor(uri: Uri, signal: CancellationSigna
 	if (afd == null || afd.declaredLength != -1L) {
 		return afd
 	}
-	return AssetFileDescriptor(afd.parcelFileDescriptor, afd.startOffset, contentResolver.getSize(uri))
+	return AssetFileDescriptor(afd.parcelFileDescriptor, afd.startOffset, contentResolver.getSize(uri, signal))
 }
 
-private fun ContentResolver.getSize(uri: Uri): Long {
-	query(uri, arrayOf(OpenableColumns.SIZE), null, null, null).use { cursor ->
+private fun ContentResolver.getSize(uri: Uri, signal: CancellationSignal): Long {
+	query(uri, arrayOf(OpenableColumns.SIZE), null, null, null, signal).use { cursor ->
 		cursor ?: return -1L
 		if (!cursor.moveToFirst()) {
 			return -1L
