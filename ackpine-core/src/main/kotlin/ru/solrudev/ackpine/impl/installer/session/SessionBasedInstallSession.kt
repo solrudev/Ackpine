@@ -116,26 +116,12 @@ internal class SessionBasedInstallSession internal constructor(
 		val isThrown = AtomicBoolean(false)
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
-		val max = apks.size * STREAM_COPY_PROGRESS_MAX
+		val progressMax = apks.size * STREAM_COPY_PROGRESS_MAX
 		apks.forEachIndexed { index, uri ->
 			try {
 				executor.execute {
 					try {
-						val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
-							?: error("AssetFileDescriptor was null: $uri")
-						val length = afd.declaredLength
-						afd.createInputStream().use { apkStream ->
-							requireNotNull(apkStream) { "APK $index InputStream was null." }
-							openWrite("$index.apk", 0, length).buffered().use { sessionStream ->
-								apkStream.copyTo(sessionStream, length, cancellationSignal, onProgress = { progress ->
-									if (isThrown.get()) {
-										throw OperationCanceledException()
-									}
-									val current = currentProgress.addAndGet(progress)
-									setStagingProgress(current.toFloat() / max)
-								})
-							}
-						}
+						writeApk(index, uri, currentProgress, progressMax, isThrown, cancellationSignal)
 						if (countdown.decrementAndGet() == 0) {
 							future.set(Unit)
 						}
@@ -150,6 +136,31 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 		}
 		return future
+	}
+
+	private fun PackageInstaller.Session.writeApk(
+		index: Int,
+		uri: Uri,
+		currentProgress: AtomicInteger,
+		progressMax: Int,
+		isThrown: AtomicBoolean,
+		cancellationSignal: CancellationSignal
+	) {
+		val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
+			?: error("AssetFileDescriptor was null: $uri")
+		val length = afd.declaredLength
+		afd.createInputStream().use { apkStream ->
+			requireNotNull(apkStream) { "APK $index InputStream was null." }
+			openWrite("$index.apk", 0, length).buffered().use { sessionStream ->
+				apkStream.copyTo(sessionStream, length, cancellationSignal, onProgress = { progress ->
+					if (isThrown.get()) {
+						throw OperationCanceledException()
+					}
+					val current = currentProgress.addAndGet(progress)
+					setStagingProgress(current.toFloat() / progressMax)
+				})
+			}
+		}
 	}
 
 	private fun PackageInstaller.createAndRegisterSessionCallback(): PackageInstaller.SessionCallback {
