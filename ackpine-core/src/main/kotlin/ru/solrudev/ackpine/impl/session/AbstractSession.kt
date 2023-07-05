@@ -6,6 +6,7 @@ import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import androidx.annotation.RestrictTo
+import androidx.annotation.WorkerThread
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
@@ -44,7 +45,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 	}
 
-	protected var notificationId = 0
+	private var notificationId = 0
 	private val stateListeners = mutableListOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
 
@@ -73,8 +74,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override val isActive: Boolean
 		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
-	protected abstract fun doLaunch(cancellationSignal: CancellationSignal)
-	protected abstract fun doCommit(cancellationSignal: CancellationSignal)
+	@WorkerThread
+	protected abstract fun prepare(cancellationSignal: CancellationSignal)
+
+	@WorkerThread
+	protected abstract fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int)
+
+	@WorkerThread
 	protected open fun doCleanup() {}
 
 	final override fun launch() {
@@ -89,7 +95,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		serialExecutor.execute {
 			try {
 				isPreparing = true
-				doLaunch(cancellationSignal)
+				prepare(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
@@ -104,7 +110,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		}
 		serialExecutor.execute {
 			try {
-				doCommit(cancellationSignal)
+				launchConfirmation(cancellationSignal, notificationId)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {

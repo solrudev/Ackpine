@@ -76,7 +76,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
-	override fun doLaunch(cancellationSignal: CancellationSignal) {
+	override fun prepare(cancellationSignal: CancellationSignal) {
 		if (nativeSessionId != -1) {
 			abandonSession()
 		}
@@ -95,7 +95,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	override fun doCommit(cancellationSignal: CancellationSignal) {
+	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
 		context.launchConfirmation<SessionBasedInstallCommitActivity>(
 			confirmation, notificationData,
 			sessionId = id,

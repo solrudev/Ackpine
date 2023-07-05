@@ -64,7 +64,7 @@ internal class IntentBasedInstallSession internal constructor(
 
 	private val copyFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
 
-	override fun doLaunch(cancellationSignal: CancellationSignal) {
+	override fun prepare(cancellationSignal: CancellationSignal) {
 		val (_, mustCopy) = getApkUri(cancellationSignal)
 		if (mustCopy) {
 			createApkCopy(cancellationSignal)
@@ -72,7 +72,7 @@ internal class IntentBasedInstallSession internal constructor(
 		notifyAwaiting()
 	}
 
-	override fun doCommit(cancellationSignal: CancellationSignal) {
+	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
 		val (apkUri, _) = getApkUri(cancellationSignal)
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,

@@ -39,9 +39,11 @@ internal class UninstallSession internal constructor(
 	exceptionalFailureFactory = UninstallFailure::Exceptional
 ) {
 
-	override fun doLaunch(cancellationSignal: CancellationSignal) {}
+	override fun prepare(cancellationSignal: CancellationSignal) {
+		// no preparation needed
+	}
 
-	override fun doCommit(cancellationSignal: CancellationSignal) {
+	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
 		context.launchConfirmation<UninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
