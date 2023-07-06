@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.R
+import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -32,7 +33,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	private val notificationIdDao: NotificationIdDao,
-	private val serialExecutor: Executor,
+	private val executor: Executor,
 	private val handler: Handler
 ) : UninstallSessionFactory {
 
@@ -48,7 +49,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.packageName),
 			sessionDao, sessionFailureDao, notificationIdDao,
-			serialExecutor, handler
+			SerialExecutor(executor), handler
 		)
 	}
 

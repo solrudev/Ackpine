@@ -4,7 +4,6 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
@@ -59,7 +58,6 @@ public interface PackageInstaller {
 					database.nativeSessionIdDao(),
 					database.notificationIdDao(),
 					executor,
-					SerialExecutor(executor),
 					Handler(context.mainLooper)
 				)
 			)

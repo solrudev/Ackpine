@@ -6,6 +6,7 @@ import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
+import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -44,7 +45,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val nativeSessionIdDao: NativeSessionIdDao,
 	private val notificationIdDao: NotificationIdDao,
 	private val executor: Executor,
-	private val serialExecutor: Executor,
 	private val handler: Handler
 ) : InstallSessionFactory {
 
@@ -62,7 +62,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(),
 			sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
-			serialExecutor, handler
+			SerialExecutor(executor), handler
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -72,7 +72,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(),
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, notificationIdDao,
-			executor, serialExecutor, handler
+			executor, SerialExecutor(executor), handler
 		)
 	}
 
