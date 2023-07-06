@@ -18,6 +18,8 @@ public object ApkSplits {
 	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 	 * matching split is chosen.
 	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -99,7 +101,10 @@ public object ApkSplits {
 
 	/**
 	 * Returns a list containing only [APK splits][Apk] which are most compatible with the device.
-	 * If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen.
+	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
+	 * matching split is chosen.
+	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.filterIncompatible(context: Context): List<Apk> {
