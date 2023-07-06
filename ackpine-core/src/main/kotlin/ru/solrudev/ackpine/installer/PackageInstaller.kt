@@ -24,24 +24,30 @@ public interface PackageInstaller {
 
 		private lateinit var executor: Executor
 		private val lock = Any()
+
+		@Volatile
 		private var packageInstaller: PackageInstaller? = null
 
 		@JvmStatic
 		public fun getInstance(context: Context): PackageInstaller {
-			if (packageInstaller == null) {
-				synchronized(lock) {
-					if (packageInstaller == null) {
-						initialize(context)
-					}
+			var instance = packageInstaller
+			if (instance != null) {
+				return instance
+			}
+			synchronized(lock) {
+				instance = packageInstaller
+				if (instance == null) {
+					instance = create(context)
+					packageInstaller = instance
 				}
 			}
-			return packageInstaller!!
+			return instance!!
 		}
 
-		private fun initialize(context: Context) {
+		private fun create(context: Context): PackageInstaller {
 			AckpinePluginRegistry.register(this)
 			val database = AckpineDatabase.getInstance(context.applicationContext, executor)
-			packageInstaller = PackageInstallerImpl(
+			return PackageInstallerImpl(
 				database.installSessionDao(),
 				database.sessionProgressDao(),
 				executor,

@@ -52,22 +52,28 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	internal companion object {
 
 		private val lock = Any()
+
+		@Volatile
 		private var database: AckpineDatabase? = null
 
 		@JvmSynthetic
 		internal fun getInstance(context: Context, executor: Executor): AckpineDatabase {
-			if (database == null) {
-				synchronized(lock) {
-					if (database == null) {
-						initialize(context, executor)
-					}
+			var instance = database
+			if (instance != null) {
+				return instance
+			}
+			synchronized(lock) {
+				instance = database
+				if (instance == null) {
+					instance = create(context, executor)
+					database = instance
 				}
 			}
-			return database!!
+			return instance!!
 		}
 
-		private fun initialize(context: Context, executor: Executor) {
-			database = Room.databaseBuilder(context, AckpineDatabase::class.java, ACKPINE_DATABASE_NAME)
+		private fun create(context: Context, executor: Executor): AckpineDatabase {
+			return Room.databaseBuilder(context, AckpineDatabase::class.java, ACKPINE_DATABASE_NAME)
 				.openHelperFactory { configuration ->
 					val configBuilder = SupportSQLiteOpenHelper.Configuration.builder(context)
 					configBuilder.name(configuration.name)

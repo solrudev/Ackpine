@@ -24,24 +24,30 @@ public interface PackageUninstaller {
 
 		private lateinit var executor: Executor
 		private val lock = Any()
+
+		@Volatile
 		private var packageUninstaller: PackageUninstaller? = null
 
 		@JvmStatic
 		public fun getInstance(context: Context): PackageUninstaller {
-			if (packageUninstaller == null) {
-				synchronized(lock) {
-					if (packageUninstaller == null) {
-						initialize(context)
-					}
+			var instance = packageUninstaller
+			if (instance != null) {
+				return instance
+			}
+			synchronized(lock) {
+				instance = packageUninstaller
+				if (instance == null) {
+					instance = create(context)
+					packageUninstaller = instance
 				}
 			}
-			return packageUninstaller!!
+			return instance!!
 		}
 
-		private fun initialize(context: Context) {
+		private fun create(context: Context): PackageUninstaller {
 			AckpinePluginRegistry.register(this)
 			val database = AckpineDatabase.getInstance(context.applicationContext, executor)
-			packageUninstaller = PackageUninstallerImpl(
+			return PackageUninstallerImpl(
 				database.uninstallSessionDao(),
 				executor,
 				UninstallSessionFactoryImpl(
