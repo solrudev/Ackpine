@@ -1,6 +1,5 @@
 package ru.solrudev.ackpine.impl.session.helpers
 
-import android.app.Activity
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -29,7 +28,7 @@ internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_C
 }
 
 @JvmSynthetic
-internal inline fun <reified T : Activity> Context.launchConfirmation(
+internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConfirmation(
 	confirmation: Confirmation,
 	notificationData: NotificationData,
 	sessionId: UUID,
