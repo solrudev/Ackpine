@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
-import android.os.OperationCanceledException
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
@@ -156,7 +155,7 @@ internal class SessionBasedInstallSession internal constructor(
 			openWrite("$index.apk", 0, length).buffered().use { sessionStream ->
 				apkStream.copyTo(sessionStream, length, cancellationSignal, onProgress = { progress ->
 					if (isThrown.get()) {
-						throw OperationCanceledException()
+						return
 					}
 					val current = currentProgress.addAndGet(progress)
 					setStagingProgress(current.toFloat() / progressMax)
