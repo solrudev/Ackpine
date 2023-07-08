@@ -32,7 +32,7 @@ public object ZippedApkSplits {
 				}
 				.forEach { yield(it) }
 		}
-	}
+	}.constrainOnce()
 
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at
@@ -59,6 +59,6 @@ public object ZippedApkSplits {
 					.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
 					.forEach { yield(it) }
 			}
-		}
+		}.constrainOnce()
 	}
 }
