@@ -3,7 +3,7 @@ package ru.solrudev.ackpine.exceptions
 import ru.solrudev.ackpine.splits.Apk
 
 /**
- * Thrown when some [APK splits][Apk] are conflicting with each other.
+ * Thrown when split package is invalid.
  */
 public sealed class SplitPackageException(message: String) : Exception(message)
 
