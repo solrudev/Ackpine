@@ -99,7 +99,7 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<Apk>.throwOnConflictingPackageNameOrVersionCode(): Sequence<Apk> {
+	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
 		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
 	}
 
@@ -145,8 +145,8 @@ public object ApkSplits {
 	 * base APK in the iterable, [NoBaseApkException] will be thrown.
 	 */
 	@JvmStatic
-	public fun Iterable<Apk>.throwOnConflictingPackageNameOrVersionCode(): List<Apk> {
-		return asSequence().throwOnConflictingPackageNameOrVersionCode().toList()
+	public fun Iterable<Apk>.throwOnInvalidSplitPackage(): List<Apk> {
+		return asSequence().throwOnInvalidSplitPackage().toList()
 	}
 
 	private inline fun <reified SplitType : Apk> Sequence<Apk>.addSplitsOfTypeTo(
