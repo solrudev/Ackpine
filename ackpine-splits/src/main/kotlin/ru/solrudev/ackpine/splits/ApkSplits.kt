@@ -182,10 +182,10 @@ private class SplitPackageSequence<Property>(
 
 	override fun iterator() = object : Iterator<Apk> {
 
-		val iterator = sequence.iterator()
-		var seenBaseApk = false
-		var baseApkProperty: Property? = null
-		val propertyValues = mutableListOf<Property>()
+		private val iterator = sequence.iterator()
+		private var seenBaseApk = false
+		private var baseApkProperty: Property? = null
+		private val propertyValues = mutableListOf<Property>()
 
 		override fun hasNext() = iterator.hasNext()
 
