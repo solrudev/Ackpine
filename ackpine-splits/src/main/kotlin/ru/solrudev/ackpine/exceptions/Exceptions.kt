@@ -8,6 +8,11 @@ import ru.solrudev.ackpine.splits.Apk
 public sealed class SplitPackageException(message: String) : Exception(message)
 
 /**
+ * Thrown when no [base APK][Apk.Base] was found.
+ */
+public class NoBaseApkException : SplitPackageException("No base APK found")
+
+/**
  * Thrown when more than one [base APK][Apk.Base] was found.
  */
 public class ConflictingBaseApkException : SplitPackageException("More than one base APK found")

@@ -4,6 +4,7 @@ import android.content.Context
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
+import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
@@ -55,7 +56,8 @@ public object ApkSplits {
 	 * Returns a sequence which throws on iteration if [APK split][Apk] conflicts with [base APK][Apk.Base] by package
 	 * name.
 	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
@@ -71,7 +73,8 @@ public object ApkSplits {
 	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
 	 * version code.
 	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
@@ -87,7 +90,8 @@ public object ApkSplits {
 	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
 	 * package name or version code.
 	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
 	 * Shortcut for
 	 * [throwOnConflictingPackageName()][throwOnConflictingPackageName]`.`[throwOnConflictingVersionCode()][throwOnConflictingVersionCode].
@@ -114,7 +118,8 @@ public object ApkSplits {
 	/**
 	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name.
 	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the iterable, [NoBaseApkException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingPackageName(): List<Apk> {
@@ -124,7 +129,8 @@ public object ApkSplits {
 	/**
 	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by version code.
 	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the iterable, [NoBaseApkException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingVersionCode(): List<Apk> {
@@ -135,7 +141,8 @@ public object ApkSplits {
 	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name
 	 * or version code.
 	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the iterable, [NoBaseApkException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingPackageNameOrVersionCode(): List<Apk> {
@@ -154,18 +161,36 @@ public object ApkSplits {
 	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
 	 * property specified with [propertySelector].
 	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown.
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
-	private inline fun <reified Property> Sequence<Apk>.throwOnConflictingProperty(
-		crossinline exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-		crossinline propertySelector: (Apk) -> Property
+	private fun <Property> Sequence<Apk>.throwOnConflictingProperty(
+		exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
+		propertySelector: (Apk) -> Property
 	): Sequence<Apk> {
+		return SplitPackageSequence(this, exceptionInitializer, propertySelector)
+	}
+}
+
+private class SplitPackageSequence<Property>(
+	private val sequence: Sequence<Apk>,
+	private val exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
+	private val propertySelector: (Apk) -> Property
+) : Sequence<Apk> {
+
+	override fun iterator() = object : Iterator<Apk> {
+
+		val iterator = sequence.iterator()
 		var seenBaseApk = false
 		var baseApkProperty: Property? = null
 		val propertyValues = mutableListOf<Property>()
-		return onEach { apk ->
+
+		override fun hasNext() = iterator.hasNext()
+
+		override fun next(): Apk {
+			val apk = iterator.next()
 			val apkProperty = propertySelector(apk)
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
@@ -176,25 +201,24 @@ public object ApkSplits {
 			}
 			val expectedProperty = baseApkProperty
 			if (expectedProperty != null) {
-				checkApkProperty(expectedProperty, apkProperty, apk.name, exceptionInitializer)
+				checkApkProperty(expectedProperty, apkProperty, apk.name)
 				propertyValues.forEach { property ->
-					checkApkProperty(expectedProperty, property, apk.name, exceptionInitializer)
+					checkApkProperty(expectedProperty, property, apk.name)
 				}
 				propertyValues.clear()
 			} else {
 				propertyValues += apkProperty
 			}
+			if (!hasNext() && !seenBaseApk) {
+				throw NoBaseApkException()
+			}
+			return apk
 		}
-	}
 
-	private inline fun <Property> checkApkProperty(
-		baseProperty: Property,
-		apkProperty: Property,
-		name: String,
-		exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception
-	) {
-		if (baseProperty != apkProperty) {
-			throw exceptionInitializer(baseProperty, apkProperty, name)
+		private fun checkApkProperty(baseProperty: Property, apkProperty: Property, name: String) {
+			if (baseProperty != apkProperty) {
+				throw exceptionInitializer(baseProperty, apkProperty, name)
+			}
 		}
 	}
 }
