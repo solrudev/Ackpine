@@ -54,44 +54,6 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a sequence which throws on iteration if [APK split][Apk] conflicts with [base APK][Apk.Base] by package
-	 * name.
-	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the sequence, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 *
-	 * The operation is _intermediate_ and _stateful_.
-	 */
-	@JvmStatic
-	public fun Sequence<Apk>.throwOnConflictingPackageName(): Sequence<Apk> {
-		return throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingPackageNameException,
-			propertySelector = Apk::packageName
-		)
-	}
-
-	/**
-	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
-	 * version code.
-	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the sequence, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 *
-	 * The operation is _intermediate_ and _stateful_.
-	 */
-	@JvmStatic
-	public fun Sequence<Apk>.throwOnConflictingVersionCode(): Sequence<Apk> {
-		return throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingVersionCodeException,
-			propertySelector = Apk::versionCode
-		)
-	}
-
-	/**
 	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
 	 * package name or version code.
 	 *
@@ -100,14 +62,17 @@ public object ApkSplits {
 	 *
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 *
-	 * Shortcut for
-	 * [throwOnConflictingPackageName()][throwOnConflictingPackageName]`.`[throwOnConflictingVersionCode()][throwOnConflictingVersionCode].
-	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
-		return throwOnConflictingPackageName().throwOnConflictingVersionCode()
+		return throwOnConflictingProperty(
+			exceptionInitializer = ::ConflictingPackageNameException,
+			propertySelector = Apk::packageName
+		).throwOnConflictingProperty(
+			exceptionInitializer = ::ConflictingVersionCodeException,
+			propertySelector = Apk::versionCode
+		)
 	}
 
 	/**
@@ -120,32 +85,6 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Iterable<Apk>.filterIncompatible(context: Context): List<Apk> {
 		return asSequence().filterIncompatible(context).toList()
-	}
-
-	/**
-	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name.
-	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the iterable, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 */
-	@JvmStatic
-	public fun Iterable<Apk>.throwOnConflictingPackageName(): List<Apk> {
-		return asSequence().throwOnConflictingPackageName().toList()
-	}
-
-	/**
-	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by version code.
-	 *
-	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the iterable, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 */
-	@JvmStatic
-	public fun Iterable<Apk>.throwOnConflictingVersionCode(): List<Apk> {
-		return asSequence().throwOnConflictingVersionCode().toList()
 	}
 
 	/**
