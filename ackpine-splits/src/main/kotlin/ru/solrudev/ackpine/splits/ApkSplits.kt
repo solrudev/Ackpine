@@ -3,6 +3,7 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
+import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.helpers.deviceLocales
@@ -59,6 +60,8 @@ public object ApkSplits {
 	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -76,6 +79,8 @@ public object ApkSplits {
 	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -92,6 +97,8 @@ public object ApkSplits {
 	 *
 	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 *
 	 * Shortcut for
 	 * [throwOnConflictingPackageName()][throwOnConflictingPackageName]`.`[throwOnConflictingVersionCode()][throwOnConflictingVersionCode].
@@ -120,6 +127,8 @@ public object ApkSplits {
 	 *
 	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the iterable, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingPackageName(): List<Apk> {
@@ -131,6 +140,8 @@ public object ApkSplits {
 	 *
 	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the iterable, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnConflictingVersionCode(): List<Apk> {
@@ -143,6 +154,8 @@ public object ApkSplits {
 	 *
 	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the iterable, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.throwOnInvalidSplitPackage(): List<Apk> {
@@ -163,6 +176,8 @@ public object ApkSplits {
 	 *
 	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
@@ -186,11 +201,15 @@ private class SplitPackageSequence<Property>(
 		private var seenBaseApk = false
 		private var baseApkProperty: Property? = null
 		private val propertyValues = mutableListOf<Property>()
+		private val splitNames = hashSetOf<String>()
 
 		override fun hasNext() = iterator.hasNext()
 
 		override fun next(): Apk {
 			val apk = iterator.next()
+			if (!splitNames.add(apk.name)) {
+				throw ConflictingSplitNameException(apk.name)
+			}
 			val apkProperty = propertySelector(apk)
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {

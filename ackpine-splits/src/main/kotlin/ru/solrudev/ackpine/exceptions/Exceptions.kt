@@ -18,6 +18,12 @@ public class NoBaseApkException : SplitPackageException("No base APK found")
 public class ConflictingBaseApkException : SplitPackageException("More than one base APK found")
 
 /**
+ * Thrown when some [APK splits][Apk] are conflicting by their split name.
+ */
+public class ConflictingSplitNameException(public val name: String) :
+	SplitPackageException("Conflicting split name: $name")
+
+/**
  * Thrown when some [APK splits][Apk] are conflicting by their package name.
  */
 public class ConflictingPackageNameException(
