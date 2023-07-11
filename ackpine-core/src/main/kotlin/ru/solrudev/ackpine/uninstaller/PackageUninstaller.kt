@@ -18,6 +18,8 @@ public interface PackageUninstaller {
 
 	public fun createSession(parameters: UninstallParameters): Session<UninstallFailure>
 	public fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?>
+	public fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
+	public fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
 
 	public companion object : AckpinePlugin {
 

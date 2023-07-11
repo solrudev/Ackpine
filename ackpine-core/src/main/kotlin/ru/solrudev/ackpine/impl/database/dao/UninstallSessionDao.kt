@@ -32,6 +32,10 @@ internal abstract class UninstallSessionDao(private val database: AckpineDatabas
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getUninstallSession(id: String): SessionEntity.UninstallSession?
 
+	@Transaction
+	@Query("SELECT * FROM sessions")
+	abstract fun getUninstallSessions(): List<SessionEntity.UninstallSession>
+
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")
 	abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)
 

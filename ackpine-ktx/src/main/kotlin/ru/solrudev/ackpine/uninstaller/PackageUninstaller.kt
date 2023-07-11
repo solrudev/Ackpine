@@ -24,3 +24,11 @@ public inline fun PackageUninstaller.createSession(
 public suspend inline fun PackageUninstaller.getSession(sessionId: UUID): Session<UninstallFailure>? {
 	return getSessionAsync(sessionId).await()
 }
+
+public suspend inline fun PackageUninstaller.getSessions(): List<Session<UninstallFailure>> {
+	return getSessionsAsync().await()
+}
+
+public suspend inline fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
+	return getActiveSessionsAsync().await()
+}

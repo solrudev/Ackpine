@@ -13,6 +13,7 @@ import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -22,7 +23,10 @@ internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionFactory: UninstallSessionFactory
 ) : PackageUninstaller {
 
-	private val sessions = mutableMapOf<UUID, Session<UninstallFailure>>()
+	private val sessions = ConcurrentHashMap<UUID, Session<UninstallFailure>>()
+
+	@Volatile
+	private var isSessionsMapInitialized = false
 
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = UUID.randomUUID()
@@ -56,8 +60,56 @@ internal class PackageUninstallerImpl internal constructor(
 			executor.execute {
 				try {
 					val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
-					val installSession = session?.toUninstallSession()?.also { sessions[sessionId] = it }
-					future.set(installSession)
+					val uninstallSession = session?.toUninstallSession()?.let {
+						sessions.putIfAbsent(sessionId, it) ?: it
+					}
+					future.set(uninstallSession)
+				} catch (t: Throwable) {
+					future.setException(t)
+				}
+			}
+		} catch (t: Throwable) {
+			future.setException(t)
+		}
+		return future
+	}
+
+	@SuppressLint("RestrictedApi")
+	override fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
+		return if (isSessionsMapInitialized) {
+			ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
+				set(sessions.values.toList())
+			}
+		} else {
+			initializeSessions { sessions -> sessions.toList() }
+		}
+	}
+
+	@SuppressLint("RestrictedApi")
+	override fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
+		return if (isSessionsMapInitialized) {
+			ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
+				set(sessions.values.filter { it.isActive })
+			}
+		} else {
+			initializeSessions { sessions -> sessions.filter { it.isActive } }
+		}
+	}
+
+	@SuppressLint("RestrictedApi")
+	private inline fun initializeSessions(
+		crossinline transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
+	): ListenableFuture<List<Session<UninstallFailure>>> {
+		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
+		try {
+			executor.execute {
+				try {
+					uninstallSessionDao.getUninstallSessions().forEach { session ->
+						val uninstallSession = session.toUninstallSession()
+						sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+					}
+					isSessionsMapInitialized = true
+					future.set(transform(sessions.values))
 				} catch (t: Throwable) {
 					future.setException(t)
 				}
