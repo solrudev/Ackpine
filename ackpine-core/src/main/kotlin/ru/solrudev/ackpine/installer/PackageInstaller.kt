@@ -18,6 +18,8 @@ public interface PackageInstaller {
 
 	public fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure>
 	public fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?>
+	public fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
+	public fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
 
 	public companion object : AckpinePlugin {
 

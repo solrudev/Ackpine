@@ -35,6 +35,10 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 	@Query("SELECT * FROM sessions WHERE id = :id")
 	abstract fun getInstallSession(id: String): SessionEntity.InstallSession?
 
+	@Transaction
+	@Query("SELECT * FROM sessions")
+	abstract fun getInstallSessions(): List<SessionEntity.InstallSession>
+
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
 	abstract fun insertInstallFailure(id: String, failure: InstallFailure)
 

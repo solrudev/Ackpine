@@ -17,6 +17,7 @@ import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -27,7 +28,10 @@ internal class PackageInstallerImpl internal constructor(
 	private val installSessionFactory: InstallSessionFactory
 ) : PackageInstaller {
 
-	private val sessions = mutableMapOf<UUID, ProgressSession<InstallFailure>>()
+	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
+
+	@Volatile
+	private var isSessionsMapInitialized = false
 
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = UUID.randomUUID()
@@ -63,8 +67,54 @@ internal class PackageInstallerImpl internal constructor(
 			executor.execute {
 				try {
 					val session = installSessionDao.getInstallSession(sessionId.toString())
-					val installSession = session?.toInstallSession()?.also { sessions[sessionId] = it }
+					val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
 					future.set(installSession)
+				} catch (t: Throwable) {
+					future.setException(t)
+				}
+			}
+		} catch (t: Throwable) {
+			future.setException(t)
+		}
+		return future
+	}
+
+	@SuppressLint("RestrictedApi")
+	override fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		return if (isSessionsMapInitialized) {
+			ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
+				set(sessions.values.toList())
+			}
+		} else {
+			initializeSessions { sessions -> sessions.toList() }
+		}
+	}
+
+	@SuppressLint("RestrictedApi")
+	override fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		return if (isSessionsMapInitialized) {
+			ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
+				set(sessions.values.filter { it.isActive })
+			}
+		} else {
+			initializeSessions { sessions -> sessions.filter { it.isActive } }
+		}
+	}
+
+	@SuppressLint("RestrictedApi")
+	private inline fun initializeSessions(
+		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
+	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
+		try {
+			executor.execute {
+				try {
+					installSessionDao.getInstallSessions().forEach { session ->
+						val installSession = session.toInstallSession()
+						sessions.putIfAbsent(installSession.id, installSession)
+					}
+					isSessionsMapInitialized = true
+					future.set(transform(sessions.values))
 				} catch (t: Throwable) {
 					future.setException(t)
 				}

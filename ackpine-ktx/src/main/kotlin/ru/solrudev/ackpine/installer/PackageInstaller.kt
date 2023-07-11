@@ -7,7 +7,7 @@ import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.futures.await
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
-import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.ProgressSession
 import java.util.UUID
 
 /**
@@ -19,12 +19,12 @@ import java.util.UUID
  * @see PackageInstaller.createSession
  * @param baseApk [URI][Uri] of base APK.
  * @param configure configures [install session][InstallParametersDsl].
- * @return [Session]
+ * @return [ProgressSession]
  */
 public inline fun PackageInstaller.createSession(
 	baseApk: Uri,
 	configure: InstallParametersDsl.() -> Unit
-): Session<InstallFailure> {
+): ProgressSession<InstallFailure> {
 	return createSession(InstallParameters(baseApk, configure))
 }
 
@@ -37,16 +37,24 @@ public inline fun PackageInstaller.createSession(
  * @see PackageInstaller.createSession
  * @param apks [URIs][Uri] of split APKs.
  * @param configure configures [install session][InstallParametersDsl].
- * @return [Session]
+ * @return [ProgressSession]
  */
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public inline fun PackageInstaller.createSession(
 	apks: Iterable<Uri>,
 	configure: InstallParametersDsl.() -> Unit
-): Session<InstallFailure> {
+): ProgressSession<InstallFailure> {
 	return createSession(InstallParameters(apks, configure))
 }
 
-public suspend inline fun PackageInstaller.getSession(sessionId: UUID): Session<InstallFailure>? {
+public suspend inline fun PackageInstaller.getSession(sessionId: UUID): ProgressSession<InstallFailure>? {
 	return getSessionAsync(sessionId).await()
+}
+
+public suspend inline fun PackageInstaller.getSessions(): List<ProgressSession<InstallFailure>> {
+	return getSessionsAsync().await()
+}
+
+public suspend inline fun PackageInstaller.getActiveSessions(): List<ProgressSession<InstallFailure>> {
+	return getActiveSessionsAsync().await()
 }
