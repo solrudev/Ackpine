@@ -4,7 +4,7 @@ import androidx.annotation.RestrictTo
 import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SerialExecutor(private val executor: Executor) : Executor {
+internal class SerialExecutor internal constructor(private val executor: Executor) : Executor {
 
 	private val lock = Any()
 	private val tasks = ArrayDeque<Task>()
