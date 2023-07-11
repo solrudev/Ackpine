@@ -41,6 +41,7 @@ internal class UninstallSession internal constructor(
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
 		// no preparation needed
+		notifyAwaiting()
 	}
 
 	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
