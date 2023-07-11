@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
@@ -56,20 +57,12 @@ internal class PackageUninstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?> {
 		val future = ResolvableFuture.create<Session<UninstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: try {
-			executor.execute {
-				try {
-					val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
-					val uninstallSession = session?.toUninstallSession()?.let {
-						sessions.putIfAbsent(sessionId, it) ?: it
-					}
-					future.set(uninstallSession)
-				} catch (t: Throwable) {
-					future.setException(t)
-				}
+		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+			val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
+			val uninstallSession = session?.toUninstallSession()?.let {
+				sessions.putIfAbsent(sessionId, it) ?: it
 			}
-		} catch (t: Throwable) {
-			future.setException(t)
+			future.set(uninstallSession)
 		}
 		return future
 	}
@@ -101,21 +94,13 @@ internal class PackageUninstallerImpl internal constructor(
 		crossinline transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
 	): ListenableFuture<List<Session<UninstallFailure>>> {
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
-		try {
-			executor.execute {
-				try {
-					uninstallSessionDao.getUninstallSessions().forEach { session ->
-						val uninstallSession = session.toUninstallSession()
-						sessions.putIfAbsent(uninstallSession.id, uninstallSession)
-					}
-					isSessionsMapInitialized = true
-					future.set(transform(sessions.values))
-				} catch (t: Throwable) {
-					future.setException(t)
-				}
+		executor.safeExecuteWith(future) {
+			uninstallSessionDao.getUninstallSessions().forEach { session ->
+				val uninstallSession = session.toUninstallSession()
+				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
 			}
-		} catch (t: Throwable) {
-			future.setException(t)
+			isSessionsMapInitialized = true
+			future.set(transform(sessions.values))
 		}
 		return future
 	}

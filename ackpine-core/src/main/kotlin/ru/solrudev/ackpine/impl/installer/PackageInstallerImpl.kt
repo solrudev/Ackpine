@@ -5,6 +5,7 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -63,18 +64,10 @@ internal class PackageInstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
 		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: try {
-			executor.execute {
-				try {
-					val session = installSessionDao.getInstallSession(sessionId.toString())
-					val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-					future.set(installSession)
-				} catch (t: Throwable) {
-					future.setException(t)
-				}
-			}
-		} catch (t: Throwable) {
-			future.setException(t)
+		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+			val session = installSessionDao.getInstallSession(sessionId.toString())
+			val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
+			future.set(installSession)
 		}
 		return future
 	}
@@ -106,21 +99,13 @@ internal class PackageInstallerImpl internal constructor(
 		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		try {
-			executor.execute {
-				try {
-					installSessionDao.getInstallSessions().forEach { session ->
-						val installSession = session.toInstallSession()
-						sessions.putIfAbsent(installSession.id, installSession)
-					}
-					isSessionsMapInitialized = true
-					future.set(transform(sessions.values))
-				} catch (t: Throwable) {
-					future.setException(t)
-				}
+		executor.safeExecuteWith(future) {
+			installSessionDao.getInstallSessions().forEach { session ->
+				val installSession = session.toInstallSession()
+				sessions.putIfAbsent(installSession.id, installSession)
 			}
-		} catch (t: Throwable) {
-			future.setException(t)
+			isSessionsMapInitialized = true
+			future.set(transform(sessions.values))
 		}
 		return future
 	}
