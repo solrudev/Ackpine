@@ -5,7 +5,7 @@ import ru.solrudev.ackpine.splits.Apk
 /**
  * Thrown when split package is invalid.
  */
-public sealed class SplitPackageException(message: String) : Exception(message)
+public sealed class SplitPackageException(message: String) : RuntimeException(message)
 
 /**
  * Thrown when no [base APK][Apk.Base] was found.
