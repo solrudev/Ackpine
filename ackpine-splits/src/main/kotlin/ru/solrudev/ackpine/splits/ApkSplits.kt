@@ -6,6 +6,7 @@ import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
 import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
+import ru.solrudev.ackpine.exceptions.SplitPackageException
 import ru.solrudev.ackpine.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
@@ -54,8 +55,11 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
-	 * package name or version code.
+	 * Returns a sequence which throws [SplitPackageException] on iteration if the split package is invalid.
+	 *
+	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
+	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
+	 * be thrown.
 	 *
 	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
@@ -88,8 +92,11 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a list of [APK splits][Apk] and throws if any split conflicts with [base APK][Apk.Base] by package name
-	 * or version code.
+	 * Returns a list of [APK splits][Apk] and throws [SplitPackageException] if the split package is invalid.
+	 *
+	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
+	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
+	 * be thrown.
 	 *
 	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
 	 * base APK in the iterable, [NoBaseApkException] will be thrown.
