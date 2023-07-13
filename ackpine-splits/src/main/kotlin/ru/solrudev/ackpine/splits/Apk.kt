@@ -133,13 +133,7 @@ public sealed class Apk(
 		 */
 		@JvmStatic
 		public fun fromFile(file: File): Apk? {
-			if (!file.isApk) {
-				return null
-			}
-			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
-			file.inputStream().use { inputStream ->
-				return createApkSplit(inputStream, name, Uri.fromFile(file), file.length())
-			}
+			return fromFile(file, Uri.fromFile(file))
 		}
 
 		/**
@@ -151,7 +145,7 @@ public sealed class Apk(
 		public fun fromUri(context: Context, uri: Uri): Apk? {
 			val file = uri.toFile(context)
 			if (file.canRead()) {
-				return fromFile(file)
+				return fromFile(file, uri)
 			}
 			if (!uri.isApk(context)) {
 				return null
@@ -172,6 +166,16 @@ public sealed class Apk(
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
 			return createApkSplit(inputStream, name, uri, zipEntry.size)
+		}
+
+		private fun fromFile(file: File, uri: Uri): Apk? {
+			if (!file.isApk) {
+				return null
+			}
+			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
+			file.inputStream().use { inputStream ->
+				return createApkSplit(inputStream, name, uri, file.length())
+			}
 		}
 
 		private fun createApkSplit(inputStream: InputStream, name: String, uri: Uri, size: Long): Apk? {
