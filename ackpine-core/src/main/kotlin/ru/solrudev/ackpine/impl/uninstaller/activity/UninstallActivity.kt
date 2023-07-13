@@ -20,7 +20,7 @@ internal abstract class UninstallActivity : SessionCommitActivity<Session<Uninst
 ) {
 
 	override val ackpineSessionFuture by lazy {
-		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId!!)
+		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId)
 	}
 
 	private val packageNameToUninstall by lazy {
@@ -30,8 +30,8 @@ internal abstract class UninstallActivity : SessionCommitActivity<Session<Uninst
 	private lateinit var ackpinePackageUninstaller: PackageUninstaller
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
 		ackpinePackageUninstaller = PackageUninstaller.getInstance(this)
+		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
 		}

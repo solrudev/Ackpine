@@ -17,13 +17,13 @@ internal abstract class InstallActivity(
 ) {
 
 	override val ackpineSessionFuture by lazy {
-		ackpinePackageInstaller.getSessionAsync(ackpineSessionId!!)
+		ackpinePackageInstaller.getSessionAsync(ackpineSessionId)
 	}
 
 	private lateinit var ackpinePackageInstaller: PackageInstaller
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
 		ackpinePackageInstaller = PackageInstaller.getInstance(this)
+		super.onCreate(savedInstanceState)
 	}
 }
