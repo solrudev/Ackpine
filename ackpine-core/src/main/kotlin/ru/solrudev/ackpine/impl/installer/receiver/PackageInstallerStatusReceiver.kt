@@ -35,7 +35,12 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.SESSION_ID_KEY)!!
 		try {
 			packageInstaller.getSessionAsync(ackpineSessionId).handleResult { session ->
-				handlePackageInstallerStatus(session as? CompletableSession<InstallFailure>, intent, context)
+				handlePackageInstallerStatus(
+					session as? CompletableSession<InstallFailure>,
+					ackpineSessionId,
+					intent,
+					context
+				)
 			}
 		} catch (t: Throwable) {
 			pendingResult.finish()
@@ -45,6 +50,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 	private fun handlePackageInstallerStatus(
 		session: CompletableSession<InstallFailure>?,
+		ackpineSessionId: UUID,
 		intent: Intent,
 		context: Context
 	) {
@@ -55,6 +61,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 				val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
 				if (confirmationIntent != null) {
 					val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+						.putExtra(SessionCommitActivity.SESSION_ID_KEY, ackpineSessionId)
 						.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 						.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
 						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
