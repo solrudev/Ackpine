@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
+import android.os.OperationCanceledException
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
@@ -88,9 +89,15 @@ internal class SessionBasedInstallSession internal constructor(
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback()
 		packageInstaller.openSession(sessionId).use { session ->
-			session.writeApks(cancellationSignal).handleResult {
-				notifyAwaiting()
-			}
+			session.writeApks(cancellationSignal).handleResult(
+				onException = { exception ->
+					if (exception is OperationCanceledException) {
+						cancel()
+					} else {
+						completeExceptionally(exception)
+					}
+				},
+				block = { notifyAwaiting() })
 		}
 	}
 
