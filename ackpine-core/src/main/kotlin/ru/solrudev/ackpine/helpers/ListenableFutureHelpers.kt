@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException
 @SuppressLint("RestrictedApi")
 @JvmSynthetic
 internal inline fun <V> ListenableFuture<V>.handleResult(
-	crossinline onException: (Exception) -> Unit = {},
+	crossinline onException: (Exception) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
 ) {
 	if (isDone) {
