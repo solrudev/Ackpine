@@ -11,9 +11,9 @@ internal interface NotificationIdDao {
 	@Query("SELECT notification_id FROM sessions_notification_ids WHERE session_id = :sessionId")
 	fun getNotificationId(sessionId: String): Int?
 
-	@Query(
-		"INSERT OR REPLACE INTO sessions_notification_ids(session_id, notification_id) " +
-				"VALUES (:sessionId, :notificationId)"
-	)
+	@Query("UPDATE sessions_notification_ids SET notification_id = :notificationId WHERE session_id = :sessionId")
 	fun setNotificationId(sessionId: String, notificationId: Int)
+
+	@Query("INSERT INTO sessions_notification_ids(session_id, notification_id) VALUES (:sessionId, -1)")
+	fun initNotificationId(sessionId: String)
 }

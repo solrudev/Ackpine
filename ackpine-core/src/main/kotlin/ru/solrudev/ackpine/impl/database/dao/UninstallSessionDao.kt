@@ -26,6 +26,7 @@ internal abstract class UninstallSessionDao(private val database: AckpineDatabas
 	open fun insertUninstallSession(session: SessionEntity.UninstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertPackageName(session.session.id, session.packageName)
+		database.notificationIdDao().initNotificationId(session.session.id)
 	}
 
 	@Transaction

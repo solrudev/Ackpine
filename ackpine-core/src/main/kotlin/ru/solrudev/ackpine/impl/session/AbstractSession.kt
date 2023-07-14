@@ -38,7 +38,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	init {
 		serialExecutor.execute {
-			notificationId = notificationIdDao.getNotificationId(id.toString())
+			notificationId = notificationIdDao.getNotificationId(id.toString()).takeIf { it != -1 }
 				?: NOTIFICATION_ID.incrementAndGet().also { notificationId ->
 					notificationIdDao.setNotificationId(id.toString(), notificationId)
 				}

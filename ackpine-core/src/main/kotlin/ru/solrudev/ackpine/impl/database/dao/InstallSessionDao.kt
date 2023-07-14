@@ -29,6 +29,7 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
 		database.sessionProgressDao().initProgress(session.session.id)
+		database.notificationIdDao().initNotificationId(session.session.id)
 	}
 
 	@Transaction
