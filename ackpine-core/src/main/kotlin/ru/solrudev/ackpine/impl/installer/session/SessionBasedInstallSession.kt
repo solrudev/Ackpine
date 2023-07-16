@@ -62,14 +62,14 @@ internal class SessionBasedInstallSession internal constructor(
 	exceptionalFailureFactory = InstallFailure::Exceptional
 ) {
 
+	@Volatile
+	private var nativeSessionId = -1
+
 	init {
 		serialExecutor.execute {
 			nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
 		}
 	}
-
-	@Volatile
-	private var nativeSessionId = -1
 
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
@@ -87,7 +87,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = packageInstaller.createSession(sessionParams)
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
-		sessionCallback = packageInstaller.createAndRegisterSessionCallback()
+		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
 		packageInstaller.openSession(sessionId).use { session ->
 			session.writeApks(cancellationSignal).handleResult(
 				onException = { exception ->
@@ -171,15 +171,17 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun PackageInstaller.createAndRegisterSessionCallback(): PackageInstaller.SessionCallback {
-		val callback = packageInstallerSessionCallback()
+	private fun PackageInstaller.createAndRegisterSessionCallback(
+		nativeSessionId: Int
+	): PackageInstaller.SessionCallback {
+		val callback = packageInstallerSessionCallback(nativeSessionId)
 		handler.post {
 			registerSessionCallback(callback)
 		}
 		return callback
 	}
 
-	private fun packageInstallerSessionCallback() = object : PackageInstaller.SessionCallback() {
+	private fun packageInstallerSessionCallback(nativeSessionId: Int) = object : PackageInstaller.SessionCallback() {
 		override fun onCreated(sessionId: Int) {}
 		override fun onBadgingChanged(sessionId: Int) {}
 		override fun onActiveChanged(sessionId: Int, active: Boolean) {}
