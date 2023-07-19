@@ -16,7 +16,7 @@ import java.util.UUID
  */
 public inline fun PackageUninstaller.createSession(
 	packageName: String,
-	configure: UninstallParametersDsl.() -> Unit
+	configure: UninstallParametersDsl.() -> Unit = {}
 ): Session<UninstallFailure> {
 	return createSession(UninstallParameters(packageName, configure))
 }

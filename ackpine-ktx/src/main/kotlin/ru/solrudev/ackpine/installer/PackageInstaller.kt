@@ -23,7 +23,7 @@ import java.util.UUID
  */
 public inline fun PackageInstaller.createSession(
 	baseApk: Uri,
-	configure: InstallParametersDsl.() -> Unit
+	configure: InstallParametersDsl.() -> Unit = {}
 ): ProgressSession<InstallFailure> {
 	return createSession(InstallParameters(baseApk, configure))
 }
@@ -42,7 +42,7 @@ public inline fun PackageInstaller.createSession(
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public inline fun PackageInstaller.createSession(
 	apks: Iterable<Uri>,
-	configure: InstallParametersDsl.() -> Unit
+	configure: InstallParametersDsl.() -> Unit = {}
 ): ProgressSession<InstallFailure> {
 	return createSession(InstallParameters(apks, configure))
 }
