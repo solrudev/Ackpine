@@ -45,7 +45,7 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForUri(context: Context, uri: Uri): Sequence<Apk> {
+	public fun getApksForUri(uri: Uri, context: Context): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
 			val file = uri.toFile(applicationContext)

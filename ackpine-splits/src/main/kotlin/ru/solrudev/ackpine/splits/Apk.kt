@@ -142,7 +142,7 @@ public sealed class Apk(
 		 * Returns `null` if provided file is not an APK.
 		 */
 		@JvmStatic
-		public fun fromUri(context: Context, uri: Uri): Apk? {
+		public fun fromUri(uri: Uri, context: Context): Apk? {
 			val file = uri.toFile(context)
 			if (file.canRead()) {
 				return fromFile(file, uri)
