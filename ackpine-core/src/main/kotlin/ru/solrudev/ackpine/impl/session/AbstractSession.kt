@@ -91,10 +91,10 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (currentState !is Session.State.Pending && currentState !is Session.State.Active) {
 			return
 		}
+		isPreparing = true
 		state = Session.State.Active
 		serialExecutor.execute {
 			try {
-				isPreparing = true
 				prepare(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
@@ -123,9 +123,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		if (state.isTerminal || isCancelling) {
 			return
 		}
+		isCancelling = true
 		serialExecutor.execute {
 			try {
-				isCancelling = true
 				cancellationSignal.cancel()
 				handleCancellation()
 			} catch (exception: Exception) {
