@@ -8,7 +8,7 @@ public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendC
 	val subscription = addStateListener { _, state ->
 		when (state) {
 			Session.State.Pending -> launch()
-			Session.State.Active -> {}
+			Session.State.Active -> launch()
 			Session.State.Awaiting -> commit()
 			Session.State.Committed -> {}
 			Session.State.Cancelled -> continuation.cancel()

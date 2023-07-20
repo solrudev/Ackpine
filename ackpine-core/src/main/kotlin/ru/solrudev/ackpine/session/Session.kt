@@ -49,7 +49,7 @@ public interface Session<out F : Failure> {
 			}
 			when (state) {
 				State.Pending -> session.launch()
-				State.Active -> {}
+				State.Active -> session.launch()
 				State.Awaiting -> session.commit()
 				State.Committed -> {}
 				State.Cancelled -> onCancelled(sessionId)
