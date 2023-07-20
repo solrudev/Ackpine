@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/mobile_navigation"
+	app:startDestination="@+id/install_fragment">
+
+	<fragment
+		android:id="@+id/install_fragment"
+		android:name="ru.solrudev.ackpine.sample.install.InstallFragment"
+		android:label="@string/screen_title_install"
+		tools:layout="@layout/fragment_install" />
+
+	<fragment
+		android:id="@+id/uninstall_fragment"
+		android:name="ru.solrudev.ackpine.sample.uninstall.UninstallFragment"
+		android:label="@string/screen_title_uninstall"
+		tools:layout="@layout/fragment_uninstall" />
+
+</navigation>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name" translatable="false">Ackpine</string>
+	<string name="default_percentage" translatable="false">0%</string>
+	<string name="percentage" translatable="false">%d%%</string>
+	<string name="screen_title_install">Install</string>
+	<string name="screen_title_uninstall">Uninstall</string>
+	<string name="cancel">Cancel</string>
+	<string name="fab_install">Install</string>
+	<string name="session_error">Error</string>
+	<string name="session_error_with_reason">Error: %s</string>
+</resources>

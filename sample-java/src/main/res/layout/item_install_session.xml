@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginVertical="8dp">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:minHeight="80dp"
+		android:padding="16dp">
+
+		<TextView
+			android:id="@+id/session_error"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:textColor="?colorError"
+			android:visibility="gone"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="Install failed" />
+
+		<TextView
+			android:id="@+id/session_name"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:ellipsize="end"
+			android:maxLines="1"
+			app:layout_constraintBottom_toTopOf="@id/session_progress_bar"
+			app:layout_constraintEnd_toStartOf="@id/session_percentage"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:text="Name" />
+
+		<com.google.android.material.progressindicator.LinearProgressIndicator
+			android:id="@+id/session_progress_bar"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:layout_marginEnd="16dp"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toStartOf="@id/session_button"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/session_name"
+			tools:progress="28" />
+
+		<TextView
+			android:id="@+id/session_percentage"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="16dp"
+			android:text="@string/default_percentage"
+			app:layout_constraintBottom_toBottomOf="@id/session_name"
+			app:layout_constraintEnd_toStartOf="@id/session_button"
+			app:layout_constraintStart_toEndOf="@id/session_name"
+			app:layout_constraintTop_toTopOf="@id/session_name"
+			app:layout_constraintWidth="wrap_content"
+			tools:text="28%" />
+
+		<Button
+			android:id="@+id/session_button"
+			style="?materialButtonOutlinedStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/cancel"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

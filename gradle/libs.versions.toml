@@ -10,6 +10,7 @@ plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
 listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
+guava = { module = "com.google.guava:guava", version = "32.0.1-android" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradleplugin" }
