@@ -11,6 +11,7 @@ ackpine {
 dependencies {
 	ksp(androidx.room.compiler)
 	api(androidx.annotation)
+	api(androidx.startup)
 	api(libs.listenablefuture)
 	implementation(androidx.concurrent.futures)
 	implementation(androidx.core.ktx)

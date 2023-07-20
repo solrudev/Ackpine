@@ -8,3 +8,4 @@ core-ktx = { module = "androidx.core:core-ktx", version = "1.10.1" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version = "1.1.0" }
+startup = { module = "androidx.startup:startup-runtime", version = "1.1.1" }

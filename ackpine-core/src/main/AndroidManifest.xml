@@ -48,5 +48,15 @@
 			android:name=".impl.installer.receiver.PackageInstallerStatusReceiver"
 			android:exported="false" />
 
+		<provider
+			android:name="androidx.startup.InitializationProvider"
+			android:authorities="${applicationId}.androidx-startup"
+			android:exported="false"
+			tools:node="merge">
+			<meta-data
+				android:name="ru.solrudev.ackpine.AckpineInitializer"
+				android:value="androidx.startup" />
+		</provider>
+
 	</application>
 </manifest>
