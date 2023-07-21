@@ -21,12 +21,13 @@ android {
 		minSdk = 16
 		targetSdk = 33
 		versionCode = 1
-		versionName = "1.0"
+		versionName = rootProject.version.toString()
 	}
 
 	buildTypes {
 		named("release") {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 	}
@@ -48,7 +49,13 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 }
 
 dependencies {
+	implementation(projects.ackpineSplits)
 	implementation(projects.ackpineKtx)
 	implementation(androidx.activity.ktx)
+	implementation(androidx.appcompat)
+	implementation(androidx.recyclerview)
+	implementation(androidx.constraintlayout)
+	implementation(androidx.bundles.lifecycle.ktx)
+	implementation(androidx.bundles.navigation.ktx)
 	implementation(libs.materialcomponents)
 }
