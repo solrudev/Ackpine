@@ -11,17 +11,17 @@ import ru.solrudev.ackpine.session.parameters.NotificationString;
 
 public interface SessionDataRepository {
 
-    @NonNull
-    LiveData<List<SessionData>> getSessions();
+	@NonNull
+	LiveData<List<SessionData>> getSessions();
 
-    @NonNull
-    LiveData<List<SessionProgress>> getSessionsProgress();
+	@NonNull
+	LiveData<List<SessionProgress>> getSessionsProgress();
 
-    void addSessionData(@NonNull SessionData sessionData);
+	void addSessionData(@NonNull SessionData sessionData);
 
-    void removeSessionData(@NonNull UUID id);
+	void removeSessionData(@NonNull UUID id);
 
-    void updateSessionProgress(@NonNull UUID id, @NonNull Progress progress);
+	void updateSessionProgress(@NonNull UUID id, @NonNull Progress progress);
 
-    void setError(@NonNull UUID id, @NonNull NotificationString error);
+	void setError(@NonNull UUID id, @NonNull NotificationString error);
 }

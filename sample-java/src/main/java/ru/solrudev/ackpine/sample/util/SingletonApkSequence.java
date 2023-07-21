@@ -13,34 +13,34 @@ import ru.solrudev.ackpine.splits.Apk;
 
 public final class SingletonApkSequence implements Sequence<Apk> {
 
-    private final Uri _uri;
-    private final Context _applicationContext;
+	private final Uri uri;
+	private final Context applicationContext;
 
-    public SingletonApkSequence(@NonNull Uri uri, @NonNull Context context) {
-        _uri = uri;
-        _applicationContext = context.getApplicationContext();
-    }
+	public SingletonApkSequence(@NonNull Uri uri, @NonNull Context context) {
+		this.uri = uri;
+		applicationContext = context.getApplicationContext();
+	}
 
-    @NonNull
-    @Override
-    public Iterator<Apk> iterator() {
-        return new Iterator<>() {
+	@NonNull
+	@Override
+	public Iterator<Apk> iterator() {
+		return new Iterator<>() {
 
-            private boolean isYielded = false;
+			private boolean isYielded = false;
 
-            @Override
-            public boolean hasNext() {
-                return !isYielded;
-            }
+			@Override
+			public boolean hasNext() {
+				return !isYielded;
+			}
 
-            @Override
-            public Apk next() {
-                if (isYielded) {
-                    throw new NoSuchElementException();
-                }
-                isYielded = true;
-                return Apk.fromUri(_uri, _applicationContext);
-            }
-        };
-    }
+			@Override
+			public Apk next() {
+				if (isYielded) {
+					throw new NoSuchElementException();
+				}
+				isYielded = true;
+				return Apk.fromUri(uri, applicationContext);
+			}
+		};
+	}
 }

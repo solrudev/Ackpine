@@ -39,155 +39,154 @@ import ru.solrudev.ackpine.splits.Apk;
 
 public final class InstallViewModel extends ViewModel {
 
-    private final MutableLiveData<String> _error = new MutableLiveData<>();
-    private final DisposableSubscriptionContainer _subscriptions = new DisposableSubscriptionContainer();
-    private final PackageInstaller _packageInstaller;
-    private final SessionDataRepository _sessionDataRepository;
-    private final ExecutorService _executor;
+	private final MutableLiveData<String> error = new MutableLiveData<>();
+	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
+	private final PackageInstaller packageInstaller;
+	private final SessionDataRepository sessionDataRepository;
+	private final ExecutorService executor;
 
-    public InstallViewModel(@NonNull PackageInstaller packageInstaller,
-                            @NonNull SessionDataRepository sessionDataRepository,
-                            @NonNull ExecutorService executor) {
-        _packageInstaller = packageInstaller;
-        _sessionDataRepository = sessionDataRepository;
-        _executor = executor;
-        final var sessions = _sessionDataRepository.getSessions().getValue();
-        if (sessions != null && !sessions.isEmpty()) {
-            for (final var sessionData : sessions) {
-                addSessionListeners(sessionData.id());
-            }
-        }
-    }
+	public InstallViewModel(@NonNull PackageInstaller packageInstaller,
+							@NonNull SessionDataRepository sessionDataRepository,
+							@NonNull ExecutorService executor) {
+		this.packageInstaller = packageInstaller;
+		this.sessionDataRepository = sessionDataRepository;
+		this.executor = executor;
+		final var sessions = sessionDataRepository.getSessions().getValue();
+		if (sessions != null && !sessions.isEmpty()) {
+			for (final var sessionData : sessions) {
+				addSessionListeners(sessionData.id());
+			}
+		}
+	}
 
-    public void installPackage(@NonNull Sequence<Apk> apks, @NonNull String name) {
-        _executor.execute(() -> {
-            final var uris = mapApkSequenceToUri(apks);
-            if (uris.isEmpty()) {
-                return;
-            }
-            final var session =
-                    _packageInstaller.createSession(new InstallParameters.Builder(uris).build());
-            final var sessionData = new SessionData(session.getId(), name);
-            _sessionDataRepository.addSessionData(sessionData);
-            _subscriptions.add(session.addStateListener(new SessionStateListener(session)));
-            _subscriptions.add(session.addProgressListener(_sessionDataRepository::updateSessionProgress));
-        });
-    }
+	public void installPackage(@NonNull Sequence<Apk> apks, @NonNull String name) {
+		executor.execute(() -> {
+			final var uris = mapApkSequenceToUri(apks);
+			if (uris.isEmpty()) {
+				return;
+			}
+			final var session = packageInstaller.createSession(new InstallParameters.Builder(uris).build());
+			final var sessionData = new SessionData(session.getId(), name);
+			sessionDataRepository.addSessionData(sessionData);
+			subscriptions.add(session.addStateListener(new SessionStateListener(session)));
+			subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
+		});
+	}
 
-    @NonNull
-    public LiveData<String> getError() {
-        return _error;
-    }
+	@NonNull
+	public LiveData<String> getError() {
+		return error;
+	}
 
-    @NonNull
-    public LiveData<List<SessionData>> getSessions() {
-        return _sessionDataRepository.getSessions();
-    }
+	@NonNull
+	public LiveData<List<SessionData>> getSessions() {
+		return sessionDataRepository.getSessions();
+	}
 
-    @NonNull
-    public LiveData<List<SessionProgress>> getSessionsProgress() {
-        return _sessionDataRepository.getSessionsProgress();
-    }
+	@NonNull
+	public LiveData<List<SessionProgress>> getSessionsProgress() {
+		return sessionDataRepository.getSessionsProgress();
+	}
 
-    public void clearError() {
-        _error.setValue("");
-    }
+	public void clearError() {
+		error.setValue("");
+	}
 
-    public void cancelSession(UUID id) {
-        Futures.addCallback(_packageInstaller.getSessionAsync(id), new FutureCallback<>() {
-            @Override
-            public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
-                if (session != null) {
-                    session.cancel();
-                }
-            }
+	public void cancelSession(UUID id) {
+		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
+			@Override
+			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
+				if (session != null) {
+					session.cancel();
+				}
+			}
 
-            @Override
-            public void onFailure(@NonNull Throwable t) {
-            }
-        }, MoreExecutors.directExecutor());
-    }
+			@Override
+			public void onFailure(@NonNull Throwable t) {
+			}
+		}, MoreExecutors.directExecutor());
+	}
 
-    public void removeSession(UUID id) {
-        _sessionDataRepository.removeSessionData(id);
-    }
+	public void removeSession(UUID id) {
+		sessionDataRepository.removeSessionData(id);
+	}
 
-    @Override
-    protected void onCleared() {
-        _subscriptions.clear();
-        _executor.shutdownNow();
-    }
+	@Override
+	protected void onCleared() {
+		subscriptions.clear();
+		executor.shutdownNow();
+	}
 
-    private void addSessionListeners(UUID id) {
-        Futures.addCallback(_packageInstaller.getSessionAsync(id), new FutureCallback<>() {
-            @Override
-            public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
-                if (session != null) {
-                    _subscriptions.add(session.addProgressListener(_sessionDataRepository::updateSessionProgress));
-                    _subscriptions.add(session.addStateListener(new SessionStateListener(session)));
-                }
-            }
+	private void addSessionListeners(UUID id) {
+		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
+			@Override
+			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
+				if (session != null) {
+					subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
+					subscriptions.add(session.addStateListener(new SessionStateListener(session)));
+				}
+			}
 
-            @Override
-            public void onFailure(@NonNull Throwable t) {
-            }
-        }, MoreExecutors.directExecutor());
-    }
+			@Override
+			public void onFailure(@NonNull Throwable t) {
+			}
+		}, MoreExecutors.directExecutor());
+	}
 
-    @NonNull
-    private List<Uri> mapApkSequenceToUri(@NonNull Sequence<Apk> apks) {
-        try {
-            final var uris = new ArrayList<Uri>();
-            for (final var iterator = apks.iterator(); iterator.hasNext(); ) {
-                final var apk = iterator.next();
-                uris.add(apk.getUri());
-            }
-            return uris;
-        } catch (SplitPackageException exception) {
-            _error.postValue(exception.getMessage());
-            return Collections.emptyList();
-        }
-    }
+	@NonNull
+	private List<Uri> mapApkSequenceToUri(@NonNull Sequence<Apk> apks) {
+		try {
+			final var uris = new ArrayList<Uri>();
+			for (final var iterator = apks.iterator(); iterator.hasNext(); ) {
+				final var apk = iterator.next();
+				uris.add(apk.getUri());
+			}
+			return uris;
+		} catch (SplitPackageException exception) {
+			error.postValue(exception.getMessage());
+			return Collections.emptyList();
+		}
+	}
 
-    static final ViewModelInitializer<InstallViewModel> initializer = new ViewModelInitializer<>(
-            InstallViewModel.class,
-            creationExtras -> {
-                final var application = creationExtras.get(APPLICATION_KEY);
-                assert application != null;
-                final var packageInstaller = PackageInstaller.getInstance(application);
-                final var savedStateHandle = createSavedStateHandle(creationExtras);
-                final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
-                final var executor = Executors.newFixedThreadPool(8);
-                return new InstallViewModel(packageInstaller, sessionsRepository, executor);
-            }
-    );
+	static final ViewModelInitializer<InstallViewModel> initializer = new ViewModelInitializer<>(
+			InstallViewModel.class,
+			creationExtras -> {
+				final var application = creationExtras.get(APPLICATION_KEY);
+				assert application != null;
+				final var packageInstaller = PackageInstaller.getInstance(application);
+				final var savedStateHandle = createSavedStateHandle(creationExtras);
+				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
+				final var executor = Executors.newFixedThreadPool(8);
+				return new InstallViewModel(packageInstaller, sessionsRepository, executor);
+			}
+	);
 
-    private final class SessionStateListener extends Session.DefaultStateListener<InstallFailure> {
+	private final class SessionStateListener extends Session.DefaultStateListener<InstallFailure> {
 
-        public SessionStateListener(@NonNull Session<? extends InstallFailure> session) {
-            super(session);
-        }
+		public SessionStateListener(@NonNull Session<? extends InstallFailure> session) {
+			super(session);
+		}
 
-        @Override
-        public void onCancelled(@NonNull UUID sessionId) {
-            _sessionDataRepository.removeSessionData(sessionId);
-        }
+		@Override
+		public void onCancelled(@NonNull UUID sessionId) {
+			sessionDataRepository.removeSessionData(sessionId);
+		}
 
-        @Override
-        public void onSuccess(@NonNull UUID sessionId) {
-            _sessionDataRepository.removeSessionData(sessionId);
-        }
+		@Override
+		public void onSuccess(@NonNull UUID sessionId) {
+			sessionDataRepository.removeSessionData(sessionId);
+		}
 
-        @Override
-        public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
-            final var message = failure.getMessage();
-            final var error = message != null
-                    ? NotificationString.resource(R.string.session_error_with_reason, message)
-                    : NotificationString.resource(R.string.session_error);
-            _sessionDataRepository.setError(sessionId, error);
-            if (failure instanceof Failure.Exceptional) {
-                Log.e("InstallViewModel", null, ((Failure.Exceptional) failure).getException());
-            }
-        }
-    }
+		@Override
+		public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
+			final var message = failure.getMessage();
+			final var error = message != null
+					? NotificationString.resource(R.string.session_error_with_reason, message)
+					: NotificationString.resource(R.string.session_error);
+			sessionDataRepository.setError(sessionId, error);
+			if (failure instanceof Failure.Exceptional) {
+				Log.e("InstallViewModel", null, ((Failure.Exceptional) failure).getException());
+			}
+		}
+	}
 }

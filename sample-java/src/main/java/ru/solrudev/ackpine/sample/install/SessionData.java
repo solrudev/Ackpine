@@ -10,62 +10,62 @@ import ru.solrudev.ackpine.session.parameters.NotificationString;
 
 public final class SessionData implements Serializable {
 
-    @NonNull
-    private final UUID _id;
+	@NonNull
+	private final UUID id;
 
-    @NonNull
-    private final String _name;
+	@NonNull
+	private final String name;
 
-    @NonNull
-    private final NotificationString _error;
+	@NonNull
+	private final NotificationString error;
 
-    public SessionData(@NonNull UUID id, @NonNull String name) {
-        _id = id;
-        _name = name;
-        _error = NotificationString.empty();
-    }
+	public SessionData(@NonNull UUID id, @NonNull String name) {
+		this.id = id;
+		this.name = name;
+		error = NotificationString.empty();
+	}
 
-    public SessionData(@NonNull UUID id, @NonNull String name, @NonNull NotificationString error) {
-        _id = id;
-        _name = name;
-        _error = error;
-    }
+	public SessionData(@NonNull UUID id, @NonNull String name, @NonNull NotificationString error) {
+		this.id = id;
+		this.name = name;
+		this.error = error;
+	}
 
-    @NonNull
-    public UUID id() {
-        return _id;
-    }
+	@NonNull
+	public UUID id() {
+		return id;
+	}
 
-    @NonNull
-    public String name() {
-        return _name;
-    }
+	@NonNull
+	public String name() {
+		return name;
+	}
 
-    @NonNull
-    public NotificationString error() {
-        return _error;
-    }
+	@NonNull
+	public NotificationString error() {
+		return error;
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SessionData that = (SessionData) o;
-        return _id.equals(that._id) && _name.equals(that._name) && _error.equals(that._error);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		SessionData that = (SessionData) o;
+		return id.equals(that.id) && name.equals(that.name) && error.equals(that.error);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_id, _name, _error);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, name, error);
+	}
 
-    @NonNull
-    @Override
-    public String toString() {
-        return "SessionData{" +
-                "id=" + _id +
-                ", name='" + _name + '\'' +
-                ", error=" + _error +
-                '}';
-    }
+	@NonNull
+	@Override
+	public String toString() {
+		return "SessionData{" +
+				"id=" + id +
+				", name='" + name + '\'' +
+				", error=" + error +
+				'}';
+	}
 }

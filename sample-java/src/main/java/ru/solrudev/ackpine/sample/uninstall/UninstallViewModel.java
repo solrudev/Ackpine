@@ -16,34 +16,34 @@ import ru.solrudev.ackpine.uninstaller.PackageUninstaller;
 
 public class UninstallViewModel extends ViewModel {
 
-    private final MutableLiveData<String> _text = new MutableLiveData<>();
-    private final SavedStateHandle _savedStateHandle;
-    private final PackageUninstaller _packageUninstaller;
-    private final DisposableSubscriptionContainer _subscriptions = new DisposableSubscriptionContainer();
+	private final MutableLiveData<String> text = new MutableLiveData<>();
+	private final SavedStateHandle savedStateHandle;
+	private final PackageUninstaller packageUninstaller;
+	private final DisposableSubscriptionContainer _subscriptions = new DisposableSubscriptionContainer();
 
-    public UninstallViewModel(PackageUninstaller packageUninstaller, SavedStateHandle savedStateHandle) {
-        _packageUninstaller = packageUninstaller;
-        _savedStateHandle = savedStateHandle;
-        _text.setValue("This is uninstall fragment");
-    }
+	public UninstallViewModel(PackageUninstaller packageUninstaller, SavedStateHandle savedStateHandle) {
+		this.packageUninstaller = packageUninstaller;
+		this.savedStateHandle = savedStateHandle;
+		text.setValue("This is uninstall fragment");
+	}
 
-    @Override
-    protected void onCleared() {
-        _subscriptions.clear();
-    }
+	@Override
+	protected void onCleared() {
+		_subscriptions.clear();
+	}
 
-    public LiveData<String> getText() {
-        return _text;
-    }
+	public LiveData<String> getText() {
+		return text;
+	}
 
-    static final ViewModelInitializer<UninstallViewModel> initializer = new ViewModelInitializer<>(
-            UninstallViewModel.class,
-            creationExtras -> {
-                Application application = creationExtras.get(APPLICATION_KEY);
-                assert application != null;
-                PackageUninstaller packageUninstaller = PackageUninstaller.getInstance(application);
-                SavedStateHandle savedStateHandle = createSavedStateHandle(creationExtras);
-                return new UninstallViewModel(packageUninstaller, savedStateHandle);
-            }
-    );
+	static final ViewModelInitializer<UninstallViewModel> initializer = new ViewModelInitializer<>(
+			UninstallViewModel.class,
+			creationExtras -> {
+				Application application = creationExtras.get(APPLICATION_KEY);
+				assert application != null;
+				PackageUninstaller packageUninstaller = PackageUninstaller.getInstance(application);
+				SavedStateHandle savedStateHandle = createSavedStateHandle(creationExtras);
+				return new UninstallViewModel(packageUninstaller, savedStateHandle);
+			}
+	);
 }

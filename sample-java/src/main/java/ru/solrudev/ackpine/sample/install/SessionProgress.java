@@ -10,48 +10,48 @@ import ru.solrudev.ackpine.session.Progress;
 
 public final class SessionProgress implements Serializable {
 
-    @NonNull
-    private final UUID _id;
+	@NonNull
+	private final UUID id;
 
-    private final int _progress;
-    private final int _progressMax;
+	private final int progress;
+	private final int progressMax;
 
-    public SessionProgress(@NonNull UUID id, @NonNull Progress progress) {
-        _id = id;
-        _progress = progress.getProgress();
-        _progressMax = progress.getMax();
-    }
+	public SessionProgress(@NonNull UUID id, @NonNull Progress progress) {
+		this.id = id;
+		this.progress = progress.getProgress();
+		progressMax = progress.getMax();
+	}
 
-    @NonNull
-    public UUID id() {
-        return _id;
-    }
+	@NonNull
+	public UUID id() {
+		return id;
+	}
 
-    @NonNull
-    public Progress progress() {
-        return new Progress(_progress, _progressMax);
-    }
+	@NonNull
+	public Progress progress() {
+		return new Progress(progress, progressMax);
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        SessionProgress that = (SessionProgress) o;
-        return _progress == that._progress && _progressMax == that._progressMax && _id.equals(that._id);
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		SessionProgress that = (SessionProgress) o;
+		return progress == that.progress && progressMax == that.progressMax && id.equals(that.id);
+	}
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(_id, _progress, _progressMax);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(id, progress, progressMax);
+	}
 
-    @NonNull
-    @Override
-    public String toString() {
-        return "SessionProgress{" +
-                "id=" + _id +
-                ", progress=" + _progress +
-                ", progressMax=" + _progressMax +
-                '}';
-    }
+	@NonNull
+	@Override
+	public String toString() {
+		return "SessionProgress{" +
+				"id=" + id +
+				", progress=" + progress +
+				", progressMax=" + progressMax +
+				'}';
+	}
 }
