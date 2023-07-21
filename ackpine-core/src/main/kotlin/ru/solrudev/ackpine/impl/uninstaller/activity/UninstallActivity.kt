@@ -14,7 +14,7 @@ private const val REQUEST_CODE = 984120586
 private val uninstallPackageContract = UninstallPackageContract()
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
+internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
 	TAG, REQUEST_CODE,
 	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
