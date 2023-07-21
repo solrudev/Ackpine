@@ -34,7 +34,7 @@ public final class UninstallViewModel extends ViewModel {
 
 	private final static String SESSION_ID_KEY = "SESSION_ID";
 	private final static String PACKAGE_NAME_KEY = "PACKAGE_NAME";
-	private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(true);
+	private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 	private final MutableLiveData<List<ApplicationData>> applications = new MutableLiveData<>(new ArrayList<>());
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageUninstaller packageUninstaller;
@@ -69,7 +69,10 @@ public final class UninstallViewModel extends ViewModel {
 		return applications;
 	}
 
-	public void loadApplications(@NonNull Supplier<List<ApplicationData>> applicationsFactory) {
+	public void loadApplications(boolean refresh, @NonNull Supplier<List<ApplicationData>> applicationsFactory) {
+		if (!refresh && !getCurrentApplications().isEmpty()) {
+			return;
+		}
 		executor.execute(() -> {
 			isLoading.postValue(true);
 			final var applications = applicationsFactory.get();

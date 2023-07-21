@@ -33,9 +33,7 @@ public final class UninstallFragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		viewModel = new ViewModelProvider(this, ViewModelProvider.Factory.from(UninstallViewModel.initializer))
 				.get(UninstallViewModel.class);
-		if (savedInstanceState == null) {
-			loadApplications();
-		}
+		loadApplications(false);
 	}
 
 	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -45,7 +43,7 @@ public final class UninstallFragment extends Fragment {
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-		binding.getRoot().setOnRefreshListener(this::loadApplications);
+		binding.getRoot().setOnRefreshListener(() -> loadApplications(true));
 		binding.recyclerViewUninstall.setAdapter(adapter);
 		observeViewModel();
 	}
@@ -61,9 +59,9 @@ public final class UninstallFragment extends Fragment {
 		viewModel.getApplications().observe(getViewLifecycleOwner(), adapter::submitList);
 	}
 
-	private void loadApplications() {
+	private void loadApplications(boolean refresh) {
 		final var context = requireContext().getApplicationContext();
-		viewModel.loadApplications(() -> loadInstalledApplications(context));
+		viewModel.loadApplications(refresh, () -> loadInstalledApplications(context));
 	}
 
 	@NonNull
