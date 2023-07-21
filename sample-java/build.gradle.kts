@@ -49,6 +49,7 @@ dependencies {
 	implementation(androidx.constraintlayout)
 	implementation(androidx.bundles.lifecycle.java)
 	implementation(androidx.bundles.navigation.java)
+	implementation(androidx.swiperefreshlayout)
 	implementation(libs.materialcomponents)
 	implementation(libs.guava)
 }

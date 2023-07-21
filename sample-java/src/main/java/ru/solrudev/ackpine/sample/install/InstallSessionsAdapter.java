@@ -30,7 +30,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		this.onClick = onClick;
 	}
 
-	public static class SessionViewHolder extends RecyclerView.ViewHolder {
+	public final static class SessionViewHolder extends RecyclerView.ViewHolder {
 
 		private final ItemInstallSessionBinding binding;
 		private final Consumer<UUID> onClick;
@@ -107,7 +107,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		}
 	}
 
-	private static class SessionDiffCallback extends DiffUtil.ItemCallback<SessionData> {
+	private final static class SessionDiffCallback extends DiffUtil.ItemCallback<SessionData> {
 
 		@Override
 		public boolean areItemsTheSame(@NonNull SessionData oldItem, @NonNull SessionData newItem) {

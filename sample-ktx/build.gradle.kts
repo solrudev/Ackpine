@@ -57,5 +57,6 @@ dependencies {
 	implementation(androidx.constraintlayout)
 	implementation(androidx.bundles.lifecycle.ktx)
 	implementation(androidx.bundles.navigation.ktx)
+	implementation(androidx.swiperefreshlayout)
 	implementation(libs.materialcomponents)
 }

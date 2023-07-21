@@ -92,7 +92,7 @@ public final class InstallViewModel extends ViewModel {
 		error.setValue("");
 	}
 
-	public void cancelSession(UUID id) {
+	public void cancelSession(@NonNull UUID id) {
 		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
@@ -107,7 +107,7 @@ public final class InstallViewModel extends ViewModel {
 		}, MoreExecutors.directExecutor());
 	}
 
-	public void removeSession(UUID id) {
+	public void removeSession(@NonNull UUID id) {
 		sessionDataRepository.removeSessionData(id);
 	}
 
@@ -117,7 +117,7 @@ public final class InstallViewModel extends ViewModel {
 		executor.shutdownNow();
 	}
 
-	private void addSessionListeners(UUID id) {
+	private void addSessionListeners(@NonNull UUID id) {
 		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
@@ -148,19 +148,6 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	static final ViewModelInitializer<InstallViewModel> initializer = new ViewModelInitializer<>(
-			InstallViewModel.class,
-			creationExtras -> {
-				final var application = creationExtras.get(APPLICATION_KEY);
-				assert application != null;
-				final var packageInstaller = PackageInstaller.getInstance(application);
-				final var savedStateHandle = createSavedStateHandle(creationExtras);
-				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
-				final var executor = Executors.newFixedThreadPool(8);
-				return new InstallViewModel(packageInstaller, sessionsRepository, executor);
-			}
-	);
-
 	private final class SessionStateListener extends Session.DefaultStateListener<InstallFailure> {
 
 		public SessionStateListener(@NonNull Session<? extends InstallFailure> session) {
@@ -189,4 +176,17 @@ public final class InstallViewModel extends ViewModel {
 			}
 		}
 	}
+
+	static final ViewModelInitializer<InstallViewModel> initializer = new ViewModelInitializer<>(
+			InstallViewModel.class,
+			creationExtras -> {
+				final var application = creationExtras.get(APPLICATION_KEY);
+				assert application != null;
+				final var packageInstaller = PackageInstaller.getInstance(application);
+				final var savedStateHandle = createSavedStateHandle(creationExtras);
+				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
+				final var executor = Executors.newFixedThreadPool(8);
+				return new InstallViewModel(packageInstaller, sessionsRepository, executor);
+			}
+	);
 }

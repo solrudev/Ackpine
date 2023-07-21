@@ -50,7 +50,7 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 	@Override
 	public void removeSessionData(@NonNull UUID id) {
 		final var sessions = getCurrentSessions();
-		final var sessionDataIndex = getSessionNameIndexById(sessions, id);
+		final var sessionDataIndex = getSessionDataIndexById(sessions, id);
 		if (sessionDataIndex != -1) {
 			sessions.remove(sessionDataIndex);
 		}
@@ -76,7 +76,7 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 	@Override
 	public void setError(@NonNull UUID id, @NonNull NotificationString error) {
 		final var sessions = getCurrentSessions();
-		final var sessionDataIndex = getSessionNameIndexById(sessions, id);
+		final var sessionDataIndex = getSessionDataIndexById(sessions, id);
 		if (sessionDataIndex != -1) {
 			final var sessionData = sessions.get(sessionDataIndex);
 			sessions.set(sessionDataIndex, new SessionData(sessionData.id(), sessionData.name(), error));
@@ -94,7 +94,7 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 		return new ArrayList<>(Objects.requireNonNull(_sessionsProgress.getValue()));
 	}
 
-	private static int getSessionNameIndexById(@NonNull List<SessionData> sessions, @NonNull UUID id) {
+	private static int getSessionDataIndexById(@NonNull List<SessionData> sessions, @NonNull UUID id) {
 		for (var i = 0; i < sessions.size(); i++) {
 			final var session = sessions.get(i);
 			if (session.id().equals(id)) {
