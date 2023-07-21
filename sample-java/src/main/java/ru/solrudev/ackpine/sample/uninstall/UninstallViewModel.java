@@ -3,8 +3,6 @@ package ru.solrudev.ackpine.sample.uninstall;
 import static androidx.lifecycle.SavedStateHandleSupport.createSavedStateHandle;
 import static androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY;
 
-import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Supplier;
@@ -97,6 +95,8 @@ public final class UninstallViewModel extends ViewModel {
 			applications.remove(applicationDataIndex);
 		}
 		this.applications.setValue(applications);
+		savedStateHandle.remove(SESSION_ID_KEY);
+		savedStateHandle.remove(PACKAGE_NAME_KEY);
 	}
 
 	private void addSessionListener(@NonNull UUID id) {
