@@ -71,7 +71,6 @@ public final class UninstallFragment extends Fragment {
 				? packageManager.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
 				: packageManager.getInstalledApplications(0);
 		final var applications = new ArrayList<ApplicationData>();
-		var index = 0;
 		for (final var applicationInfo : apps) {
 			if ((applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0) {
 				continue;
@@ -79,7 +78,7 @@ public final class UninstallFragment extends Fragment {
 			final var icon = packageManager.getApplicationIcon(applicationInfo);
 			final var name = packageManager.getApplicationLabel(applicationInfo).toString();
 			final var packageName = applicationInfo.packageName;
-			applications.add(new ApplicationData(index++, name, packageName, icon));
+			applications.add(new ApplicationData(name, packageName, icon));
 		}
 		Collections.sort(applications, (first, second) -> first.name().compareTo(second.name()));
 		return applications;

@@ -8,8 +8,6 @@ import java.util.Objects;
 
 public final class ApplicationData {
 
-	private final int id;
-
 	@NonNull
 	private final String name;
 
@@ -19,15 +17,10 @@ public final class ApplicationData {
 	@NonNull
 	private final Drawable icon;
 
-	public ApplicationData(int id, @NonNull String name, @NonNull String packageName, @NonNull Drawable icon) {
-		this.id = id;
+	public ApplicationData(@NonNull String name, @NonNull String packageName, @NonNull Drawable icon) {
 		this.name = name;
 		this.packageName = packageName;
 		this.icon = icon;
-	}
-
-	public int id() {
-		return id;
 	}
 
 	@NonNull
@@ -50,20 +43,19 @@ public final class ApplicationData {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		ApplicationData that = (ApplicationData) o;
-		return id == that.id && name.equals(that.name) && packageName.equals(that.packageName) && icon.equals(that.icon);
+		return name.equals(that.name) && packageName.equals(that.packageName) && icon.equals(that.icon);
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, name, packageName, icon);
+		return Objects.hash(name, packageName, icon);
 	}
 
 	@NonNull
 	@Override
 	public String toString() {
 		return "ApplicationData{" +
-				"id=" + id +
-				", name='" + name + '\'' +
+				"name='" + name + '\'' +
 				", packageName='" + packageName + '\'' +
 				", icon=" + icon +
 				'}';

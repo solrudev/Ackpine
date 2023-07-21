@@ -62,7 +62,7 @@ public final class ApplicationsAdapter extends ListAdapter<ApplicationData, Appl
 	private final static class ApplicationDiffCallback extends DiffUtil.ItemCallback<ApplicationData> {
 		@Override
 		public boolean areItemsTheSame(@NonNull ApplicationData oldItem, @NonNull ApplicationData newItem) {
-			return oldItem.id() == newItem.id();
+			return oldItem.packageName().equals(newItem.packageName());
 		}
 
 		@Override
