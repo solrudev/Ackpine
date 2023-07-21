@@ -7,6 +7,7 @@
 	<string name="screen_title_uninstall">Uninstall</string>
 	<string name="cancel">Cancel</string>
 	<string name="fab_install">Install</string>
+	<string name="uninstall">Uninstall</string>
 	<string name="session_error">Error</string>
 	<string name="session_error_with_reason">Error: %s</string>
 </resources>

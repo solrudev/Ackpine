@@ -40,7 +40,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 			super(itemView);
 			binding = ItemInstallSessionBinding.bind(itemView);
 			this.onClick = onClick;
-			binding.sessionButton.setOnClickListener(v -> this.onClick.accept(currentSessionData.id()));
+			binding.buttonSessionCancel.setOnClickListener(v -> this.onClick.accept(currentSessionData.id()));
 		}
 
 		public boolean isSwipeable() {
@@ -54,27 +54,27 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 		public void bind(@NonNull SessionData sessionData) {
 			currentSessionData = sessionData;
-			binding.sessionName.setText(sessionData.name());
+			binding.textViewSessionName.setText(sessionData.name());
 			setError(sessionData.error());
 		}
 
 		public void setProgress(@NonNull Progress sessionProgress) {
 			final var progress = sessionProgress.getProgress();
 			final var max = sessionProgress.getMax();
-			binding.sessionProgressBar.setProgressCompat(progress, true);
-			binding.sessionProgressBar.setMax(max);
-			binding.sessionPercentage.setText(itemView.getContext().getString(
+			binding.progressBarSession.setProgressCompat(progress, true);
+			binding.progressBarSession.setMax(max);
+			binding.textViewSessionPercentage.setText(itemView.getContext().getString(
 					R.string.percentage, (int) (((double) progress) / max * 100)));
 		}
 
 		private void setError(@NonNull NotificationString error) {
 			final var hasError = !error.isEmpty();
-			ViewKt.setVisible(binding.sessionName, !hasError);
-			ViewKt.setVisible(binding.sessionProgressBar, !hasError);
-			ViewKt.setVisible(binding.sessionPercentage, !hasError);
-			ViewKt.setVisible(binding.sessionButton, !hasError);
-			ViewKt.setVisible(binding.sessionError, hasError);
-			binding.sessionError.setText(error.resolve(itemView.getContext()));
+			ViewKt.setVisible(binding.textViewSessionName, !hasError);
+			ViewKt.setVisible(binding.progressBarSession, !hasError);
+			ViewKt.setVisible(binding.textViewSessionPercentage, !hasError);
+			ViewKt.setVisible(binding.buttonSessionCancel, !hasError);
+			ViewKt.setVisible(binding.textViewSessionError, hasError);
+			binding.textViewSessionError.setText(error.resolve(itemView.getContext()));
 		}
 	}
 

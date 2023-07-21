@@ -51,10 +51,10 @@ public final class InstallFragment extends Fragment {
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-		binding.installFab.setOnClickListener(v -> _pickerLauncher.launch("*/*"));
-		binding.installRecyclerView.setAdapter(adapter);
+		binding.fabInstall.setOnClickListener(v -> _pickerLauncher.launch("*/*"));
+		binding.recyclerViewInstall.setAdapter(adapter);
 		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
-				.attachToRecyclerView(binding.installRecyclerView);
+				.attachToRecyclerView(binding.recyclerViewInstall);
 		observeViewModel();
 	}
 
@@ -68,7 +68,7 @@ public final class InstallFragment extends Fragment {
 		viewModel.getError().observe(getViewLifecycleOwner(), error -> {
 			if (!error.isEmpty()) {
 				Snackbar.make(requireView(), error, Snackbar.LENGTH_LONG)
-						.setAnchorView(binding.installFab)
+						.setAnchorView(binding.fabInstall)
 						.show();
 				viewModel.clearError();
 			}

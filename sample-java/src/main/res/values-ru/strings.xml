@@ -4,6 +4,7 @@
 	<string name="screen_title_uninstall">Удаление</string>
 	<string name="cancel">Отмена</string>
 	<string name="fab_install">Установить</string>
+	<string name="uninstall">Удалить</string>
 	<string name="session_error">Ошибка</string>
 	<string name="session_error_with_reason">Ошибка: %s</string>
 </resources>
