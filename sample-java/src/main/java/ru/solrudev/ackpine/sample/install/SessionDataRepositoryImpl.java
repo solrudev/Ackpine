@@ -17,34 +17,34 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 
 	private static final String SESSIONS_KEY = "SESSIONS";
 	private static final String SESSIONS_PROGRESS_KEY = "SESSIONS_PROGRESS";
-	private final MutableLiveData<List<SessionData>> _sessions;
-	private final MutableLiveData<List<SessionProgress>> _sessionsProgress;
+	private final MutableLiveData<List<SessionData>> sessions;
+	private final MutableLiveData<List<SessionProgress>> sessionsProgress;
 
 	public SessionDataRepositoryImpl(SavedStateHandle savedStateHandle) {
-		_sessions = savedStateHandle.getLiveData(SESSIONS_KEY, new ArrayList<>());
-		_sessionsProgress = savedStateHandle.getLiveData(SESSIONS_PROGRESS_KEY, new ArrayList<>());
+		sessions = savedStateHandle.getLiveData(SESSIONS_KEY, new ArrayList<>());
+		sessionsProgress = savedStateHandle.getLiveData(SESSIONS_PROGRESS_KEY, new ArrayList<>());
 	}
 
 	@NonNull
 	@Override
 	public LiveData<List<SessionData>> getSessions() {
-		return _sessions;
+		return sessions;
 	}
 
 	@NonNull
 	@Override
 	public LiveData<List<SessionProgress>> getSessionsProgress() {
-		return _sessionsProgress;
+		return sessionsProgress;
 	}
 
 	@Override
 	public void addSessionData(@NonNull SessionData sessionData) {
 		final var sessions = getCurrentSessions();
 		sessions.add(sessionData);
-		_sessions.postValue(sessions);
+		this.sessions.postValue(sessions);
 		final var sessionsProgress = getCurrentSessionsProgress();
 		sessionsProgress.add(new SessionProgress(sessionData.id(), new Progress()));
-		_sessionsProgress.postValue(sessionsProgress);
+		this.sessionsProgress.postValue(sessionsProgress);
 	}
 
 	@Override
@@ -54,13 +54,13 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 		if (sessionDataIndex != -1) {
 			sessions.remove(sessionDataIndex);
 		}
-		_sessions.setValue(sessions);
+		this.sessions.setValue(sessions);
 		final var sessionsProgress = getCurrentSessionsProgress();
 		final var sessionProgressIndex = getSessionProgressIndexById(sessionsProgress, id);
 		if (sessionProgressIndex != -1) {
 			sessionsProgress.remove(sessionProgressIndex);
 		}
-		_sessionsProgress.setValue(sessionsProgress);
+		this.sessionsProgress.setValue(sessionsProgress);
 	}
 
 	@Override
@@ -70,7 +70,7 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 		if (sessionProgressIndex != -1) {
 			sessionsProgress.set(sessionProgressIndex, new SessionProgress(id, progress));
 		}
-		_sessionsProgress.setValue(sessionsProgress);
+		this.sessionsProgress.setValue(sessionsProgress);
 	}
 
 	@Override
@@ -81,17 +81,17 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 			final var sessionData = sessions.get(sessionDataIndex);
 			sessions.set(sessionDataIndex, new SessionData(sessionData.id(), sessionData.name(), error));
 		}
-		_sessions.setValue(sessions);
+		this.sessions.setValue(sessions);
 	}
 
 	@NonNull
 	private List<SessionData> getCurrentSessions() {
-		return new ArrayList<>(Objects.requireNonNull(_sessions.getValue()));
+		return new ArrayList<>(Objects.requireNonNull(sessions.getValue()));
 	}
 
 	@NonNull
 	private List<SessionProgress> getCurrentSessionsProgress() {
-		return new ArrayList<>(Objects.requireNonNull(_sessionsProgress.getValue()));
+		return new ArrayList<>(Objects.requireNonNull(sessionsProgress.getValue()));
 	}
 
 	private static int getSessionDataIndexById(@NonNull List<SessionData> sessions, @NonNull UUID id) {
