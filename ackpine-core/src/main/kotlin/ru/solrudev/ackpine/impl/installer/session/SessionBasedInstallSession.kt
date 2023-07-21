@@ -35,6 +35,7 @@ import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -106,7 +107,7 @@ internal class SessionBasedInstallSession internal constructor(
 			confirmation, notificationData,
 			sessionId = id,
 			INSTALLER_NOTIFICATION_TAG, notificationId,
-			INSTALLER_REQUEST_CODE,
+			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
 	}
@@ -204,4 +205,6 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun persistNativeSessionId(nativeSessionId: Int) {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
+
+	private fun generateRequestCode() = Random.nextInt(from = 10000, until = 1000000)
 }

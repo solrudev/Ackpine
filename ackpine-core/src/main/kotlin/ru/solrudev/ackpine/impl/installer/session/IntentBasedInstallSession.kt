@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
+import kotlin.random.Random
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallSession internal constructor(
@@ -78,7 +79,7 @@ internal class IntentBasedInstallSession internal constructor(
 			confirmation, notificationData,
 			sessionId = id,
 			INSTALLER_NOTIFICATION_TAG, notificationId,
-			INSTALLER_REQUEST_CODE,
+			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }
 	}
@@ -115,6 +116,8 @@ internal class IntentBasedInstallSession internal constructor(
 			}
 		}
 	}
+
+	private fun generateRequestCode() = Random.nextInt(from = 2000000, until = 3000000)
 
 	private data class ApkUri(val uri: Uri, val mustCopy: Boolean)
 }

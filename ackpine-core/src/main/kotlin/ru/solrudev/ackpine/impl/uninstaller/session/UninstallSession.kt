@@ -17,6 +17,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
+import kotlin.random.Random
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class UninstallSession internal constructor(
@@ -49,8 +50,10 @@ internal class UninstallSession internal constructor(
 			confirmation, notificationData,
 			sessionId = id,
 			UNINSTALLER_NOTIFICATION_TAG, notificationId,
-			UNINSTALLER_REQUEST_CODE,
+			generateRequestCode(),
 			UPDATE_CURRENT_FLAGS
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }
 	}
+
+	private fun generateRequestCode() = Random.nextInt(from = 3000000, until = 4000000)
 }
