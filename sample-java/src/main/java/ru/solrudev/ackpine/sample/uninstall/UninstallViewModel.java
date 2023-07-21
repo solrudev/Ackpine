@@ -95,8 +95,6 @@ public final class UninstallViewModel extends ViewModel {
 			applications.remove(applicationDataIndex);
 		}
 		this.applications.setValue(applications);
-		savedStateHandle.remove(SESSION_ID_KEY);
-		savedStateHandle.remove(PACKAGE_NAME_KEY);
 	}
 
 	private void addSessionListener(@NonNull UUID id) {
@@ -117,6 +115,11 @@ public final class UninstallViewModel extends ViewModel {
 	@NonNull
 	private List<ApplicationData> getCurrentApplications() {
 		return new ArrayList<>(Objects.requireNonNull(this.applications.getValue()));
+	}
+
+	private void clearSavedState() {
+		savedStateHandle.remove(SESSION_ID_KEY);
+		savedStateHandle.remove(PACKAGE_NAME_KEY);
 	}
 
 	private static int getApplicationIndexByPackageName(@NonNull List<ApplicationData> applications,
@@ -142,6 +145,12 @@ public final class UninstallViewModel extends ViewModel {
 			if (packageName != null) {
 				removeApplication(packageName);
 			}
+			clearSavedState();
+		}
+
+		@Override
+		public void onFailure(@NonNull UUID sessionId, @NonNull UninstallFailure failure) {
+			clearSavedState();
 		}
 	}
 
