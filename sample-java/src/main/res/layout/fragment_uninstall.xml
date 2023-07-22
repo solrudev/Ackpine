@@ -5,13 +5,29 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<androidx.recyclerview.widget.RecyclerView
-		android:id="@+id/recyclerView_uninstall"
+	<FrameLayout
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:clipToPadding="false"
-		android:scrollbars="vertical"
-		app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-		tools:listitem="@layout/item_application" />
+		android:layout_height="match_parent">
 
+		<androidx.recyclerview.widget.RecyclerView
+			android:id="@+id/recyclerView_uninstall"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:clipToPadding="false"
+			android:scrollbars="vertical"
+			app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+			tools:listitem="@layout/item_application" />
+
+		<TextView
+			android:id="@+id/textView_uninstall_no_applications"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:paddingHorizontal="@dimen/content_padding_horizontal"
+			android:layout_gravity="center"
+			android:text="@string/no_installed_applications"
+			android:textAlignment="center"
+			android:textAppearance="?textAppearanceTitleLarge"
+			android:visibility="gone" />
+
+	</FrameLayout>
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

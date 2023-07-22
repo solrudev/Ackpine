@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.view.ViewKt;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -61,7 +62,10 @@ public final class UninstallFragment extends Fragment {
 
 	private void observeViewModel() {
 		viewModel.isLoading().observe(getViewLifecycleOwner(), isLoading -> binding.getRoot().setRefreshing(isLoading));
-		viewModel.getApplications().observe(getViewLifecycleOwner(), adapter::submitList);
+		viewModel.getApplications().observe(getViewLifecycleOwner(), list -> {
+			ViewKt.setVisible(binding.textViewUninstallNoApplications, list.isEmpty());
+			adapter.submitList(list);
+		});
 	}
 
 	private void loadApplications(boolean refresh) {

@@ -11,4 +11,5 @@
 	<string name="session_error">Error</string>
 	<string name="session_error_with_reason">Error: %s</string>
 	<string name="no_install_sessions">No install sessions</string>
+	<string name="no_installed_applications">No installed applications</string>
 </resources>
