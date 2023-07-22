@@ -1,4 +1,4 @@
-package ru.solrudev.ackpine.sample.util;
+package ru.solrudev.ackpine.sample.install;
 
 import android.content.Context;
 import android.net.Uri;

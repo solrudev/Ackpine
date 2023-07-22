@@ -23,7 +23,6 @@ import kotlin.sequences.Sequence;
 import kotlin.sequences.SequencesKt;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
 import ru.solrudev.ackpine.sample.install.InstallSessionsAdapter.SessionViewHolder;
-import ru.solrudev.ackpine.sample.util.SingletonApkSequence;
 import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.ApkSplits;
 import ru.solrudev.ackpine.splits.ZippedApkSplits;
