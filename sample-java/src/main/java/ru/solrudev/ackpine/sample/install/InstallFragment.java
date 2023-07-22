@@ -1,17 +1,28 @@
 package ru.solrudev.ackpine.sample.install;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
+import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
+
+import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.activity.result.contract.ActivityResultContracts.GetContent;
+import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
@@ -33,8 +44,13 @@ public final class InstallFragment extends Fragment {
 	private InstallViewModel viewModel;
 	private final InstallSessionsAdapter adapter = new InstallSessionsAdapter(id -> viewModel.cancelSession(id));
 
-	private final ActivityResultLauncher<String> _pickerLauncher =
-			registerForActivityResult(new ActivityResultContracts.GetContent(), this::install);
+	@RequiresApi(Build.VERSION_CODES.M)
+	private final ActivityResultLauncher<String> requestPermissionLauncher =
+			registerForActivityResult(new RequestPermission(), isGranted -> {
+			});
+
+	private final ActivityResultLauncher<String> pickerLauncher =
+			registerForActivityResult(new GetContent(), this::install);
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,7 +66,7 @@ public final class InstallFragment extends Fragment {
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-		binding.fabInstall.setOnClickListener(v -> _pickerLauncher.launch("*/*"));
+		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());
 		binding.recyclerViewInstall.setAdapter(adapter);
 		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
 				.attachToRecyclerView(binding.recyclerViewInstall);
@@ -74,6 +90,17 @@ public final class InstallFragment extends Fragment {
 		});
 		viewModel.getSessionsProgress().observe(getViewLifecycleOwner(), adapter::submitProgress);
 		viewModel.getSessions().observe(getViewLifecycleOwner(), adapter::submitList);
+	}
+
+	private void onInstallButtonClick() {
+		if (!allPermissionsGranted()) {
+			requestPermissions();
+			return;
+		}
+		try {
+			pickerLauncher.launch("*/*");
+		} catch (ActivityNotFoundException ignored) {
+		}
 	}
 
 	private void install(@Nullable Uri uri) {
@@ -104,6 +131,42 @@ public final class InstallFragment extends Fragment {
 			if (!cursor.moveToFirst()) return "";
 			return cursor.getString(0);
 		}
+	}
+
+	private void requestPermissions() {
+		requestReadStoragePermission();
+		requestManageAllFilesPermission();
+		requestNotificationPermission();
+	}
+
+	private void requestReadStoragePermission() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+			requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
+		}
+	}
+
+	private void requestManageAllFilesPermission() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+			startActivity(new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
+					.setData(Uri.parse("package:" + requireContext().getPackageName())));
+		}
+	}
+
+	private void requestNotificationPermission() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+		}
+	}
+
+	private boolean allPermissionsGranted() {
+		final var readStorage = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+				|| Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+		final var storageManager = Build.VERSION.SDK_INT < Build.VERSION_CODES.R
+				|| Environment.isExternalStorageManager();
+		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
+		return readStorage && storageManager && notifications;
 	}
 
 	private final class SwipeCallback extends ItemTouchHelper.SimpleCallback {
