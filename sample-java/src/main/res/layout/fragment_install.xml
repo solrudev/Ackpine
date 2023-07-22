@@ -10,7 +10,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
 		android:clipToPadding="false"
-		android:paddingHorizontal="@dimen/content_padding_horizontal"
+		android:scrollbars="vertical"
 		app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
 		tools:listitem="@layout/item_install_session" />
 
@@ -22,5 +22,15 @@
 		android:layout_margin="@dimen/fab_margin"
 		android:text="@string/fab_install"
 		app:icon="@drawable/ic_install_outlined" />
+
+	<TextView
+		android:id="@+id/textView_install_no_sessions"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"
+		android:text="@string/no_install_sessions"
+		android:textAlignment="center"
+		android:textAppearance="?textAppearanceTitleLarge"
+		android:visibility="gone" />
 
 </FrameLayout>

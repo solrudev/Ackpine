@@ -14,10 +14,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.google.android.material.appbar.AppBarLayout;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentUninstallBinding;
 
 public final class UninstallFragment extends Fragment {
@@ -43,6 +46,8 @@ public final class UninstallFragment extends Fragment {
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		requireActivity().<AppBarLayout>findViewById(R.id.appBarLayout_nav_host)
+				.setLiftOnScrollTargetView(binding.recyclerViewUninstall);
 		binding.getRoot().setOnRefreshListener(() -> loadApplications(true));
 		binding.recyclerViewUninstall.setAdapter(adapter);
 		observeViewModel();

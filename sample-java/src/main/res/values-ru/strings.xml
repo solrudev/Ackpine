@@ -7,4 +7,5 @@
 	<string name="uninstall">Удалить</string>
 	<string name="session_error">Ошибка</string>
 	<string name="session_error_with_reason">Ошибка: %s</string>
+	<string name="no_install_sessions">Нет сессий установки</string>
 </resources>

@@ -23,15 +23,18 @@ import androidx.activity.result.contract.ActivityResultContracts.RequestPermissi
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.view.ViewKt;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 
 import kotlin.sequences.Sequence;
 import kotlin.sequences.SequencesKt;
+import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
 import ru.solrudev.ackpine.sample.install.InstallSessionsAdapter.SessionViewHolder;
 import ru.solrudev.ackpine.splits.Apk;
@@ -66,6 +69,8 @@ public final class InstallFragment extends Fragment {
 
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		requireActivity().<AppBarLayout>findViewById(R.id.appBarLayout_nav_host)
+				.setLiftOnScrollTargetView(binding.recyclerViewInstall);
 		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());
 		binding.recyclerViewInstall.setAdapter(adapter);
 		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
@@ -89,7 +94,10 @@ public final class InstallFragment extends Fragment {
 			}
 		});
 		viewModel.getSessionsProgress().observe(getViewLifecycleOwner(), adapter::submitProgress);
-		viewModel.getSessions().observe(getViewLifecycleOwner(), adapter::submitList);
+		viewModel.getSessions().observe(getViewLifecycleOwner(), list -> {
+			ViewKt.setVisible(binding.textViewInstallNoSessions, list.isEmpty());
+			adapter.submitList(list);
+		});
 	}
 
 	private void onInstallButtonClick() {
