@@ -27,6 +27,7 @@
 		android:id="@+id/textView_install_no_sessions"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:paddingHorizontal="@dimen/content_padding_horizontal"
 		android:layout_gravity="center"
 		android:text="@string/no_install_sessions"
 		android:textAlignment="center"
