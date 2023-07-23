@@ -1,5 +1,6 @@
 package ru.solrudev.ackpine.sample.uninstall
 
+import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -7,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -77,12 +79,20 @@ class UninstallViewModel(
 	}
 
 	private fun awaitSession(session: Session<UninstallFailure>) = viewModelScope.launch {
-		when (session.await()) {
-			is SessionResult.Success -> {
-				savedStateHandle.get<String>(PACKAGE_NAME_KEY)?.let(::removeApplication)
-				clearSavedState()
+		try {
+			when (session.await()) {
+				is SessionResult.Success -> {
+					savedStateHandle.get<String>(PACKAGE_NAME_KEY)?.let(::removeApplication)
+					clearSavedState()
+				}
+
+				is SessionResult.Error -> clearSavedState()
 			}
-			is SessionResult.Error -> clearSavedState()
+		} catch (exception: Exception) {
+			clearSavedState()
+			Log.e("UninstallViewModel", null, exception)
+		} catch (exception: CancellationException) {
+			throw exception
 		}
 	}
 

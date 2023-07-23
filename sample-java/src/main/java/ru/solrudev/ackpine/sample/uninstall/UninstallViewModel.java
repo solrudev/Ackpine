@@ -3,6 +3,8 @@ package ru.solrudev.ackpine.sample.uninstall;
 import static androidx.lifecycle.SavedStateHandleSupport.createSavedStateHandle;
 import static androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.util.Supplier;
@@ -24,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
+import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.Session;
 import ru.solrudev.ackpine.session.parameters.Confirmation;
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller;
@@ -154,6 +157,9 @@ public final class UninstallViewModel extends ViewModel {
 		@Override
 		public void onFailure(@NonNull UUID sessionId, @NonNull UninstallFailure failure) {
 			clearSavedState();
+			if (failure instanceof Failure.Exceptional) {
+				Log.e("UninstallViewModel", null, ((Failure.Exceptional) failure).getException());
+			}
 		}
 	}
 

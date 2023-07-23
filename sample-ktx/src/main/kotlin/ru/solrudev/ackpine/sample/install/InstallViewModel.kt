@@ -31,7 +31,6 @@ import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
 import ru.solrudev.ackpine.sample.R
-import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
@@ -97,24 +96,24 @@ class InstallViewModel(
 		try {
 			when (val result = session.await()) {
 				is SessionResult.Success -> sessionDataRepository.removeSessionData(session.id)
-				is SessionResult.Error -> {
-					val failure = result.cause
-					val message = failure.message
-					val error = if (message != null) {
-						NotificationString.resource(R.string.session_error_with_reason, message)
-					} else {
-						NotificationString.resource(R.string.session_error)
-					}
-					sessionDataRepository.setError(session.id, error)
-					if (failure is Failure.Exceptional) {
-						Log.e("InstallViewModel", null, failure.exception)
-					}
-				}
+				is SessionResult.Error -> handleSessionError(result.cause.message, session.id)
 			}
 		} catch (exception: CancellationException) {
 			sessionDataRepository.removeSessionData(session.id)
 			throw exception
+		} catch (exception: Exception) {
+			handleSessionError(exception.message, session.id)
+			Log.e("InstallViewModel", null, exception)
 		}
+	}
+
+	private fun handleSessionError(message: String?, sessionId: UUID) {
+		val error = if (message != null) {
+			NotificationString.resource(R.string.session_error_with_reason, message)
+		} else {
+			NotificationString.resource(R.string.session_error)
+		}
+		sessionDataRepository.setError(sessionId, error)
 	}
 
 	private fun Sequence<Apk>.toUrisList(): List<Uri> {
