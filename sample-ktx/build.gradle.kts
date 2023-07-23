@@ -18,7 +18,7 @@ android {
 
 	defaultConfig {
 		applicationId = packageName
-		minSdk = 16
+		minSdk = 21
 		targetSdk = 33
 		versionCode = 1
 		versionName = rootProject.version.toString()
@@ -59,4 +59,5 @@ dependencies {
 	implementation(androidx.bundles.navigation.ktx)
 	implementation(androidx.swiperefreshlayout)
 	implementation(libs.materialcomponents)
+	implementation(libs.viewbindingpropertydelegate)
 }

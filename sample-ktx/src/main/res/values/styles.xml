@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<style name="Widget.Ackpine.LinearProgressIndicator" parent="Widget.Material3.LinearProgressIndicator">
+		<item name="trackThickness">@dimen/linear_progress_indicator_track_thickness</item>
+		<item name="trackCornerRadius">@dimen/linear_progress_indicator_track_thickness</item>
+	</style>
+</resources>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="@dimen/content_padding_horizontal"
+	android:layout_marginVertical="@dimen/card_margin_vertical">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:minHeight="@dimen/card_min_height"
+		android:padding="@dimen/card_padding">
+
+		<ImageView
+			android:id="@+id/imageView_app_icon"
+			android:layout_width="@dimen/application_icon_size"
+			android:layout_height="@dimen/application_icon_size"
+			android:importantForAccessibility="no"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:src="@mipmap/ic_launcher" />
+
+		<TextView
+			android:id="@+id/textView_app_name"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="@dimen/card_element_margin"
+			android:ellipsize="end"
+			android:maxLines="1"
+			android:textAppearance="?textAppearanceBodyMedium"
+			app:layout_constraintEnd_toStartOf="@id/button_app_uninstall"
+			app:layout_constraintStart_toEndOf="@+id/imageView_app_icon"
+			app:layout_constraintTop_toTopOf="@+id/imageView_app_icon"
+			tools:text="@string/app_name" />
+
+		<TextView
+			android:id="@+id/textView_app_package_name"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="@dimen/card_element_margin"
+			android:ellipsize="end"
+			android:maxLines="1"
+			android:textAppearance="?textAppearanceBodySmall"
+			app:layout_constraintBottom_toBottomOf="@+id/imageView_app_icon"
+			app:layout_constraintEnd_toStartOf="@id/button_app_uninstall"
+			app:layout_constraintStart_toEndOf="@+id/imageView_app_icon"
+			tools:text="ru.solrudev.ackpine.sample" />
+
+		<Button
+			android:id="@+id/button_app_uninstall"
+			style="?materialButtonOutlinedStyle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/uninstall"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>
