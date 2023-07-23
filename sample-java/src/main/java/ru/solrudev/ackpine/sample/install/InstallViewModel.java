@@ -26,6 +26,11 @@ import java.util.concurrent.Executors;
 
 import kotlin.sequences.Sequence;
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
+import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
+import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException;
+import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException;
+import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException;
+import ru.solrudev.ackpine.exceptions.NoBaseApkException;
 import ru.solrudev.ackpine.exceptions.SplitPackageException;
 import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.installer.PackageInstaller;
@@ -39,7 +44,7 @@ import ru.solrudev.ackpine.splits.Apk;
 
 public final class InstallViewModel extends ViewModel {
 
-	private final MutableLiveData<String> error = new MutableLiveData<>();
+	private final MutableLiveData<NotificationString> error = new MutableLiveData<>();
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
@@ -74,7 +79,7 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	@NonNull
-	public LiveData<String> getError() {
+	public LiveData<NotificationString> getError() {
 		return error;
 	}
 
@@ -89,7 +94,7 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void clearError() {
-		error.setValue("");
+		error.setValue(NotificationString.empty());
 	}
 
 	public void cancelSession(@NonNull UUID id) {
@@ -143,7 +148,24 @@ public final class InstallViewModel extends ViewModel {
 			}
 			return uris;
 		} catch (SplitPackageException exception) {
-			error.postValue(exception.getMessage());
+			if (exception instanceof NoBaseApkException) {
+				error.postValue(NotificationString.resource(R.string.error_no_base_apk));
+			} else if (exception instanceof ConflictingBaseApkException) {
+				error.postValue(NotificationString.resource(R.string.error_conflicting_base_apk));
+			} else if (exception instanceof ConflictingSplitNameException) {
+				final var splitName = ((ConflictingSplitNameException) exception).getName();
+				error.postValue(NotificationString.resource(R.string.error_conflicting_split_name, splitName));
+			} else if (exception instanceof ConflictingPackageNameException) {
+				final var expected = ((ConflictingPackageNameException) exception).getExpected();
+				final var actual = ((ConflictingPackageNameException) exception).getActual();
+				final var name = ((ConflictingPackageNameException) exception).getName();
+				error.postValue(NotificationString.resource(R.string.error_conflicting_package_name, expected, actual, name));
+			} else if (exception instanceof ConflictingVersionCodeException) {
+				final var expected = ((ConflictingVersionCodeException) exception).getExpected();
+				final var actual = ((ConflictingVersionCodeException) exception).getActual();
+				final var name = ((ConflictingVersionCodeException) exception).getName();
+				error.postValue(NotificationString.resource(R.string.error_conflicting_version_code, expected, actual, name));
+			}
 			return Collections.emptyList();
 		}
 	}

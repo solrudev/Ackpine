@@ -9,4 +9,9 @@
 	<string name="session_error_with_reason">Ошибка: %s</string>
 	<string name="no_install_sessions">Нет сессий установки</string>
 	<string name="no_installed_applications">Нет установленных приложений</string>
+	<string name="error_no_base_apk">Не найден базовый APK</string>
+	<string name="error_conflicting_base_apk">Найдено несколько базовых APK</string>
+	<string name="error_conflicting_split_name">Конфликтующий APK: %s</string>
+	<string name="error_conflicting_package_name">Несовместимое имя пакета. Ожидаемое имя: %1$s, найдено: %2$s, имя APK: %3$s</string>
+	<string name="error_conflicting_version_code">Несовместимый код версии. Ожидаемый код: %1$s, найден: %2$s, имя APK: %3$s</string>
 </resources>
