@@ -79,13 +79,9 @@ class UninstallViewModel(
 	private fun awaitSession(session: Session<UninstallFailure>) = viewModelScope.launch {
 		when (session.await()) {
 			is SessionResult.Success -> {
-				val packageName = savedStateHandle.get<String>(PACKAGE_NAME_KEY)
-				if (packageName != null) {
-					removeApplication(packageName)
-				}
+				savedStateHandle.get<String>(PACKAGE_NAME_KEY)?.let(::removeApplication)
 				clearSavedState()
 			}
-
 			is SessionResult.Error -> clearSavedState()
 		}
 	}
