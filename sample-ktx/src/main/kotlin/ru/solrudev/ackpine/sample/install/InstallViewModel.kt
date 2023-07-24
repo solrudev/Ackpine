@@ -117,8 +117,8 @@ class InstallViewModel(
 	}
 
 	private fun Sequence<Apk>.toUrisList(): List<Uri> {
-		return try {
-			map { it.uri }.toList()
+		try {
+			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
 			val errorString = when (exception) {
 				is NoBaseApkException -> NotificationString.resource(R.string.error_no_base_apk)
@@ -139,7 +139,7 @@ class InstallViewModel(
 				)
 			}
 			error.value = errorString
-			emptyList()
+			return emptyList()
 		}
 	}
 
