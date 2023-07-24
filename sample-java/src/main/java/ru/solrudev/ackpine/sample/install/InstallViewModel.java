@@ -152,19 +152,14 @@ public final class InstallViewModel extends ViewModel {
 				error.postValue(NotificationString.resource(R.string.error_no_base_apk));
 			} else if (exception instanceof ConflictingBaseApkException) {
 				error.postValue(NotificationString.resource(R.string.error_conflicting_base_apk));
-			} else if (exception instanceof ConflictingSplitNameException) {
-				final var splitName = ((ConflictingSplitNameException) exception).getName();
-				error.postValue(NotificationString.resource(R.string.error_conflicting_split_name, splitName));
-			} else if (exception instanceof ConflictingPackageNameException) {
-				final var expected = ((ConflictingPackageNameException) exception).getExpected();
-				final var actual = ((ConflictingPackageNameException) exception).getActual();
-				final var name = ((ConflictingPackageNameException) exception).getName();
-				error.postValue(NotificationString.resource(R.string.error_conflicting_package_name, expected, actual, name));
-			} else if (exception instanceof ConflictingVersionCodeException) {
-				final var expected = ((ConflictingVersionCodeException) exception).getExpected();
-				final var actual = ((ConflictingVersionCodeException) exception).getActual();
-				final var name = ((ConflictingVersionCodeException) exception).getName();
-				error.postValue(NotificationString.resource(R.string.error_conflicting_version_code, expected, actual, name));
+			} else if (exception instanceof ConflictingSplitNameException e) {
+				error.postValue(NotificationString.resource(R.string.error_conflicting_split_name, e.getName()));
+			} else if (exception instanceof ConflictingPackageNameException e) {
+				error.postValue(NotificationString.resource(R.string.error_conflicting_package_name,
+						e.getExpected(), e.getActual(), e.getName()));
+			} else if (exception instanceof ConflictingVersionCodeException e) {
+				error.postValue(NotificationString.resource(R.string.error_conflicting_version_code,
+						e.getExpected(), e.getActual(), e.getName()));
 			}
 			return Collections.emptyList();
 		}
