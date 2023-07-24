@@ -64,7 +64,14 @@ internal data class SessionEntity internal constructor(
 			entity = InstallUriEntity::class,
 			projection = ["uri"]
 		)
-		val uris: List<String>
+		val uris: List<String>,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = SessionNameEntity::class,
+			projection = ["name"]
+		)
+		val name: String? = null
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

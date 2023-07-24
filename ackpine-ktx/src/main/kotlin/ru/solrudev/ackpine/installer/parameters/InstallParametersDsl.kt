@@ -47,6 +47,12 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * returned/set regardless of the current/provided value.
 	 */
 	public var installerType: InstallerType
+
+	/**
+	 * Optional name of the session. It may be a name of the app being installed or a file name. Used in default
+	 * notification content text.
+	 */
+	public var name: String
 }
 
 @PublishedApi
@@ -82,6 +88,12 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		get() = builder.notificationData
 		set(value) {
 			builder.setNotificationData(value)
+		}
+
+	override var name: String
+		get() = builder.name
+		set(value) {
+			builder.setName(value)
 		}
 
 	fun build() = builder.build()

@@ -80,14 +80,16 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	public void installPackage(@NonNull Sequence<Apk> apks, @NonNull String name) {
+	public void installPackage(@NonNull Sequence<Apk> apks, @NonNull String fileName) {
 		executor.execute(() -> {
 			final var uris = mapApkSequenceToUri(apks);
 			if (uris.isEmpty()) {
 				return;
 			}
-			final var session = packageInstaller.createSession(new InstallParameters.Builder(uris).build());
-			final var sessionData = new SessionData(session.getId(), name);
+			final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
+					.setName(fileName)
+					.build());
+			final var sessionData = new SessionData(session.getId(), fileName);
 			sessionDataRepository.addSessionData(sessionData);
 			subscriptions.add(session.addStateListener(new SessionStateListener(session)));
 			subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));

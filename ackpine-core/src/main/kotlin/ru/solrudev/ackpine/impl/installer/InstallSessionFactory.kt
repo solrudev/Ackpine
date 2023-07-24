@@ -76,7 +76,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apk = parameters.apks.toList().singleOrNull() ?: throw SplitPackagesNotSupportedException(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(),
+			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
 			SerialExecutor(executor), handler
 		)
@@ -86,21 +86,27 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apks = parameters.apks.toList(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(),
+			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, notificationIdDao,
 			executor, SerialExecutor(executor), handler
 		)
 	}
 
-	private fun NotificationData.resolveDefault(): NotificationData = NotificationData.Builder()
+	private fun NotificationData.resolveDefault(name: String): NotificationData = NotificationData.Builder()
 		.setTitle(
-			title.takeUnless { it.isDefault }
-				?: NotificationString.resource(R.string.ackpine_prompt_install_title)
+			title.takeUnless { it.isDefault } ?: NotificationString.resource(R.string.ackpine_prompt_install_title)
 		)
 		.setContentText(
-			contentText.takeUnless { it.isDefault }
-				?: NotificationString.resource(R.string.ackpine_prompt_install_message)
+			contentText.takeUnless { it.isDefault } ?: resolveDefaultContentText(name)
 		)
 		.setIcon(icon)
 		.build()
+
+	private fun resolveDefaultContentText(name: String): NotificationString {
+		return if (name.isNotEmpty()) {
+			NotificationString.resource(R.string.ackpine_prompt_install_message_with_label, name)
+		} else {
+			NotificationString.resource(R.string.ackpine_prompt_install_message)
+		}
+	}
 }

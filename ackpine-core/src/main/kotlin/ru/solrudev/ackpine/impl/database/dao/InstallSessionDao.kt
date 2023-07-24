@@ -46,6 +46,9 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 		})
 		database.sessionProgressDao().initProgress(session.session.id)
 		database.notificationIdDao().initNotificationId(session.session.id)
+		if (!session.name.isNullOrEmpty()) {
+			database.sessionNameDao().setSessionName(session.session.id, session.name)
+		}
 	}
 
 	@Transaction

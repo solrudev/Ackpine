@@ -64,7 +64,8 @@ internal class PackageInstallerImpl internal constructor(
 						parameters.notificationData.icon
 					),
 					installerType = parameters.installerType,
-					uris = parameters.apks.toList().map { it.toString() }
+					uris = parameters.apks.toList().map { it.toString() },
+					name = parameters.name
 				)
 			)
 		}
@@ -138,6 +139,12 @@ internal class PackageInstallerImpl internal constructor(
 					.setIcon(session.notificationIcon)
 					.build()
 			)
+			.apply {
+				val name = this@toInstallSession.name
+				if (!name.isNullOrEmpty()) {
+					setName(name)
+				}
+			}
 			.build()
 		return installSessionFactory.create(
 			parameters,

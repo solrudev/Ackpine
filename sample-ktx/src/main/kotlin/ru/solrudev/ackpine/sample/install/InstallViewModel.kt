@@ -84,13 +84,15 @@ class InstallViewModel(
 		::InstallUiState
 	).stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), InstallUiState())
 
-	fun installPackage(apks: Sequence<Apk>, name: String) = viewModelScope.launch {
+	fun installPackage(apks: Sequence<Apk>, fileName: String) = viewModelScope.launch {
 		val uris = runInterruptible(Dispatchers.IO) { apks.toUrisList() }
 		if (uris.isEmpty()) {
 			return@launch
 		}
-		val session = packageInstaller.createSession(uris)
-		val sessionData = SessionData(session.id, name)
+		val session = packageInstaller.createSession(uris) {
+			name = fileName
+		}
+		val sessionData = SessionData(session.id, fileName)
 		sessionDataRepository.addSessionData(sessionData)
 		awaitSession(session)
 	}

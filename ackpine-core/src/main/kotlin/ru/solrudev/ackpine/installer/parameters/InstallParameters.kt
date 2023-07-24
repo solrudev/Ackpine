@@ -56,7 +56,13 @@ public class InstallParameters private constructor(
 	 *
 	 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 	 */
-	public override val notificationData: NotificationData
+	public override val notificationData: NotificationData,
+
+	/**
+	 * Optional name of the session. It may be a name of the app being installed or a file name. Used in default
+	 * notification content text.
+	 */
+	public val name: String
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -67,6 +73,7 @@ public class InstallParameters private constructor(
 		if (installerType != other.installerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
+		if (name != other.name) return false
 		return true
 	}
 
@@ -75,12 +82,16 @@ public class InstallParameters private constructor(
 		result = 31 * result + installerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
+		result = 31 * result + name.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "InstallParameters(apks=$apks, installerType=$installerType, " +
-				"confirmation=$confirmation, notificationData=$notificationData)"
+		return "InstallParameters(apks=$apks, " +
+				"installerType=$installerType, " +
+				"confirmation=$confirmation, " +
+				"notificationData=$notificationData, " +
+				"name='$name')"
 	}
 
 	/**
@@ -148,6 +159,13 @@ public class InstallParameters private constructor(
 			private set
 
 		/**
+		 * Optional name of the session. It may be a name of the app being installed or a file name. Used in default
+		 * notification content text.
+		 */
+		public var name: String = ""
+			private set
+
+		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -188,11 +206,18 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.name].
+		 */
+		public fun setName(name: String): Builder = apply {
+			this.name = name
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			return InstallParameters(apks, installerType, confirmation, notificationData)
+			return InstallParameters(apks, installerType, confirmation, notificationData, name)
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
