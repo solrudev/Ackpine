@@ -13,6 +13,7 @@ import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
+import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.Constants
 
@@ -23,6 +24,7 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 			pluginManager.run {
 				apply(MavenPublishPlugin::class)
 				apply(SigningPlugin::class)
+				apply(DokkaPlugin::class)
 			}
 			configurePublishing()
 			configureSigning()

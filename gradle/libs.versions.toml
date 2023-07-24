@@ -12,6 +12,7 @@ apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gra
 listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
 guava = { module = "com.google.guava:guava", version = "32.0.1-android" }
 viewbindingpropertydelegate = { module = "com.github.kirich1409:viewbindingpropertydelegate-noreflection", version = "1.5.9" }
+dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.8.20" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradleplugin" }

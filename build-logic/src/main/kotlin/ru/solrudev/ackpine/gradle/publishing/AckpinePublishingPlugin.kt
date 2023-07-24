@@ -7,6 +7,7 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
+import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.withProperties
 
@@ -16,7 +17,10 @@ class AckpinePublishingPlugin : Plugin<Project> {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.packageName
 		version = versionFromPropertiesFile()
-		pluginManager.apply(NexusPublishPlugin::class)
+		pluginManager.run {
+			apply(NexusPublishPlugin::class)
+			apply(DokkaPlugin::class)
+		}
 		val publishingProperties = publishingFromPropertiesFile()
 		val ossrhUsername = System.getenv("OSSRH_USERNAME")
 			?: publishingProperties["ossrhUsername"]
