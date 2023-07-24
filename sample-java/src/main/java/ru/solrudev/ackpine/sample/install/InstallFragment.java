@@ -13,9 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.OpenableColumns;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.GetContent;
@@ -55,6 +53,10 @@ public final class InstallFragment extends Fragment {
 	private final ActivityResultLauncher<String> pickerLauncher =
 			registerForActivityResult(new GetContent(), this::install);
 
+	public InstallFragment() {
+		super(R.layout.fragment_install);
+	}
+
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,13 +64,9 @@ public final class InstallFragment extends Fragment {
 				.get(InstallViewModel.class);
 	}
 
-	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		binding = FragmentInstallBinding.inflate(inflater, container, false);
-		return binding.getRoot();
-	}
-
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		binding = FragmentInstallBinding.bind(view);
 		requireActivity().<AppBarLayout>findViewById(R.id.appBarLayout_nav_host)
 				.setLiftOnScrollTargetView(binding.recyclerViewInstall);
 		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());

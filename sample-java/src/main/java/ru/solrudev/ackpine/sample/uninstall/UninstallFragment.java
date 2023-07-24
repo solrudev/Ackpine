@@ -5,9 +5,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,6 +30,10 @@ public final class UninstallFragment extends Fragment {
 	private final ApplicationsAdapter adapter =
 			new ApplicationsAdapter(packageName -> viewModel.uninstallPackage(packageName));
 
+	public UninstallFragment() {
+		super(R.layout.fragment_uninstall);
+	}
+
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -40,13 +42,9 @@ public final class UninstallFragment extends Fragment {
 		loadApplications(false);
 	}
 
-	public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		binding = FragmentUninstallBinding.inflate(inflater, container, false);
-		return binding.getRoot();
-	}
-
 	@Override
 	public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+		binding = FragmentUninstallBinding.bind(view);
 		requireActivity().<AppBarLayout>findViewById(R.id.appBarLayout_nav_host)
 				.setLiftOnScrollTargetView(binding.recyclerViewUninstall);
 		binding.getRoot().setOnRefreshListener(() -> loadApplications(true));
