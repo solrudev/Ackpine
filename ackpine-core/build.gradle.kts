@@ -33,3 +33,7 @@ dependencies {
 	implementation(androidx.core.ktx)
 	implementation(androidx.room.runtime)
 }
+
+ksp {
+	arg("room.schemaLocation", File(projectDir, "schemas").path)
+}

@@ -53,7 +53,8 @@ private const val ACKPINE_DATABASE_NAME = "ackpine.sessiondb"
 		NotificationIdEntity::class,
 		SessionNameEntity::class
 	],
-	version = 1
+	version = 1,
+	exportSchema = true
 )
 @TypeConverters(
 	value = [InstallFailureConverters::class, UninstallFailureConverters::class, NotificationStringConverters::class]
