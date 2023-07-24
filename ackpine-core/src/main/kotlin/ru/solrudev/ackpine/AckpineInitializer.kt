@@ -3,6 +3,9 @@ package ru.solrudev.ackpine
 import android.content.Context
 import androidx.startup.Initializer
 
+/**
+ * Initializes [Ackpine] using `androidx.startup`.
+ */
 public class AckpineInitializer : Initializer<Ackpine> {
 
 	override fun create(context: Context): Ackpine {

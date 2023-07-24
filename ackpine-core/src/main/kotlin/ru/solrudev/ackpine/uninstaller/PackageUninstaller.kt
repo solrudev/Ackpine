@@ -14,11 +14,46 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
 import java.util.concurrent.Executor
 
+/**
+ * Provides the ability to uninstall applications from the device.
+ *
+ * In essence, it's a repository of [Sessions][Session].
+ */
 public interface PackageUninstaller {
 
+	/**
+	 * Creates a uninstall session with provided [parameters].
+	 * @param parameters an instance of [UninstallParameters] which configures the uninstall session.
+	 * @return [Session]
+	 */
 	public fun createSession(parameters: UninstallParameters): Session<UninstallFailure>
+
+	/**
+	 * Returns a [uninstall session][Session] which matches the provided [sessionId], or `null` if not found.
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [Session].
+	 */
 	public fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?>
+
+	/**
+	 * Returns all [uninstall sessions][Session] tracked by this [PackageUninstaller], [active][Session.isActive] or
+	 * not.
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [Sessions][Session] list.
+	 */
 	public fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
+
+	/**
+	 * Returns all [active][Session.isActive] [uninstall sessions][Session] tracked by this [PackageUninstaller].
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [Sessions][Session] list.
+	 */
 	public fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
 
 	public companion object : AckpinePlugin {
@@ -29,6 +64,12 @@ public interface PackageUninstaller {
 		@Volatile
 		private var packageUninstaller: PackageUninstaller? = null
 
+		/**
+		 * Retrieves the default singleton instance of [PackageUninstaller].
+		 *
+		 * @param context a [Context] for on-demand initialization.
+		 * @return The singleton instance of [PackageUninstaller].
+		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageUninstaller {
 			var instance = packageUninstaller

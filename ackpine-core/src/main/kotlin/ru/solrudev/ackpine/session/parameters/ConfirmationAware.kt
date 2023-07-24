@@ -1,5 +1,8 @@
 package ru.solrudev.ackpine.session.parameters
 
+/**
+ * Denotes that object contains session confirmation configuration.
+ */
 public interface ConfirmationAware {
 
 	/**

@@ -14,6 +14,8 @@ import kotlin.coroutines.resumeWithException
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
  * function immediately resumes with [CancellationException].
  *
+ * This function handles session's lifecycle appropriately, like [Session.DefaultStateListener].
+ *
  * @return [SessionResult]
  */
 public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendCancellableCoroutine { continuation ->

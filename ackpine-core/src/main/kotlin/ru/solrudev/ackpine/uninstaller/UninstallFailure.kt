@@ -3,6 +3,9 @@ package ru.solrudev.ackpine.uninstaller
 import ru.solrudev.ackpine.session.Failure
 import java.io.Serializable
 
+/**
+ * Represents the cause of uninstallation failure.
+ */
 public sealed interface UninstallFailure : Failure, Serializable {
 
 	/**

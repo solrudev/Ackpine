@@ -14,11 +14,48 @@ import ru.solrudev.ackpine.session.ProgressSession
 import java.util.UUID
 import java.util.concurrent.Executor
 
+/**
+ * Provides the ability to install applications on the device.
+ * This includes support for monolithic APKs and split APKs.
+ *
+ * In essence, it's a repository of [ProgressSessions][ProgressSession].
+ */
 public interface PackageInstaller {
 
+	/**
+	 * Creates an install session with provided [parameters].
+	 * @param parameters an instance of [InstallParameters] which configures the install session.
+	 * @return [ProgressSession]
+	 */
 	public fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure>
+
+	/**
+	 * Returns an [install session][ProgressSession] which matches the provided [sessionId], or `null` if not found.
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [ProgressSession].
+	 */
 	public fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?>
+
+	/**
+	 * Returns all [install sessions][ProgressSession] tracked by this [PackageInstaller],
+	 * [active][ProgressSession.isActive] or not.
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [ProgressSessions][ProgressSession] list.
+	 */
 	public fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
+
+	/**
+	 * Returns all [active][ProgressSession.isActive] [install sessions][ProgressSession] tracked by this
+	 * [PackageInstaller].
+	 *
+	 * Cancelling this future is a no-op.
+	 *
+	 * @return [ListenableFuture] of [ProgressSessions][ProgressSession] list.
+	 */
 	public fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
 
 	public companion object : AckpinePlugin {
@@ -29,6 +66,12 @@ public interface PackageInstaller {
 		@Volatile
 		private var packageInstaller: PackageInstaller? = null
 
+		/**
+		 * Retrieves the default singleton instance of [PackageInstaller].
+		 *
+		 * @param context a [Context] for on-demand initialization.
+		 * @return The singleton instance of [PackageInstaller].
+		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageInstaller {
 			var instance = packageInstaller

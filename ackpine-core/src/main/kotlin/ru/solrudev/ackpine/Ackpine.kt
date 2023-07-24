@@ -9,6 +9,9 @@ import android.os.Build
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
 
+/**
+ * A library providing consistent APIs for installing and uninstalling apps on an Android device.
+ */
 public object Ackpine {
 
 	@Volatile

@@ -16,15 +16,11 @@ public class NotificationData private constructor(
 
 	/**
 	 * Notification title.
-	 *
-	 * Empty by default. If empty, default title is used when notification is displayed.
 	 */
 	public val title: NotificationString,
 
 	/**
 	 * Notification text.
-	 *
-	 * Empty by default. If empty, default text is used when notification is displayed.
 	 */
 	public val contentText: NotificationString
 ) {

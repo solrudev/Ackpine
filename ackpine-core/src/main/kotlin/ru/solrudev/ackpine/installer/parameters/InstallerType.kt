@@ -1,5 +1,7 @@
 package ru.solrudev.ackpine.installer.parameters
 
+import android.Manifest.permission.REQUEST_INSTALL_PACKAGES
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Intent.ACTION_INSTALL_PACKAGE
 import android.content.pm.PackageInstaller
 import android.os.Build
@@ -7,8 +9,6 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
-import android.Manifest.permission.REQUEST_INSTALL_PACKAGES
 
 /**
  * Type of the package installer implementation.
@@ -22,7 +22,7 @@ public enum class InstallerType {
 	/**
 	 * Package installer will use the [ACTION_INSTALL_PACKAGE] intent action to install the package.
 	 *
-	 * Requires [READ_EXTERNAL_STORAGE] and [REQUEST_INSTALL_PACKAGES] permissions.
+	 * Requires [WRITE_EXTERNAL_STORAGE] and [REQUEST_INSTALL_PACKAGES] permissions.
 	 */
 	INTENT_BASED,
 
