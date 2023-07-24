@@ -47,14 +47,26 @@ public inline fun PackageInstaller.createSession(
 	return createSession(InstallParameters(apks, configure))
 }
 
+/**
+ * A suspending variant of [PackageInstaller.getSessionAsync].
+ * @return [ProgressSession] or `null` if not found.
+ */
 public suspend inline fun PackageInstaller.getSession(sessionId: UUID): ProgressSession<InstallFailure>? {
 	return getSessionAsync(sessionId).await()
 }
 
+/**
+ * A suspending variant of [PackageInstaller.getSessionsAsync].
+ * @return List of [ProgressSessions][ProgressSession].
+ */
 public suspend inline fun PackageInstaller.getSessions(): List<ProgressSession<InstallFailure>> {
 	return getSessionsAsync().await()
 }
 
+/**
+ * A suspending variant of [PackageInstaller.getActiveSessionsAsync].
+ * @return List of [ProgressSessions][ProgressSession].
+ */
 public suspend inline fun PackageInstaller.getActiveSessions(): List<ProgressSession<InstallFailure>> {
 	return getActiveSessionsAsync().await()
 }

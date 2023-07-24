@@ -21,14 +21,26 @@ public inline fun PackageUninstaller.createSession(
 	return createSession(UninstallParameters(packageName, configure))
 }
 
+/**
+ * A suspending variant of [PackageUninstaller.getSessionAsync].
+ * @return [Session] or `null` if not found.
+ */
 public suspend inline fun PackageUninstaller.getSession(sessionId: UUID): Session<UninstallFailure>? {
 	return getSessionAsync(sessionId).await()
 }
 
+/**
+ * A suspending variant of [PackageUninstaller.getSessionsAsync].
+ * @return [Session] or `null` if not found.
+ */
 public suspend inline fun PackageUninstaller.getSessions(): List<Session<UninstallFailure>> {
 	return getSessionsAsync().await()
 }
 
+/**
+ * A suspending variant of [PackageUninstaller.getActiveSessionsAsync].
+ * @return [Session] or `null` if not found.
+ */
 public suspend inline fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
 	return getActiveSessionsAsync().await()
 }
