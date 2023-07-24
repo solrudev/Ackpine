@@ -188,8 +188,8 @@ public final class InstallViewModel extends ViewModel {
 					? NotificationString.resource(R.string.session_error_with_reason, message)
 					: NotificationString.resource(R.string.session_error);
 			sessionDataRepository.setError(sessionId, error);
-			if (failure instanceof Failure.Exceptional) {
-				Log.e("InstallViewModel", null, ((Failure.Exceptional) failure).getException());
+			if (failure instanceof Failure.Exceptional f) {
+				Log.e("InstallViewModel", null, f.getException());
 			}
 		}
 	}

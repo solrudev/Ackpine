@@ -157,8 +157,8 @@ public final class UninstallViewModel extends ViewModel {
 		@Override
 		public void onFailure(@NonNull UUID sessionId, @NonNull UninstallFailure failure) {
 			clearSavedState();
-			if (failure instanceof Failure.Exceptional) {
-				Log.e("UninstallViewModel", null, ((Failure.Exceptional) failure).getException());
+			if (failure instanceof Failure.Exceptional f) {
+				Log.e("UninstallViewModel", null, f.getException());
 			}
 		}
 	}
