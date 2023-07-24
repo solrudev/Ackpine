@@ -88,11 +88,11 @@ class UninstallViewModel(
 
 				is SessionResult.Error -> clearSavedState()
 			}
+		} catch (exception: CancellationException) {
+			throw exception
 		} catch (exception: Exception) {
 			clearSavedState()
 			Log.e("UninstallViewModel", null, exception)
-		} catch (exception: CancellationException) {
-			throw exception
 		}
 	}
 

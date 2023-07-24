@@ -127,8 +127,8 @@ public final class InstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
-					subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
 					subscriptions.add(session.addStateListener(new SessionStateListener(session)));
+					subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
 				}
 			}
 
