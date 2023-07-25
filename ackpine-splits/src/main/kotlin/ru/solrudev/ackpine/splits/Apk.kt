@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.splits
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.content.FileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
 import ru.solrudev.ackpine.helpers.NonClosingInputStream.Companion.nonClosing
 import ru.solrudev.ackpine.helpers.deviceLocales
@@ -148,8 +149,11 @@ public sealed class Apk(
 		 * Returns `null` if provided file is not an APK.
 		 */
 		@JvmStatic
-		public fun fromFile(file: File): Apk? {
-			return fromFile(file, Uri.fromFile(file))
+		public fun fromFile(file: File, context: Context): Apk? {
+			return fromFile(
+				file,
+				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", file)
+			)
 		}
 
 		/**
