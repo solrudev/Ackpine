@@ -23,6 +23,8 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
+import org.gradle.kotlin.dsl.withType
+import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.withProperties
@@ -37,6 +39,13 @@ class AckpinePublishingPlugin : Plugin<Project> {
 			apply(NexusPublishPlugin::class)
 			apply(DokkaPlugin::class)
 		}
+		tasks.withType<DokkaMultiModuleTask>().configureEach {
+			outputDirectory.set(layout.projectDirectory.dir("docs/api"))
+		}
+		configurePublishing()
+	}
+
+	private fun Project.configurePublishing() {
 		val publishingProperties = publishingFromPropertiesFile()
 		val ossrhUsername = System.getenv("OSSRH_USERNAME")
 			?: publishingProperties["ossrhUsername"]
