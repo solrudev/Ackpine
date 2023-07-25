@@ -15,8 +15,7 @@
  */
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-
-val packageName = "ru.solrudev.ackpine.sample"
+import ru.solrudev.ackpine.gradle.Constants
 
 plugins {
 	id(libs.plugins.android.application.get().pluginId)
@@ -30,10 +29,10 @@ kotlin {
 android {
 	compileSdk = 33
 	buildToolsVersion = "33.0.2"
-	namespace = packageName
+	namespace = Constants.samplePackageName
 
 	defaultConfig {
-		applicationId = packageName
+		applicationId = Constants.samplePackageName
 		minSdk = 21
 		targetSdk = 33
 		versionCode = 1
