@@ -20,5 +20,7 @@ plugins {
 }
 
 ackpine {
-	moduleName = "assets"
+	artifactIdSuffix = "assets"
+	artifactName = "Ackpine Assets"
+	artifactDescription = "Provides support of asset files inside of application's package for Ackpine"
 }

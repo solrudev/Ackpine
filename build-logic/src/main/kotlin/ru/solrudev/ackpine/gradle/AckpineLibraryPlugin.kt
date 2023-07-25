@@ -35,7 +35,7 @@ class AckpineLibraryPlugin : Plugin<Project> {
 	override fun apply(target: Project) = target.run {
 		val ackpineExtension = extensions.create<AckpineExtension>("ackpine")
 		afterEvaluate {
-			description = ackpineExtension.moduleDescription
+			description = ackpineExtension.artifactDescription
 		}
 		group = rootProject.group
 		version = rootProject.version

@@ -20,7 +20,9 @@ plugins {
 }
 
 ackpine {
-	moduleName = "splits"
+	artifactIdSuffix = "splits"
+	artifactName = "Ackpine Splits"
+	artifactDescription = "Utilities for working with split APKs"
 }
 
 android {

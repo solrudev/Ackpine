@@ -21,7 +21,9 @@ plugins {
 }
 
 ackpine {
-	moduleName = "core"
+	artifactIdSuffix = "core"
+	artifactName = "Ackpine Core"
+	artifactDescription = "A library providing consistent APIs for installing and uninstalling apps on an Android device"
 }
 
 dependencies {

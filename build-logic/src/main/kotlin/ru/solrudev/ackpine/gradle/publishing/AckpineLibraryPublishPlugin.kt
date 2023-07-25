@@ -52,13 +52,14 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	private fun Project.configurePublishing() = afterEvaluate {
 		val ackpineExtension = extensions.getByType<AckpineExtension>()
-		val artifactName = ackpineExtension.moduleName
-		val artifactDescription = ackpineExtension.moduleDescription
+		val artifactIdSuffix = ackpineExtension.artifactIdSuffix
+		val artifactName = ackpineExtension.artifactName
+		val artifactDescription = ackpineExtension.artifactDescription
 		extensions.configure<PublishingExtension> {
 			publications {
 				create<MavenPublication>("release") {
 					groupId = rootProject.group.toString()
-					artifactId = "ackpine-$artifactName"
+					artifactId = "ackpine-$artifactIdSuffix"
 					version = rootProject.version.toString()
 					from(components.getByName("release"))
 

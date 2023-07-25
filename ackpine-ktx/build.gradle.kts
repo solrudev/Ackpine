@@ -20,7 +20,9 @@ plugins {
 }
 
 ackpine {
-	moduleName = "ktx"
+	artifactIdSuffix = "ktx"
+	artifactName = "Ackpine Kotlin Extensions"
+	artifactDescription = "Kotlin extensions for Ackpine"
 }
 
 dependencies {

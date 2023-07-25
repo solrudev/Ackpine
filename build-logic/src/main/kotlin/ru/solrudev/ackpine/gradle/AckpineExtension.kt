@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.gradle
 
 open class AckpineExtension {
-	var moduleName: String = ""
-	var moduleDescription: String = ""
+	var artifactIdSuffix: String = ""
+	var artifactName: String = ""
+	var artifactDescription: String = ""
 }
