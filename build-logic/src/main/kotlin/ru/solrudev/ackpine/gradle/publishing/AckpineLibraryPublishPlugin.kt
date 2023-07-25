@@ -66,7 +66,7 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 					pom {
 						name.set(artifactName)
 						description.set(artifactDescription)
-						url.set("https://github.com/solrudev/Ackpine")
+						url.set("https://solrudev.github.io/Ackpine")
 
 						licenses {
 							license {
