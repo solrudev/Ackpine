@@ -27,16 +27,18 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineExtension
+import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
 
 class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project) = target.run {
-		if (rootProject.pluginManager.hasPlugin("${Constants.packageName}.publishing")) {
+		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
 			pluginManager.run {
 				apply(MavenPublishPlugin::class)
 				apply(SigningPlugin::class)
@@ -45,7 +47,7 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 			configurePublishing()
 			configureSigning()
 		}
-		if (pluginManager.hasPlugin("${Constants.packageName}.library")) {
+		if (plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 			configureSourcesJar()
 		}
 	}
@@ -66,7 +68,7 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 					pom {
 						name.set(artifactName)
 						description.set(artifactDescription)
-						url.set("https://github.com/solrudev/Ackpine")
+						url.set("https://solrudev.github.io/Ackpine")
 
 						licenses {
 							license {
