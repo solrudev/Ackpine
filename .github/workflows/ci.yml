@@ -83,7 +83,7 @@ jobs:
 
       - name: Prepare API docs
         run: |
-          .\gradlew dokkaHtmlMultiModule
+          ./gradlew dokkaHtmlMultiModule
 
       - name: Build MkDocs
         run: |
