@@ -1,6 +1,10 @@
 Ackpine
 ========
 
+[![CI](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml/badge.svg)](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml)
+![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/solrudev/Ackpine/blob/master/LICENSE)
+
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
 
 See the [project website](https://solrudev.github.io/Ackpine/) for documentation and API reference.
