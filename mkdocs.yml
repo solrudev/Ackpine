@@ -18,6 +18,19 @@ theme:
   name: material
   features:
     - content.code.copy
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    - scheme: default
+      media: "(prefers-color-scheme: light)"
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      media: "(prefers-color-scheme: dark)"
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
 
 # CSS
 extra_css:
@@ -42,5 +55,6 @@ markdown_extensions:
 
 # Plugins
 plugins:
+  - search
   - minify:
       minify_html: true
