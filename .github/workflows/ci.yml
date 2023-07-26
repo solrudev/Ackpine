@@ -34,7 +34,7 @@ jobs:
   publish:
     name: Upload artifacts
     runs-on: ubuntu-latest
-    if: github.repository == 'solrudev/Ackpine' && github.ref == 'refs/heads/master'
+    if: github.repository == 'solrudev/Ackpine' && github.ref == 'refs/heads/master' && !contains(github.event.commits[0].message, '[docs]')
     needs: [build]
 
     steps:
