@@ -37,7 +37,9 @@ An example of creating a session with custom parameters:
             .setNotificationData(new NotificationData.Builder()
                     .setTitle(NotificationString.resource(R.string.install_message_title))
                     .setContentText(NotificationString.resource(R.string.install_message, fileName))
-                    .setIcon(R.drawable.ic_install)));
+                    .setIcon(R.drawable.ic_install)
+                    .build())
+            .build());
     ```
 
 User's confirmation
