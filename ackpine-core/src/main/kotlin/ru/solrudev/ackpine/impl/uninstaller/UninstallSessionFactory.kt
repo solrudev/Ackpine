@@ -82,10 +82,9 @@ internal class UninstallSessionFactoryImpl internal constructor(
 
 	private fun resolveDefaultContentText(packageName: String): NotificationString {
 		val label = applicationContext.packageManager.getApplicationLabel(packageName)?.toString()
-		return if (label != null) {
-			NotificationString.resource(R.string.ackpine_prompt_uninstall_message_with_label, label)
-		} else {
-			NotificationString.resource(R.string.ackpine_prompt_uninstall_message)
+		if (label != null) {
+			return NotificationString.resource(R.string.ackpine_prompt_uninstall_message_with_label, label)
 		}
+		return NotificationString.resource(R.string.ackpine_prompt_uninstall_message)
 	}
 }
