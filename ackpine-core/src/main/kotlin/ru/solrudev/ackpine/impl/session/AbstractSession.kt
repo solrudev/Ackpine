@@ -71,14 +71,18 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	@Volatile
 	private var isPreparing = false
 
+	private val stateLock = Any()
+
 	@Volatile
 	private var state = initialState
 		set(value) {
-			val currentValue = field
-			if (currentValue == value || currentValue.isTerminal) {
-				return
+			synchronized(stateLock) {
+				val currentValue = field
+				if (currentValue == value || currentValue.isTerminal) {
+					return
+				}
+				field = value
 			}
-			field = value
 			persistSessionState(value)
 			stateListeners.forEach { listener ->
 				handler.post {
