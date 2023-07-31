@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
+import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -42,6 +43,7 @@ class AckpineLibraryPlugin : Plugin<Project> {
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)
+			apply(BinaryCompatibilityValidatorPlugin::class)
 		}
 		configureKotlin()
 		configureAndroid()
