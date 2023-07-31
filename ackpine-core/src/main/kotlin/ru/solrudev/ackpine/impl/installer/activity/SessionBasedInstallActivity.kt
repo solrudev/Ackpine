@@ -23,6 +23,8 @@ import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
@@ -76,11 +78,27 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRMATION_TAG, CONFIRMATION_REQUEST_CODE) {
 
 	private val sessionId by lazy { getSessionId(CONFIRMATION_TAG) }
+	private val handler = Handler(Looper.getMainLooper())
+
+	private val deadSessionCompletionRunnable = Runnable {
+		withCompletableSession { session ->
+			session?.complete(
+				Session.State.Failed(InstallFailure.Generic(message = "Session $sessionId is dead."))
+			)
+		}
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
 			launchInstallActivity()
+		}
+	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+		if (isFinishing) {
+			handler.removeCallbacks(deadSessionCompletionRunnable)
 		}
 	}
 
@@ -95,11 +113,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		// For example, "There was a problem parsing the package" error falls under that.
 		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= 0.81
 		if (!isSessionAlive) {
-			withCompletableSession { session ->
-				session?.complete(
-					Session.State.Failed(InstallFailure.Generic(message = "Session $sessionId is dead."))
-				)
-			}
+			handler.postDelayed(deadSessionCompletionRunnable, 1000)
 		} else {
 			finish()
 		}
