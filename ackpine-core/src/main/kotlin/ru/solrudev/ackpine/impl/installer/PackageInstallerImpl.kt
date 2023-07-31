@@ -52,6 +52,12 @@ internal class PackageInstallerImpl internal constructor(
 
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = UUID.randomUUID()
+		val session = installSessionFactory.create(
+			parameters, id,
+			initialState = Session.State.Pending,
+			initialProgress = Progress()
+		)
+		sessions[id] = session
 		executor.execute {
 			installSessionDao.insertInstallSession(
 				SessionEntity.InstallSession(
@@ -69,12 +75,6 @@ internal class PackageInstallerImpl internal constructor(
 				)
 			)
 		}
-		val session = installSessionFactory.create(
-			parameters, id,
-			initialState = Session.State.Pending,
-			initialProgress = Progress()
-		)
-		sessions[id] = session
 		return session
 	}
 

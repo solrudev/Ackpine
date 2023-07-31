@@ -47,6 +47,11 @@ internal class PackageUninstallerImpl internal constructor(
 
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = UUID.randomUUID()
+		val session = uninstallSessionFactory.create(
+			parameters, id,
+			initialState = Session.State.Pending
+		)
+		sessions[id] = session
 		executor.execute {
 			uninstallSessionDao.insertUninstallSession(
 				SessionEntity.UninstallSession(
@@ -62,11 +67,6 @@ internal class PackageUninstallerImpl internal constructor(
 				)
 			)
 		}
-		val session = uninstallSessionFactory.create(
-			parameters, id,
-			initialState = Session.State.Pending
-		)
-		sessions[id] = session
 		return session
 	}
 
