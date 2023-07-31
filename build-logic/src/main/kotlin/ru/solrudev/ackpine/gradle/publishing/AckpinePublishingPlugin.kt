@@ -19,8 +19,6 @@ package ru.solrudev.ackpine.gradle.publishing
 import com.android.build.gradle.LibraryExtension
 import io.github.gradlenexus.publishplugin.NexusPublishExtension
 import io.github.gradlenexus.publishplugin.NexusPublishPlugin
-import kotlinx.validation.ApiValidationExtension
-import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
@@ -43,13 +41,11 @@ class AckpinePublishingPlugin : Plugin<Project> {
 		pluginManager.run {
 			apply(NexusPublishPlugin::class)
 			apply(DokkaPlugin::class)
-			apply(BinaryCompatibilityValidatorPlugin::class)
 		}
 		tasks.withType<DokkaMultiModuleTask>().configureEach {
 			outputDirectory.set(layout.projectDirectory.dir("docs/api"))
 		}
 		registerBuildAckpineTask()
-		configureBinaryCompatibilityValidator()
 		configurePublishing()
 	}
 
@@ -62,16 +58,6 @@ class AckpinePublishingPlugin : Plugin<Project> {
 					}
 				}
 			}
-		}
-	}
-
-	private fun Project.configureBinaryCompatibilityValidator() {
-		evaluationDependsOnChildren()
-		extensions.configure<ApiValidationExtension> {
-			val projects = subprojects.filterNot { it.plugins.hasPlugin(AckpineLibraryPlugin::class) }
-				.map { it.name }
-				.toSet()
-			ignoredProjects += projects
 		}
 	}
 
