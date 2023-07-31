@@ -16,7 +16,7 @@
   -->
 
 <resources>
-    <style name="Base.Theme.Ackpine" parent="Theme.Material3.Light">
+    <style name="Base.V21.Theme.Ackpine" parent="Theme.Material3.Light">
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
@@ -44,7 +44,9 @@
         <item name="colorSurfaceInverse">@color/md_theme_light_inverseSurface</item>
         <item name="colorPrimaryInverse">@color/md_theme_light_inversePrimary</item>
     </style>
-    
+
+    <style name="Base.Theme.Ackpine" parent="Base.V21.Theme.Ackpine" />
+
     <style name="Theme.Ackpine" parent="Base.Theme.Ackpine">
         <item name="linearProgressIndicatorStyle">@style/Widget.Ackpine.LinearProgressIndicator</item>
     </style>

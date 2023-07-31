@@ -103,10 +103,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 		.build()
 
 	private fun resolveDefaultContentText(name: String): NotificationString {
-		return if (name.isNotEmpty()) {
-			NotificationString.resource(R.string.ackpine_prompt_install_message_with_label, name)
-		} else {
-			NotificationString.resource(R.string.ackpine_prompt_install_message)
+		if (name.isNotEmpty()) {
+			return NotificationString.resource(R.string.ackpine_prompt_install_message_with_label, name)
 		}
+		return NotificationString.resource(R.string.ackpine_prompt_install_message)
 	}
 }

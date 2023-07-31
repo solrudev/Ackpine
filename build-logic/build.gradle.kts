@@ -43,5 +43,6 @@ dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.kotlin.android)
 	implementation(libs.plugin.nexus.publish)
-	implementation(libs.dokka)
+	implementation(libs.plugin.dokka)
+	implementation(libs.plugin.binaryCompatibilityValidator)
 }

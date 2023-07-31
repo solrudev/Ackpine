@@ -17,7 +17,14 @@
 package ru.solrudev.ackpine.installer
 
 import android.content.pm.PackageInstaller
-import ru.solrudev.ackpine.installer.InstallFailure.*
+import ru.solrudev.ackpine.installer.InstallFailure.Aborted
+import ru.solrudev.ackpine.installer.InstallFailure.Blocked
+import ru.solrudev.ackpine.installer.InstallFailure.Conflict
+import ru.solrudev.ackpine.installer.InstallFailure.Exceptional
+import ru.solrudev.ackpine.installer.InstallFailure.Generic
+import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
+import ru.solrudev.ackpine.installer.InstallFailure.Invalid
+import ru.solrudev.ackpine.installer.InstallFailure.Storage
 import ru.solrudev.ackpine.session.Failure
 import java.io.Serializable
 
@@ -40,7 +47,9 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 * The operation failed in a generic way. The system will always try to provide a more specific failure reason,
 	 * but in some rare cases this may be delivered.
 	 */
-	public data class Generic(public override val message: String? = null) : InstallFailure(message)
+	public data class Generic @JvmOverloads public constructor(
+		public override val message: String? = null
+	) : InstallFailure(message)
 
 	/**
 	 * The operation failed because it was actively aborted.
@@ -54,7 +63,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 *
 	 * The result may also contain [otherPackageName] with the specific package blocking the install.
 	 */
-	public data class Blocked(
+	public data class Blocked @JvmOverloads public constructor(
 		public override val message: String?,
 		public val otherPackageName: String? = null
 	) : InstallFailure(message)
@@ -66,7 +75,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 *
 	 * The result may also contain [otherPackageName] with the specific package identified as the cause of the conflict.
 	 */
-	public data class Conflict(
+	public data class Conflict @JvmOverloads public constructor(
 		public override val message: String?,
 		public val otherPackageName: String? = null
 	) : InstallFailure(message)
@@ -90,7 +99,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 *
 	 * The result may also contain [storagePath] with the path to the storage device that caused the failure.
 	 */
-	public data class Storage(
+	public data class Storage @JvmOverloads public constructor(
 		public override val message: String?,
 		public val storagePath: String? = null
 	) : InstallFailure(message)

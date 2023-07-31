@@ -1,5 +1,5 @@
 [versions]
-coroutines = "1.7.1"
+coroutines = "1.7.3"
 
 [libraries]
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }

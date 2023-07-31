@@ -1,0 +1,258 @@
+public final class ru/solrudev/ackpine/ZippedFileProvider : android/content/ContentProvider {
+	public static final field Companion Lru/solrudev/ackpine/ZippedFileProvider$Companion;
+	public fun <init> ()V
+	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
+	public fun delete (Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I
+	public fun getType (Landroid/net/Uri;)Ljava/lang/String;
+	public static final fun getUriForZipEntry (Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;
+	public fun insert (Landroid/net/Uri;Landroid/content/ContentValues;)Landroid/net/Uri;
+	public static final fun isZippedFileProviderUri (Landroid/net/Uri;)Z
+	public fun onCreate ()Z
+	public fun openAssetFile (Landroid/net/Uri;Ljava/lang/String;)Landroid/content/res/AssetFileDescriptor;
+	public fun openAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/content/res/AssetFileDescriptor;
+	public fun openFile (Landroid/net/Uri;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;
+	public fun openFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/os/ParcelFileDescriptor;
+	public fun openTypedAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/Bundle;)Landroid/content/res/AssetFileDescriptor;
+	public fun openTypedAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/content/res/AssetFileDescriptor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/database/Cursor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/database/Cursor;
+	public fun update (Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;)I
+}
+
+public final class ru/solrudev/ackpine/ZippedFileProvider$Companion : ru/solrudev/ackpine/plugin/AckpinePlugin {
+	public final fun getUriForZipEntry (Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;
+	public final fun isZippedFileProviderUri (Landroid/net/Uri;)Z
+	public synthetic fun setExecutor (Ljava/util/concurrent/Executor;)V
+}
+
+public final class ru/solrudev/ackpine/exceptions/ConflictingBaseApkException : ru/solrudev/ackpine/exceptions/SplitPackageException {
+	public fun <init> ()V
+}
+
+public final class ru/solrudev/ackpine/exceptions/ConflictingPackageNameException : ru/solrudev/ackpine/exceptions/SplitPackageException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getActual ()Ljava/lang/String;
+	public final fun getExpected ()Ljava/lang/String;
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/exceptions/ConflictingSplitNameException : ru/solrudev/ackpine/exceptions/SplitPackageException {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/exceptions/ConflictingVersionCodeException : ru/solrudev/ackpine/exceptions/SplitPackageException {
+	public fun <init> (JJLjava/lang/String;)V
+	public final fun getActual ()J
+	public final fun getExpected ()J
+	public final fun getName ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/exceptions/NoBaseApkException : ru/solrudev/ackpine/exceptions/SplitPackageException {
+	public fun <init> ()V
+}
+
+public abstract class ru/solrudev/ackpine/exceptions/SplitPackageException : java/lang/RuntimeException {
+	public synthetic fun <init> (Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class ru/solrudev/ackpine/splits/Abi : java/lang/Enum {
+	public static final field ARM64_V8A Lru/solrudev/ackpine/splits/Abi;
+	public static final field ARMEABI Lru/solrudev/ackpine/splits/Abi;
+	public static final field ARMEABI_V7A Lru/solrudev/ackpine/splits/Abi;
+	public static final field Companion Lru/solrudev/ackpine/splits/Abi$Companion;
+	public static final field MIPS Lru/solrudev/ackpine/splits/Abi;
+	public static final field MIPS64 Lru/solrudev/ackpine/splits/Abi;
+	public static final field X86 Lru/solrudev/ackpine/splits/Abi;
+	public static final field X86_64 Lru/solrudev/ackpine/splits/Abi;
+	public static final fun getDeviceAbis ()Ljava/util/List;
+	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/splits/Abi;
+	public static fun values ()[Lru/solrudev/ackpine/splits/Abi;
+}
+
+public final class ru/solrudev/ackpine/splits/Abi$Companion {
+	public final fun getDeviceAbis ()Ljava/util/List;
+}
+
+public abstract class ru/solrudev/ackpine/splits/Apk {
+	public static final field Companion Lru/solrudev/ackpine/splits/Apk$Companion;
+	public synthetic fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public static final fun fromFile (Ljava/io/File;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+	public static final fun fromUri (Landroid/net/Uri;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+	public fun getDescription ()Ljava/lang/String;
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public abstract fun isCompatible (Landroid/content/Context;)Z
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Base : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()Ljava/lang/String;
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;)Lru/solrudev/ackpine/splits/Apk$Base;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Base;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Base;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public final fun getVersionName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Companion {
+	public final fun fromFile (Ljava/io/File;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+	public final fun fromUri (Landroid/net/Uri;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Feature : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)Lru/solrudev/ackpine/splits/Apk$Feature;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Feature;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Feature;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Libs : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()Lru/solrudev/ackpine/splits/Abi;
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;)Lru/solrudev/ackpine/splits/Apk$Libs;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Libs;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Libs;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAbi ()Lru/solrudev/ackpine/splits/Abi;
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Localization : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()Ljava/util/Locale;
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;)Lru/solrudev/ackpine/splits/Apk$Localization;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Localization;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Localization;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getDescription ()Ljava/lang/String;
+	public final fun getLocale ()Ljava/util/Locale;
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$Other : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)Lru/solrudev/ackpine/splits/Apk$Other;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Other;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Other;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/Apk$ScreenDensity : ru/solrudev/ackpine/splits/Apk {
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;)V
+	public final fun component1 ()Landroid/net/Uri;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()J
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()J
+	public final fun component6 ()Lru/solrudev/ackpine/splits/Dpi;
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$ScreenDensity;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDpi ()Lru/solrudev/ackpine/splits/Dpi;
+	public fun getName ()Ljava/lang/String;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun getSize ()J
+	public fun getUri ()Landroid/net/Uri;
+	public fun getVersionCode ()J
+	public fun hashCode ()I
+	public fun isCompatible (Landroid/content/Context;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/ApkSplits {
+	public static final field INSTANCE Lru/solrudev/ackpine/splits/ApkSplits;
+	public static final fun filterIncompatible (Ljava/lang/Iterable;Landroid/content/Context;)Ljava/util/List;
+	public static final fun filterIncompatible (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
+	public static final fun throwOnInvalidSplitPackage (Ljava/lang/Iterable;)Ljava/util/List;
+	public static final fun throwOnInvalidSplitPackage (Lkotlin/sequences/Sequence;)Lkotlin/sequences/Sequence;
+}
+
+public final class ru/solrudev/ackpine/splits/Dpi : java/lang/Enum {
+	public static final field Companion Lru/solrudev/ackpine/splits/Dpi$Companion;
+	public static final field HDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field LDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field MDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field TVDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field XHDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field XXHDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final field XXXHDPI Lru/solrudev/ackpine/splits/Dpi;
+	public static final fun fromContext (Landroid/content/Context;)Lru/solrudev/ackpine/splits/Dpi;
+	public final fun getDensity ()I
+	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/splits/Dpi;
+	public static fun values ()[Lru/solrudev/ackpine/splits/Dpi;
+}
+
+public final class ru/solrudev/ackpine/splits/Dpi$Companion {
+	public final fun fromContext (Landroid/content/Context;)Lru/solrudev/ackpine/splits/Dpi;
+}
+
+public final class ru/solrudev/ackpine/splits/ZippedApkSplits {
+	public static final field INSTANCE Lru/solrudev/ackpine/splits/ZippedApkSplits;
+	public static final fun getApksForFile (Ljava/io/File;)Lkotlin/sequences/Sequence;
+	public static final fun getApksForUri (Landroid/net/Uri;Landroid/content/Context;)Lkotlin/sequences/Sequence;
+}
+
