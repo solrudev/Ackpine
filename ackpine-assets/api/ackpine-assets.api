@@ -1,0 +1,27 @@
+public final class ru/solrudev/ackpine/AssetFileProvider : android/content/ContentProvider {
+	public static final field Companion Lru/solrudev/ackpine/AssetFileProvider$Companion;
+	public fun <init> ()V
+	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
+	public fun delete (Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I
+	public fun getType (Landroid/net/Uri;)Ljava/lang/String;
+	public static final fun getUriForAsset (Ljava/lang/String;)Landroid/net/Uri;
+	public fun insert (Landroid/net/Uri;Landroid/content/ContentValues;)Landroid/net/Uri;
+	public static final fun isAssetFileProviderUri (Landroid/net/Uri;)Z
+	public fun onCreate ()Z
+	public fun openAssetFile (Landroid/net/Uri;Ljava/lang/String;)Landroid/content/res/AssetFileDescriptor;
+	public fun openAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/content/res/AssetFileDescriptor;
+	public fun openFile (Landroid/net/Uri;Ljava/lang/String;)Landroid/os/ParcelFileDescriptor;
+	public fun openFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/os/ParcelFileDescriptor;
+	public fun openTypedAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/Bundle;)Landroid/content/res/AssetFileDescriptor;
+	public fun openTypedAssetFile (Landroid/net/Uri;Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/content/res/AssetFileDescriptor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Landroid/os/Bundle;Landroid/os/CancellationSignal;)Landroid/database/Cursor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor;
+	public fun query (Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Landroid/os/CancellationSignal;)Landroid/database/Cursor;
+	public fun update (Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;)I
+}
+
+public final class ru/solrudev/ackpine/AssetFileProvider$Companion {
+	public final fun getUriForAsset (Ljava/lang/String;)Landroid/net/Uri;
+	public final fun isAssetFileProviderUri (Landroid/net/Uri;)Z
+}
+

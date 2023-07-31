@@ -1,0 +1,147 @@
+public final class ru/solrudev/ackpine/DisposableSubscriptionContainerKt {
+	public static final fun plusAssign (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/DisposableSubscription;)V
+}
+
+public final class ru/solrudev/ackpine/futures/ListenableFutureAwaitKt {
+	public static final fun await (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class ru/solrudev/ackpine/installer/PackageInstallerKt {
+	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;
+	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;
+	public static synthetic fun createSession$default (Lru/solrudev/ackpine/installer/PackageInstaller;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/ProgressSession;
+	public static synthetic fun createSession$default (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/ProgressSession;
+	public static final fun getActiveSessions (Lru/solrudev/ackpine/installer/PackageInstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getSession (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/util/UUID;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getSessions (Lru/solrudev/ackpine/installer/PackageInstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/ApkListKt {
+	public static final fun plusAssign (Lru/solrudev/ackpine/installer/parameters/MutableApkList;Landroid/net/Uri;)V
+	public static final fun plusAssign (Lru/solrudev/ackpine/installer/parameters/MutableApkList;Ljava/lang/Iterable;)V
+}
+
+public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl : ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
+	public abstract fun getApks ()Lru/solrudev/ackpine/installer/parameters/MutableApkList;
+	public abstract fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
+	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun setInstallerType (Lru/solrudev/ackpine/installer/parameters/InstallerType;)V
+	public abstract fun setName (Ljava/lang/String;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDslBuilder : ru/solrudev/ackpine/installer/parameters/InstallParametersDsl {
+	public fun <init> (Landroid/net/Uri;)V
+	public fun <init> (Ljava/lang/Iterable;)V
+	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallParameters;
+	public fun getApks ()Lru/solrudev/ackpine/installer/parameters/MutableApkList;
+	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
+	public fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
+	public fun getName ()Ljava/lang/String;
+	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)V
+	public fun setInstallerType (Lru/solrudev/ackpine/installer/parameters/InstallerType;)V
+	public fun setName (Ljava/lang/String;)V
+	public fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallParametersKt {
+	public static final fun InstallParameters (Landroid/net/Uri;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallParameters;
+	public static final fun InstallParameters (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallParameters;
+}
+
+public final class ru/solrudev/ackpine/session/SessionAwaitKt {
+	public static final fun await (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public final class ru/solrudev/ackpine/session/SessionProgressKt {
+	public static final fun getProgress (Lru/solrudev/ackpine/session/ProgressSession;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class ru/solrudev/ackpine/session/SessionResult {
+}
+
+public final class ru/solrudev/ackpine/session/SessionResult$Error : ru/solrudev/ackpine/session/SessionResult {
+	public fun <init> (Lru/solrudev/ackpine/session/Failure;)V
+	public final fun component1 ()Lru/solrudev/ackpine/session/Failure;
+	public final fun copy (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/session/SessionResult$Error;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/session/SessionResult$Error;Lru/solrudev/ackpine/session/Failure;ILjava/lang/Object;)Lru/solrudev/ackpine/session/SessionResult$Error;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCause ()Lru/solrudev/ackpine/session/Failure;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/session/SessionResult$Success : ru/solrudev/ackpine/session/SessionResult {
+	public fun <init> ()V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/session/SessionStateKt {
+	public static final fun getState (Lru/solrudev/ackpine/session/Session;)Lkotlinx/coroutines/flow/Flow;
+}
+
+public abstract interface class ru/solrudev/ackpine/session/parameters/ConfirmationDsl : ru/solrudev/ackpine/session/parameters/ConfirmationAware {
+	public abstract fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
+	public abstract fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public abstract fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)V
+	public abstract fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)V
+}
+
+public final class ru/solrudev/ackpine/session/parameters/ConfirmationDslKt {
+	public static final fun notification (Lru/solrudev/ackpine/session/parameters/ConfirmationDsl;Lkotlin/jvm/functions/Function1;)V
+}
+
+public abstract interface class ru/solrudev/ackpine/session/parameters/NotificationDataDsl {
+	public abstract fun getContentText ()Lru/solrudev/ackpine/session/parameters/NotificationString;
+	public abstract fun getIcon ()I
+	public abstract fun getTitle ()Lru/solrudev/ackpine/session/parameters/NotificationString;
+	public abstract fun setContentText (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+	public abstract fun setIcon (I)V
+	public abstract fun setTitle (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+}
+
+public final class ru/solrudev/ackpine/session/parameters/NotificationDataDslBuilder : ru/solrudev/ackpine/session/parameters/NotificationDataDsl {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public fun getContentText ()Lru/solrudev/ackpine/session/parameters/NotificationString;
+	public fun getIcon ()I
+	public fun getTitle ()Lru/solrudev/ackpine/session/parameters/NotificationString;
+	public fun setContentText (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+	public fun setIcon (I)V
+	public fun setTitle (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+}
+
+public final class ru/solrudev/ackpine/session/parameters/NotificationDataKt {
+	public static final fun NotificationData (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/parameters/NotificationData;
+}
+
+public final class ru/solrudev/ackpine/uninstaller/PackageUninstallerKt {
+	public static final fun createSession (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/Session;
+	public static synthetic fun createSession$default (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/Session;
+	public static final fun getActiveSessions (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getSession (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/util/UUID;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getSessions (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
+public abstract interface class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl : ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
+	public abstract fun getPackageName ()Ljava/lang/String;
+	public abstract fun setPackageName (Ljava/lang/String;)V
+}
+
+public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDslBuilder : ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl {
+	public fun <init> (Ljava/lang/String;)V
+	public final fun build ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;
+	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
+	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public fun getPackageName ()Ljava/lang/String;
+	public fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)V
+	public fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)V
+	public fun setPackageName (Ljava/lang/String;)V
+}
+
+public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersKt {
+	public static final fun UninstallParameters (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;
+}
+
