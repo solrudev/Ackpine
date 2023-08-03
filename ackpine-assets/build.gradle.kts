@@ -1,3 +1,5 @@
+import ru.solrudev.ackpine.gradle.Constants
+
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -23,4 +25,8 @@ ackpine {
 	artifactIdSuffix = "assets"
 	artifactName = "Ackpine Assets"
 	artifactDescription = "Provides support of asset files inside of application's package for Ackpine"
+}
+
+android {
+	namespace = "${Constants.packageName}.assets"
 }

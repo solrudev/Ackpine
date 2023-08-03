@@ -28,7 +28,7 @@
 
 	<application>
 		<activity
-			android:name=".impl.installer.activity.IntentBasedInstallActivity"
+			android:name="ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity"
 			android:exported="false"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
@@ -36,7 +36,7 @@
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 		<activity
-			android:name=".impl.installer.activity.SessionBasedInstallCommitActivity"
+			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity"
 			android:exported="false"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
@@ -44,7 +44,7 @@
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 		<activity
-			android:name=".impl.installer.activity.SessionBasedInstallConfirmationActivity"
+			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity"
 			android:exported="false"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
@@ -52,7 +52,7 @@
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:ignore="UnusedAttribute" />
 		<activity
-			android:name=".impl.uninstaller.activity.UninstallActivity"
+			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity"
 			android:exported="false"
 			android:showForAllUsers="true"
 			android:showOnLockScreen="true"
@@ -61,7 +61,7 @@
 			tools:ignore="UnusedAttribute" />
 
 		<receiver
-			android:name=".impl.installer.receiver.PackageInstallerStatusReceiver"
+			android:name="ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver"
 			android:exported="false" />
 
 		<provider

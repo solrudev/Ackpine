@@ -19,7 +19,7 @@
 
 	<application>
 		<provider
-			android:name=".AssetFileProvider"
+			android:name="ru.solrudev.ackpine.AssetFileProvider"
 			android:authorities="${applicationId}.AssetFileProvider"
 			android:exported="false"
 			android:grantUriPermissions="true" />
