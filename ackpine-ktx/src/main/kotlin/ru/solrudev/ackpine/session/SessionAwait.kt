@@ -46,8 +46,9 @@ public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendC
 			is Session.State.Failed -> state.failure.let { failure ->
 				if (failure is Failure.Exceptional) {
 					continuation.resumeWithException(failure.exception)
+				} else {
+					continuation.resume(SessionResult.Error(failure))
 				}
-				continuation.resume(SessionResult.Error(failure))
 			}
 		}
 	}
