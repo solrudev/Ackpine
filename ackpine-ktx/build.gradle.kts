@@ -1,3 +1,5 @@
+import ru.solrudev.ackpine.gradle.Constants
+
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -23,6 +25,10 @@ ackpine {
 	artifactIdSuffix = "ktx"
 	artifactName = "Ackpine Kotlin Extensions"
 	artifactDescription = "Kotlin extensions for Ackpine"
+}
+
+android {
+	namespace = "${Constants.packageName}.ktx"
 }
 
 dependencies {

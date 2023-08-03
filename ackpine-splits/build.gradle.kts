@@ -1,3 +1,5 @@
+import ru.solrudev.ackpine.gradle.Constants
+
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -26,6 +28,7 @@ ackpine {
 }
 
 android {
+	namespace = "${Constants.packageName}.splits"
 	defaultConfig {
 		minSdk = 21
 	}

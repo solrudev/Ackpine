@@ -20,7 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.R
+import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao

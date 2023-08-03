@@ -69,7 +69,6 @@ class AckpineLibraryPlugin : Plugin<Project> {
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
 		compileSdk = 33
 		buildToolsVersion = "33.0.2"
-		namespace = Constants.packageName
 
 		defaultConfig {
 			minSdk = 16

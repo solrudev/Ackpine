@@ -91,24 +91,22 @@ internal class PackageInstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	override fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		return if (isSessionsMapInitialized) {
-			ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
+		if (isSessionsMapInitialized) {
+			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
 				set(sessions.values.toList())
 			}
-		} else {
-			initializeSessions { sessions -> sessions.toList() }
 		}
+		return initializeSessions { sessions -> sessions.toList() }
 	}
 
 	@SuppressLint("RestrictedApi")
 	override fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		return if (isSessionsMapInitialized) {
-			ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
+		if (isSessionsMapInitialized) {
+			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
 				set(sessions.values.filter { it.isActive })
 			}
-		} else {
-			initializeSessions { sessions -> sessions.filter { it.isActive } }
 		}
+		return initializeSessions { sessions -> sessions.filter { it.isActive } }
 	}
 
 	@SuppressLint("RestrictedApi")

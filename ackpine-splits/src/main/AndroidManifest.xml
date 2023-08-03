@@ -20,7 +20,7 @@
 	<application>
 
 		<provider
-			android:name=".ZippedFileProvider"
+			android:name="ru.solrudev.ackpine.ZippedFileProvider"
 			android:authorities="${applicationId}.ZippedFileProvider"
 			android:exported="false"
 			android:grantUriPermissions="true" />

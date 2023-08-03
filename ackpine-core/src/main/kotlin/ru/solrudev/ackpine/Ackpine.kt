@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
 import androidx.core.content.getSystemService
+import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
 
 /**

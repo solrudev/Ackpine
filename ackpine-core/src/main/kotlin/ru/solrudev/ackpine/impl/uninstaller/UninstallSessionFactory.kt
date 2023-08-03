@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.impl.uninstaller
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.R
+import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao

@@ -22,7 +22,7 @@ Ackpine is available on `mavenCentral()`.
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.0.2"
+    val ackpineVersion = "0.0.3"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
