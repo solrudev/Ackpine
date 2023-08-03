@@ -85,13 +85,12 @@ internal class PackageUninstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	override fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
-		return if (isSessionsMapInitialized) {
-			ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
+		if (isSessionsMapInitialized) {
+			return ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
 				set(sessions.values.toList())
 			}
-		} else {
-			initializeSessions { sessions -> sessions.toList() }
 		}
+		return initializeSessions { sessions -> sessions.toList() }
 	}
 
 	@SuppressLint("RestrictedApi")
