@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.0.3 (2023-08-03)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `IllegalStateException` in `Session.await()` when session has failed with an exception.
+
+### Public API changes
+
+- Now all Ackpine artifacts have different Android namespaces. Generated `R` classes coming from the library need to be re-imported if they were used in client code.
+
 Version 0.0.2 (2023-07-31)
 --------------------------
 
