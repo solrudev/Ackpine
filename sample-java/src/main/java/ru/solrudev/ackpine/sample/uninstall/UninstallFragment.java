@@ -90,7 +90,8 @@ public final class UninstallFragment extends Fragment {
 	@NonNull
 	private List<ApplicationData> loadInstalledApplications(@NonNull Context context) {
 		final var packageManager = context.getPackageManager();
-		final var apps = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+		//noinspection RedundantSuppression
+		@SuppressWarnings("deprecation") final var apps = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
 				? packageManager.getInstalledApplications(PackageManager.ApplicationInfoFlags.of(0))
 				: packageManager.getInstalledApplications(0);
 		final var applications = new ArrayList<ApplicationData>();
