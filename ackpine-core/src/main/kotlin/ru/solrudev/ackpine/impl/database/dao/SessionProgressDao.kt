@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.database.dao
 import androidx.annotation.RestrictTo
 import androidx.room.Dao
 import androidx.room.Query
+import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TERMINAL_STATES
 import ru.solrudev.ackpine.session.Progress
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -33,7 +34,7 @@ internal interface SessionProgressDao {
 
 	@Query(
 		"UPDATE sessions_progress SET progress = :progress, max = :max WHERE session_id = :id AND " +
-				"EXISTS(SELECT state FROM sessions WHERE id = :id AND state NOT IN ('CANCELLED', 'SUCCEEDED', 'FAILED'))"
+				"EXISTS(SELECT state FROM sessions WHERE id = :id AND state NOT IN $TERMINAL_STATES)"
 	)
 	fun updateProgress(id: String, progress: Int, max: Int)
 }

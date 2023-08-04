@@ -39,12 +39,21 @@ internal data class SessionEntity internal constructor(
 	val notificationText: NotificationString,
 	@DrawableRes
 	@ColumnInfo(name = "notification_icon")
-	val notificationIcon: Int
+	val notificationIcon: Int,
+	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0")
+	val lastLaunchTimestamp: Long = 0
 ) {
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 	internal enum class State {
-		PENDING, ACTIVE, AWAITING, COMMITTED, CANCELLED, SUCCEEDED, FAILED
+
+		PENDING, ACTIVE, AWAITING, COMMITTED, CANCELLED, SUCCEEDED, FAILED;
+
+		internal companion object {
+
+			@JvmSynthetic
+			internal const val TERMINAL_STATES = "('CANCELLED', 'SUCCEEDED', 'FAILED')"
+		}
 	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)

@@ -18,10 +18,12 @@ package ru.solrudev.ackpine.impl.database
 
 import android.content.Context
 import androidx.annotation.RestrictTo
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
@@ -35,9 +37,12 @@ import ru.solrudev.ackpine.impl.database.dao.SessionNameDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.*
+import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TERMINAL_STATES
 import java.util.concurrent.Executor
+import kotlin.time.Duration.Companion.days
 
 private const val ACKPINE_DATABASE_NAME = "ackpine.sessiondb"
+private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STATES AND last_launch_timestamp <"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Database(
@@ -53,7 +58,8 @@ private const val ACKPINE_DATABASE_NAME = "ackpine.sessiondb"
 		NotificationIdEntity::class,
 		SessionNameEntity::class
 	],
-	version = 1,
+	autoMigrations = [AutoMigration(from = 1, to = 2)],
+	version = 2,
 	exportSchema = true
 )
 @TypeConverters(
@@ -103,7 +109,25 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 					FrameworkSQLiteOpenHelperFactory().create(configBuilder.build())
 				}
 				.setQueryExecutor(executor)
+				.addCallback(PurgeCallback)
+				.fallbackToDestructiveMigration()
 				.build()
+		}
+	}
+}
+
+private object PurgeCallback : RoomDatabase.Callback() {
+
+	private val eligibleForPurgeTimestamp: Long
+		get() = System.currentTimeMillis() - 1.days.inWholeMilliseconds
+
+	override fun onOpen(db: SupportSQLiteDatabase) {
+		db.beginTransaction()
+		try {
+			db.execSQL("$PURGE_SQL $eligibleForPurgeTimestamp")
+			db.setTransactionSuccessful()
+		} finally {
+			db.endTransaction()
 		}
 	}
 }
