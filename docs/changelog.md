@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.0.4 (2023-08-04)
+--------------------------
+
+### Bug fixes and improvements
+
+- Finish activity with loading indicator after install session was approved by user (using `SESSION_BASED` installer).
+- Purge sessions in terminal state from internal database one day after last launch.
+
 Version 0.0.3 (2023-08-03)
 --------------------------
 

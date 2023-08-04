@@ -76,11 +76,9 @@ public final class ru/solrudev/ackpine/impl/database/dao/NotificationIdDao_Impl 
 
 public final class ru/solrudev/ackpine/impl/database/dao/SessionDao_Impl : ru/solrudev/ackpine/impl/database/dao/SessionDao {
 	public fun <init> (Landroidx/room/RoomDatabase;)V
-	public fun deleteSession (Ljava/lang/String;)V
 	public static fun getRequiredConverters ()Ljava/util/List;
-	public fun getSession (Ljava/lang/String;)Lru/solrudev/ackpine/impl/database/model/SessionEntity;
-	public fun getSessionState (Ljava/lang/String;)Lru/solrudev/ackpine/impl/database/model/SessionEntity$State;
 	public fun insertSession (Lru/solrudev/ackpine/impl/database/model/SessionEntity;)V
+	public fun updateLastLaunchTimestamp (Ljava/lang/String;J)V
 	public fun updateSessionState (Ljava/lang/String;Lru/solrudev/ackpine/impl/database/model/SessionEntity$State;)V
 }
 

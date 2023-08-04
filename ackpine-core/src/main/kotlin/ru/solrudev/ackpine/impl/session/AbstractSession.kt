@@ -115,6 +115,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		state = Session.State.Active
 		serialExecutor.execute {
 			try {
+				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare(cancellationSignal)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()

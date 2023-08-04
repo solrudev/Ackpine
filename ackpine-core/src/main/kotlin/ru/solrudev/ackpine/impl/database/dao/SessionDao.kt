@@ -30,15 +30,9 @@ internal interface SessionDao {
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	fun insertSession(session: SessionEntity)
 
-	@Query("DELETE FROM sessions WHERE id = :id")
-	fun deleteSession(id: String)
-
-	@Query("SELECT * FROM sessions WHERE id = :id")
-	fun getSession(id: String): SessionEntity?
-
-	@Query("SELECT state FROM sessions WHERE id = :id")
-	fun getSessionState(id: String): SessionEntity.State?
-
 	@Query("UPDATE sessions SET state = :state WHERE id = :id")
 	fun updateSessionState(id: String, state: SessionEntity.State)
+
+	@Query("UPDATE sessions SET last_launch_timestamp = :lastLaunchTimestamp WHERE id = :id")
+	fun updateLastLaunchTimestamp(id: String, lastLaunchTimestamp: Long)
 }
