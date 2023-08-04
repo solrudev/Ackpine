@@ -129,7 +129,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		if (!isSessionAlive) {
 			handler.postDelayed(deadSessionCompletionRunnable, 1000)
 		} else {
-			finishCommitActivityCallbacks.forEach { finishCommitActivity ->
+			finishCommitActivityCallbacks.asReversed().forEach { finishCommitActivity ->
 				finishCommitActivity(ackpineSessionId)
 			}
 			finish()
