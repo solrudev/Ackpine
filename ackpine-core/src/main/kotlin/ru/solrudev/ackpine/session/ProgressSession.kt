@@ -28,6 +28,8 @@ public interface ProgressSession<out F : Failure> : Session<F> {
 	 * Adds a [ProgressListener] to this session. The listener will be notified with current progress immediately upon
 	 * registering.
 	 *
+	 * Listeners are notified on main thread.
+	 *
 	 * @return [DisposableSubscription]
 	 */
 	public fun addProgressListener(listener: ProgressListener): DisposableSubscription

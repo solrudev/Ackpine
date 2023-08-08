@@ -75,7 +75,7 @@ If you're launching a session inside of a long-living service which is not expec
 
 === "Kotlin"
 
-    When using `ackpine-ktx` artifact and calling `Session.await()`, the listener will be automatically detached when parent coroutine scope is cancelled. So if you're calling `await()` inside of a `viewModelScope` or `lifecycleScope`, it should be fine.
+    When using `ackpine-ktx` artifact and calling `Session.await()`, the listener will be automatically detached when parent coroutine scope is cancelled. So if you're calling `await()` inside of a `viewModelScope` or `lifecycleScope`, it should be fine. Note that cancelling `await()` also cancels the session, this is done to respect coroutines' structured concurrency.
 
 === "Java"
 
