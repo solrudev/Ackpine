@@ -61,7 +61,8 @@ internal class PackageUninstallerImpl internal constructor(
 						parameters.confirmation,
 						parameters.notificationData.title,
 						parameters.notificationData.contentText,
-						parameters.notificationData.icon
+						parameters.notificationData.icon,
+						requireUserAction = true
 					),
 					packageName = parameters.packageName
 				)

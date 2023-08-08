@@ -58,8 +58,8 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		NotificationIdEntity::class,
 		SessionNameEntity::class
 	],
-	autoMigrations = [AutoMigration(from = 1, to = 2)],
-	version = 2,
+	autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+	version = 3,
 	exportSchema = true
 )
 @TypeConverters(

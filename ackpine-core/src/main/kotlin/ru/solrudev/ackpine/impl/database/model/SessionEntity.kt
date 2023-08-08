@@ -40,6 +40,8 @@ internal data class SessionEntity internal constructor(
 	@DrawableRes
 	@ColumnInfo(name = "notification_icon")
 	val notificationIcon: Int,
+	@ColumnInfo(name = "require_user_action", defaultValue = "true")
+	val requireUserAction: Boolean,
 	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0")
 	val lastLaunchTimestamp: Long = 0
 ) {

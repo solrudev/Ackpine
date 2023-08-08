@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.installer.parameters
 
 import android.annotation.SuppressLint
+import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -62,7 +63,17 @@ public class InstallParameters private constructor(
 	 * Optional name of the session. It may be a name of the app being installed or a file name. Used in default
 	 * notification content text.
 	 */
-	public val name: String
+	public val name: String,
+
+	/**
+	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
+	 * installer type.
+	 *
+	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
+	 */
+	public val requireUserAction: Boolean
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -74,6 +85,7 @@ public class InstallParameters private constructor(
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		if (name != other.name) return false
+		if (requireUserAction != other.requireUserAction) return false
 		return true
 	}
 
@@ -83,6 +95,7 @@ public class InstallParameters private constructor(
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		result = 31 * result + name.hashCode()
+		result = 31 * result + requireUserAction.hashCode()
 		return result
 	}
 
@@ -91,7 +104,8 @@ public class InstallParameters private constructor(
 				"installerType=$installerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
-				"name='$name')"
+				"name='$name', " +
+				"requireUserAction=$requireUserAction)"
 	}
 
 	/**
@@ -125,7 +139,7 @@ public class InstallParameters private constructor(
 		 *
 		 * Default value is [InstallerType.DEFAULT].
 		 *
-		 * When getting/setting the value of this property, the following invariants are taken into account:
+		 * When getting/setting the value of this property, the following invariants are maintained:
 		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always returned/set regardless of the
 		 * current/provided value;
 		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
@@ -166,6 +180,17 @@ public class InstallParameters private constructor(
 			private set
 
 		/**
+		 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >= 31 with
+		 * [InstallerType.SESSION_BASED] installer type.
+		 *
+		 * @see [PackageInstaller.SessionParams.setRequireUserAction]
+		 */
+		public var requireUserAction: Boolean = true
+			private set
+
+		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -182,7 +207,7 @@ public class InstallParameters private constructor(
 		}
 
 		/**
-		 * Sets [InstallParameters.installerType], taking into account the following invariants:
+		 * Sets [InstallParameters.installerType], maintaining the following invariants:
 		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always set regardless of the provided value;
 		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
 		 * set regardless of the provided value.
@@ -213,11 +238,18 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.requireUserAction].
+		 */
+		public fun setRequireUserAction(requireUserAction: Boolean): Builder = apply {
+			this.requireUserAction = requireUserAction
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			return InstallParameters(apks, installerType, confirmation, notificationData, name)
+			return InstallParameters(apks, installerType, confirmation, notificationData, name, requireUserAction)
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {

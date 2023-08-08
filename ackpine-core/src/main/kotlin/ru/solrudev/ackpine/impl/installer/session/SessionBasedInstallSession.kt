@@ -25,6 +25,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
+import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
@@ -63,6 +64,7 @@ internal class SessionBasedInstallSession internal constructor(
 	initialProgress: Progress,
 	private val confirmation: Confirmation,
 	private val notificationData: NotificationData,
+	private val requireUserAction: Boolean,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
@@ -97,11 +99,7 @@ internal class SessionBasedInstallSession internal constructor(
 		if (nativeSessionId != -1) {
 			abandonSession()
 		}
-		val sessionParams = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)
-		}
-		val sessionId = packageInstaller.createSession(sessionParams)
+		val sessionId = packageInstaller.createSession(createSessionParams())
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
@@ -133,6 +131,25 @@ internal class SessionBasedInstallSession internal constructor(
 		handler.post {
 			sessionCallback?.let(packageInstaller::unregisterSessionCallback)
 		}
+	}
+
+	private fun createSessionParams(): PackageInstaller.SessionParams {
+		val sessionParams = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			sessionParams.setOriginatingUid(Process.myUid())
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			val requireUserAction = if (requireUserAction) {
+				PackageInstaller.SessionParams.USER_ACTION_REQUIRED
+			} else {
+				PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED
+			}
+			sessionParams.setRequireUserAction(requireUserAction)
+		}
+		return sessionParams
 	}
 
 	@SuppressLint("RestrictedApi")
