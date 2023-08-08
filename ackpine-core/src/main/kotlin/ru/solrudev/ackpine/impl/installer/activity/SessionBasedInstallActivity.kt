@@ -71,6 +71,7 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 				session?.notifyCommitted()
 			}
 		}
+		finish()
 	}
 }
 
