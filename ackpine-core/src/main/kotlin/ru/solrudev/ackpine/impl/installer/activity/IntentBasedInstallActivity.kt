@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.installer.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -58,7 +57,6 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
 	}
 
 	@Suppress("DEPRECATION")
-	@SuppressLint("RestrictedApi")
 	private fun launchInstallActivity() {
 		if (apkUri == null) {
 			withCompletableSession { session ->
