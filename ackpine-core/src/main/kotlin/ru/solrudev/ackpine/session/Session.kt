@@ -65,6 +65,8 @@ public interface Session<out F : Failure> {
 	 * Adds a [StateListener] to this session. The listener will be notified with current state immediately upon
 	 * registering.
 	 *
+	 * Listeners are notified on main thread.
+	 *
 	 * @return [DisposableSubscription]
 	 */
 	public fun addStateListener(listener: StateListener<F>): DisposableSubscription

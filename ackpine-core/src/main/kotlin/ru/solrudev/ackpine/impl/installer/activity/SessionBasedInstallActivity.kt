@@ -32,36 +32,22 @@ import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceive
 import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
-import java.util.UUID
 
 private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
 private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
 private const val CONFIRMATION_REQUEST_CODE = 240126683
 private const val RECEIVER_REQUEST_CODE = 951235122
-private val finishCommitActivityCallbacks = mutableListOf<(UUID) -> Unit>()
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG) {
 
 	private val sessionId by lazy { getSessionId(LAUNCHER_TAG) }
 
-	private val finishCallback = { id: UUID ->
-		if (id == ackpineSessionId) {
-			finish()
-		}
-	}
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		finishCommitActivityCallbacks += finishCallback
 		if (savedInstanceState == null) {
 			commitSession()
 		}
-	}
-
-	override fun onDestroy() {
-		super.onDestroy()
-		finishCommitActivityCallbacks -= finishCallback
 	}
 
 	private fun commitSession() {
@@ -85,6 +71,7 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 				session?.notifyCommitted()
 			}
 		}
+		finish()
 	}
 }
 
@@ -129,9 +116,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		if (!isSessionAlive) {
 			handler.postDelayed(deadSessionCompletionRunnable, 1000)
 		} else {
-			finishCommitActivityCallbacks.asReversed().forEach { finishCommitActivity ->
-				finishCommitActivity(ackpineSessionId)
-			}
 			finish()
 		}
 	}

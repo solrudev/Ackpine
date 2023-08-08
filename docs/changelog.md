@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.0.5 (2023-08-08)
+--------------------------
+
+### Bug fixes and improvements
+
+- Allow to configure `requireUserAction` option when creating `InstallParameters`.
+- Revert to not showing a full screen loading indicator after session is committed to avoid unnecessary UI interruption when user's action is not required.
+- Fix session not completing with failure when navigating back from `SessionCommitActivity` on API >= 33 if predictive back gesture is not enabled.
+
 Version 0.0.4 (2023-08-04)
 --------------------------
 

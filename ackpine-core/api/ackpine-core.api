@@ -237,13 +237,14 @@ public abstract interface class ru/solrudev/ackpine/installer/parameters/ApkList
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : ru/solrudev/ackpine/session/parameters/ConfirmationAware {
-	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApks ()Lru/solrudev/ackpine/installer/parameters/ApkList;
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public final fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public final fun getName ()Ljava/lang/String;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public final fun getRequireUserAction ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -259,10 +260,12 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public final fun getName ()Ljava/lang/String;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public final fun getRequireUserAction ()Z
 	public final fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setInstallerType (Lru/solrudev/ackpine/installer/parameters/InstallerType;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setName (Ljava/lang/String;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun setRequireUserAction (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallerType : java/lang/Enum {

@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -40,7 +41,7 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 *
 	 * Default value is [InstallerType.DEFAULT].
 	 *
-	 * When getting/setting the value of this property, the following invariants are taken into account:
+	 * When getting/setting the value of this property, the following invariants are maintained:
 	 * * When on API level < 21, [InstallerType.INTENT_BASED] is always returned/set regardless of the
 	 * current/provided value;
 	 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
@@ -53,6 +54,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * notification content text.
 	 */
 	public var name: String
+
+	/**
+	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
+	 * installer type.
+	 *
+	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
+	 */
+	public var requireUserAction: Boolean
 }
 
 @PublishedApi
@@ -94,6 +105,12 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		get() = builder.name
 		set(value) {
 			builder.setName(value)
+		}
+
+	override var requireUserAction: Boolean
+		get() = builder.requireUserAction
+		set(value) {
+			builder.setRequireUserAction(value)
 		}
 
 	fun build() = builder.build()

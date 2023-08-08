@@ -67,7 +67,8 @@ internal class PackageInstallerImpl internal constructor(
 						parameters.confirmation,
 						parameters.notificationData.title,
 						parameters.notificationData.contentText,
-						parameters.notificationData.icon
+						parameters.notificationData.icon,
+						parameters.requireUserAction
 					),
 					installerType = parameters.installerType,
 					uris = parameters.apks.toList().map { it.toString() },
@@ -143,6 +144,7 @@ internal class PackageInstallerImpl internal constructor(
 					setName(name)
 				}
 			}
+			.setRequireUserAction(session.requireUserAction)
 			.build()
 		return installSessionFactory.create(
 			parameters,

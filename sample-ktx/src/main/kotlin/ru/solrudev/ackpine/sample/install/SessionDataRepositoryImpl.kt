@@ -47,12 +47,8 @@ class SessionDataRepositoryImpl(private val savedStateHandle: SavedStateHandle) 
 	)
 
 	override fun addSessionData(sessionData: SessionData) {
-		val sessions = _sessions.toMutableList()
-		sessions.add(sessionData)
-		_sessions = sessions
-		val sessionsProgress = _sessionsProgress.toMutableList()
-		sessionsProgress.add(SessionProgress(sessionData.id, Progress()))
-		_sessionsProgress = sessionsProgress
+		_sessions += sessionData
+		_sessionsProgress += SessionProgress(sessionData.id, Progress())
 	}
 
 	override fun removeSessionData(id: UUID) {
