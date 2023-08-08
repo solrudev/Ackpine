@@ -18,6 +18,7 @@ An example of creating a session with custom parameters:
         confirmation = Confirmation.DEFERRED
         installerType = InstallerType.SESSION_BASED
         name = fileName
+        requireUserAction = false
         notification {
             title = NotificationString.resource(R.string.install_message_title)
             contentText = NotificationString.resource(R.string.install_message, fileName)
@@ -34,6 +35,7 @@ An example of creating a session with custom parameters:
             .setConfirmation(Confirmation.DEFERRED)
             .setInstallerType(InstallerType.SESSION_BASED)
             .setName(fileName)
+            .setRequireUserAction(false)
             .setNotificationData(new NotificationData.Builder()
                     .setTitle(NotificationString.resource(R.string.install_message_title))
                     .setContentText(NotificationString.resource(R.string.install_message, fileName))
