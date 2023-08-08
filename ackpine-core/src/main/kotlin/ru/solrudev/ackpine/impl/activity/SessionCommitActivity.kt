@@ -64,18 +64,14 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure>(
 	@Deprecated("Deprecated in Java")
 	@Suppress("DEPRECATION")
 	override fun onBackPressed() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-			abortSession()
-		}
+		abortSession()
 		super.onBackPressed()
 	}
 
-	@Suppress("DEPRECATION")
 	private fun registerOnBackInvokedCallback() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			onBackInvokedDispatcher.registerOnBackInvokedCallback(1000) {
 				abortSession()
-				super.onBackPressed()
 			}
 		}
 	}
