@@ -1,10 +1,10 @@
 Configuration
-============
+=============
 
 Sessions can be configured via `InstallParameters` and `UninstallParameters`.
 
 Session parameters
-----------
+------------------
 
 An instance of session parameters is created with a builder. `ackpine-ktx` artifact contains DSL APIs for configuring sessions.
 

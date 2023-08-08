@@ -1,8 +1,8 @@
 Getting Started
-==============
+===============
 
 Obtaining `PackageInstaller` and `PackageUninstaller`
---------------------------
+-----------------------------------------------------
 
 To obtain an instance of `PackageInstaller` or `PackageUninstaller`, use the `getInstance(Context)` method:
 
@@ -21,7 +21,7 @@ To obtain an instance of `PackageInstaller` or `PackageUninstaller`, use the `ge
     ```
 
 Simple session launch
--------------------
+---------------------
 
 Launching an install or uninstall session with default parameters and getting its result back is as easy as writing this:
 
@@ -69,7 +69,7 @@ Launching an install or uninstall session with default parameters and getting it
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
 Handling UI lifecycle
--------------------
+---------------------
 
 If you're launching a session inside of a long-living service which is not expected to be killed (such as a foreground service), the previous example is good to go. However, when you are dealing with UI components such as Activities or Fragments, it's good practice to remove attached state listeners when appropriate:
 
@@ -91,7 +91,7 @@ If you're launching a session inside of a long-living service which is not expec
     ```
 
 Handling process death
---------------------
+----------------------
 
 Handling process death is not any different with Ackpine as with any other persisted state handling. You can save a session's ID and then re-retrieve the session from `PackageInstaller`:
 
