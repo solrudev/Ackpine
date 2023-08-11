@@ -47,18 +47,18 @@ public object Ackpine {
 			throw AckpineReinitializeException()
 		}
 		synchronized(lock) {
-			applicationContext = context.applicationContext.also {
-				it.registerComponentCallbacks(configurationChangesCallback)
+			applicationContext = context.applicationContext.also { ctx ->
+				ctx.registerComponentCallbacks(configurationChangesCallback)
+				createNotificationChannel(ctx)
 			}
-			createNotificationChannel()
 		}
 	}
 
-	private fun createNotificationChannel() {
+	private fun createNotificationChannel(context: Context? = applicationContext) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
 			return
 		}
-		val applicationContext = applicationContext ?: return
+		val applicationContext = context ?: return
 		val channelIdString = applicationContext.getString(R.string.ackpine_notification_channel_id)
 		val channelName = applicationContext.getString(R.string.ackpine_notification_channel_name)
 		val channelDescription = applicationContext.getString(R.string.ackpine_notification_channel_description)
