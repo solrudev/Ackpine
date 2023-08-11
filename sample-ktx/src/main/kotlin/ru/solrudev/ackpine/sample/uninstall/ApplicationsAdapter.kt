@@ -45,11 +45,11 @@ class ApplicationsAdapter(
 			}
 		}
 
-		fun bind(applicationData: ApplicationData) {
+		fun bind(applicationData: ApplicationData) = with(binding) {
 			currentApplicationData = applicationData
-			binding.imageViewAppIcon.setImageDrawable(applicationData.icon)
-			binding.textViewAppName.text = applicationData.name
-			binding.textViewAppPackageName.text = applicationData.packageName
+			imageViewAppIcon.setImageDrawable(applicationData.icon)
+			textViewAppName.text = applicationData.name
+			textViewAppPackageName.text = applicationData.packageName
 		}
 	}
 

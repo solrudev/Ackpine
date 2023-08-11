@@ -68,9 +68,7 @@ class UninstallViewModel(
 		viewModelScope.launch {
 			_uiState.update { it.copy(isLoading = true) }
 			val applications = runInterruptible(Dispatchers.Default) { applicationsFactory() }
-			_uiState.update {
-				it.copy(isLoading = false, applications = applications)
-			}
+			_uiState.update { it.copy(isLoading = false, applications = applications) }
 		}
 	}
 
