@@ -26,9 +26,6 @@ import java.io.File
 import java.io.FileNotFoundException
 
 @JvmSynthetic
-internal fun String.toUri(): Uri = Uri.parse(this)
-
-@JvmSynthetic
 internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): File {
 	if (scheme == ContentResolver.SCHEME_FILE) {
 		return File(requireNotNull(path) { "Uri path is null: $this" })
