@@ -163,7 +163,9 @@ public final class InstallViewModel extends ViewModel {
 			final var uris = new ArrayList<Uri>();
 			for (final var iterator = apks.iterator(); iterator.hasNext(); ) {
 				final var apk = iterator.next();
-				uris.add(apk.getUri());
+				if (apk != null) {
+					uris.add(apk.getUri());
+				}
 			}
 			return uris;
 		} catch (SplitPackageException exception) {
