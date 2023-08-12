@@ -41,7 +41,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure>(
 
 	protected abstract val ackpineSessionFuture: ListenableFuture<S?>
 
-	protected val ackpineSessionId by lazy {
+	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getSerializableCompat<UUID>(SESSION_ID_KEY) ?: error("ackpineSessionId was null")
 	}
 

@@ -1,5 +1,5 @@
 Ackpine
-========
+=======
 
 [![CI](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml/badge.svg)](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml)
 ![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
@@ -26,9 +26,11 @@ Download
 
 Ackpine is available on `mavenCentral()`.
 
+Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()` Maven repository.
+
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.0.5"
+    val ackpineVersion = "0.0.6"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support

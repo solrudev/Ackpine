@@ -51,7 +51,6 @@ import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.ApkSplits.filterIncompatible
 import ru.solrudev.ackpine.splits.ApkSplits.throwOnInvalidSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
-import java.util.Locale
 
 class InstallFragment : Fragment(R.layout.fragment_install) {
 
@@ -115,7 +114,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	}
 
 	private fun getApksFromUri(uri: Uri, name: String): Sequence<Apk> {
-		val extension = name.substring(name.lastIndexOf('.') + 1).lowercase(Locale.getDefault())
+		val extension = name.substringAfterLast('.', "").lowercase()
 		val context = requireContext().applicationContext
 		return when (extension) {
 			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
@@ -180,11 +179,10 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		}
 
 		override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-			return if ((viewHolder as SessionViewHolder).isSwipeable) {
-				super.getSwipeDirs(recyclerView, viewHolder)
-			} else {
-				0
+			if ((viewHolder as SessionViewHolder).isSwipeable) {
+				return super.getSwipeDirs(recyclerView, viewHolder)
 			}
+			return 0
 		}
 	}
 }

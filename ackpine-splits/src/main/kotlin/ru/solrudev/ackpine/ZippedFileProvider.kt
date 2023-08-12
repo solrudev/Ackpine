@@ -32,9 +32,9 @@ import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RestrictTo
+import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
-import ru.solrudev.ackpine.helpers.toUri
 import ru.solrudev.ackpine.plugin.AckpinePlugin
 import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.io.File
@@ -224,13 +224,19 @@ public class ZippedFileProvider : ContentProvider() {
 
 	private fun zipFileUri(uri: Uri): Uri {
 		val path = uri.encodedPath?.drop(1) ?: throw FileNotFoundException("uri=$uri")
-		val uriFromPath = Uri.parse(path)
-		if (uriFromPath.scheme == null || uriFromPath.scheme == ContentResolver.SCHEME_FILE) {
-			return Uri.fromFile(File("/$path"))
+		val uriFromPath = path.toUri()
+		if (uriFromPath.scheme == null) {
+			return File("/$path").toUri()
 		}
-		val encodedSchemeSpecificPart = uriFromPath.encodedSchemeSpecificPart
-		val authorityIndex = encodedSchemeSpecificPart.indexOfFirst { it != '/' }
-		val opaquePart = "//${encodedSchemeSpecificPart.substring(authorityIndex)}"
+		val opaquePart = buildString {
+			if (uriFromPath.scheme == ContentResolver.SCHEME_FILE) {
+				append('/')
+			}
+			append("//")
+			val encodedSchemeSpecificPart = uriFromPath.encodedSchemeSpecificPart
+			val firstNonSlashCharIndex = encodedSchemeSpecificPart.indexOfFirst { it != '/' }
+			append(encodedSchemeSpecificPart.substring(firstNonSlashCharIndex))
+		}
 		return Uri.Builder()
 			.scheme(uriFromPath.scheme)
 			.encodedOpaquePart(opaquePart)

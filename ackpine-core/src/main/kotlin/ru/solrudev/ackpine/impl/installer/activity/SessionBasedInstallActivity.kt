@@ -41,7 +41,7 @@ private const val RECEIVER_REQUEST_CODE = 951235122
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG) {
 
-	private val sessionId by lazy { getSessionId(LAUNCHER_TAG) }
+	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(LAUNCHER_TAG) }
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -78,7 +78,7 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRMATION_TAG, CONFIRMATION_REQUEST_CODE) {
 
-	private val sessionId by lazy { getSessionId(CONFIRMATION_TAG) }
+	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(CONFIRMATION_TAG) }
 	private val handler = Handler(Looper.getMainLooper())
 
 	private val deadSessionCompletionRunnable = Runnable {

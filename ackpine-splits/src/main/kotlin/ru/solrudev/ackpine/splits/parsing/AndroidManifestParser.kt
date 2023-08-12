@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream
 private const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
 @JvmSynthetic
-internal fun parseAndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
+internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 	var seenManifestElement = false
 	val manifest = mutableMapOf<String, String>()
 	val parser = AndroidBinXmlParser(androidManifest)
@@ -59,8 +59,8 @@ internal fun parseAndroidManifest(androidManifest: ByteBuffer): AndroidManifest?
 
 @JvmSynthetic
 internal fun ZipInputStream.androidManifest(): ByteBuffer? {
-	val buffer = ByteArrayOutputStream()
 	entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+	val buffer = ByteArrayOutputStream()
 	copyTo(buffer)
 	return ByteBuffer.wrap(buffer.toByteArray())
 }

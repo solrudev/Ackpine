@@ -55,30 +55,30 @@ class InstallSessionsAdapter(
 		val sessionId: UUID?
 			get() = currentSessionData?.id
 
-		fun bind(sessionData: SessionData) {
+		fun bind(sessionData: SessionData) = with(binding) {
 			currentSessionData = sessionData
-			binding.textViewSessionName.text = sessionData.name
+			textViewSessionName.text = sessionData.name
 			setError(sessionData.error)
 		}
 
-		fun setProgress(sessionProgress: Progress) {
+		fun setProgress(sessionProgress: Progress) = with(binding) {
 			val progress = sessionProgress.progress
 			val max = sessionProgress.max
-			binding.progressBarSession.setProgressCompat(progress, true)
-			binding.progressBarSession.max = max
-			binding.textViewSessionPercentage.text = itemView.context.getString(
+			progressBarSession.setProgressCompat(progress, true)
+			progressBarSession.max = max
+			textViewSessionPercentage.text = itemView.context.getString(
 				R.string.percentage, (progress.toDouble() / max * 100).toInt()
 			)
 		}
 
-		private fun setError(error: NotificationString) {
+		private fun setError(error: NotificationString) = with(binding) {
 			val hasError = !error.isEmpty
-			binding.textViewSessionName.isVisible = !hasError
-			binding.progressBarSession.isVisible = !hasError
-			binding.textViewSessionPercentage.isVisible = !hasError
-			binding.buttonSessionCancel.isVisible = !hasError
-			binding.textViewSessionError.isVisible = hasError
-			binding.textViewSessionError.text = error.resolve(itemView.context)
+			textViewSessionName.isVisible = !hasError
+			progressBarSession.isVisible = !hasError
+			textViewSessionPercentage.isVisible = !hasError
+			buttonSessionCancel.isVisible = !hasError
+			textViewSessionError.isVisible = hasError
+			textViewSessionError.text = error.resolve(itemView.context)
 		}
 	}
 

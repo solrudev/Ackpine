@@ -35,11 +35,11 @@ internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailur
 	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
 
-	override val ackpineSessionFuture by lazy {
+	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {
 		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId)
 	}
 
-	private val packageNameToUninstall by lazy {
+	private val packageNameToUninstall by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getString(PACKAGE_NAME_KEY)
 	}
 

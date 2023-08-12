@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.0.6 (2023-08-12)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix incorrect handling of `file:` URIs in `ZippedFileProvider`.
+- Fix NPE when iterating APKs sequence in Java sample.
+
 Version 0.0.5 (2023-08-08)
 --------------------------
 

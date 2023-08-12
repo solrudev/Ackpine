@@ -27,6 +27,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.plugin.AckpinePlugin
 import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.ProgressSession
+import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -39,7 +40,9 @@ import java.util.concurrent.Executor
 public interface PackageInstaller {
 
 	/**
-	 * Creates an install session with provided [parameters].
+	 * Creates an install session with provided [parameters]. The returned session is in
+	 * [pending][Session.State.Pending] state.
+	 *
 	 * @param parameters an instance of [InstallParameters] which configures the install session.
 	 * @return [ProgressSession]
 	 */

@@ -24,10 +24,11 @@ import ru.solrudev.ackpine.futures.await
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
 import ru.solrudev.ackpine.session.ProgressSession
+import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
 /**
- * Creates an install session.
+ * Creates an install session. The returned session is in [pending][Session.State.Pending] state.
  *
  * Split packages are not supported on API levels < 21.
  * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
@@ -45,7 +46,7 @@ public inline fun PackageInstaller.createSession(
 }
 
 /**
- * Creates an install session.
+ * Creates an install session. The returned session is in [pending][Session.State.Pending] state.
  *
  * Split packages are not supported on API levels < 21.
  * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
