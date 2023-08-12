@@ -30,7 +30,7 @@ private const val REQUEST_CODE = 1654101745
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
 
-	private val apkUri by lazy {
+	private val apkUri by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getParcelableCompat<Uri>(APK_URI_KEY)
 	}
 

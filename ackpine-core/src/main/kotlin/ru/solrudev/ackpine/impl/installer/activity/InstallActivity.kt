@@ -32,7 +32,7 @@ internal abstract class InstallActivity(
 	abortedStateFailureFactory = InstallFailure::Aborted
 ) {
 
-	override val ackpineSessionFuture by lazy {
+	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {
 		ackpinePackageInstaller.getSessionAsync(ackpineSessionId)
 	}
 
