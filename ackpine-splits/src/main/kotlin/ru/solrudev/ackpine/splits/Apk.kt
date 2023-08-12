@@ -29,7 +29,6 @@ import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
 import ru.solrudev.ackpine.splits.parsing.AndroidManifest
 import ru.solrudev.ackpine.splits.parsing.androidManifest
-import ru.solrudev.ackpine.splits.parsing.parseAndroidManifest
 import java.io.File
 import java.io.InputStream
 import java.util.Locale
@@ -200,7 +199,7 @@ public sealed class Apk(
 
 		private fun createApkSplit(inputStream: InputStream, name: String, uri: Uri, size: Long): Apk? {
 			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() } ?: return null
-			val manifest = parseAndroidManifest(androidManifest) ?: return null
+			val manifest = AndroidManifest(androidManifest) ?: return null
 			return when {
 				manifest.splitName.isEmpty() -> {
 					Base(uri, name, size, manifest.packageName, manifest.versionCode, manifest.versionName)
