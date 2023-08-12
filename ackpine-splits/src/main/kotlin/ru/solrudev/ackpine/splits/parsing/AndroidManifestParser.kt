@@ -59,8 +59,8 @@ internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 
 @JvmSynthetic
 internal fun ZipInputStream.androidManifest(): ByteBuffer? {
-	val buffer = ByteArrayOutputStream()
 	entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+	val buffer = ByteArrayOutputStream()
 	copyTo(buffer)
 	return ByteBuffer.wrap(buffer.toByteArray())
 }
