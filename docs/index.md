@@ -20,6 +20,8 @@ Download
 
 Ackpine is available on `mavenCentral()`.
 
+Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()` Maven repository.
+
 ```kotlin
 dependencies {
     val ackpineVersion = "0.0.5"
