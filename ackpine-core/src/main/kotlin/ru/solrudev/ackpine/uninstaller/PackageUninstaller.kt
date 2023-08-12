@@ -38,7 +38,9 @@ import java.util.concurrent.Executor
 public interface PackageUninstaller {
 
 	/**
-	 * Creates a uninstall session with provided [parameters].
+	 * Creates a uninstall session with provided [parameters].The returned session is in
+	 * [pending][Session.State.Pending] state.
+	 *
 	 * @param parameters an instance of [UninstallParameters] which configures the uninstall session.
 	 * @return [Session]
 	 */

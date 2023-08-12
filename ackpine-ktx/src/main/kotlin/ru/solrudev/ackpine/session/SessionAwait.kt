@@ -23,8 +23,8 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 /**
- * Awaits for the completion of the [Session] without blocking a thread and resumes when it's complete, returning the
- * resulting value or throwing the corresponding exception if the session was cancelled.
+ * Launches the [Session] if it's not already, awaits for its completion without blocking a thread and resumes when it's
+ * complete, returning the resulting value or throwing the corresponding exception if the session was cancelled.
  *
  * This suspending function is cancellable.
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this

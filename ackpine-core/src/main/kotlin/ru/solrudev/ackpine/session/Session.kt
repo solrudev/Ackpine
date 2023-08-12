@@ -161,6 +161,8 @@ public interface Session<out F : Failure> {
 	 * A [StateListener] which implements [onStateChanged] method. This listener will call session's methods on state
 	 * changes appropriately.
 	 *
+	 * Adding this listener to a session launches it if it's not already.
+	 *
 	 * It's recommended to use this class for listening to [terminal][State.isTerminal] state updates instead of bare
 	 * [StateListener], because this class handles session's lifecycle appropriately.
 	 */
