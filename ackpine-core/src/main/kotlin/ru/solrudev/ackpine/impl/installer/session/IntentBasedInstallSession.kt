@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
+import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -23,6 +24,8 @@ import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.core.content.FileProvider
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -111,6 +114,12 @@ internal class IntentBasedInstallSession internal constructor(
 				return ApkUri(file.toUri(), mustCopy = false)
 			}
 			return ApkUri(copyFile.toUri(), mustCopy = true)
+		}
+		if (apk.scheme == ContentResolver.SCHEME_FILE) {
+			return ApkUri(
+				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", apk.toFile()),
+				mustCopy = false
+			)
 		}
 		return ApkUri(apk, mustCopy = false)
 	}

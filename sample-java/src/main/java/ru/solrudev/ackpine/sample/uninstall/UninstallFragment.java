@@ -104,6 +104,7 @@ public final class UninstallFragment extends Fragment {
 			final var packageName = applicationInfo.packageName;
 			applications.add(new ApplicationData(name, packageName, icon));
 		}
+		//noinspection ComparatorCombinators
 		Collections.sort(applications, (first, second) -> first.name().compareTo(second.name()));
 		return applications;
 	}

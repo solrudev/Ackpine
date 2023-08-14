@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.0.7 (2023-08-14)
+--------------------------
+
+### Bug fixes and improvements
+
+- Don't expose `file:` URIs on API level >= 24 when using intent-based installer. Now `ackpine-core` artifact declares `FileProvider` in its manifest to support this.
+
 Version 0.0.6 (2023-08-12)
 --------------------------
 

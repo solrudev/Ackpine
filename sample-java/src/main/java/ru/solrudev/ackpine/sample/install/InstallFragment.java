@@ -214,9 +214,8 @@ public final class InstallFragment extends Fragment {
 		public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
 			if (((SessionViewHolder) viewHolder).isSwipeable()) {
 				return super.getSwipeDirs(recyclerView, viewHolder);
-			} else {
-				return 0;
 			}
+			return 0;
 		}
 	}
 }
