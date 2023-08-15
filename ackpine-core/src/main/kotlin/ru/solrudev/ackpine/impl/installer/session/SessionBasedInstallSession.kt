@@ -193,14 +193,17 @@ internal class SessionBasedInstallSession internal constructor(
 		val length = afd.declaredLength
 		afd.createInputStream().use { apkStream ->
 			requireNotNull(apkStream) { "APK $index InputStream was null." }
-			openWrite("$index.apk", 0, length).buffered().use { sessionStream ->
-				apkStream.copyTo(sessionStream, length, cancellationSignal, onProgress = { progress ->
+			val sessionStream = openWrite("$index.apk", 0, length)
+			sessionStream.buffered().use { bufferedSessionStream ->
+				apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
 					if (isThrown.get()) {
 						return
 					}
 					val current = currentProgress.addAndGet(progress)
 					setStagingProgress(current.toFloat() / progressMax)
 				})
+				bufferedSessionStream.flush()
+				fsync(sessionStream)
 			}
 		}
 	}

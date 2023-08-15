@@ -132,12 +132,15 @@ internal class IntentBasedInstallSession internal constructor(
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: error("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
-			copyFile.outputStream().buffered().use { outputStream ->
+			val outputStream = copyFile.outputStream()
+			outputStream.buffered().use { bufferedOutputStream ->
 				var currentProgress = 0
-				apkStream.copyTo(outputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
+				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
 					currentProgress += delta
 					progress = Progress(currentProgress, STREAM_COPY_PROGRESS_MAX)
 				})
+				bufferedOutputStream.flush()
+				outputStream.fd.sync()
 			}
 		}
 	}
