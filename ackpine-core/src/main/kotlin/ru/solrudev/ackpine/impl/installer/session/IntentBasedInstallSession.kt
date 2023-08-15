@@ -47,6 +47,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -107,6 +108,16 @@ internal class IntentBasedInstallSession internal constructor(
 		copyFile.delete()
 	}
 
+	override fun onCommitted() {
+		progress = Progress((STREAM_COPY_PROGRESS_MAX * 0.9).roundToInt(), STREAM_COPY_PROGRESS_MAX)
+	}
+
+	override fun onCompleted(success: Boolean) {
+		if (success) {
+			progress = Progress(STREAM_COPY_PROGRESS_MAX, STREAM_COPY_PROGRESS_MAX)
+		}
+	}
+
 	private fun getApkUri(cancellationSignal: CancellationSignal): ApkUri {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
 			val file = apk.toFile(context, cancellationSignal)
@@ -138,7 +149,7 @@ internal class IntentBasedInstallSession internal constructor(
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
 					currentProgress += delta
-					progress = Progress(currentProgress, STREAM_COPY_PROGRESS_MAX)
+					progress = Progress((currentProgress * 0.8).roundToInt(), STREAM_COPY_PROGRESS_MAX)
 				})
 				bufferedOutputStream.flush()
 				outputStream.fd.sync()
