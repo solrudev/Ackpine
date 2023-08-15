@@ -16,9 +16,11 @@
 
 package ru.solrudev.ackpine.session
 
+import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
+import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -35,11 +37,26 @@ import kotlin.coroutines.resumeWithException
  * @return [SessionResult]
  */
 public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendCancellableCoroutine { continuation ->
-	val subscription = addStateListener { _, state ->
+	val subscription = addStateListener(AwaitSessionStateListener(this, continuation))
+	continuation.invokeOnCancellation {
+		subscription.dispose()
+		cancel()
+	}
+}
+
+private class AwaitSessionStateListener<F : Failure>(
+	private val session: Session<F>,
+	private val continuation: CancellableContinuation<SessionResult<F>>
+) : Session.StateListener<F> {
+
+	override fun onStateChanged(sessionId: UUID, state: Session.State<F>) {
+		if (state.isTerminal) {
+			session.removeStateListener(this)
+		}
 		when (state) {
-			Session.State.Pending -> launch()
-			Session.State.Active -> launch()
-			Session.State.Awaiting -> commit()
+			Session.State.Pending -> session.launch()
+			Session.State.Active -> session.launch() // re-launch if preparations were interrupted
+			Session.State.Awaiting -> session.commit()
 			Session.State.Committed -> {}
 			Session.State.Cancelled -> continuation.cancel()
 			Session.State.Succeeded -> continuation.resume(SessionResult.Success())
@@ -51,9 +68,5 @@ public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendC
 				}
 			}
 		}
-	}
-	continuation.invokeOnCancellation {
-		subscription.dispose()
-		cancel()
 	}
 }
