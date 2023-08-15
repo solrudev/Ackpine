@@ -35,6 +35,8 @@ import java.io.FileNotFoundException
 
 /**
  * [ContentProvider] which allows to open asset files inside of application's package.
+ *
+ * Supports querying of assets' names and sizes.
  */
 public class AssetFileProvider : ContentProvider() {
 
@@ -167,11 +169,18 @@ public class AssetFileProvider : ContentProvider() {
 
 		private lateinit var authority: String
 
+		/**
+		 * Returns whether provided [uri] was created by [AssetFileProvider].
+		 */
 		@JvmStatic
 		public fun isAssetFileProviderUri(uri: Uri): Boolean {
 			return uri.authority == authority && uri.encodedPath != null
 		}
 
+		/**
+		 * Creates an [Uri] for an asset file inside of `assets` folder in application's package.
+		 * @param fileName the name of the asset. It can be hierarchical.
+		 */
 		@JvmStatic
 		public fun getUriForAsset(fileName: String): Uri {
 			return Uri.Builder()
