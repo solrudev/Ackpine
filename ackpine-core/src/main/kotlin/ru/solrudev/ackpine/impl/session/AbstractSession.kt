@@ -170,10 +170,12 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	final override fun notifyCommitted() {
+		onCommitted()
 		state = Session.State.Committed
 	}
 
 	final override fun complete(state: Session.State.Completed<F>) {
+		onCompleted(state is Session.State.Succeeded)
 		this.state = state
 		serialExecutor.execute {
 			cleanup()
@@ -188,6 +190,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		isPreparing = false
 		state = Session.State.Awaiting
 	}
+
+	protected open fun onCommitted() {}
+	protected open fun onCompleted(success: Boolean) {}
 
 	private fun cleanup() {
 		doCleanup()

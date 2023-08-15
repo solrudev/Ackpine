@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.0.8 (2023-08-15)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `No such file or directory` error when using `INTENT_BASED` installer on API < 24 and APK is not readable directly.
+- Improve progress reports for `INTENT_BASED` installer.
+- Add documentation for `AssetFileProvider`.
+
 Version 0.0.7 (2023-08-14)
 --------------------------
 
