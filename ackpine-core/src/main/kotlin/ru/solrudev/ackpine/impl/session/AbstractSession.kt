@@ -31,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
+import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
@@ -228,9 +229,12 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 }
 
 private class StateDisposableSubscription<F : Failure>(
-	private var session: Session<F>?,
-	private var listener: Session.StateListener<F>?
+	session: Session<F>,
+	listener: Session.StateListener<F>
 ) : DisposableSubscription {
+
+	private val session = WeakReference(session)
+	private val listener = WeakReference(listener)
 
 	override var isDisposed: Boolean = false
 		private set
@@ -239,12 +243,12 @@ private class StateDisposableSubscription<F : Failure>(
 		if (isDisposed) {
 			return
 		}
-		val listener = this.listener
+		val listener = this.listener.get()
 		if (listener != null) {
-			session?.removeStateListener(listener)
+			session.get()?.removeStateListener(listener)
 		}
-		this.listener = null
-		session = null
+		this.listener.clear()
+		session.clear()
 		isDisposed = true
 	}
 }

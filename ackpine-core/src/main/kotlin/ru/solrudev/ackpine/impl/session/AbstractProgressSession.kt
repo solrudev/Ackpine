@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
+import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -87,9 +88,12 @@ internal abstract class AbstractProgressSession<F : Failure> internal constructo
 }
 
 private class ProgressDisposableSubscription(
-	private var session: ProgressSession<*>?,
-	private var listener: ProgressSession.ProgressListener?
+	session: ProgressSession<*>,
+	listener: ProgressSession.ProgressListener
 ) : DisposableSubscription {
+
+	private val session = WeakReference(session)
+	private val listener = WeakReference(listener)
 
 	override var isDisposed: Boolean = false
 		private set
@@ -98,12 +102,12 @@ private class ProgressDisposableSubscription(
 		if (isDisposed) {
 			return
 		}
-		val listener = this.listener
+		val listener = this.listener.get()
 		if (listener != null) {
-			session?.removeProgressListener(listener)
+			session.get()?.removeProgressListener(listener)
 		}
-		this.listener = null
-		session = null
+		this.listener.clear()
+		session.clear()
 		isDisposed = true
 	}
 }
