@@ -193,7 +193,7 @@ public interface Session<out F : Failure> {
 			}
 			when (state) {
 				State.Pending -> session.launch()
-				State.Active -> session.launch()
+				State.Active -> session.launch() // re-launch if preparations were interrupted
 				State.Awaiting -> session.commit()
 				State.Committed -> {}
 				State.Cancelled -> onCancelled(sessionId)
