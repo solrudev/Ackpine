@@ -128,6 +128,7 @@ internal class IntentBasedInstallSession internal constructor(
 		if (copyFile.exists()) {
 			copyFile.delete()
 		}
+		copyFile.parentFile?.mkdirs()
 		copyFile.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: error("AssetFileDescriptor was null: $apk")
