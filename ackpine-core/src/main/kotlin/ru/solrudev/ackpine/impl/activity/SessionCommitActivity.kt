@@ -49,8 +49,8 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure>(
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(R.layout.ackpine_activity_session_commit)
 		turnScreenOnWhenLocked()
+		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
 	}

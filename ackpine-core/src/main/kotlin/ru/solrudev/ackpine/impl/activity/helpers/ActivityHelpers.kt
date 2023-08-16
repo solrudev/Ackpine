@@ -18,9 +18,12 @@ package ru.solrudev.ackpine.impl.activity.helpers
 
 import android.app.Activity
 import android.app.KeyguardManager
-import android.content.Context
 import android.os.Build
-import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
+import android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+import android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+import android.view.WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+import androidx.core.content.getSystemService
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
@@ -29,19 +32,13 @@ internal fun Activity.turnScreenOnWhenLocked() {
 		setShowWhenLocked(true)
 		setTurnScreenOn(true)
 	} else {
-		window.addFlags(
-			WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-					or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
-					or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-		)
+		window.addFlags(FLAG_KEEP_SCREEN_ON or FLAG_ALLOW_LOCK_WHILE_SCREEN_ON or FLAG_TURN_SCREEN_ON)
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-			window.addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+			window.addFlags(FLAG_DISMISS_KEYGUARD)
 		}
 	}
-	with(getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager) {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			requestDismissKeyguard(this@turnScreenOnWhenLocked, null)
-		}
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+		getSystemService<KeyguardManager>()?.requestDismissKeyguard(this, null)
 	}
 }
 
@@ -52,13 +49,9 @@ internal fun Activity.clearTurnScreenOnSettings() {
 		setShowWhenLocked(false)
 		setTurnScreenOn(false)
 	} else {
-		window.clearFlags(
-			WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-					or WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON
-					or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
-		)
+		window.clearFlags(FLAG_KEEP_SCREEN_ON or FLAG_ALLOW_LOCK_WHILE_SCREEN_ON or FLAG_TURN_SCREEN_ON)
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-			window.clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD)
+			window.clearFlags(FLAG_DISMISS_KEYGUARD)
 		}
 	}
 }
