@@ -70,6 +70,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 		public void bind(@NonNull SessionData sessionData) {
 			currentSessionData = sessionData;
+			binding.progressBarSession.setProgressCompat(0, false);
 			binding.textViewSessionName.setText(sessionData.name());
 			setError(sessionData.error());
 		}

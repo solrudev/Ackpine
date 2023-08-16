@@ -57,6 +57,7 @@ class InstallSessionsAdapter(
 
 		fun bind(sessionData: SessionData) = with(binding) {
 			currentSessionData = sessionData
+			progressBarSession.setProgressCompat(0, false)
 			textViewSessionName.text = sessionData.name
 			setError(sessionData.error)
 		}
