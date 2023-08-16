@@ -20,9 +20,24 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 
+/**
+ * A [Session] which can be completed.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface CompletableSession<F : Failure> : Session<F> {
+
+	/**
+	 * Complete the session normally with a [completed state][Session.State.Completed] value.
+	 */
 	fun complete(state: Session.State.Completed<F>)
+
+	/**
+	 * Complete the session with an [exception].
+	 */
 	fun completeExceptionally(exception: Exception)
+
+	/**
+	 * Notify that the session's been committed.
+	 */
 	fun notifyCommitted()
 }

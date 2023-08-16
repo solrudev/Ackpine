@@ -32,6 +32,9 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
 
+/**
+ * A base implementation for Ackpine [sessions with progress][ProgressSession].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> internal constructor(
 	context: Context,

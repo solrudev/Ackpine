@@ -29,6 +29,7 @@ import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.lang.ref.WeakReference
@@ -37,8 +38,11 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
-private val NOTIFICATION_ID = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
+private val globalNotificationId = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
 
+/**
+ * A base implementation for Ackpine [sessions][Session].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractSession<F : Failure> internal constructor(
 	private val context: Context,
@@ -56,7 +60,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	init {
 		serialExecutor.execute {
 			notificationId = notificationIdDao.getNotificationId(id.toString()).takeIf { it != -1 }
-				?: NOTIFICATION_ID.incrementAndGet().also { notificationId ->
+				?: globalNotificationId.incrementAndGet().also { notificationId ->
 					notificationIdDao.setNotificationId(id.toString(), notificationId)
 				}
 		}
@@ -95,15 +99,29 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override val isActive: Boolean
 		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
 
+	/**
+	 * Prepare the session. This method is called on a worker thread. After preparations are done, [notifyAwaiting] must
+	 * be called.
+	 */
 	@WorkerThread
 	protected abstract fun prepare(cancellationSignal: CancellationSignal)
 
+	/**
+	 * Launch session's confirmation with [Context.launchConfirmation]. This method is called on a worker thread.
+	 */
 	@WorkerThread
 	protected abstract fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int)
 
+	/**
+	 * Release any held resources after session's completion or cancellation. This method is called on a worker thread.
+	 */
 	@WorkerThread
 	protected open fun doCleanup() {}
 
+	/**
+	 * Implementation allows to re-launch the session when it's not in process of preparations and session's state
+	 * hasn't reached [Session.State.Awaiting] yet, e.g. when preparations were interrupted with process death.
+	 */
 	final override fun launch() {
 		if (isPreparing || isCancelling) {
 			return
@@ -187,12 +205,24 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		handleException(exception)
 	}
 
+	/**
+	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
+	 */
 	protected fun notifyAwaiting() {
 		isPreparing = false
 		state = Session.State.Awaiting
 	}
 
+	/**
+	 * This callback method is invoked when the session's been committed. Processing in this method should be
+	 * lightweight.
+	 */
 	protected open fun onCommitted() {}
+
+	/**
+	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
+	 * this method should be lightweight.
+	 */
 	protected open fun onCompleted(success: Boolean) {}
 
 	private fun cleanup() {
