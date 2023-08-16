@@ -62,8 +62,8 @@ public interface Session<out F : Failure> {
 	public fun cancel()
 
 	/**
-	 * Adds a [StateListener] to this session. The listener will be notified with current state immediately upon
-	 * registering.
+	 * Adds a [StateListener] to this session if it's not registered yet. The listener will be notified with current
+	 * state immediately upon registering.
 	 *
 	 * Listeners are notified on main thread.
 	 *
@@ -193,7 +193,7 @@ public interface Session<out F : Failure> {
 			}
 			when (state) {
 				State.Pending -> session.launch()
-				State.Active -> session.launch()
+				State.Active -> session.launch() // re-launch if preparations were interrupted
 				State.Awaiting -> session.commit()
 				State.Committed -> {}
 				State.Cancelled -> onCancelled(sessionId)

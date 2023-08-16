@@ -43,6 +43,9 @@ internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_C
 	PendingIntent.FLAG_UPDATE_CURRENT
 }
 
+/**
+ * Launches session's confirmation with regards to provided [confirmation] mode.
+ */
 @JvmSynthetic
 internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConfirmation(
 	confirmation: Confirmation,
