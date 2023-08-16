@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.0.9 (2023-08-16)
+--------------------------
+
+### Bug fixes and improvements
+
+- Detach state listener when session reaches terminal state in `Session.await()`.
+- Store weak references in `DisposableSubscription`.
+
 Version 0.0.8 (2023-08-15)
 --------------------------
 
