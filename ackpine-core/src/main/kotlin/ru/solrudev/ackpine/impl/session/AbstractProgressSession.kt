@@ -56,7 +56,7 @@ internal abstract class AbstractProgressSession<F : Failure> internal constructo
 	serialExecutor, handler, exceptionalFailureFactory
 ), ProgressSession<F> {
 
-	private val progressListeners = mutableListOf<ProgressSession.ProgressListener>()
+	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()
 
 	@Volatile
 	protected var progress = initialProgress

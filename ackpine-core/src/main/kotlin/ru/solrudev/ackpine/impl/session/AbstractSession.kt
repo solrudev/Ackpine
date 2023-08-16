@@ -67,7 +67,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	}
 
 	private var notificationId = 0
-	private val stateListeners = mutableListOf<Session.StateListener<F>>()
+	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
 
 	@Volatile
