@@ -42,7 +42,13 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal): File {
 				throw NullPointerException("ParcelFileDescriptor was null: $this")
 			}
 			val path = "/proc/${Process.myPid()}/fd/${fileDescriptor.fd}"
-			val canonicalPath = File(path).canonicalPath.replace("mnt/media_rw", "storage")
+			val canonicalPath = File(path).canonicalPath.let { canonicalPath ->
+				if (canonicalPath.startsWith("/mnt/media_rw")) {
+					canonicalPath.replaceFirst("/mnt/media_rw", "/storage")
+				} else {
+					canonicalPath
+				}
+			}
 			return File(canonicalPath)
 		}
 	} catch (_: FileNotFoundException) {
