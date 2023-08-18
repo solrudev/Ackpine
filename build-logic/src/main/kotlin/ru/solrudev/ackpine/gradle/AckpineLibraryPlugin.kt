@@ -52,16 +52,12 @@ class AckpineLibraryPlugin : Plugin<Project> {
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
 			jvmToolchain(17)
-			sourceSets.configureEach {
-				languageSettings {
-					enableLanguageFeature("DataObjects")
-				}
-			}
+			explicitApi()
 		}
 		tasks.withType<KotlinJvmCompile>().configureEach {
 			compilerOptions {
 				jvmTarget.set(JVM_1_8)
-				freeCompilerArgs.addAll("-Xexplicit-api=strict", "-Xjvm-default=all")
+				freeCompilerArgs.add("-Xjvm-default=all")
 			}
 		}
 	}
