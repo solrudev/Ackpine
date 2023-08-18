@@ -273,6 +273,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallerType : java
 	public static final field DEFAULT Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public static final field INTENT_BASED Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public static final field SESSION_BASED Lru/solrudev/ackpine/installer/parameters/InstallerType;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public static fun values ()[Lru/solrudev/ackpine/installer/parameters/InstallerType;
 }
@@ -415,6 +416,7 @@ public abstract interface class ru/solrudev/ackpine/session/Session$StateListene
 public final class ru/solrudev/ackpine/session/parameters/Confirmation : java/lang/Enum {
 	public static final field DEFERRED Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public static final field IMMEDIATE Lru/solrudev/ackpine/session/parameters/Confirmation;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public static fun values ()[Lru/solrudev/ackpine/session/parameters/Confirmation;
 }

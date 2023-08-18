@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+Version 0.0.10 (2023-08-18)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.0.
+- Updated Android Gradle Plugin to 8.1.0.
+- Updated `apksig` to 8.1.0.
+- Updated Gradle wrapper to 8.3.
+
+### Bug fixes and improvements
+
+- Reduce count of threads in shared Ackpine thread pool.
+
+### Public API changes
+
+- Due to updating to Kotlin 1.9, `entries` property was added to `Confirmation`, `InstallerType`, `Abi` and `Dpi` enums.
+
 Version 0.0.9 (2023-08-16)
 --------------------------
 

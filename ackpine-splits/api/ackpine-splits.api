@@ -67,6 +67,7 @@ public final class ru/solrudev/ackpine/splits/Abi : java/lang/Enum {
 	public static final field X86 Lru/solrudev/ackpine/splits/Abi;
 	public static final field X86_64 Lru/solrudev/ackpine/splits/Abi;
 	public static final fun getDeviceAbis ()Ljava/util/List;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/splits/Abi;
 	public static fun values ()[Lru/solrudev/ackpine/splits/Abi;
 }
@@ -242,6 +243,7 @@ public final class ru/solrudev/ackpine/splits/Dpi : java/lang/Enum {
 	public static final field XXXHDPI Lru/solrudev/ackpine/splits/Dpi;
 	public static final fun fromContext (Landroid/content/Context;)Lru/solrudev/ackpine/splits/Dpi;
 	public final fun getDensity ()I
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
 	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/splits/Dpi;
 	public static fun values ()[Lru/solrudev/ackpine/splits/Dpi;
 }
