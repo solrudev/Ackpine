@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 public object AckpinePluginRegistry {
 
 	private val executor = Executors.newFixedThreadPool(
-		16,
+		8,
 		object : ThreadFactory {
 			private val threadCount = AtomicInteger(0)
 
