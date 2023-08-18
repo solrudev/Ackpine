@@ -113,9 +113,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int)
 
 	/**
-	 * Release any held resources after session's completion or cancellation. This method is called on a worker thread.
+	 * Release any held resources after session's completion or cancellation. Processing in this method should be
+	 * lightweight.
 	 */
-	@WorkerThread
 	protected open fun doCleanup() {}
 
 	/**
@@ -139,7 +139,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
-				handleException(exception)
+				completeExceptionally(exception)
 			}
 		}
 	}
@@ -154,7 +154,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
-				handleException(exception)
+				completeExceptionally(exception)
 			}
 		}
 	}
@@ -164,15 +164,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			return
 		}
 		isCancelling = true
-		serialExecutor.execute {
-			try {
-				cancellationSignal.cancel()
-				handleCancellation()
-			} catch (exception: Exception) {
-				handleException(exception)
-			} finally {
-				isCancelling = false
-			}
+		try {
+			cancellationSignal.cancel()
+			handleCancellation()
+		} catch (exception: Exception) {
+			completeExceptionally(exception)
+		} finally {
+			isCancelling = false
 		}
 	}
 
@@ -196,13 +194,12 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override fun complete(state: Session.State.Completed<F>) {
 		onCompleted(state is Session.State.Succeeded)
 		this.state = state
-		serialExecutor.execute {
-			cleanup()
-		}
+		cleanup()
 	}
 
-	final override fun completeExceptionally(exception: Exception) = serialExecutor.execute {
-		handleException(exception)
+	final override fun completeExceptionally(exception: Exception) {
+		state = Session.State.Failed(exceptionalFailureFactory(exception))
+		cleanup()
 	}
 
 	/**
@@ -232,11 +229,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	private fun handleCancellation() {
 		state = Session.State.Cancelled
-		cleanup()
-	}
-
-	private fun handleException(exception: Exception) {
-		state = Session.State.Failed(exceptionalFailureFactory(exception))
 		cleanup()
 	}
 
