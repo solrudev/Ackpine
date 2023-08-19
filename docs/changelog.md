@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version 0.0.11 (2023-08-19)
+--------------------------
+
+### Dependencies
+
+- Replaced transitive `kotlinx-coroutines-android` dependency with `kotlinx-coroutines-core`.
+
+### Bug fixes and improvements
+
+- Handle sessions' cancellation synchronously.
+- Fix falling back to using `ContentResolver` instead of Java File API when file path has `mnt/media_rw` in the middle.
+
 Version 0.0.10 (2023-08-18)
 --------------------------
 
