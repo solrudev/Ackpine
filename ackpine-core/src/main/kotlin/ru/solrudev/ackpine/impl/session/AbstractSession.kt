@@ -118,6 +118,25 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	 */
 	protected open fun doCleanup() {}
 
+	/**
+	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
+	 */
+	protected fun notifyAwaiting() {
+		isPreparing = false
+		state = Session.State.Awaiting
+	}
+
+	/**
+	 * This callback method is invoked when the session's been committed. Processing in this method should be
+	 * lightweight.
+	 */
+	protected open fun onCommitted() {}
+
+	/**
+	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
+	 * this method should be lightweight.
+	 */
+	protected open fun onCompleted(success: Boolean) {}
 
 	// Implementation allows to re-launch the session when it's not in process of preparations and session's state
 	// hasn't reached Awaiting yet, e.g. when preparations were interrupted with process death.
@@ -200,26 +219,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 		state = Session.State.Failed(exceptionalFailureFactory(exception))
 		cleanup()
 	}
-
-	/**
-	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
-	 */
-	protected fun notifyAwaiting() {
-		isPreparing = false
-		state = Session.State.Awaiting
-	}
-
-	/**
-	 * This callback method is invoked when the session's been committed. Processing in this method should be
-	 * lightweight.
-	 */
-	protected open fun onCommitted() {}
-
-	/**
-	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
-	 * this method should be lightweight.
-	 */
-	protected open fun onCompleted(success: Boolean) {}
 
 	private fun cleanup() {
 		doCleanup()
