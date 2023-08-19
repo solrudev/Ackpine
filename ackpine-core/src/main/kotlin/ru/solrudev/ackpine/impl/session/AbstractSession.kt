@@ -118,10 +118,9 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	 */
 	protected open fun doCleanup() {}
 
-	/**
-	 * Implementation allows to re-launch the session when it's not in process of preparations and session's state
-	 * hasn't reached [Session.State.Awaiting] yet, e.g. when preparations were interrupted with process death.
-	 */
+
+	// Implementation allows to re-launch the session when it's not in process of preparations and session's state
+	// hasn't reached Awaiting yet, e.g. when preparations were interrupted with process death.
 	final override fun launch() {
 		if (isPreparing || isCancelling) {
 			return
