@@ -113,15 +113,33 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	protected abstract fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int)
 
 	/**
-	 * Release any held resources after session's completion or cancellation. This method is called on a worker thread.
+	 * Release any held resources after session's completion or cancellation. Processing in this method should be
+	 * lightweight.
 	 */
-	@WorkerThread
 	protected open fun doCleanup() {}
 
 	/**
-	 * Implementation allows to re-launch the session when it's not in process of preparations and session's state
-	 * hasn't reached [Session.State.Awaiting] yet, e.g. when preparations were interrupted with process death.
+	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
 	 */
+	protected fun notifyAwaiting() {
+		isPreparing = false
+		state = Session.State.Awaiting
+	}
+
+	/**
+	 * This callback method is invoked when the session's been committed. Processing in this method should be
+	 * lightweight.
+	 */
+	protected open fun onCommitted() {}
+
+	/**
+	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
+	 * this method should be lightweight.
+	 */
+	protected open fun onCompleted(success: Boolean) {}
+
+	// Implementation allows to re-launch the session when it's not in process of preparations and session's state
+	// hasn't reached Awaiting yet, e.g. when preparations were interrupted with process death.
 	final override fun launch() {
 		if (isPreparing || isCancelling) {
 			return
@@ -139,7 +157,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
-				handleException(exception)
+				completeExceptionally(exception)
 			}
 		}
 	}
@@ -154,7 +172,7 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
-				handleException(exception)
+				completeExceptionally(exception)
 			}
 		}
 	}
@@ -164,15 +182,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 			return
 		}
 		isCancelling = true
-		serialExecutor.execute {
-			try {
-				cancellationSignal.cancel()
-				handleCancellation()
-			} catch (exception: Exception) {
-				handleException(exception)
-			} finally {
-				isCancelling = false
-			}
+		try {
+			cancellationSignal.cancel()
+			handleCancellation()
+		} catch (exception: Exception) {
+			completeExceptionally(exception)
+		} finally {
+			isCancelling = false
 		}
 	}
 
@@ -196,34 +212,13 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 	final override fun complete(state: Session.State.Completed<F>) {
 		onCompleted(state is Session.State.Succeeded)
 		this.state = state
-		serialExecutor.execute {
-			cleanup()
-		}
+		cleanup()
 	}
 
-	final override fun completeExceptionally(exception: Exception) = serialExecutor.execute {
-		handleException(exception)
+	final override fun completeExceptionally(exception: Exception) {
+		state = Session.State.Failed(exceptionalFailureFactory(exception))
+		cleanup()
 	}
-
-	/**
-	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
-	 */
-	protected fun notifyAwaiting() {
-		isPreparing = false
-		state = Session.State.Awaiting
-	}
-
-	/**
-	 * This callback method is invoked when the session's been committed. Processing in this method should be
-	 * lightweight.
-	 */
-	protected open fun onCommitted() {}
-
-	/**
-	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
-	 * this method should be lightweight.
-	 */
-	protected open fun onCompleted(success: Boolean) {}
 
 	private fun cleanup() {
 		doCleanup()
@@ -232,11 +227,6 @@ internal abstract class AbstractSession<F : Failure> internal constructor(
 
 	private fun handleCancellation() {
 		state = Session.State.Cancelled
-		cleanup()
-	}
-
-	private fun handleException(exception: Exception) {
-		state = Session.State.Failed(exceptionalFailureFactory(exception))
 		cleanup()
 	}
 

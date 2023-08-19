@@ -127,7 +127,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun doCleanup() {
-		abandonSession()
+		executor.execute(::abandonSession) // may be long if storage is under load
 		handler.post {
 			sessionCallback?.let(packageInstaller::unregisterSessionCallback)
 		}
