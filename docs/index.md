@@ -9,6 +9,7 @@ Key features of Ackpine:
 
 - **Ease of use**: Ackpine reduces complexity of dealing with system `PackageInstaller` APIs.
 - **Unifying of different system APIs**: Ackpine provides an ability to choose system package installer API which will be used to install a package.
+- **Built-in split APKs support**: Ackpine provides simple lazy sequences-based APIs for reading, parsing and filtering split APKs.
 - **Persistent**: Ackpine persists every session so it can properly handle process death.
 - **Deferred**: Ackpine allows to defer user's intervention via customizable high-priority notification.
 - **Progress and state updates**: it's easy to observe every session's state and progress updates.
