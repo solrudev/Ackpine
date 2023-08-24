@@ -51,7 +51,7 @@ description: String
 
     ```kotlin
     val splits = ZippedApkSplits.getApksForUri(zippedFileUri, context)
-        .filterIncompatible(context)
+        .filterCompatible(context)
         .throwOnInvalidSplitPackage()
     val splitsList = try {
         splits.toList()
@@ -65,7 +65,7 @@ description: String
 
     ```java
     Sequence<Apk> zippedApkSplits = ZippedApkSplits.getApksForUri(uri, context);
-    Sequence<Apk> filteredSplits = ApkSplits.filterIncompatible(zippedApkSplits, context);
+    Sequence<Apk> filteredSplits = ApkSplits.filterCompatible(zippedApkSplits, context);
     Sequence<Apk> splits = ApkSplits.throwOnInvalidSplitPackage(filteredSplits);
     List<Apk> splitsList = new ArrayList<>();
 	try {
