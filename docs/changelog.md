@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+Version 0.1.0 (2023-08-24)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.10.
+
+### Bug fixes and improvements
+
+- Don't add `DisposableSubscription` instance to `DisposableSubscriptionContainer` if it's already added.
+
+### Public API changes
+
+- `Sequence<Apk>.filterIncompatible()` in `ApkSplits` is renamed to `Sequence<Apk>.filterCompatible()`.
+
 Version 0.0.11 (2023-08-19)
 --------------------------
 
