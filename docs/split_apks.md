@@ -32,12 +32,12 @@ Working with zipped splits
 `Apk` has the following properties:
 
 ```kotlin
-uri: Uri
-name: String
-size: Long
-packageName: String
-versionCode: Long
-description: String
+val uri: Uri
+val name: String
+val size: Long
+val packageName: String
+val versionCode: Long
+val description: String
 ```
 
 !!! Note
