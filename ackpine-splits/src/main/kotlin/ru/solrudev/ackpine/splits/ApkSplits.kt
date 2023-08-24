@@ -42,13 +42,13 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<Apk>.filterIncompatible(context: Context): Sequence<Apk> {
+	public fun Sequence<Apk>.filterCompatible(context: Context): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return sequence {
 			val libsSplits = mutableListOf<Apk.Libs>()
 			val densitySplits = mutableListOf<Apk.ScreenDensity>()
 			val localizationSplits = mutableListOf<Apk.Localization>()
-			this@filterIncompatible
+			this@filterCompatible
 				.addSplitsOfTypeTo(libsSplits)
 				.addSplitsOfTypeTo(densitySplits)
 				.addSplitsOfTypeTo(localizationSplits)
@@ -103,8 +103,8 @@ public object ApkSplits {
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
 	@JvmStatic
-	public fun Iterable<Apk>.filterIncompatible(context: Context): List<Apk> {
-		return asSequence().filterIncompatible(context).toList()
+	public fun Iterable<Apk>.filterCompatible(context: Context): List<Apk> {
+		return asSequence().filterCompatible(context).toList()
 	}
 
 	/**

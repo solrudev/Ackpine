@@ -141,7 +141,7 @@ public final class InstallFragment extends Fragment {
 		return switch (extension) {
 			case "apk" -> new SingletonApkSequence(uri, requireContext());
 			case "zip", "apks", "xapk", "apkm" -> ApkSplits.throwOnInvalidSplitPackage(
-					ApkSplits.filterIncompatible(ZippedApkSplits.getApksForUri(uri, requireContext()),
+					ApkSplits.filterCompatible(ZippedApkSplits.getApksForUri(uri, requireContext()),
 							requireContext()));
 			default -> SequencesKt.emptySequence();
 		};

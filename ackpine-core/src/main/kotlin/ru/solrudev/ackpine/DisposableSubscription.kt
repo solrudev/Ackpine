@@ -40,10 +40,10 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	override var isDisposed: Boolean = false
 		private set
 
-	private val subscriptions = mutableListOf<DisposableSubscription>()
+	private val subscriptions = mutableSetOf<DisposableSubscription>()
 
 	/**
-	 * Adds the specified [subscription] to this [DisposableSubscriptionContainer].
+	 * Adds the specified [subscription] to this [DisposableSubscriptionContainer] if it's not added yet.
 	 */
 	public fun add(subscription: DisposableSubscription) {
 		if (!isDisposed) {

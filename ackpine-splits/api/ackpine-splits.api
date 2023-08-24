@@ -226,8 +226,8 @@ public final class ru/solrudev/ackpine/splits/Apk$ScreenDensity : ru/solrudev/ac
 
 public final class ru/solrudev/ackpine/splits/ApkSplits {
 	public static final field INSTANCE Lru/solrudev/ackpine/splits/ApkSplits;
-	public static final fun filterIncompatible (Ljava/lang/Iterable;Landroid/content/Context;)Ljava/util/List;
-	public static final fun filterIncompatible (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
+	public static final fun filterCompatible (Ljava/lang/Iterable;Landroid/content/Context;)Ljava/util/List;
+	public static final fun filterCompatible (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
 	public static final fun throwOnInvalidSplitPackage (Ljava/lang/Iterable;)Ljava/util/List;
 	public static final fun throwOnInvalidSplitPackage (Lkotlin/sequences/Sequence;)Lkotlin/sequences/Sequence;
 }

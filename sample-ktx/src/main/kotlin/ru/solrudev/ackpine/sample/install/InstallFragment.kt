@@ -48,7 +48,7 @@ import ru.solrudev.ackpine.sample.install.InstallSessionsAdapter.SessionViewHold
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
 import ru.solrudev.ackpine.sample.util.getDisplayName
 import ru.solrudev.ackpine.splits.Apk
-import ru.solrudev.ackpine.splits.ApkSplits.filterIncompatible
+import ru.solrudev.ackpine.splits.ApkSplits.filterCompatible
 import ru.solrudev.ackpine.splits.ApkSplits.throwOnInvalidSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
 
@@ -119,7 +119,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		return when (extension) {
 			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
 			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, requireContext())
-				.filterIncompatible(requireContext())
+				.filterCompatible(requireContext())
 				.throwOnInvalidSplitPackage()
 
 			else -> emptySequence()

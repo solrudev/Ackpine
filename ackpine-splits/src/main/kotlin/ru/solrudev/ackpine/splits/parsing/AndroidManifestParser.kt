@@ -38,7 +38,7 @@ internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 				return null
 			}
 			seenManifestElement = true
-			for (index in 0 until parser.attributeCount) {
+			for (index in 0..<parser.attributeCount) {
 				if (parser.getAttributeName(index).isEmpty()) {
 					continue
 				}

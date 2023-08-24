@@ -40,6 +40,8 @@ Launching an install or uninstall session with default parameters and getting it
     }
     ```
 
+    Session launches when `await()` is called.
+
 === "Java"
 
     ```java
@@ -65,6 +67,8 @@ Launching an install or uninstall session with default parameters and getting it
         }
     });
     ```
+
+    Session launches when `DefaultStateListener` is added to it.
 
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
@@ -101,7 +105,7 @@ Handling process death is not any different with Ackpine as with any other persi
     savedStateHandle[SESSION_ID_KEY] = session.id
     
     // after process restart
-    val id = savedStateHandle[SESSION_ID_KEY]
+    val id: UUID? = savedStateHandle[SESSION_ID_KEY]
     if (id != null) {
         val result = packageInstaller.getSession(id)?.await()
 		// or anything else you want to do with the session
