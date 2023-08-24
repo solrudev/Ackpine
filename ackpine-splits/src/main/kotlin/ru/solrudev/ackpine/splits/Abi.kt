@@ -31,6 +31,8 @@ public enum class Abi {
 		/**
 		 * Returns an ordered list of [ABIs][Abi] supported by the device. The most preferred ABI is the first element
 		 * in the list.
+		 *
+		 * The list is cached. Don't mutate it.
 		 */
 		@JvmStatic
 		public val deviceAbis: List<Abi> by lazy(LazyThreadSafetyMode.NONE) {
