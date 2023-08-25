@@ -1,5 +1,3 @@
-import ru.solrudev.ackpine.gradle.Constants
-
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -16,21 +14,18 @@ import ru.solrudev.ackpine.gradle.Constants
  * limitations under the License.
  */
 
+description = "Utilities for working with split APKs"
+
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
 }
 
 ackpine {
-	artifactIdSuffix = "splits"
-	artifactName = "Ackpine Splits"
-	artifactDescription = "Utilities for working with split APKs"
-}
-
-android {
-	namespace = "${Constants.packageName}.splits"
-	defaultConfig {
-		minSdk = 21
+	id = "splits"
+	minSdk = 21
+	artifact {
+		name = "Ackpine Splits"
 	}
 }
 

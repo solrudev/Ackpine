@@ -1,5 +1,3 @@
-import ru.solrudev.ackpine.gradle.Constants
-
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -16,6 +14,8 @@ import ru.solrudev.ackpine.gradle.Constants
  * limitations under the License.
  */
 
+description = "A library providing consistent APIs for installing and uninstalling apps on an Android device"
+
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
@@ -23,13 +23,10 @@ plugins {
 }
 
 ackpine {
-	artifactIdSuffix = "core"
-	artifactName = "Ackpine Core"
-	artifactDescription = "A library providing consistent APIs for installing and uninstalling apps on an Android device"
-}
-
-android {
-	namespace = "${Constants.packageName}.core"
+	id = "core"
+	artifact {
+		name = "Ackpine Core"
+	}
 }
 
 dependencies {

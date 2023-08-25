@@ -32,9 +32,9 @@ import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.withProperties
 
-class AckpinePublishingPlugin : Plugin<Project> {
+public class AckpinePublishingPlugin : Plugin<Project> {
 
-	override fun apply(target: Project) = target.run {
+	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.packageName
 		version = versionFromPropertiesFile()
@@ -50,6 +50,8 @@ class AckpinePublishingPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildAckpineTask() = tasks.register("buildAckpine") {
+		group = "build"
+		description = "Assembles all Ackpine library projects."
 		subprojects.forEach { project ->
 			if (project.plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 				project.extensions.configure<LibraryExtension> {
