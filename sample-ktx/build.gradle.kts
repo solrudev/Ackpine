@@ -17,6 +17,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import ru.solrudev.ackpine.gradle.Constants
 
+description = "Sample application in Kotlin showcasing Ackpine usage and leveraging ackpine-ktx extensions"
+
 plugins {
 	id(libs.plugins.android.application.get().pluginId)
 	id(libs.plugins.kotlin.android.get().pluginId)
