@@ -54,8 +54,8 @@ internal abstract class UninstallSessionDao(private val database: AckpineDatabas
 	abstract fun getUninstallSessions(): List<SessionEntity.UninstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")
-	abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)
+	protected abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)
 
 	@Query("INSERT INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
-	abstract fun insertPackageName(id: String, packageName: String)
+	protected abstract fun insertPackageName(id: String, packageName: String)
 }
