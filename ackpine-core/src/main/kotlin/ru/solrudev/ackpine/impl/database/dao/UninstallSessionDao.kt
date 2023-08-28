@@ -26,7 +26,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
-internal abstract class UninstallSessionDao(private val database: AckpineDatabase) :
+internal abstract class UninstallSessionDao protected constructor(private val database: AckpineDatabase) :
 	SessionFailureDao<UninstallFailure> {
 
 	@Query("SELECT failure FROM sessions_uninstall_failures WHERE session_id = :id")

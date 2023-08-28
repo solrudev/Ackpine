@@ -24,7 +24,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.session.ProgressSession
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class InstallActivity(
+internal abstract class InstallActivity protected constructor(
 	tag: String,
 	requestCode: Int = -1
 ) : SessionCommitActivity<ProgressSession<InstallFailure>, InstallFailure>(

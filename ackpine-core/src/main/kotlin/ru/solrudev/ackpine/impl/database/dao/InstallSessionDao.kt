@@ -26,7 +26,8 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
-internal abstract class InstallSessionDao(private val database: AckpineDatabase) : SessionFailureDao<InstallFailure> {
+internal abstract class InstallSessionDao protected constructor(private val database: AckpineDatabase)
+	: SessionFailureDao<InstallFailure> {
 
 	@Query("SELECT failure FROM sessions_install_failures WHERE session_id = :id")
 	abstract override fun getFailure(id: String): InstallFailure?
