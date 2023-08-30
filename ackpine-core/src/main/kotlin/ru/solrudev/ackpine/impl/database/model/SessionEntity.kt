@@ -42,7 +42,7 @@ internal data class SessionEntity internal constructor(
 	val notificationIcon: Int,
 	@ColumnInfo(name = "require_user_action", defaultValue = "true")
 	val requireUserAction: Boolean,
-	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0")
+	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0", index = true)
 	val lastLaunchTimestamp: Long = 0
 ) {
 
