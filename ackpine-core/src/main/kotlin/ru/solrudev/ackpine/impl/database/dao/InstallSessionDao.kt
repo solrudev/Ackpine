@@ -26,7 +26,8 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
-internal abstract class InstallSessionDao(private val database: AckpineDatabase) : SessionFailureDao<InstallFailure> {
+internal abstract class InstallSessionDao protected constructor(private val database: AckpineDatabase)
+	: SessionFailureDao<InstallFailure> {
 
 	@Query("SELECT failure FROM sessions_install_failures WHERE session_id = :id")
 	abstract override fun getFailure(id: String): InstallFailure?
@@ -60,11 +61,11 @@ internal abstract class InstallSessionDao(private val database: AckpineDatabase)
 	abstract fun getInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
-	abstract fun insertInstallFailure(id: String, failure: InstallFailure)
+	protected abstract fun insertInstallFailure(id: String, failure: InstallFailure)
 
 	@Query("INSERT OR IGNORE INTO sessions_installer_types(session_id, installer_type) VALUES (:id, :installerType)")
-	abstract fun insertInstallerType(id: String, installerType: InstallerType)
+	protected abstract fun insertInstallerType(id: String, installerType: InstallerType)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
-	abstract fun insertUris(uris: List<InstallUriEntity>)
+	protected abstract fun insertUris(uris: List<InstallUriEntity>)
 }

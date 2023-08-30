@@ -51,10 +51,7 @@ public final class ru/solrudev/ackpine/impl/database/dao/InstallSessionDao_Impl 
 	public fun getInstallSession (Ljava/lang/String;)Lru/solrudev/ackpine/impl/database/model/SessionEntity$InstallSession;
 	public fun getInstallSessions ()Ljava/util/List;
 	public static fun getRequiredConverters ()Ljava/util/List;
-	public fun insertInstallFailure (Ljava/lang/String;Lru/solrudev/ackpine/installer/InstallFailure;)V
 	public fun insertInstallSession (Lru/solrudev/ackpine/impl/database/model/SessionEntity$InstallSession;)V
-	public fun insertInstallerType (Ljava/lang/String;Lru/solrudev/ackpine/installer/parameters/InstallerType;)V
-	public fun insertUris (Ljava/util/List;)V
 	public fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/installer/InstallFailure;)V
 	public synthetic fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/session/Failure;)V
 }
@@ -103,8 +100,6 @@ public final class ru/solrudev/ackpine/impl/database/dao/UninstallSessionDao_Imp
 	public static fun getRequiredConverters ()Ljava/util/List;
 	public fun getUninstallSession (Ljava/lang/String;)Lru/solrudev/ackpine/impl/database/model/SessionEntity$UninstallSession;
 	public fun getUninstallSessions ()Ljava/util/List;
-	public fun insertPackageName (Ljava/lang/String;Ljava/lang/String;)V
-	public fun insertUninstallFailure (Ljava/lang/String;Lru/solrudev/ackpine/uninstaller/UninstallFailure;)V
 	public fun insertUninstallSession (Lru/solrudev/ackpine/impl/database/model/SessionEntity$UninstallSession;)V
 	public synthetic fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/session/Failure;)V
 	public fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/uninstaller/UninstallFailure;)V

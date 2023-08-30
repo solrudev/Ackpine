@@ -16,8 +16,36 @@
 
 package ru.solrudev.ackpine.gradle
 
-open class AckpineExtension {
-	var artifactIdSuffix: String = ""
-	var artifactName: String = ""
-	var artifactDescription: String = ""
+import com.android.build.gradle.LibraryExtension
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.kotlin.dsl.property
+import javax.inject.Inject
+
+public open class AckpineExtension @Inject constructor(private val libraryExtension: LibraryExtension) {
+
+	private var _id = ""
+
+	/**
+	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes and in artifact ID.
+	 */
+	public var id: String
+		get() = _id
+		set(value) {
+			_id = value
+			libraryExtension.namespace = "${Constants.packageName}.$value"
+		}
+
+	/**
+	 * Minimum SDK version.
+	 */
+	public var minSdk: Int? by libraryExtension.defaultConfig::minSdk
+}
+
+public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFactory) {
+
+	/**
+	 * Name of the published artifact.
+	 */
+	public val name: Property<String> = objectFactory.property<String>().convention("")
 }

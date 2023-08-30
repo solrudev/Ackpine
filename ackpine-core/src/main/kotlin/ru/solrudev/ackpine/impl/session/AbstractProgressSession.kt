@@ -36,7 +36,7 @@ import java.util.concurrent.Executor
  * A base implementation for Ackpine [sessions with progress][ProgressSession].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class AbstractProgressSession<F : Failure> internal constructor(
+internal abstract class AbstractProgressSession<F : Failure> protected constructor(
 	context: Context,
 	notificationTag: String,
 	id: UUID,

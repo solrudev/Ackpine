@@ -1,5 +1,3 @@
-import ru.solrudev.ackpine.gradle.Constants
-
 /*
  * Copyright (C) 2023 Ilya Fomichev
  *
@@ -16,19 +14,18 @@ import ru.solrudev.ackpine.gradle.Constants
  * limitations under the License.
  */
 
+description = "Kotlin extensions for Ackpine"
+
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
 }
 
 ackpine {
-	artifactIdSuffix = "ktx"
-	artifactName = "Ackpine Kotlin Extensions"
-	artifactDescription = "Kotlin extensions for Ackpine"
-}
-
-android {
-	namespace = "${Constants.packageName}.ktx"
+	id = "ktx"
+	artifact {
+		name = "Ackpine Kotlin Extensions"
+	}
 }
 
 dependencies {

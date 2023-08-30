@@ -44,7 +44,7 @@ private val globalNotificationId = AtomicInteger(Random.nextInt(from = 10000, un
  * A base implementation for Ackpine [sessions][Session].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class AbstractSession<F : Failure> internal constructor(
+internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val context: Context,
 	private val notificationTag: String,
 	override val id: UUID,

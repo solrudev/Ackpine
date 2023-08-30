@@ -33,7 +33,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class SessionCommitActivity<S : Session<F>, F : Failure>(
+internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
 	private val tag: String,
 	private val requestCode: Int = -1,
 	private val abortedStateFailureFactory: (String) -> F

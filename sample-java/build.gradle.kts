@@ -16,6 +16,8 @@
 
 import ru.solrudev.ackpine.gradle.Constants
 
+description = "Sample application in Java showcasing Ackpine usage"
+
 plugins {
 	id(libs.plugins.android.application.get().pluginId)
 }

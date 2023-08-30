@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.1.1 (2023-08-30)
+--------------------------
+
+### Bug fixes and improvements
+
+- Add index for `lastLaunchTimestamp` internal database column.
+
 Version 0.1.0 (2023-08-24)
 --------------------------
 
@@ -8,6 +15,7 @@ Version 0.1.0 (2023-08-24)
 
 - Updated Kotlin to 1.9.10.
 - Updated Android Gradle Plugin to 8.1.1.
+- Updated `apksig` to 8.1.1.
 
 ### Bug fixes and improvements
 

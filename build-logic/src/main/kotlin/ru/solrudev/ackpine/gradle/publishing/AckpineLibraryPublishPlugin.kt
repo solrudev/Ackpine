@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.gradle.publishing
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -31,20 +32,23 @@ import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
+import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
 
-class AckpineLibraryPublishPlugin : Plugin<Project> {
+public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
-	override fun apply(target: Project) = target.run {
+	override fun apply(target: Project): Unit = target.run {
 		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
 			pluginManager.run {
 				apply(MavenPublishPlugin::class)
 				apply(SigningPlugin::class)
 				apply(DokkaPlugin::class)
 			}
-			configurePublishing()
+			val ackpineExtension = extensions.getByType<AckpineExtension>()
+			val artifact = (ackpineExtension as ExtensionAware).extensions.create<AckpineArtifact>("artifact")
+			configurePublishing(ackpineExtension, artifact)
 			configureSigning()
 		}
 		if (plugins.hasPlugin(AckpineLibraryPlugin::class)) {
@@ -52,22 +56,21 @@ class AckpineLibraryPublishPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configurePublishing() = afterEvaluate {
-		val ackpineExtension = extensions.getByType<AckpineExtension>()
-		val artifactIdSuffix = ackpineExtension.artifactIdSuffix
-		val artifactName = ackpineExtension.artifactName
-		val artifactDescription = ackpineExtension.artifactDescription
+	private fun Project.configurePublishing(
+		ackpineExtension: AckpineExtension,
+		artifact: AckpineArtifact
+	) = afterEvaluate {
 		extensions.configure<PublishingExtension> {
 			publications {
 				create<MavenPublication>("release") {
-					groupId = rootProject.group.toString()
-					artifactId = "ackpine-$artifactIdSuffix"
-					version = rootProject.version.toString()
+					groupId = this@afterEvaluate.group.toString()
+					artifactId = "ackpine-${ackpineExtension.id}"
+					version = this@afterEvaluate.version.toString()
 					from(components.getByName("release"))
 
 					pom {
-						name.set(artifactName)
-						description.set(artifactDescription)
+						name.set(artifact.name)
+						description.set(this@afterEvaluate.description)
 						url.set("https://solrudev.github.io/Ackpine")
 
 						licenses {

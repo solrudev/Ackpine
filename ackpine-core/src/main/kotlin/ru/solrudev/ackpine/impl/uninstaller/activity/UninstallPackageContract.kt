@@ -43,8 +43,7 @@ internal interface UninstallContract {
 	fun parseResult(context: Context, resultCode: Int): Boolean
 }
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class ActionDeletePackageContract : UninstallContract {
+private class ActionDeletePackageContract : UninstallContract {
 
 	private lateinit var packageName: String
 
@@ -55,9 +54,25 @@ internal class ActionDeletePackageContract : UninstallContract {
 	}
 
 	override fun parseResult(context: Context, resultCode: Int) = !context.isPackageInstalled(packageName)
+
+	private fun Context.isPackageInstalled(packageName: String) = try {
+		packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
+		true
+	} catch (_: PackageManager.NameNotFoundException) {
+		false
+	}
+
+	@Suppress("DEPRECATION")
+	private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+		} else {
+			getPackageInfo(packageName, flags)
+		}
+	}
 }
 
-internal class ActionUninstallPackageContract : UninstallContract {
+private class ActionUninstallPackageContract : UninstallContract {
 
 	@Suppress("DEPRECATION")
 	override fun createIntent(context: Context, input: String) = Intent().apply {
@@ -67,22 +82,4 @@ internal class ActionUninstallPackageContract : UninstallContract {
 	}
 
 	override fun parseResult(context: Context, resultCode: Int) = resultCode == Activity.RESULT_OK
-}
-
-@JvmSynthetic
-internal fun Context.isPackageInstalled(packageName: String) = try {
-	packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
-	true
-} catch (_: PackageManager.NameNotFoundException) {
-	false
-}
-
-@Suppress("DEPRECATION")
-@JvmSynthetic
-internal fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
-	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
-	} else {
-		getPackageInfo(packageName, flags)
-	}
 }

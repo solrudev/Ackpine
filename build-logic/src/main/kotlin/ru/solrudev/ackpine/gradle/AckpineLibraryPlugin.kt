@@ -25,19 +25,16 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-class AckpineLibraryPlugin : Plugin<Project> {
+public class AckpineLibraryPlugin : Plugin<Project> {
 
-	override fun apply(target: Project) = target.run {
-		val ackpineExtension = extensions.create<AckpineExtension>("ackpine")
-		afterEvaluate {
-			description = ackpineExtension.artifactDescription
-		}
+	override fun apply(target: Project): Unit = target.run {
 		group = rootProject.group
 		version = rootProject.version
 		pluginManager.run {
@@ -46,6 +43,8 @@ class AckpineLibraryPlugin : Plugin<Project> {
 			apply(BinaryCompatibilityValidatorPlugin::class)
 		}
 		configureKotlin()
+		val libraryExtension = extensions.getByType<LibraryExtension>()
+		extensions.create<AckpineExtension>("ackpine", libraryExtension)
 		configureAndroid()
 	}
 
