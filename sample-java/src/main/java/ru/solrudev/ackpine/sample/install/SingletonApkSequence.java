@@ -42,20 +42,21 @@ public final class SingletonApkSequence implements Sequence<Apk> {
 	public Iterator<Apk> iterator() {
 		return new Iterator<>() {
 
+			private final Apk apk = Apk.fromUri(uri, applicationContext);
 			private boolean isYielded = false;
 
 			@Override
 			public boolean hasNext() {
-				return !isYielded;
+				return apk != null && !isYielded;
 			}
 
 			@Override
 			public Apk next() {
-				if (isYielded) {
+				if (!hasNext()) {
 					throw new NoSuchElementException();
 				}
 				isYielded = true;
-				return Apk.fromUri(uri, applicationContext);
+				return apk;
 			}
 		};
 	}
