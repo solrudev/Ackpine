@@ -103,17 +103,20 @@ internal class SessionBasedInstallSession internal constructor(
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
-		packageInstaller.openSession(sessionId).use { session ->
-			session.writeApks(cancellationSignal).handleResult(
-				onException = { exception ->
-					if (exception is OperationCanceledException) {
-						cancel()
-					} else {
-						completeExceptionally(exception)
-					}
-				},
-				block = { notifyAwaiting() })
-		}
+		val session = packageInstaller.openSession(sessionId)
+		session.writeApks(cancellationSignal).handleResult(
+			onException = { exception ->
+				session.close()
+				if (exception is OperationCanceledException) {
+					cancel()
+				} else {
+					completeExceptionally(exception)
+				}
+			},
+			block = {
+				session.close()
+				notifyAwaiting()
+			})
 	}
 
 	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
