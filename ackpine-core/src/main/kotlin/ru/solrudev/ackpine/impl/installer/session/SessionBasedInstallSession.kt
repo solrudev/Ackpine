@@ -20,6 +20,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
+import android.content.res.AssetFileDescriptor
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
@@ -163,19 +164,24 @@ internal class SessionBasedInstallSession internal constructor(
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * STREAM_COPY_PROGRESS_MAX
 		apks.forEachIndexed { index, uri ->
+			val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
 			try {
+				afd ?: error("AssetFileDescriptor was null: $uri")
 				executor.execute {
 					try {
-						writeApk(index, uri, currentProgress, progressMax, isThrown, cancellationSignal)
+						writeApk(afd, index, currentProgress, progressMax, isThrown, cancellationSignal)
 						if (countdown.decrementAndGet() == 0) {
 							future.set(Unit)
 						}
 					} catch (t: Throwable) {
 						isThrown.set(true)
 						future.setException(t)
+					} finally {
+						afd.close()
 					}
 				}
 			} catch (t: Throwable) {
+				afd?.close()
 				isThrown.set(true)
 				future.setException(t)
 			}
@@ -184,30 +190,26 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun PackageInstaller.Session.writeApk(
+		afd: AssetFileDescriptor,
 		index: Int,
-		uri: Uri,
 		currentProgress: AtomicInteger,
 		progressMax: Int,
 		isThrown: AtomicBoolean,
 		cancellationSignal: CancellationSignal
-	) {
-		val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
-			?: error("AssetFileDescriptor was null: $uri")
+	) = afd.createInputStream().use { apkStream ->
+		requireNotNull(apkStream) { "APK $index InputStream was null." }
 		val length = afd.declaredLength
-		afd.createInputStream().use { apkStream ->
-			requireNotNull(apkStream) { "APK $index InputStream was null." }
-			val sessionStream = openWrite("$index.apk", 0, length)
-			sessionStream.buffered().use { bufferedSessionStream ->
-				apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
-					if (isThrown.get()) {
-						return
-					}
-					val current = currentProgress.addAndGet(progress)
-					setStagingProgress(current.toFloat() / progressMax)
-				})
-				bufferedSessionStream.flush()
-				fsync(sessionStream)
-			}
+		val sessionStream = openWrite("$index.apk", 0, length)
+		sessionStream.buffered().use { bufferedSessionStream ->
+			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
+				if (isThrown.get()) {
+					return
+				}
+				val current = currentProgress.addAndGet(progress)
+				setStagingProgress(current.toFloat() / progressMax)
+			})
+			bufferedSessionStream.flush()
+			fsync(sessionStream)
 		}
 	}
 
