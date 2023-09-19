@@ -174,16 +174,16 @@ internal class SessionBasedInstallSession internal constructor(
 							future.set(Unit)
 						}
 					} catch (t: Throwable) {
-						isThrown.set(true)
 						future.setException(t)
+						isThrown.set(true)
 					} finally {
 						afd.close()
 					}
 				}
 			} catch (t: Throwable) {
+				future.setException(t)
 				afd?.close()
 				isThrown.set(true)
-				future.setException(t)
 			}
 		}
 		return future
