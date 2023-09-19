@@ -85,7 +85,7 @@ internal data class SessionEntity internal constructor(
 		val name: String? = null
 	)
 
-	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal data class UninstallSession internal constructor(
 		@Embedded
 		val session: SessionEntity,
