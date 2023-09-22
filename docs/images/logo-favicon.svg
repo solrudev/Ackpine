@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="48mm" height="48mm" style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd" viewBox="0 0 4800 4800">
+    <style>
+        @media (prefers-color-scheme: dark) {
+            #logo { fill: #ffffff }
+        }
+    </style>
+    <path style="fill:none" d="M0 0h4800v4800H0z"/>
+    <path id="logo" d="m921.07 2295.79 2957.84 2360.14V3654.07L921.23 1303.21l-.16 992.58zm585.43-747.34 2021.91 1616.24.1-769.41L1506.75 788.31l-.25 760.14zm396.09-652.71 1344.99 1078.2.04-571.33L1902.77 333.69l-.18 562.05zm467.01-379.01 570.2 462.37V597.2l-570.05-453.08-.15 372.61z"/>
+</svg>
