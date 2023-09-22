@@ -51,7 +51,6 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
@@ -159,31 +158,28 @@ internal class SessionBasedInstallSession internal constructor(
 	@SuppressLint("RestrictedApi")
 	private fun PackageInstaller.Session.writeApks(cancellationSignal: CancellationSignal): ListenableFuture<Unit> {
 		val future = ResolvableFuture.create<Unit>()
-		val isThrown = AtomicBoolean(false)
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * STREAM_COPY_PROGRESS_MAX
 		apks.forEachIndexed { index, uri ->
 			val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
+				?: error("AssetFileDescriptor was null: $uri")
 			try {
-				afd ?: error("AssetFileDescriptor was null: $uri")
 				executor.execute {
 					try {
-						writeApk(afd, index, currentProgress, progressMax, isThrown, cancellationSignal)
+						writeApk(afd, index, currentProgress, progressMax, cancellationSignal)
 						if (countdown.decrementAndGet() == 0) {
 							future.set(Unit)
 						}
 					} catch (t: Throwable) {
 						future.setException(t)
-						isThrown.set(true)
 					} finally {
 						afd.close()
 					}
 				}
 			} catch (t: Throwable) {
 				future.setException(t)
-				afd?.close()
-				isThrown.set(true)
+				afd.close()
 			}
 		}
 		return future
@@ -194,7 +190,6 @@ internal class SessionBasedInstallSession internal constructor(
 		index: Int,
 		currentProgress: AtomicInteger,
 		progressMax: Int,
-		isThrown: AtomicBoolean,
 		cancellationSignal: CancellationSignal
 	) = afd.createInputStream().use { apkStream ->
 		requireNotNull(apkStream) { "APK $index InputStream was null." }
@@ -202,9 +197,6 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionStream = openWrite("$index.apk", 0, length)
 		sessionStream.buffered().use { bufferedSessionStream ->
 			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
-				if (isThrown.get()) {
-					return
-				}
 				val current = currentProgress.addAndGet(progress)
 				setStagingProgress(current.toFloat() / progressMax)
 			})
