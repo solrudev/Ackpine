@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.1.3 (2023-09-23)
+--------------------------
+
+Added a logo for the library! Sample apps icon now use the logo too.
+
+### Bug fixes and improvements
+
+- Small optimization in `SESSION_BASED` package installer.
+
 Version 0.1.2 (2023-09-19)
 --------------------------
 
