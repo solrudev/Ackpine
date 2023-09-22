@@ -1,6 +1,8 @@
 Overview
 ========
 
+![Ackpine](images/logo-text-colored.svg)
+
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
 
 A library providing consistent APIs for installing and uninstalling apps on an Android device.

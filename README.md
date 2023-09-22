@@ -1,5 +1,4 @@
-Ackpine
-=======
+![Ackpine](docs/images/logo-text-colored.svg)
 
 [![CI](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml/badge.svg)](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml)
 ![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
