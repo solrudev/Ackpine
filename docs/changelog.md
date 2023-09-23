@@ -4,7 +4,7 @@ Change Log
 Version 0.1.3 (2023-09-23)
 --------------------------
 
-Added a logo for the library! Sample apps icon now use the logo too.
+Added a logo for the library! Sample apps icon now uses the logo too.
 
 ### Bug fixes and improvements
 
