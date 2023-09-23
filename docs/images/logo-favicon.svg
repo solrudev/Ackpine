@@ -1,5 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="48mm" height="48mm" style="shape-rendering:geometricPrecision;text-rendering:geometricPrecision;image-rendering:optimizeQuality;fill-rule:evenodd;clip-rule:evenodd" viewBox="0 0 4800 4800">
     <style>
+        @media (prefers-color-scheme: light) {
+            #logo { fill: #000000 }
+        }
         @media (prefers-color-scheme: dark) {
             #logo { fill: #ffffff }
         }
