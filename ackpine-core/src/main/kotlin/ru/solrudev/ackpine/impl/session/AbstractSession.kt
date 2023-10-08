@@ -61,26 +61,27 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	init {
 		serialExecutor.execute {
 			val persistedNotificationId = notificationIdDao.getNotificationId(id.toString())
-			notificationId = if (persistedNotificationId != null && persistedNotificationId != -1) {
-				persistedNotificationId
+			if (persistedNotificationId != null && persistedNotificationId != -1) {
+				notificationId = persistedNotificationId
 			} else {
+				notificationId = newNotificationId
 				notificationIdDao.setNotificationId(id.toString(), newNotificationId)
-				newNotificationId
 			}
 		}
 	}
 
-	private var notificationId = 0
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
+	private val stateLock = Any()
+
+	@Volatile
+	private var notificationId = 0
 
 	@Volatile
 	private var isCancelling = false
 
 	@Volatile
 	private var isPreparing = false
-
-	private val stateLock = Any()
 
 	@Volatile
 	private var state = initialState
