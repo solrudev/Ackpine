@@ -66,7 +66,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 			}
 			field = value
 			persistSessionProgress(value)
-			progressListeners.forEach { listener ->
+			for (listener in progressListeners) {
 				handler.post {
 					listener.onProgressChanged(id, value)
 				}

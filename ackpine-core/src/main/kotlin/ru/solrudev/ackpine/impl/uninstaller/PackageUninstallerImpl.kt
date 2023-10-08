@@ -111,7 +111,7 @@ internal class PackageUninstallerImpl internal constructor(
 	): ListenableFuture<List<Session<UninstallFailure>>> {
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
 		executor.safeExecuteWith(future) {
-			uninstallSessionDao.getUninstallSessions().forEach { session ->
+			for (session in uninstallSessionDao.getUninstallSessions()) {
 				val uninstallSession = session.toUninstallSession()
 				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
 			}

@@ -89,7 +89,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				field = value
 			}
 			persistSessionState(value)
-			stateListeners.forEach { listener ->
+			for (listener in stateListeners) {
 				handler.post {
 					listener.onStateChanged(id, value)
 				}

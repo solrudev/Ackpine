@@ -183,7 +183,7 @@ private class SplitPackageSequence<Property>(
 			val expectedProperty = baseApkProperty
 			if (expectedProperty != null) {
 				checkApkProperty(expectedProperty, apkProperty, apk.name)
-				propertyValues.forEach { property ->
+				for (property in propertyValues) {
 					checkApkProperty(expectedProperty, property, apk.name)
 				}
 				propertyValues.clear()
