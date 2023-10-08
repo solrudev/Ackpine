@@ -54,15 +54,19 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val notificationIdDao: NotificationIdDao,
 	private val serialExecutor: Executor,
 	private val handler: Handler,
-	private val exceptionalFailureFactory: (Exception) -> F
+	private val exceptionalFailureFactory: (Exception) -> F,
+	newNotificationId: Int = globalNotificationId.incrementAndGet()
 ) : CompletableSession<F> {
 
 	init {
 		serialExecutor.execute {
-			notificationId = notificationIdDao.getNotificationId(id.toString()).takeIf { it != -1 }
-				?: globalNotificationId.incrementAndGet().also { notificationId ->
-					notificationIdDao.setNotificationId(id.toString(), notificationId)
-				}
+			val persistedNotificationId = notificationIdDao.getNotificationId(id.toString())
+			notificationId = if (persistedNotificationId != null && persistedNotificationId != -1) {
+				persistedNotificationId
+			} else {
+				notificationIdDao.setNotificationId(id.toString(), newNotificationId)
+				newNotificationId
+			}
 		}
 	}
 
