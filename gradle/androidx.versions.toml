@@ -1,17 +1,17 @@
 [versions]
-activity = "1.7.2"
-lifecycle = "2.6.1"
-navigation = "2.6.0"
+activity = "1.8.0"
+lifecycle = "2.6.2"
+navigation = "2.7.4"
 room = "2.5.2"
 
 [libraries]
 activity-java = { module = "androidx.activity:activity", version.ref = "activity" }
 activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
-annotation = { module = "androidx.annotation:annotation", version = "1.6.0" }
+annotation = { module = "androidx.annotation:annotation", version = "1.7.0" }
 appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
 concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version = "1.1.0" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.4" }
-core-ktx = { module = "androidx.core:core-ktx", version = "1.10.1" }
+core-ktx = { module = "androidx.core:core-ktx", version = "1.12.0" }
 lifecycle-livedata-java = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "lifecycle" }
 lifecycle-viewmodel-java = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
 lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
