@@ -57,7 +57,7 @@ private class AwaitSessionStateListener<F : Failure>(
 			Session.State.Pending -> session.launch()
 			Session.State.Active -> session.launch() // re-launch if preparations were interrupted
 			Session.State.Awaiting -> session.commit()
-			Session.State.Committed -> {}
+			Session.State.Committed -> session.commit() // re-commit if confirmation was interrupted
 			Session.State.Cancelled -> continuation.cancel()
 			Session.State.Succeeded -> continuation.resume(SessionResult.Success())
 			is Session.State.Failed -> state.failure.let { failure ->

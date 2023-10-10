@@ -67,9 +67,6 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 		// therefore the session was abandoned
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			packageInstaller.openSession(sessionId).commit(statusReceiver)
-			withCompletableSession { session ->
-				session?.notifyCommitted()
-			}
 		}
 		finish()
 	}
@@ -124,6 +121,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, CONFIRMATION_REQUEST_CODE) }
+		notifySessionCommitted()
 	}
 }
 

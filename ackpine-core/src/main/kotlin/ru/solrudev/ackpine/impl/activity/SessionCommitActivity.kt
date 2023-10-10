@@ -32,6 +32,8 @@ import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
+private const val IS_SESSION_COMMITTED_KEY = "SESSION_COMMIT_ACTIVITY_IS_SESSION_COMMITTED"
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
 	private val tag: String,
@@ -46,9 +48,13 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	}
 
 	private val subscriptions = DisposableSubscriptionContainer()
+	private var isSessionCommitted = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		if (savedInstanceState?.getBoolean(IS_SESSION_COMMITTED_KEY) == true) {
+			notifySessionCommitted()
+		}
 		turnScreenOnWhenLocked()
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
@@ -66,6 +72,29 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	override fun onBackPressed() {
 		abortSession()
 		super.onBackPressed()
+	}
+
+	override fun onSaveInstanceState(outState: Bundle) {
+		super.onSaveInstanceState(outState)
+		if (!isChangingConfigurations) {
+			outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
+		}
+	}
+
+	@Suppress("UNCHECKED_CAST")
+	@JvmSynthetic
+	internal inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
+		ackpineSessionFuture.handleResult { session ->
+			val completableSession = session as? CompletableSession<F>
+			block(completableSession)
+		}
+	}
+
+	protected fun notifySessionCommitted() {
+		isSessionCommitted = true
+		withCompletableSession { session ->
+			session?.notifyCommitted()
+		}
 	}
 
 	private fun registerOnBackInvokedCallback() {
@@ -98,15 +127,6 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 			finishActivity(requestCode)
 		}
 		finish()
-	}
-
-	@Suppress("UNCHECKED_CAST")
-	@JvmSynthetic
-	internal inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult { session ->
-			val completableSession = session as? CompletableSession<F>
-			block(completableSession)
-		}
 	}
 
 	internal companion object {

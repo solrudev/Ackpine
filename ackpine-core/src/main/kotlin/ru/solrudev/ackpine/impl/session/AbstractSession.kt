@@ -84,6 +84,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private var isPreparing = false
 
 	@Volatile
+	private var isCommitted = false
+
+	@Volatile
 	private var state = initialState
 		set(value) {
 			synchronized(stateLock) {
@@ -168,7 +171,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun commit() {
-		if (state !is Session.State.Awaiting || isCancelling) {
+		if (isCommitted || isCancelling) {
+			return
+		}
+		val currentState = state
+		if (currentState !is Session.State.Awaiting && currentState !is Session.State.Committed) {
 			return
 		}
 		serialExecutor.execute {
@@ -210,6 +217,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun notifyCommitted() {
+		isCommitted = true
 		onCommitted()
 		state = Session.State.Committed
 	}
