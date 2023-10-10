@@ -29,14 +29,14 @@ java {
 }
 
 android {
-	compileSdk = 33
-	buildToolsVersion = "33.0.2"
+	compileSdk = 34
+	buildToolsVersion = "34.0.0"
 	namespace = Constants.samplePackageName
 
 	defaultConfig {
 		applicationId = Constants.samplePackageName
 		minSdk = 21
-		targetSdk = 33
+		targetSdk = 34
 		versionCode = 1
 		versionName = rootProject.version.toString()
 	}
