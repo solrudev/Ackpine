@@ -56,7 +56,9 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	 * itself.
 	 */
 	public fun clear() {
-		subscriptions.forEach { it.dispose() }
+		for (subscription in subscriptions) {
+			subscription.dispose()
+		}
 		subscriptions.clear()
 	}
 

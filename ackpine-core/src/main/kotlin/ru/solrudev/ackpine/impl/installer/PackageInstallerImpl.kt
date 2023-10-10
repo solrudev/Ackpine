@@ -116,7 +116,7 @@ internal class PackageInstallerImpl internal constructor(
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.safeExecuteWith(future) {
-			installSessionDao.getInstallSessions().forEach { session ->
+			for (session in installSessionDao.getInstallSessions()) {
 				val installSession = session.toInstallSession()
 				sessions.putIfAbsent(installSession.id, installSession)
 			}

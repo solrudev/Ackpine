@@ -54,21 +54,28 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val notificationIdDao: NotificationIdDao,
 	private val serialExecutor: Executor,
 	private val handler: Handler,
-	private val exceptionalFailureFactory: (Exception) -> F
+	private val exceptionalFailureFactory: (Exception) -> F,
+	newNotificationId: Int = globalNotificationId.incrementAndGet()
 ) : CompletableSession<F> {
 
 	init {
 		serialExecutor.execute {
-			notificationId = notificationIdDao.getNotificationId(id.toString()).takeIf { it != -1 }
-				?: globalNotificationId.incrementAndGet().also { notificationId ->
-					notificationIdDao.setNotificationId(id.toString(), notificationId)
-				}
+			val persistedNotificationId = notificationIdDao.getNotificationId(id.toString())
+			if (persistedNotificationId != null && persistedNotificationId != -1) {
+				notificationId = persistedNotificationId
+			} else {
+				notificationId = newNotificationId
+				notificationIdDao.setNotificationId(id.toString(), newNotificationId)
+			}
 		}
 	}
 
-	private var notificationId = 0
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
+	private val stateLock = Any()
+
+	@Volatile
+	private var notificationId = 0
 
 	@Volatile
 	private var isCancelling = false
@@ -76,7 +83,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	@Volatile
 	private var isPreparing = false
 
-	private val stateLock = Any()
+	@Volatile
+	private var isCommitted = false
 
 	@Volatile
 	private var state = initialState
@@ -89,7 +97,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				field = value
 			}
 			persistSessionState(value)
-			stateListeners.forEach { listener ->
+			for (listener in stateListeners) {
 				handler.post {
 					listener.onStateChanged(id, value)
 				}
@@ -163,7 +171,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun commit() {
-		if (state !is Session.State.Awaiting || isCancelling) {
+		if (isCommitted || isCancelling) {
+			return
+		}
+		val currentState = state
+		if (currentState !is Session.State.Awaiting && currentState !is Session.State.Committed) {
 			return
 		}
 		serialExecutor.execute {
@@ -205,6 +217,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun notifyCommitted() {
+		isCommitted = true
 		onCommitted()
 		state = Session.State.Committed
 	}

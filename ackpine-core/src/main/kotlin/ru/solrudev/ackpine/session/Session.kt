@@ -195,7 +195,7 @@ public interface Session<out F : Failure> {
 				State.Pending -> session.launch()
 				State.Active -> session.launch() // re-launch if preparations were interrupted
 				State.Awaiting -> session.commit()
-				State.Committed -> {}
+				State.Committed -> session.commit() // re-commit if confirmation was interrupted
 				State.Cancelled -> onCancelled(sessionId)
 				State.Succeeded -> onSuccess(sessionId)
 				is State.Failed -> onFailure(sessionId, state.failure)

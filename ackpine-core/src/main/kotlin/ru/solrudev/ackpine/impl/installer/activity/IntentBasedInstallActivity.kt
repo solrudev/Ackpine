@@ -75,9 +75,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
 			putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, packageName)
 		}
 		startActivityForResult(intent, REQUEST_CODE)
-		withCompletableSession { session ->
-			session?.notifyCommitted()
-		}
+		notifySessionCommitted()
 	}
 
 	internal companion object {
