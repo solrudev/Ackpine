@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+Version 0.1.4 (2023-10-10)
+--------------------------
+
+This release bumps `compileSdk` to 34.
+
+### Dependencies
+
+- Updated Gradle wrapper to 8.4.
+- Updated Android Gradle Plugin to 8.1.2.
+- Updated `apksig` to 8.1.2.
+- Updated `androidx.annotation` to 1.7.0.
+- Updated `androidx.core` to 1.12.0.
+- Updated `androidx.activity` to 1.8.0 (sample apps dependency).
+- Updated `androidx.lifecycle` to 2.6.2 (sample apps dependency).
+- Updated `androidx.navigation` to 2.7.4 (sample apps dependency).
+- Updated Material Components to 1.10.0 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Make it possible to commit an arbitrary session more than once (if its confirmation was interrupted, e.g. by completely exiting the app).
+- Update `compileSdk` and sample apps' `targetSdk` to 34.
+- Change primary color of color scheme in sample apps to match the logo.
+
 Version 0.1.3 (2023-09-23)
 --------------------------
 
