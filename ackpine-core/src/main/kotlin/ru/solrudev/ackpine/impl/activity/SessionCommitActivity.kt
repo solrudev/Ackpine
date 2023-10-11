@@ -33,6 +33,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 
 private const val IS_SESSION_COMMITTED_KEY = "SESSION_COMMIT_ACTIVITY_IS_SESSION_COMMITTED"
+private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
@@ -52,8 +53,12 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		if (savedInstanceState?.getBoolean(IS_SESSION_COMMITTED_KEY) == true) {
-			notifySessionCommitted()
+		if (savedInstanceState != null) {
+			isSessionCommitted = savedInstanceState.getBoolean(IS_SESSION_COMMITTED_KEY)
+			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
+			if (isSessionCommitted && !isConfigChangeRecreation) {
+				notifySessionCommitted()
+			}
 		}
 		turnScreenOnWhenLocked()
 		setContentView(R.layout.ackpine_activity_session_commit)
@@ -76,9 +81,8 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 
 	override fun onSaveInstanceState(outState: Bundle) {
 		super.onSaveInstanceState(outState)
-		if (!isChangingConfigurations) {
-			outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
-		}
+		outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
+		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 	}
 
 	@Suppress("UNCHECKED_CAST")
