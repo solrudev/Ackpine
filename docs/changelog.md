@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.1.5 (2023-10-11)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix an issue with sessions' `commit()` implementation when it allowed to commit while session is already in the process of being committed.
+
 Version 0.1.4 (2023-10-10)
 --------------------------
 
