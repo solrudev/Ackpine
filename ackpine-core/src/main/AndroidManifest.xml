@@ -76,7 +76,7 @@
 		</provider>
 
 		<provider
-			android:name="androidx.core.content.FileProvider"
+			android:name="ru.solrudev.ackpine.AckpineFileProvider"
 			android:authorities="${applicationId}.AckpineFileProvider"
 			android:exported="false"
 			android:grantUriPermissions="true">
