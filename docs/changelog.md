@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.1.6 (2023-10-17)
+--------------------------
+
+### Dependencies
+
+- Updated Dokka to 1.9.10 Beta.
+
+### Bug fixes and improvements
+
+- Extend from `FileProvider` and declare it in `AndroidManifest.xml` instead to avoid possible issues and providers conflicts.
+
 Version 0.1.5 (2023-10-11)
 --------------------------
 
