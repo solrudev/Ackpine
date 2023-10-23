@@ -3,10 +3,13 @@
 [![CI](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml/badge.svg)](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml)
 ![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/solrudev/Ackpine/blob/master/LICENSE)
+[![Android Weekly](https://androidweekly.net/issues/issue-593/badge)](https://androidweekly.net/issues/issue-593)
 
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
 
 See the [project website](https://solrudev.github.io/Ackpine/) for documentation and API reference.
+
+Article about the library: [Painless building of an Android package installer app](https://medium.com/@solrudev/painless-building-of-an-android-package-installer-app-d5a09b5df432)
 
 A library providing consistent APIs for installing and uninstalling apps on an Android device.
 
