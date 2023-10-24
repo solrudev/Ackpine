@@ -18,11 +18,14 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
-public open class AckpineExtension @Inject constructor(private val libraryExtension: LibraryExtension) {
+public abstract class AckpineExtension @Inject constructor(
+	private val libraryExtension: LibraryExtension
+) : ExtensionAware {
 
 	private var _id = ""
 
