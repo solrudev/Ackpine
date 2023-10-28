@@ -18,6 +18,7 @@
 <resources>
 
 	<style name="Base.V16.Theme.Ackpine.SessionCommitActivity" parent="android:Theme.Translucent.NoTitleBar">
+		<item name="android:progressBarStyle">@android:style/Widget.DeviceDefault.ProgressBar</item>
 		<item name="android:windowBackground">@android:drawable/screen_background_dark_transparent</item>
 	</style>
 
