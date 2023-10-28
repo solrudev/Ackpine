@@ -47,14 +47,11 @@ An example of creating a session with custom parameters:
 User's confirmation
 -------------------
 
-A strategy for handling user's confirmation of installation or uninstallation.
-Can be `DEFERRED` (used by default) or `IMMEDIATE`.
+A strategy for handling user's confirmation of installation or uninstallation. Can be `DEFERRED` (used by default) or `IMMEDIATE`.
 
-`DEFERRED` (default) — user will be shown a high-priority notification (full-screen intent) which
-will launch confirmation activity.
+`DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
 
-`IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable
-for launching session directly from the UI when app is in foreground.
+`IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable for launching session directly from the UI when app is in foreground.
 
 Notification
 ------------
