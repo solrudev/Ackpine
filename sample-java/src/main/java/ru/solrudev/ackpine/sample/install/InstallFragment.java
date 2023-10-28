@@ -46,6 +46,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.File;
+import java.util.Objects;
+
 import kotlin.sequences.Sequence;
 import kotlin.sequences.SequencesKt;
 import ru.solrudev.ackpine.sample.R;
@@ -149,6 +152,9 @@ public final class InstallFragment extends Fragment {
 
 	@NonNull
 	private static String getDisplayName(@NonNull ContentResolver resolver, @NonNull Uri uri) {
+		if (Objects.equals(uri.getScheme(), ContentResolver.SCHEME_FILE)) {
+			return new File(Objects.requireNonNull(uri.getPath())).getName();
+		}
 		try (final var cursor = resolver.query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
 			if (cursor == null) return "";
 			if (!cursor.moveToFirst()) return "";
