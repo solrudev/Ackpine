@@ -24,8 +24,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.handleResult
-import ru.solrudev.ackpine.impl.activity.helpers.clearTurnScreenOnSettings
-import ru.solrudev.ackpine.impl.activity.helpers.turnScreenOnWhenLocked
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
@@ -60,7 +58,6 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 				notifySessionCommitted()
 			}
 		}
-		turnScreenOnWhenLocked()
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
@@ -69,7 +66,6 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	override fun onDestroy() {
 		super.onDestroy()
 		subscriptions.clear()
-		clearTurnScreenOnSettings()
 	}
 
 	@Deprecated("Deprecated in Java")

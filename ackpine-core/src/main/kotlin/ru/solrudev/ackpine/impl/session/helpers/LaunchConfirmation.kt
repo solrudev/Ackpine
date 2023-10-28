@@ -90,7 +90,6 @@ private fun Context.showNotification(
 		setDefaults(NotificationCompat.DEFAULT_ALL)
 		setSmallIcon(notificationData.icon)
 		setOngoing(true)
-		setFullScreenIntent(intent, true)
 		setAutoCancel(true)
 	}.build()
 	getSystemService<NotificationManager>()?.notify(notificationTag, notificationId, notification)
