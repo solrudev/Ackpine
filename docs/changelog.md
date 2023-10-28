@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 0.2.0 (2023-10-28)
+--------------------------
+
+### Dependencies
+
+- Updated AndroidX Room to 2.6.0.
+- Updated RecyclerView to 1.3.2 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Remove intrusive behavior of `DEFERRED` confirmation: dismissing keyguard, using full-screen intent. `USE_FULL_SCREEN_INTENT` and `DISABLE_KEYGUARD` permissions were removed. Also it allowed to make `DEFERRED` confirmation's behavior consistent on old and new Android versions, as on old versions full-screen intent behaved like `IMMEDIATE` confirmation.
+- Enable vibration and lights for library's notification channel.
+- Make confirmation's background semi-transparent.
+- Fix incorrect handling of `file:` URIs in sample apps.
+- Add documentation about permissions.
+
 Version 0.1.6 (2023-10-17)
 --------------------------
 
