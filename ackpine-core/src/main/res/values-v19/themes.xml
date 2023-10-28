@@ -16,5 +16,11 @@
   -->
 
 <resources>
-	<style name="Theme.Ackpine.SessionCommitActivity" parent="android:Theme.DeviceDefault.NoActionBar" />
+
+	<style name="Base.V19.Theme.Ackpine.SessionCommitActivity" parent="Base.V16.Theme.Ackpine.SessionCommitActivity">
+		<item name="android:windowTranslucentNavigation">true</item>
+		<item name="android:windowTranslucentStatus">true</item>
+	</style>
+
+	<style name="Base.Theme.Ackpine.SessionCommitActivity" parent="Base.V19.Theme.Ackpine.SessionCommitActivity" />
 </resources>
