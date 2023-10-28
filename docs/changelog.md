@@ -15,7 +15,7 @@ Version 0.2.0 (2023-10-28)
 - Enable vibration and lights for library's notification channel.
 - Make confirmation's background semi-transparent.
 - Fix incorrect handling of `file:` URIs in sample apps.
-- Add documentation about permissions.
+- Add documentation about permissions and library's architecture.
 
 Version 0.1.6 (2023-10-17)
 --------------------------
