@@ -16,13 +16,13 @@
 
 package ru.solrudev.ackpine
 
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
-import androidx.core.content.getSystemService
+import androidx.core.app.NotificationChannelCompat
+import androidx.core.app.NotificationManagerCompat
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
 
@@ -63,9 +63,13 @@ public object Ackpine {
 		val channelName = applicationContext.getString(R.string.ackpine_notification_channel_name)
 		val channelDescription = applicationContext.getString(R.string.ackpine_notification_channel_description)
 		val importance = NotificationManager.IMPORTANCE_HIGH
-		val channel = NotificationChannel(channelIdString, channelName, importance).apply {
-			description = channelDescription
-		}
-		applicationContext.getSystemService<NotificationManager>()?.createNotificationChannel(channel)
+		val channel = NotificationChannelCompat.Builder(channelIdString, importance)
+			.setName(channelName)
+			.setDescription(channelDescription)
+			.setVibrationEnabled(true)
+			.setLightsEnabled(true)
+			.setShowBadge(true)
+			.build()
+		NotificationManagerCompat.from(applicationContext).createNotificationChannel(channel)
 	}
 }
