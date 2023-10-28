@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.session.AbstractSession
+import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
@@ -47,13 +48,15 @@ internal class UninstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	notificationIdDao: NotificationIdDao,
 	serialExecutor: Executor,
-	handler: Handler
+	handler: Handler,
+	newNotificationId: Int = globalNotificationId.incrementAndGet()
 ) : AbstractSession<UninstallFailure>(
 	context, UNINSTALLER_NOTIFICATION_TAG,
 	id, initialState,
 	sessionDao, sessionFailureDao, notificationIdDao,
 	serialExecutor, handler,
-	exceptionalFailureFactory = UninstallFailure::Exceptional
+	exceptionalFailureFactory = UninstallFailure::Exceptional,
+	newNotificationId
 ) {
 
 	override fun prepare(cancellationSignal: CancellationSignal) {

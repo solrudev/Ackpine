@@ -138,4 +138,27 @@ Handling process death is not any different with Ackpine as with any other persi
     
     ```
 
-Every example on this page is using `PackageInstaller`, but APIs for `PackageUninstaller` are absolutely the same.
+Observing progress
+------------------
+
+Install sessions provide progress updates:
+
+=== "Kotlin"
+
+    ```kotlin
+    session.progress // Flow<Progress>
+        .onEach { progress ->
+            updateProgress(progress.progress, progress.max)
+        }
+        .launchIn(coroutineScope)
+    ```
+
+=== "Java"
+
+    ```java
+    var subscription = session.addProgressListener((sessionId, progress) -> {
+        updateProgress(progress.getProgress(), progress.getMax());
+    });
+    ```
+
+Every example on this page is using `PackageInstaller`, but APIs for `PackageUninstaller` are absolutely the same except for progress updates.

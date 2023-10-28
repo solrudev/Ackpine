@@ -16,5 +16,12 @@
   -->
 
 <resources>
-	<style name="Theme.Ackpine.SessionCommitActivity" parent="android:Theme.DeviceDefault.Light.NoActionBar" />
+
+	<style name="Base.V16.Theme.Ackpine.SessionCommitActivity" parent="android:Theme.Translucent.NoTitleBar">
+		<item name="android:progressBarStyle">@android:style/Widget.DeviceDefault.ProgressBar</item>
+		<item name="android:windowBackground">@android:drawable/screen_background_dark_transparent</item>
+	</style>
+
+	<style name="Base.Theme.Ackpine.SessionCommitActivity" parent="Base.V16.Theme.Ackpine.SessionCommitActivity" />
+	<style name="Theme.Ackpine.SessionCommitActivity" parent="Base.Theme.Ackpine.SessionCommitActivity" />
 </resources>

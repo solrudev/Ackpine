@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.gradle.publishing
 import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
@@ -47,7 +46,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 				apply(DokkaPlugin::class)
 			}
 			val ackpineExtension = extensions.getByType<AckpineExtension>()
-			val artifact = (ackpineExtension as ExtensionAware).extensions.create<AckpineArtifact>("artifact")
+			val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
 			configurePublishing(ackpineExtension, artifact)
 			configureSigning()
 		}

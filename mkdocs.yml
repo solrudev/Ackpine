@@ -46,6 +46,8 @@ nav:
   - 'Configuration': configuration.md
   - 'Split APKs': split_apks.md
   - 'Samples': samples.md
+  - 'Permissions': permissions.md
+  - 'Architecture': architecture.md
   - 'API reference ⏏': api/index.html
   - 'Change Log': changelog.md
   

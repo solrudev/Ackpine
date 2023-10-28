@@ -47,14 +47,13 @@ An example of creating a session with custom parameters:
 User's confirmation
 -------------------
 
-A strategy for handling user's confirmation of installation or uninstallation.
-Can be `DEFERRED` (used by default) or `IMMEDIATE`.
+A strategy for handling user's confirmation of installation or uninstallation. Can be `DEFERRED` (used by default) or `IMMEDIATE`.
 
-`DEFERRED` (default) — user will be shown a high-priority notification (full-screen intent) which
-will launch confirmation activity.
+`DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
 
-`IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable
-for launching session directly from the UI when app is in foreground.
+`IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable for launching session directly from the UI when app is in foreground.
+
+It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
 Notification
 ------------
@@ -71,12 +70,12 @@ It is possible to provide notification title, text and icon.
 Session name
 ------------
 
-You can provide an optional session `name` parameter to be used in default notification content text. It may be a name of the app being installed or a file name. It will be ignored if you specify custom notification content text or set `Confirmation` to `IMMEDIATE`.
+Available for install sessions. You can provide an optional session `name` parameter to be used in default notification content text. It may be a name of the app being installed or a file name. It will be ignored if you specify custom notification content text or set `Confirmation` to `IMMEDIATE`.
 
 Installer type
 --------------
 
-Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with `InstallerType` enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
+Available for install sessions. Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with `InstallerType` enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
 
 `InstallParameters` builder will maintain the following invariants when configuring the installer type:
 

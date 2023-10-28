@@ -38,7 +38,8 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 
-private val globalNotificationId = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
+@get:JvmSynthetic
+internal val globalNotificationId = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -55,7 +56,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val serialExecutor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	newNotificationId: Int = globalNotificationId.incrementAndGet()
+	newNotificationId: Int
 ) : CompletableSession<F> {
 
 	init {

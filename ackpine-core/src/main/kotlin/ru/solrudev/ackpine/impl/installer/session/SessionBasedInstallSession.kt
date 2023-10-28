@@ -42,6 +42,7 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_M
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
+import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -73,12 +74,14 @@ internal class SessionBasedInstallSession internal constructor(
 	private val executor: Executor,
 	serialExecutor: Executor,
 	private val handler: Handler,
+	newNotificationId: Int = globalNotificationId.incrementAndGet()
 ) : AbstractProgressSession<InstallFailure>(
 	context, INSTALLER_NOTIFICATION_TAG,
 	id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
 	serialExecutor, handler,
-	exceptionalFailureFactory = InstallFailure::Exceptional
+	exceptionalFailureFactory = InstallFailure::Exceptional,
+	newNotificationId
 ) {
 
 	@Volatile
