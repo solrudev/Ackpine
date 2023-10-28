@@ -16,9 +16,7 @@
 
 package ru.solrudev.ackpine.session.parameters
 
-import android.Manifest.permission.DISABLE_KEYGUARD
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.Manifest.permission.USE_FULL_SCREEN_INTENT
 import android.Manifest.permission.VIBRATE
 import ru.solrudev.ackpine.session.parameters.Confirmation.DEFERRED
 import ru.solrudev.ackpine.session.parameters.Confirmation.IMMEDIATE
@@ -41,7 +39,7 @@ public enum class Confirmation {
 	/**
 	 * Show a high-priority notification (full-screen intent) which will launch confirmation activity to a user.
 	 *
-	 * Requires [USE_FULL_SCREEN_INTENT], [DISABLE_KEYGUARD], [VIBRATE], [POST_NOTIFICATIONS] permissions.
+	 * Requires [VIBRATE], [POST_NOTIFICATIONS] permissions.
 	 */
 	DEFERRED
 }
