@@ -26,9 +26,9 @@ import ru.solrudev.ackpine.session.ProgressSession
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class InstallActivity protected constructor(
 	tag: String,
-	requestCode: Int = -1
+	startsActivity: Boolean
 ) : SessionCommitActivity<ProgressSession<InstallFailure>, InstallFailure>(
-	tag, requestCode,
+	tag, startsActivity,
 	abortedStateFailureFactory = InstallFailure::Aborted
 ) {
 

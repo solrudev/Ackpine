@@ -29,14 +29,17 @@ import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 private const val IS_SESSION_COMMITTED_KEY = "SESSION_COMMIT_ACTIVITY_IS_SESSION_COMMITTED"
 private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
+private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
 	private val tag: String,
-	private val requestCode: Int = -1,
+	private val startsActivity: Boolean,
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
@@ -46,18 +49,15 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		intent.extras?.getSerializableCompat<UUID>(SESSION_ID_KEY) ?: error("ackpineSessionId was null")
 	}
 
+	protected var requestCode = -1
+		private set
+
 	private val subscriptions = DisposableSubscriptionContainer()
 	private var isSessionCommitted = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		if (savedInstanceState != null) {
-			isSessionCommitted = savedInstanceState.getBoolean(IS_SESSION_COMMITTED_KEY)
-			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
-			if (isSessionCommitted && !isConfigChangeRecreation) {
-				notifySessionCommitted()
-			}
-		}
+		initializeState(savedInstanceState)
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
@@ -77,6 +77,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 
 	override fun onSaveInstanceState(outState: Bundle) {
 		super.onSaveInstanceState(outState)
+		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 	}
@@ -94,6 +95,19 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		isSessionCommitted = true
 		withCompletableSession { session ->
 			session?.notifyCommitted()
+		}
+	}
+
+	private fun initializeState(savedInstanceState: Bundle?) {
+		if (savedInstanceState != null) {
+			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
+			isSessionCommitted = savedInstanceState.getBoolean(IS_SESSION_COMMITTED_KEY)
+			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
+			if (isSessionCommitted && !isConfigChangeRecreation) {
+				notifySessionCommitted()
+			}
+		} else {
+			requestCode = Random.nextInt(1000..1000000)
 		}
 	}
 
@@ -123,7 +137,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	}
 
 	private fun finishWithLaunchedActivity() {
-		if (requestCode != -1) {
+		if (startsActivity) {
 			finishActivity(requestCode)
 		}
 		finish()

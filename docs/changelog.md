@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.2.1 (2023-10-30)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix issues with incorrect sessions behavior when multiple session confirmations are active simultaneously and are stacked up on each other.
+- Remove unnecessary Activity flags from `AndroidManifest.xml`.
+
 Version 0.2.0 (2023-10-28)
 --------------------------
 

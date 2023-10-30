@@ -37,9 +37,10 @@ import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 @get:JvmSynthetic
-internal val globalNotificationId = AtomicInteger(Random.nextInt(from = 10000, until = 1000000))
+internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
 /**
  * A base implementation for Ackpine [sessions][Session].
