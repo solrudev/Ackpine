@@ -35,11 +35,9 @@ import ru.solrudev.ackpine.session.Session
 
 private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
 private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
-private const val CONFIRMATION_REQUEST_CODE = 240126683
-private const val RECEIVER_REQUEST_CODE = 951235122
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG) {
+internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG, startsActivity = false) {
 
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(LAUNCHER_TAG) }
 
@@ -56,15 +54,9 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 			putExtra(SESSION_ID_KEY, ackpineSessionId)
 		}
 		val receiverPendingIntent = PendingIntent.getBroadcast(
-			applicationContext,
-			RECEIVER_REQUEST_CODE,
-			receiverIntent,
-			UPDATE_CURRENT_FLAGS
+			applicationContext, requestCode, receiverIntent, UPDATE_CURRENT_FLAGS
 		)
 		val statusReceiver = receiverPendingIntent.intentSender
-		// if session doesn't exist, it means user finished this activity,
-		// i.e. Ackpine session was prematurely completed with Aborted failure,
-		// therefore the session was abandoned
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			packageInstaller.openSession(sessionId).commit(statusReceiver)
 		}
@@ -73,7 +65,7 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG)
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRMATION_TAG, CONFIRMATION_REQUEST_CODE) {
+internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRMATION_TAG, startsActivity = true) {
 
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(CONFIRMATION_TAG) }
 	private val handler = Handler(Looper.getMainLooper())
@@ -102,7 +94,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != CONFIRMATION_REQUEST_CODE) {
+		if (requestCode != this.requestCode) {
 			return
 		}
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
@@ -120,7 +112,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private fun launchInstallActivity() {
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
-			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, CONFIRMATION_REQUEST_CODE) }
+			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
 		notifySessionCommitted()
 	}
 }

@@ -25,10 +25,9 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
 private const val TAG = "IntentBasedInstallActivity"
-private const val REQUEST_CODE = 1654101745
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
+internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity = true) {
 
 	private val apkUri by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getParcelableCompat<Uri>(APK_URI_KEY)
@@ -43,7 +42,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != REQUEST_CODE) {
+		if (requestCode != this.requestCode) {
 			return
 		}
 		val result = if (resultCode == RESULT_OK) {
@@ -74,7 +73,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, REQUEST_CODE) {
 			putExtra(Intent.EXTRA_RETURN_RESULT, true)
 			putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, packageName)
 		}
-		startActivityForResult(intent, REQUEST_CODE)
+		startActivityForResult(intent, requestCode)
 		notifySessionCommitted()
 	}
 

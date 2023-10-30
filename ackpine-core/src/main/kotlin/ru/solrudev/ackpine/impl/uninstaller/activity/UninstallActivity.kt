@@ -26,12 +26,11 @@ import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 private const val TAG = "UninstallActivity"
-private const val REQUEST_CODE = 984120586
 private val uninstallPackageContract = UninstallPackageContract()
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
-	TAG, REQUEST_CODE,
+	TAG, startsActivity = true,
 	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
 
@@ -55,7 +54,7 @@ internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailur
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != REQUEST_CODE) {
+		if (requestCode != this.requestCode) {
 			return
 		}
 		val success = uninstallPackageContract.parseResult(this, resultCode)
@@ -76,7 +75,7 @@ internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailur
 			return
 		}
 		val intent = uninstallPackageContract.createIntent(this, packageNameToUninstall!!)
-		startActivityForResult(intent, REQUEST_CODE)
+		startActivityForResult(intent, requestCode)
 		notifySessionCommitted()
 	}
 
