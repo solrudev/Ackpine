@@ -35,6 +35,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class UninstallSession internal constructor(
@@ -74,5 +75,5 @@ internal class UninstallSession internal constructor(
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }
 	}
 
-	private fun generateRequestCode() = Random.nextInt(from = 3000000, until = 4000000)
+	private fun generateRequestCode() = Random.nextInt(3000000..4000000)
 }

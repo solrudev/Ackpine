@@ -50,6 +50,7 @@ import java.util.UUID
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallSession internal constructor(
@@ -160,7 +161,7 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun generateRequestCode() = Random.nextInt(from = 2000000, until = 3000000)
+	private fun generateRequestCode() = Random.nextInt(2000000..3000000)
 
 	private data class ApkUri(val uri: Uri, val mustCopy: Boolean)
 }

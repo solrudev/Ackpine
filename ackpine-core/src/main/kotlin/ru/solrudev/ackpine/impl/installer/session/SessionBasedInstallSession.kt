@@ -54,6 +54,7 @@ import java.util.UUID
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -242,5 +243,5 @@ internal class SessionBasedInstallSession internal constructor(
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
 
-	private fun generateRequestCode() = Random.nextInt(from = 10000, until = 1000000)
+	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 }
