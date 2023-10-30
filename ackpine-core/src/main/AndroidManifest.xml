@@ -29,35 +29,19 @@
 		<activity
 			android:name="ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity"
 			android:exported="false"
-			android:showForAllUsers="true"
-			android:showOnLockScreen="true"
-			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
-			tools:ignore="UnusedAttribute" />
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
 		<activity
 			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity"
 			android:exported="false"
-			android:showForAllUsers="true"
-			android:showOnLockScreen="true"
-			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
-			tools:ignore="UnusedAttribute" />
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
 		<activity
 			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity"
 			android:exported="false"
-			android:showForAllUsers="true"
-			android:showOnLockScreen="true"
-			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
-			tools:ignore="UnusedAttribute" />
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
 		<activity
 			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity"
 			android:exported="false"
-			android:showForAllUsers="true"
-			android:showOnLockScreen="true"
-			android:showWhenLocked="true"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
-			tools:ignore="UnusedAttribute" />
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
 
 		<receiver
 			android:name="ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver"
