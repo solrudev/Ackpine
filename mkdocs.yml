@@ -23,6 +23,8 @@ theme:
     - navigation.footer
   icon:
     repo: fontawesome/brands/github
+  font:
+    code: JetBrains Mono
   palette:
     - scheme: default
       media: "(prefers-color-scheme: light)"
