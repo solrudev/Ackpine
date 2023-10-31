@@ -26,7 +26,7 @@ Working with zipped splits
     }
     ```
 
-!!! Attention
+!!! warning "Attention"
     Iteration of these sequences is blocking due to I/O operations. Don't iterate them on UI thread!
 
 `Apk` has the following properties:
