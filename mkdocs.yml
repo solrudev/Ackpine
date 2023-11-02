@@ -24,6 +24,7 @@ theme:
   icon:
     repo: fontawesome/brands/github
   font:
+    text: Noto Sans
     code: JetBrains Mono
   palette:
     - scheme: default
