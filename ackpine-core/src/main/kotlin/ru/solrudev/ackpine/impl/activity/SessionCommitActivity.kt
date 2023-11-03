@@ -129,7 +129,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	}
 
 	private fun setLoading(isLoading: Boolean) {
-		findViewById<ProgressBar>(R.id.session_commit_loading_indicator)?.isVisible = isLoading
+		findViewById<ProgressBar>(R.id.ackpine_session_commit_loading_indicator)?.isVisible = isLoading
 		if (isLoading) {
 			window?.setBackgroundDrawableResource(android.R.drawable.screen_background_dark_transparent)
 		} else {
