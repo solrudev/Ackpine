@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.2.2 (2023-11-03)
+--------------------------
+
+### Bug fixes and improvements
+
+- Make confirmation's background fully transparent.
+- Don't display loading indicator during confirmation from system.
+
 Version 0.2.1 (2023-10-30)
 --------------------------
 
