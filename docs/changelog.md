@@ -6,6 +6,7 @@ Version 0.2.2 (2023-11-03)
 
 ### Bug fixes and improvements
 
+- Fix duplicate session's state change notifications in some cases (e.g. after process restart and re-attaching a listener when session's been completed right before). This also fixes `IllegalStateException` in `Session.await()` in these cases.
 - Make confirmation's background fully transparent.
 - Don't display loading indicator during confirmation from system.
 
