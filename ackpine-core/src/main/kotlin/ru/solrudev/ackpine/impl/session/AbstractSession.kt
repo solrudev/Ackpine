@@ -175,6 +175,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
+	// Implementation allows to re-commit the session when it's not in process of being committed or confirmed, e.g.
+	// when confirmation was interrupted with process death.
 	final override fun commit() {
 		if (isCommitted || isCommitting || isCancelling) {
 			return
@@ -212,7 +214,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	final override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
 		stateListeners += listener
-		handler.post {
+		// postAtFrontOfQueue - notify with current state snapshot immediately to avoid duplicate notifications,
+		// as using plain Handler#post() can lead to the listener being notified after state has already changed
+		// and delivered to the same listener
+		handler.postAtFrontOfQueue {
 			listener.onStateChanged(id, state)
 		}
 		return StateDisposableSubscription(this, listener)

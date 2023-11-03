@@ -76,7 +76,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 
 	final override fun addProgressListener(listener: ProgressSession.ProgressListener): DisposableSubscription {
 		progressListeners += listener
-		handler.post {
+		handler.postAtFrontOfQueue {
 			listener.onProgressChanged(id, progress)
 		}
 		return ProgressDisposableSubscription(this, listener)
