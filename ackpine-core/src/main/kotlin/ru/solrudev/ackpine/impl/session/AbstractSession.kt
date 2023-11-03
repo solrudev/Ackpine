@@ -175,6 +175,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
+	// Implementation allows to re-commit the session when it's not in process of being committed or confirmed, e.g.
+	// when confirmation was interrupted with process death.
 	final override fun commit() {
 		if (isCommitted || isCommitting || isCancelling) {
 			return
