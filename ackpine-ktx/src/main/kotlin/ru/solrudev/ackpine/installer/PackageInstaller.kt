@@ -19,8 +19,8 @@ package ru.solrudev.ackpine.installer
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.concurrent.futures.await
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
-import ru.solrudev.ackpine.futures.await
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
 import ru.solrudev.ackpine.session.ProgressSession
@@ -68,7 +68,7 @@ public inline fun PackageInstaller.createSession(
  * A suspending variant of [PackageInstaller.getSessionAsync].
  * @return [ProgressSession] or `null` if not found.
  */
-public suspend inline fun PackageInstaller.getSession(sessionId: UUID): ProgressSession<InstallFailure>? {
+public suspend fun PackageInstaller.getSession(sessionId: UUID): ProgressSession<InstallFailure>? {
 	return getSessionAsync(sessionId).await()
 }
 
@@ -76,7 +76,7 @@ public suspend inline fun PackageInstaller.getSession(sessionId: UUID): Progress
  * A suspending variant of [PackageInstaller.getSessionsAsync].
  * @return List of [ProgressSessions][ProgressSession].
  */
-public suspend inline fun PackageInstaller.getSessions(): List<ProgressSession<InstallFailure>> {
+public suspend fun PackageInstaller.getSessions(): List<ProgressSession<InstallFailure>> {
 	return getSessionsAsync().await()
 }
 
@@ -84,6 +84,6 @@ public suspend inline fun PackageInstaller.getSessions(): List<ProgressSession<I
  * A suspending variant of [PackageInstaller.getActiveSessionsAsync].
  * @return List of [ProgressSessions][ProgressSession].
  */
-public suspend inline fun PackageInstaller.getActiveSessions(): List<ProgressSession<InstallFailure>> {
+public suspend fun PackageInstaller.getActiveSessions(): List<ProgressSession<InstallFailure>> {
 	return getActiveSessionsAsync().await()
 }
