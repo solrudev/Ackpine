@@ -65,6 +65,8 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true
   - admonition
+  - toc:
+      permalink: true
 
 # Plugins
 plugins:
