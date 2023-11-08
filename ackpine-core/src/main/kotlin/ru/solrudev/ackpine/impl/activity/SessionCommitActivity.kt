@@ -154,12 +154,11 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	}
 
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
-		val subscription = session?.addStateListener { _, state ->
+		session?.addStateListener(subscriptions) { _, state ->
 			if (state.isTerminal) {
 				finishWithLaunchedActivity()
 			}
 		}
-		subscription?.let(subscriptions::add)
 	}
 
 	private fun finishWithLaunchedActivity() {

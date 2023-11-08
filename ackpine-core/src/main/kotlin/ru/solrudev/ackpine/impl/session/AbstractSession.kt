@@ -25,6 +25,8 @@ import androidx.annotation.RestrictTo
 import androidx.annotation.WorkerThread
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
+import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -212,15 +214,23 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
-	final override fun addStateListener(listener: Session.StateListener<F>): DisposableSubscription {
-		stateListeners += listener
+	final override fun addStateListener(
+		subscriptionContainer: DisposableSubscriptionContainer,
+		listener: Session.StateListener<F>
+	): DisposableSubscription {
+		val added = stateListeners.add(listener)
+		if (!added) {
+			return DummyDisposableSubscription
+		}
 		// postAtFrontOfQueue - notify with current state snapshot immediately to avoid duplicate notifications,
 		// as using plain Handler#post() can lead to the listener being notified after state has already changed
 		// and delivered to the same listener
 		handler.postAtFrontOfQueue {
 			listener.onStateChanged(id, state)
 		}
-		return StateDisposableSubscription(this, listener)
+		val subscription = StateDisposableSubscription(this, listener)
+		subscriptionContainer.add(subscription)
+		return subscription
 	}
 
 	final override fun removeStateListener(listener: Session.StateListener<F>) {

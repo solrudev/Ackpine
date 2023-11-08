@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.session
 
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import java.util.UUID
 
 /**
@@ -25,14 +26,19 @@ import java.util.UUID
 public interface ProgressSession<out F : Failure> : Session<F> {
 
 	/**
-	 * Adds a [ProgressListener] to this session if it's not registered yet. The listener will be notified with current
-	 * progress immediately upon registering.
+	 * Adds a [ProgressListener] to this session if it's not registered yet and appends the subscription to the
+	 * [subscriptions bag][subscriptionContainer]. The listener will be notified with current progress immediately
+	 * upon registering.
 	 *
 	 * Listeners are notified on main thread.
 	 *
-	 * @return [DisposableSubscription]
+	 * @return [DisposableSubscription] &mdash; a handle to the subscription, dummy object if listener is already
+	 * registered.
 	 */
-	public fun addProgressListener(listener: ProgressListener): DisposableSubscription
+	public fun addProgressListener(
+		subscriptionContainer: DisposableSubscriptionContainer,
+		listener: ProgressListener
+	): DisposableSubscription
 
 	/**
 	 * Removes the provided [ProgressListener] from this session.

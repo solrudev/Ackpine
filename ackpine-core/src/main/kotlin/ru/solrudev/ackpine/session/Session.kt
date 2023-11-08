@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.session
 
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session.DefaultStateListener
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -62,14 +63,19 @@ public interface Session<out F : Failure> {
 	public fun cancel()
 
 	/**
-	 * Adds a [StateListener] to this session if it's not registered yet. The listener will be notified with current
-	 * state immediately upon registering.
+	 * Adds a [StateListener] to this session if it's not registered yet and appends the subscription to the
+	 * [subscriptions bag][subscriptionContainer]. The listener will be notified with current state immediately upon
+	 * registering.
 	 *
 	 * Listeners are notified on main thread.
 	 *
-	 * @return [DisposableSubscription]
+	 * @return [DisposableSubscription] &mdash; a handle to the subscription, dummy object if listener is already
+	 * registered.
 	 */
-	public fun addStateListener(listener: StateListener<F>): DisposableSubscription
+	public fun addStateListener(
+		subscriptionContainer: DisposableSubscriptionContainer,
+		listener: StateListener<F>
+	): DisposableSubscription
 
 	/**
 	 * Removes the provided [StateListener] from this session.

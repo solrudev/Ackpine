@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine
 
+import androidx.annotation.RestrictTo
+
 /**
  * A handle to a subscription via listener which can be disposed.
  */
@@ -46,7 +48,7 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	 * Adds the specified [subscription] to this [DisposableSubscriptionContainer] if it's not added yet.
 	 */
 	public fun add(subscription: DisposableSubscription) {
-		if (!isDisposed) {
+		if (!isDisposed && subscription != DummyDisposableSubscription) {
 			subscriptions += subscription
 		}
 	}
@@ -68,4 +70,10 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 			isDisposed = true
 		}
 	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal data object DummyDisposableSubscription : DisposableSubscription {
+	override val isDisposed: Boolean = true
+	override fun dispose() {}
 }

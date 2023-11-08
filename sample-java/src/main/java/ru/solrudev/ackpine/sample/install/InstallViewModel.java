@@ -92,8 +92,8 @@ public final class InstallViewModel extends ViewModel {
 					.build());
 			final var sessionData = new SessionData(session.getId(), fileName);
 			sessionDataRepository.addSessionData(sessionData);
-			subscriptions.add(session.addStateListener(new SessionStateListener(session)));
-			subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
+			session.addStateListener(subscriptions, new SessionStateListener(session));
+			session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
 		});
 	}
 
@@ -146,8 +146,8 @@ public final class InstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
-					subscriptions.add(session.addStateListener(new SessionStateListener(session)));
-					subscriptions.add(session.addProgressListener(sessionDataRepository::updateSessionProgress));
+					session.addStateListener(subscriptions, new SessionStateListener(session));
+					session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
 				}
 			}
 

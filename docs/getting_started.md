@@ -1,9 +1,6 @@
 Getting Started
 ===============
 
-Obtaining `PackageInstaller` and `PackageUninstaller`
------------------------------------------------------
-
 To obtain an instance of `PackageInstaller` or `PackageUninstaller`, use the `getInstance(Context)` method:
 
 === "Kotlin"
@@ -45,8 +42,9 @@ Launching an install or uninstall session with default parameters and getting it
 === "Java"
 
     ```java
+    var subscriptions = new DisposableSubscriptionContainer();
     var session = packageInstaller.createSession(new InstallParameters.Builder(apkUri).build());
-    session.addStateListener(new Session.DefaultStateListener<>(session) {
+    session.addStateListener(subscriptions, new Session.DefaultStateListener<>(session) {
         @Override
         public void onSuccess(@NonNull UUID sessionId) {
             System.out.println("Success");
@@ -86,8 +84,7 @@ If you're launching a session inside of a long-living service which is not expec
     ```java
     var subscriptions = new DisposableSubscriptionContainer();
     var session = packageInstaller.createSession(...);
-    var subscription = session.addStateListener(...);
-    subscriptions.add(subscription);
+    session.addStateListener(subscriptions, ...);
     
     // when lifecycle is destroyed
     subscriptions.clear();
@@ -125,7 +122,7 @@ Handling process death is not any different with Ackpine as with any other persi
             @Override
             public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
                 if (session != null) {
-                    subscriptions.add(session.addStateListener(...));
+                    session.addStateListener(subscriptions, ...);
                     // or anything else you want to do with the session
                 }
             }
@@ -156,7 +153,7 @@ Install sessions provide progress updates:
 === "Java"
 
     ```java
-    var subscription = session.addProgressListener((sessionId, progress) -> {
+    session.addProgressListener(subscriptions, (sessionId, progress) -> {
         updateProgress(progress.getProgress(), progress.getMax());
     });
     ```
