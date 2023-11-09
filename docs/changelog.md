@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.3.1 (2023-11-10)
+--------------------------
+
+### Bug fixes and improvements
+
+- Don't throw from install parameters builder constructor which accepts `Iterable`, from `add()` and `addAll()` methods on API levels < 21 if only a single APK ends up in `ApkList`. This fixes a long-lasting issue of throwing when getting a session from `PackageInstaller` after process restart on API levels < 21.
+
 Version 0.3.0 (2023-11-09)
 --------------------------
 
@@ -15,7 +22,7 @@ Version 0.3.0 (2023-11-09)
 
 ### Bug fixes and improvements
 
-- Return dummy `DisposableSubscription` object when attempting to add an already registered listener to a session.
+- Return dummy `DisposableSubscription` object when attempting to add an already registered listener to a session instead of a new one each time.
 - Don't notify an already registered listener with snapshot of current session's state or progress when attempting to add it again.
 - Require a `DisposableSubscriptionContainer` when adding a listener to a session to avoid an error-prone practice of adding the subscription to a subscriptions bag manually. Documentation and Java sample app were updated accordingly.
 - Make confirmation Activity appear less jarring on finish.
