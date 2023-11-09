@@ -103,6 +103,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		// For example, "There was a problem parsing the package" error falls under that.
 		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= 0.81
 		if (!isSessionAlive) {
+			setLoading(isLoading = true, delayMillis = 100)
 			handler.postDelayed(deadSessionCompletionRunnable, 1000)
 		} else {
 			finish()
