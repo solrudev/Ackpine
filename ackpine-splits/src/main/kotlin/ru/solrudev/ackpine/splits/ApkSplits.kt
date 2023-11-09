@@ -23,7 +23,7 @@ import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.exceptions.SplitPackageException
-import ru.solrudev.ackpine.helpers.deviceLocales
+import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
 

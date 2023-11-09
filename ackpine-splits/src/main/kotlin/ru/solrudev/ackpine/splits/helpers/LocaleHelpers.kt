@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.splits.helpers
 
 import android.content.Context
 import androidx.core.os.ConfigurationCompat

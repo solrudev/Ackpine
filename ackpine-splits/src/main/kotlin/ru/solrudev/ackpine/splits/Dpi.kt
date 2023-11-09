@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.splits
 
 import android.content.Context
 import android.util.DisplayMetrics
-import ru.solrudev.ackpine.helpers.splitTypePart
+import ru.solrudev.ackpine.splits.helpers.splitTypePart
 
 /**
  * Density of [APK split][Apk] graphic resources.

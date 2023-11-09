@@ -17,7 +17,7 @@
 package ru.solrudev.ackpine.splits
 
 import android.os.Build
-import ru.solrudev.ackpine.helpers.splitTypePart
+import ru.solrudev.ackpine.splits.helpers.splitTypePart
 
 /**
  * ABI of [APK split][Apk] native code.
