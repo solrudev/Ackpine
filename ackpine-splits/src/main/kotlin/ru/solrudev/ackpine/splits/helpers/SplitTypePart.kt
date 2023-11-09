@@ -14,24 +14,14 @@
  * limitations under the License.
  */
 
-description = "Utilities for working with split APKs"
+package ru.solrudev.ackpine.splits.helpers
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-}
+private const val CONFIG_PART = "config."
 
-ackpine {
-	id = "splits"
-	minSdk = 21
-	artifact {
-		name = "Ackpine Splits"
+@JvmSynthetic
+internal fun splitTypePart(name: String): String? {
+	if (!name.contains(CONFIG_PART, ignoreCase = true) && !name.contains(".$CONFIG_PART", ignoreCase = true)) {
+		return null
 	}
-}
-
-dependencies {
-	api(androidx.annotation)
-	implementation(projects.ackpineRuntime)
-	implementation(androidx.core.ktx)
-	implementation(libs.apksig)
+	return name.substringAfter(CONFIG_PART).lowercase()
 }

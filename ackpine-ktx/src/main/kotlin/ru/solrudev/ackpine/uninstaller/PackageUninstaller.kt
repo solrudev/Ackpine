@@ -16,7 +16,7 @@
 
 package ru.solrudev.ackpine.uninstaller
 
-import ru.solrudev.ackpine.futures.await
+import androidx.concurrent.futures.await
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
@@ -41,7 +41,7 @@ public inline fun PackageUninstaller.createSession(
  * A suspending variant of [PackageUninstaller.getSessionAsync].
  * @return [Session] or `null` if not found.
  */
-public suspend inline fun PackageUninstaller.getSession(sessionId: UUID): Session<UninstallFailure>? {
+public suspend fun PackageUninstaller.getSession(sessionId: UUID): Session<UninstallFailure>? {
 	return getSessionAsync(sessionId).await()
 }
 
@@ -49,7 +49,7 @@ public suspend inline fun PackageUninstaller.getSession(sessionId: UUID): Sessio
  * A suspending variant of [PackageUninstaller.getSessionsAsync].
  * @return [Session] or `null` if not found.
  */
-public suspend inline fun PackageUninstaller.getSessions(): List<Session<UninstallFailure>> {
+public suspend fun PackageUninstaller.getSessions(): List<Session<UninstallFailure>> {
 	return getSessionsAsync().await()
 }
 
@@ -57,6 +57,6 @@ public suspend inline fun PackageUninstaller.getSessions(): List<Session<Uninsta
  * A suspending variant of [PackageUninstaller.getActiveSessionsAsync].
  * @return [Session] or `null` if not found.
  */
-public suspend inline fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
+public suspend fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
 	return getActiveSessionsAsync().await()
 }

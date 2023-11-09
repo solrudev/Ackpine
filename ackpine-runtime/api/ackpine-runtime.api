@@ -1,0 +1,24 @@
+public final class ru/solrudev/ackpine/AckpineFileProvider : androidx/core/content/FileProvider {
+	public static final field Companion Lru/solrudev/ackpine/AckpineFileProvider$Companion;
+	public fun <init> ()V
+	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
+}
+
+public final class ru/solrudev/ackpine/AckpineFileProvider$Companion {
+	public final fun getAuthority ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/helpers/UriHelpersKt {
+	public static final fun toFile (Landroid/net/Uri;Landroid/content/Context;Landroid/os/CancellationSignal;)Ljava/io/File;
+	public static synthetic fun toFile$default (Landroid/net/Uri;Landroid/content/Context;Landroid/os/CancellationSignal;ILjava/lang/Object;)Ljava/io/File;
+}
+
+public abstract interface class ru/solrudev/ackpine/plugin/AckpinePlugin {
+	public abstract fun setExecutor (Ljava/util/concurrent/Executor;)V
+}
+
+public final class ru/solrudev/ackpine/plugin/AckpinePluginRegistry {
+	public static final field INSTANCE Lru/solrudev/ackpine/plugin/AckpinePluginRegistry;
+	public final fun register (Lru/solrudev/ackpine/plugin/AckpinePlugin;)V
+}
+

@@ -57,15 +57,5 @@
 				android:value="androidx.startup" />
 		</provider>
 
-		<provider
-			android:name="ru.solrudev.ackpine.AckpineFileProvider"
-			android:authorities="${applicationId}.AckpineFileProvider"
-			android:exported="false"
-			android:grantUriPermissions="true">
-			<meta-data
-				android:name="android.support.FILE_PROVIDER_PATHS"
-				android:resource="@xml/file_provider_paths" />
-		</provider>
-
 	</application>
 </manifest>

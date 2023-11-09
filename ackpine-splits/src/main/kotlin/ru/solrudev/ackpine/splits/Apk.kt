@@ -19,14 +19,15 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
+import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
-import ru.solrudev.ackpine.helpers.NonClosingInputStream.Companion.nonClosing
-import ru.solrudev.ackpine.helpers.deviceLocales
-import ru.solrudev.ackpine.helpers.displayNameAndSize
-import ru.solrudev.ackpine.helpers.isApk
-import ru.solrudev.ackpine.helpers.localeFromSplitName
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
+import ru.solrudev.ackpine.splits.helpers.NonClosingInputStream.Companion.nonClosing
+import ru.solrudev.ackpine.splits.helpers.deviceLocales
+import ru.solrudev.ackpine.splits.helpers.displayNameAndSize
+import ru.solrudev.ackpine.splits.helpers.isApk
+import ru.solrudev.ackpine.splits.helpers.localeFromSplitName
 import ru.solrudev.ackpine.splits.parsing.AndroidManifest
 import ru.solrudev.ackpine.splits.parsing.androidManifest
 import java.io.File
@@ -151,7 +152,7 @@ public sealed class Apk(
 		public fun fromFile(file: File, context: Context): Apk? {
 			return fromFile(
 				file,
-				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", file)
+				FileProvider.getUriForFile(context, AckpineFileProvider.authority, file)
 			)
 		}
 

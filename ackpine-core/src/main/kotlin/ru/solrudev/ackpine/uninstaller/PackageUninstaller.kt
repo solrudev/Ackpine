@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.uninstaller
 
 import android.content.Context
 import android.os.Handler
-import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
@@ -74,9 +73,8 @@ public interface PackageUninstaller {
 	 */
 	public fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
 
-	public companion object : AckpinePlugin {
+	public companion object {
 
-		private lateinit var executor: Executor
 		private val lock = Any()
 
 		@Volatile
@@ -105,26 +103,30 @@ public interface PackageUninstaller {
 		}
 
 		private fun create(context: Context): PackageUninstaller {
-			AckpinePluginRegistry.register(this)
-			val database = AckpineDatabase.getInstance(context.applicationContext, executor)
+			AckpinePluginRegistry.register(PackageUninstallerPlugin)
+			val database = AckpineDatabase.getInstance(context.applicationContext, PackageUninstallerPlugin.executor)
 			return PackageUninstallerImpl(
 				database.uninstallSessionDao(),
-				executor,
+				PackageUninstallerPlugin.executor,
 				UninstallSessionFactoryImpl(
 					context.applicationContext,
 					database.sessionDao(),
 					database.uninstallSessionDao(),
 					database.notificationIdDao(),
-					executor,
+					PackageUninstallerPlugin.executor,
 					Handler(context.mainLooper)
 				)
 			)
 		}
+	}
+}
 
-		@RestrictTo(RestrictTo.Scope.LIBRARY)
-		@JvmSynthetic
-		override fun setExecutor(executor: Executor) {
-			this.executor = executor
-		}
+private object PackageUninstallerPlugin : AckpinePlugin {
+
+	lateinit var executor: Executor
+		private set
+
+	override fun setExecutor(executor: Executor) {
+		this.executor = executor
 	}
 }

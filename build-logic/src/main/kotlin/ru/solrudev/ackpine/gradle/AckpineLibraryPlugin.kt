@@ -51,12 +51,11 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
 			jvmToolchain(17)
-			explicitApi()
 		}
 		tasks.withType<KotlinJvmCompile>().configureEach {
 			compilerOptions {
 				jvmTarget.set(JVM_1_8)
-				freeCompilerArgs.add("-Xjvm-default=all")
+				freeCompilerArgs.addAll("-Xjvm-default=all", "-Xexplicit-api=strict")
 			}
 		}
 	}

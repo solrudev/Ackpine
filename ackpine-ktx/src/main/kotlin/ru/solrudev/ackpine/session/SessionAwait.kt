@@ -20,6 +20,7 @@ import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.suspendCancellableCoroutine
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import java.util.UUID
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -37,9 +38,10 @@ import kotlin.coroutines.resumeWithException
  * @return [SessionResult]
  */
 public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendCancellableCoroutine { continuation ->
-	val subscription = addStateListener(AwaitSessionStateListener(this, continuation))
+	val subscriptionContainer = DisposableSubscriptionContainer()
+	addStateListener(subscriptionContainer, AwaitSessionStateListener(this, continuation))
 	continuation.invokeOnCancellation {
-		subscription.dispose()
+		subscriptionContainer.dispose()
 		cancel()
 	}
 }

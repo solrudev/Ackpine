@@ -2,10 +2,6 @@ public final class ru/solrudev/ackpine/DisposableSubscriptionContainerKt {
 	public static final fun plusAssign (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/DisposableSubscription;)V
 }
 
-public final class ru/solrudev/ackpine/futures/ListenableFutureAwaitKt {
-	public static final fun await (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
-}
-
 public final class ru/solrudev/ackpine/installer/PackageInstallerKt {
 	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;
 	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;

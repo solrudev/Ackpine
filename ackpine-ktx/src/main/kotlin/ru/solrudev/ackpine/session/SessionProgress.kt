@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.first
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
-import ru.solrudev.ackpine.plusAssign
 
 /**
  * Returns a cold [Flow] of [session's][ProgressSession] [progress][Progress]. It will emit current progress immediately
@@ -35,10 +34,10 @@ import ru.solrudev.ackpine.plusAssign
 public val ProgressSession<*>.progress: Flow<Progress>
 	get() = callbackFlow {
 		val subscriptionContainer = DisposableSubscriptionContainer()
-		subscriptionContainer += addProgressListener { _, progress ->
+		addProgressListener(subscriptionContainer) { _, progress ->
 			trySend(progress)
 		}
-		subscriptionContainer += addStateListener { _, state ->
+		addStateListener(subscriptionContainer) { _, state ->
 			if (state.isTerminal) {
 				channel.close()
 			}

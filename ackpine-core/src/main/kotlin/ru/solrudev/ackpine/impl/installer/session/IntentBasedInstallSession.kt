@@ -27,6 +27,8 @@ import androidx.annotation.RestrictTo
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.AckpineFileProvider
+import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -35,7 +37,6 @@ import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
-import ru.solrudev.ackpine.impl.installer.session.helpers.toFile
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
@@ -132,7 +133,7 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 		if (apk.scheme == ContentResolver.SCHEME_FILE) {
 			return ApkUri(
-				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", apk.toFile()),
+				FileProvider.getUriForFile(context, AckpineFileProvider.authority, apk.toFile()),
 				mustCopy = false
 			)
 		}

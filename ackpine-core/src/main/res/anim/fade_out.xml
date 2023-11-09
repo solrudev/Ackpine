@@ -15,13 +15,8 @@
   ~ limitations under the License.
   -->
 
-<resources>
-
-	<style name="Base.V16.Theme.Ackpine.SessionCommitActivity" parent="android:Theme.Translucent.NoTitleBar">
-		<item name="android:progressBarStyle">@android:style/Widget.DeviceDefault.ProgressBar</item>
-		<item name="android:windowAnimationStyle">@style/WindowAnimation.Ackpine.SessionCommitActivity</item>
-	</style>
-
-	<style name="Base.Theme.Ackpine.SessionCommitActivity" parent="Base.V16.Theme.Ackpine.SessionCommitActivity" />
-	<style name="Theme.Ackpine.SessionCommitActivity" parent="Base.Theme.Ackpine.SessionCommitActivity" />
-</resources>
+<alpha xmlns:android="http://schemas.android.com/apk/res/android"
+	android:duration="75"
+	android:fromAlpha="1.0"
+	android:interpolator="@android:interpolator/accelerate_quad"
+	android:toAlpha="0.0" />

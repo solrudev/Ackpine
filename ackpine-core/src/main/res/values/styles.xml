@@ -17,11 +17,8 @@
 
 <resources>
 
-	<style name="Base.V16.Theme.Ackpine.SessionCommitActivity" parent="android:Theme.Translucent.NoTitleBar">
-		<item name="android:progressBarStyle">@android:style/Widget.DeviceDefault.ProgressBar</item>
-		<item name="android:windowAnimationStyle">@style/WindowAnimation.Ackpine.SessionCommitActivity</item>
+	<style name="WindowAnimation.Ackpine.SessionCommitActivity" parent="@android:style/Animation.Translucent">
+		<item name="android:windowEnterAnimation">@null</item>
+		<item name="android:windowExitAnimation">@anim/fade_out</item>
 	</style>
-
-	<style name="Base.Theme.Ackpine.SessionCommitActivity" parent="Base.V16.Theme.Ackpine.SessionCommitActivity" />
-	<style name="Theme.Ackpine.SessionCommitActivity" parent="Base.Theme.Ackpine.SessionCommitActivity" />
 </resources>

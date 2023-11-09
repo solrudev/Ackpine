@@ -20,6 +20,8 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
+import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -74,12 +76,20 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 			}
 		}
 
-	final override fun addProgressListener(listener: ProgressSession.ProgressListener): DisposableSubscription {
-		progressListeners += listener
+	final override fun addProgressListener(
+		subscriptionContainer: DisposableSubscriptionContainer,
+		listener: ProgressSession.ProgressListener
+	): DisposableSubscription {
+		val added = progressListeners.add(listener)
+		if (!added) {
+			return DummyDisposableSubscription
+		}
 		handler.postAtFrontOfQueue {
 			listener.onProgressChanged(id, progress)
 		}
-		return ProgressDisposableSubscription(this, listener)
+		val subscription = ProgressDisposableSubscription(this, listener)
+		subscriptionContainer.add(subscription)
+		return subscription
 	}
 
 	final override fun removeProgressListener(listener: ProgressSession.ProgressListener) {

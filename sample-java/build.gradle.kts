@@ -60,6 +60,7 @@ android {
 }
 
 dependencies {
+	implementation(projects.ackpineCore)
 	implementation(projects.ackpineSplits)
 	implementation(androidx.activity.java)
 	implementation(androidx.appcompat)

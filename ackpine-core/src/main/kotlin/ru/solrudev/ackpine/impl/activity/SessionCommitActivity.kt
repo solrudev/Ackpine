@@ -17,10 +17,12 @@
 package ru.solrudev.ackpine.impl.activity
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.WindowManager
 import android.widget.ProgressBar
 import androidx.annotation.RestrictTo
 import androidx.core.view.isVisible
@@ -39,6 +41,7 @@ import kotlin.random.nextInt
 private const val IS_SESSION_COMMITTED_KEY = "SESSION_COMMIT_ACTIVITY_IS_SESSION_COMMITTED"
 private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
+private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
@@ -57,13 +60,14 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		private set
 
 	private val subscriptions = DisposableSubscriptionContainer()
+	private val handler = Handler(Looper.getMainLooper())
+	private val handlerCallbacks = mutableListOf<Runnable>()
 	private var isSessionCommitted = false
+	private var isLoading = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		if (savedInstanceState == null) {
-			setLoading(true)
-		}
+		window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 		initializeState(savedInstanceState)
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
@@ -73,6 +77,10 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	override fun onDestroy() {
 		super.onDestroy()
 		subscriptions.clear()
+		for (callback in handlerCallbacks) {
+			handler.removeCallbacks(callback)
+		}
+		handlerCallbacks.clear()
 	}
 
 	@Deprecated("Deprecated in Java")
@@ -87,16 +95,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
-	}
-
-	override fun startActivityForResult(intent: Intent?, requestCode: Int) {
-		setLoading(false)
-		super.startActivityForResult(intent, requestCode)
-	}
-
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		super.onActivityResult(requestCode, resultCode, data)
-		setLoading(true)
+		outState.putBoolean(IS_LOADING_KEY, isLoading)
 	}
 
 	@Suppress("UNCHECKED_CAST")
@@ -115,9 +114,25 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		}
 	}
 
+	protected fun setLoading(isLoading: Boolean, delayMillis: Long = 0L) {
+		if (isFinishing) {
+			return
+		}
+		this.isLoading = isLoading
+		if (delayMillis == 0L) {
+			displayLoading(isLoading)
+		} else {
+			val callback = Runnable { displayLoading(isLoading) }
+			handlerCallbacks += callback
+			handler.postDelayed(callback, delayMillis)
+		}
+	}
+
 	private fun initializeState(savedInstanceState: Bundle?) {
 		if (savedInstanceState != null) {
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
+			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
+			setLoading(isLoading)
 			isSessionCommitted = savedInstanceState.getBoolean(IS_SESSION_COMMITTED_KEY)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 			if (isSessionCommitted && !isConfigChangeRecreation) {
@@ -128,7 +143,7 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		}
 	}
 
-	private fun setLoading(isLoading: Boolean) {
+	private fun displayLoading(isLoading: Boolean) {
 		findViewById<ProgressBar>(R.id.ackpine_session_commit_loading_indicator)?.isVisible = isLoading
 		if (isLoading) {
 			window?.setBackgroundDrawableResource(android.R.drawable.screen_background_dark_transparent)
@@ -154,12 +169,11 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 	}
 
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
-		val subscription = session?.addStateListener { _, state ->
+		session?.addStateListener(subscriptions) { _, state ->
 			if (state.isTerminal) {
 				finishWithLaunchedActivity()
 			}
 		}
-		subscription?.let(subscriptions::add)
 	}
 
 	private fun finishWithLaunchedActivity() {

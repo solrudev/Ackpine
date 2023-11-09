@@ -14,22 +14,23 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.splits.helpers
 
 import android.content.Context
 import android.net.Uri
-import java.io.File
-import java.util.zip.ZipEntry
-
-@get:JvmSynthetic
-internal val ZipEntry.isApk: Boolean
-	get() = name.endsWith(".apk", ignoreCase = true) && !isDirectory
-
-@get:JvmSynthetic
-internal val File.isApk: Boolean
-	get() = name.endsWith(".apk", ignoreCase = true) && !isDirectory
+import android.provider.OpenableColumns
 
 @JvmSynthetic
-internal fun Uri.isApk(context: Context): Boolean {
-	return context.contentResolver.getType(this) == "application/vnd.android.package-archive"
+internal fun Uri.displayNameAndSize(context: Context): Pair<String, Long> {
+	context.contentResolver.query(
+		this,
+		arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE),
+		null, null, null
+	).use { cursor ->
+		cursor ?: return "" to -1L
+		if (!cursor.moveToFirst()) {
+			return "" to -1L
+		}
+		return cursor.getString(0).orEmpty() to cursor.getLong(1)
+	}
 }

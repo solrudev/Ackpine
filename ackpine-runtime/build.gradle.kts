@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-description = "Utilities for working with split APKs"
+description = "Ackpine Runtime dependency"
 
 plugins {
 	id("ru.solrudev.ackpine.library")
@@ -22,16 +22,13 @@ plugins {
 }
 
 ackpine {
-	id = "splits"
-	minSdk = 21
+	id = "runtime"
 	artifact {
-		name = "Ackpine Splits"
+		name = "Ackpine Runtime"
 	}
 }
 
 dependencies {
 	api(androidx.annotation)
-	implementation(projects.ackpineRuntime)
 	implementation(androidx.core.ktx)
-	implementation(libs.apksig)
 }

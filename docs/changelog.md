@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+Version 0.3.0 (2023-11-09)
+--------------------------
+
+### Dependencies
+
+- Extracted `ackpine-runtime` artifact, which is now depended upon by `ackpine-core` and `ackpine-splits`. `ackpine-splits` now doesn't declare a transitive dependency on `ackpine-core`.
+- `ackpine-ktx` now depends on `androidx.concurrent:concurrent-futures-ktx` instead of `androidx.concurrent:concurrent-futures`.
+- Updated Kotlin to 1.9.20.
+- Updated Android Gradle Plugin to 8.1.3.
+- Updated `apksig` to 8.1.3.
+- Updated `androidx.navigation` to 2.7.5 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Return dummy `DisposableSubscription` object when attempting to add an already registered listener to a session.
+- Don't notify an already registered listener with snapshot of current session's state or progress when attempting to add it again.
+- Require a `DisposableSubscriptionContainer` when adding a listener to a session to avoid an error-prone practice of adding the subscription to a subscriptions bag manually. Documentation and Java sample app were updated accordingly.
+- Make confirmation Activity appear less jarring on finish.
+
+### Public API changes
+
+- `Session.addStateListener()` and `ProgressSession.addProgressListener()` now require a `DisposableSubscriptionContainer` to be provided.
+- Extension functions `PackageInstaller.getSession()`, `PackageInstaller.getSessions()`, `PackageInstaller.getActiveSessions()` and their respective counterparts for `PackageUninstaller` are not inline functions anymore.
+
 Version 0.2.2 (2023-11-03)
 --------------------------
 

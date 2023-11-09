@@ -107,7 +107,7 @@ public final class UninstallViewModel extends ViewModel {
 						.build());
 		savedStateHandle.set(SESSION_ID_KEY, session.getId());
 		savedStateHandle.set(PACKAGE_NAME_KEY, packageName);
-		subscriptions.add(session.addStateListener(new SessionStateListener(session)));
+		session.addStateListener(subscriptions, new SessionStateListener(session));
 	}
 
 	private void removeApplication(@NonNull String packageName) {
@@ -124,7 +124,7 @@ public final class UninstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable Session<UninstallFailure> session) {
 				if (session != null) {
-					subscriptions.add(session.addStateListener(new SessionStateListener(session)));
+					session.addStateListener(subscriptions, new SessionStateListener(session));
 				}
 			}
 

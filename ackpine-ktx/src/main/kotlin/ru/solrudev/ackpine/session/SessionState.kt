@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.first
+import ru.solrudev.ackpine.DisposableSubscriptionContainer
 
 /**
  * Returns a cold [Flow] of [session's][Session] [state][Session.State]. It will emit current state immediately when
@@ -32,11 +33,12 @@ import kotlinx.coroutines.flow.first
  */
 public val <F : Failure> Session<F>.state: Flow<Session.State<F>>
 	get() = callbackFlow {
-		val subscription = addStateListener { _, state ->
+		val subscriptionContainer = DisposableSubscriptionContainer()
+		addStateListener(subscriptionContainer) { _, state ->
 			trySend(state)
 			if (state.isTerminal) {
 				channel.close()
 			}
 		}
-		awaitClose(subscription::dispose)
+		awaitClose(subscriptionContainer::dispose)
 	}.conflate()
