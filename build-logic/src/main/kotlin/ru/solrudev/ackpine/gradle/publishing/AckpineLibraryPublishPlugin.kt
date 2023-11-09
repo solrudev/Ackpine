@@ -28,9 +28,11 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.hasPlugin
+import org.gradle.kotlin.dsl.withType
 import org.gradle.plugins.signing.SigningExtension
 import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
@@ -47,11 +49,18 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 			}
 			val ackpineExtension = extensions.getByType<AckpineExtension>()
 			val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
+			configureDokka(artifact)
 			configurePublishing(ackpineExtension, artifact)
 			configureSigning()
 		}
 		if (plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 			configureSourcesJar()
+		}
+	}
+
+	private fun Project.configureDokka(artifact: AckpineArtifact) = afterEvaluate {
+		tasks.withType<DokkaTaskPartial>().configureEach {
+			enabled = artifact.dokka.get()
 		}
 	}
 
