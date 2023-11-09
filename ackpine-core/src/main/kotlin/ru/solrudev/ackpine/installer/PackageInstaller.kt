@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.installer
 
 import android.content.Context
 import android.os.Handler
-import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
@@ -77,9 +76,8 @@ public interface PackageInstaller {
 	 */
 	public fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
 
-	public companion object : AckpinePlugin {
+	public companion object {
 
-		private lateinit var executor: Executor
 		private val lock = Any()
 
 		@Volatile
@@ -108,12 +106,12 @@ public interface PackageInstaller {
 		}
 
 		private fun create(context: Context): PackageInstaller {
-			AckpinePluginRegistry.register(this)
-			val database = AckpineDatabase.getInstance(context.applicationContext, executor)
+			AckpinePluginRegistry.register(PackageInstallerPlugin)
+			val database = AckpineDatabase.getInstance(context.applicationContext, PackageInstallerPlugin.executor)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				database.sessionProgressDao(),
-				executor,
+				PackageInstallerPlugin.executor,
 				InstallSessionFactoryImpl(
 					context.applicationContext,
 					database.sessionDao(),
@@ -121,16 +119,20 @@ public interface PackageInstaller {
 					database.sessionProgressDao(),
 					database.nativeSessionIdDao(),
 					database.notificationIdDao(),
-					executor,
+					PackageInstallerPlugin.executor,
 					Handler(context.mainLooper)
 				)
 			)
 		}
+	}
+}
 
-		@RestrictTo(RestrictTo.Scope.LIBRARY)
-		@JvmSynthetic
-		override fun setExecutor(executor: Executor) {
-			this.executor = executor
-		}
+private object PackageInstallerPlugin : AckpinePlugin {
+
+	lateinit var executor: Executor
+		private set
+
+	override fun setExecutor(executor: Executor) {
+		this.executor = executor
 	}
 }

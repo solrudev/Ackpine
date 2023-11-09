@@ -31,7 +31,6 @@ import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
-import androidx.annotation.RestrictTo
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
@@ -59,7 +58,7 @@ public class ZippedFileProvider : ContentProvider() {
 	}
 
 	override fun onCreate(): Boolean {
-		AckpinePluginRegistry.register(ZippedFileProvider)
+		AckpinePluginRegistry.register(ZippedFileProviderPlugin)
 		return true
 	}
 
@@ -185,7 +184,7 @@ public class ZippedFileProvider : ContentProvider() {
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
 		val zipStream = openZipEntryStream(uri, signal)
 		val size = zipStream.size
-		executor.execute {
+		ZippedFileProviderPlugin.executor.execute {
 			outputFd.safeWrite { outputStream ->
 				zipStream.buffered().use { zipStream ->
 					zipStream.copyTo(outputStream, signal)
@@ -286,9 +285,8 @@ public class ZippedFileProvider : ContentProvider() {
 		throw UnsupportedOperationException("Updating not supported by ZippedFileProvider")
 	}
 
-	public companion object : AckpinePlugin {
+	public companion object {
 
-		private lateinit var executor: Executor
 		private lateinit var authority: String
 
 		/**
@@ -315,12 +313,16 @@ public class ZippedFileProvider : ContentProvider() {
 				.encodedQuery(zipEntryName)
 				.build()
 		}
+	}
+}
 
-		@RestrictTo(RestrictTo.Scope.LIBRARY)
-		@JvmSynthetic
-		override fun setExecutor(executor: Executor) {
-			this.executor = executor
-		}
+private object ZippedFileProviderPlugin : AckpinePlugin {
+
+	lateinit var executor: Executor
+		private set
+
+	override fun setExecutor(executor: Executor) {
+		this.executor = executor
 	}
 }
 
