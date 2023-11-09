@@ -75,6 +75,12 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		subscriptions.clear()
 	}
 
+	@Suppress("DEPRECATION")
+	override fun finish() {
+		super.finish()
+		overridePendingTransition(0, 0)
+	}
+
 	@Deprecated("Deprecated in Java")
 	@Suppress("DEPRECATION")
 	override fun onBackPressed() {
