@@ -20,10 +20,9 @@ public final class ru/solrudev/ackpine/ZippedFileProvider : android/content/Cont
 	public fun update (Landroid/net/Uri;Landroid/content/ContentValues;Ljava/lang/String;[Ljava/lang/String;)I
 }
 
-public final class ru/solrudev/ackpine/ZippedFileProvider$Companion : ru/solrudev/ackpine/plugin/AckpinePlugin {
+public final class ru/solrudev/ackpine/ZippedFileProvider$Companion {
 	public final fun getUriForZipEntry (Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;
 	public final fun isZippedFileProviderUri (Landroid/net/Uri;)Z
-	public synthetic fun setExecutor (Ljava/util/concurrent/Executor;)V
 }
 
 public final class ru/solrudev/ackpine/exceptions/ConflictingBaseApkException : ru/solrudev/ackpine/exceptions/SplitPackageException {
