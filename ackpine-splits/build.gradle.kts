@@ -30,6 +30,7 @@ ackpine {
 }
 
 dependencies {
+	api(androidx.annotation)
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.core.ktx)
 	implementation(libs.apksig)
