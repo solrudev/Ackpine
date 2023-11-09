@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import android.net.Uri
 import androidx.core.content.FileProvider
+import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
 import ru.solrudev.ackpine.helpers.NonClosingInputStream.Companion.nonClosing
 import ru.solrudev.ackpine.helpers.deviceLocales
@@ -151,7 +152,7 @@ public sealed class Apk(
 		public fun fromFile(file: File, context: Context): Apk? {
 			return fromFile(
 				file,
-				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", file)
+				FileProvider.getUriForFile(context, AckpineFileProvider.authority, file)
 			)
 		}
 

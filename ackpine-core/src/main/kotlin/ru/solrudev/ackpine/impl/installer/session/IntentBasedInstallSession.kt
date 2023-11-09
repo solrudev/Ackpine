@@ -27,6 +27,7 @@ import androidx.annotation.RestrictTo
 import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -132,7 +133,7 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 		if (apk.scheme == ContentResolver.SCHEME_FILE) {
 			return ApkUri(
-				FileProvider.getUriForFile(context, "${context.packageName}.AckpineFileProvider", apk.toFile()),
+				FileProvider.getUriForFile(context, AckpineFileProvider.authority, apk.toFile()),
 				mustCopy = false
 			)
 		}

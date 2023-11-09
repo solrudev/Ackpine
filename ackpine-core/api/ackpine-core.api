@@ -2,6 +2,16 @@ public final class ru/solrudev/ackpine/Ackpine {
 	public static final field INSTANCE Lru/solrudev/ackpine/Ackpine;
 }
 
+public final class ru/solrudev/ackpine/AckpineFileProvider : androidx/core/content/FileProvider {
+	public static final field Companion Lru/solrudev/ackpine/AckpineFileProvider$Companion;
+	public fun <init> ()V
+	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
+}
+
+public final class ru/solrudev/ackpine/AckpineFileProvider$Companion {
+	public final fun getAuthority ()Ljava/lang/String;
+}
+
 public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Initializer {
 	public fun <init> ()V
 	public synthetic fun create (Landroid/content/Context;)Ljava/lang/Object;
