@@ -20,10 +20,10 @@ import android.content.Context
 import android.content.pm.ProviderInfo
 import androidx.annotation.RestrictTo
 import androidx.core.content.FileProvider
-import ru.solrudev.ackpine.core.R
+import ru.solrudev.ackpine.runtime.R
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public class AckpineFileProvider : FileProvider(R.xml.file_provider_paths) {
+public class AckpineFileProvider : FileProvider(R.xml.ackpine_file_provider_paths) {
 
 	override fun attachInfo(context: Context, info: ProviderInfo) {
 		super.attachInfo(context, info)

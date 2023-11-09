@@ -14,23 +14,21 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+description = "Ackpine Runtime dependency"
 
-import android.content.Context
-import android.net.Uri
-import android.provider.OpenableColumns
+plugins {
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+}
 
-@JvmSynthetic
-internal fun Uri.displayNameAndSize(context: Context): Pair<String, Long> {
-	context.contentResolver.query(
-		this,
-		arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE),
-		null, null, null
-	).use { cursor ->
-		cursor ?: return "" to -1L
-		if (!cursor.moveToFirst()) {
-			return "" to -1L
-		}
-		return cursor.getString(0).orEmpty() to cursor.getLong(1)
+ackpine {
+	id = "runtime"
+	artifact {
+		name = "Ackpine Runtime"
 	}
+}
+
+dependencies {
+	api(androidx.annotation)
+	implementation(androidx.core.ktx)
 }

@@ -34,6 +34,7 @@ dependencies {
 	api(androidx.annotation)
 	api(androidx.startup)
 	api(libs.listenablefuture)
+	implementation(projects.ackpineRuntime)
 	implementation(androidx.concurrent.futures.core)
 	implementation(androidx.core.ktx)
 	implementation(androidx.room.runtime)
