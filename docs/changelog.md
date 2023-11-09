@@ -8,6 +8,8 @@ Version 0.3.0 (2023-11-09)
 
 - Extracted `ackpine-runtime` artifact, which is now depended upon by `ackpine-core` and `ackpine-splits`. `ackpine-splits` now doesn't declare a transitive dependency on `ackpine-core`.
 - `ackpine-ktx` now depends on `androidx.concurrent:concurrent-futures-ktx` instead of `androidx.concurrent:concurrent-futures`.
+- Updated Android Gradle Plugin to 8.1.3.
+- Updated `apksig` to 8.1.3.
 - Updated `androidx.navigation` to 2.7.5 (sample apps dependency).
 
 ### Bug fixes and improvements
