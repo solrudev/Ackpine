@@ -31,7 +31,7 @@ import java.util.UUID
  * Creates an install session. The returned session is in [pending][Session.State.Pending] state.
  *
  * Split packages are not supported on API levels < 21.
- * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
+ * Attempting to add additional APKs on these API levels may produce [SplitPackagesNotSupportedException].
  *
  * @see PackageInstaller.createSession
  * @param baseApk [URI][Uri] of base APK.
@@ -49,7 +49,7 @@ public inline fun PackageInstaller.createSession(
  * Creates an install session. The returned session is in [pending][Session.State.Pending] state.
  *
  * Split packages are not supported on API levels < 21.
- * Attempting to add additional APKs on these API levels will produce [SplitPackagesNotSupportedException].
+ * Attempting to add additional APKs on these API levels may produce [SplitPackagesNotSupportedException].
  *
  * @see PackageInstaller.createSession
  * @param apks [URIs][Uri] of split APKs.
