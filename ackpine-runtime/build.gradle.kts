@@ -25,6 +25,7 @@ ackpine {
 	id = "runtime"
 	artifact {
 		name = "Ackpine Runtime"
+		dokka = false
 	}
 }
 
