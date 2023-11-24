@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ackpine_prompt_install_message">Bevestig asseblief installasie.</string>
+    <string name="ackpine_prompt_install_message_with_label">Bevestig asseblief installasie van %s.</string>
+    <string name="ackpine_prompt_install_title">Installasie</string>
+    <string name="ackpine_prompt_uninstall_message_with_label">Bevestig asseblief verwydering van %s.</string>
+    <string name="ackpine_prompt_uninstall_title">Verwydering</string>
+    <string name="ackpine_notification_channel_description">As u dit afskakel, word pakket installerings funksionaliteit verbreek</string>
+    <string name="ackpine_notification_channel_name">Installeer en verwyder</string>
+    <string name="ackpine_prompt_uninstall_message">Bevestig asseblief verwydering.</string>
+</resources>
