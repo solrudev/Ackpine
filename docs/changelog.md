@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 0.3.2 (2023-12-01)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.21.
+- Updated Android Gradle Plugin to 8.2.0.
+- Updated Gradle wrapper to 8.5.
+- Updated `androidx.room` to 2.6.1.
+- Updated `androidx.activity` to 1.8.1 (sample apps dependency).
+- Updated Guava to 32.1.3-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Add Afrikaans translations for South Africa. Thanks to @MJJacobs01!
+
 Version 0.3.1 (2023-11-10)
 --------------------------
 
