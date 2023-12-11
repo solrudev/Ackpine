@@ -19,7 +19,14 @@ package ru.solrudev.ackpine.session
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.Session.DefaultStateListener
+import ru.solrudev.ackpine.session.Session.State.Active
+import ru.solrudev.ackpine.session.Session.State.Awaiting
+import ru.solrudev.ackpine.session.Session.State.Cancelled
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Failed
+import ru.solrudev.ackpine.session.Session.State.Pending
+import ru.solrudev.ackpine.session.Session.State.Succeeded
+import ru.solrudev.ackpine.session.Session.TerminalStateListener
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
@@ -29,7 +36,7 @@ import java.util.UUID
  *
  * The session by itself is passive, so to advance it an observer is needed to appropriately handle its lifecycle by
  * calling necessary methods.
- * [DefaultStateListener] is such an observer.
+ * [TerminalStateListener] is such an observer.
  *
  * @param F a type of [Failure] for this session, may be [InstallFailure] or [UninstallFailure].
  */
@@ -41,21 +48,52 @@ public interface Session<out F : Failure> {
 	public val id: UUID
 
 	/**
-	 * Returns whether this session is active, i.e. it is already [launched][launch] and is not in
+	 * Returns `true` if this session is active, i.e. it is already [launched][launch] and is not in
 	 * [terminal][State.isTerminal] state.
 	 */
 	public val isActive: Boolean
 
 	/**
-	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations.
+	 * Returns `true` if this session has ran to completion without cancelling.
 	 */
-	public fun launch()
+	public val isCompleted: Boolean
+
+	/**
+	 * Returns `true` if this session was cancelled by invocation of [cancel].
+	 */
+	public val isCancelled: Boolean
+
+	/**
+	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations.
+	 *
+	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
+	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
+	 *
+	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
+	 * `await()` instead.
+	 *
+	 * @return `true` if session preparations have been launched due to this invocation. `false` if session preparations
+	 * are in progress or have been already done, or session was cancelled.
+	 */
+	public fun launch(): Boolean
 
 	/**
 	 * Commits everything that was prepared in the session. This will launch user's [confirmation][Confirmation] of
 	 * installation or uninstallation.
+	 *
+	 * This method allows to re-commit the session when it's not in process of being committed or confirmed, e.g. when
+	 * confirmation was interrupted with process death.
+	 *
+	 * When committing/confirmation is finished, session is considered [completed][isCompleted].
+	 *
+	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
+	 * `await()` instead.
+	 *
+	 * @return `true` if this session has been committed due to this invocation. `false` if committing/confirmation is
+	 * in progress or has been already finished, or [session preparations][launch] hasn't been done beforehand, or
+	 * session was cancelled.
 	 */
-	public fun commit()
+	public fun commit(): Boolean
 
 	/**
 	 * Cancels this session, rendering it invalid.
@@ -104,14 +142,6 @@ public interface Session<out F : Failure> {
 		 */
 		public val isTerminal: Boolean
 			get() = this is Terminal
-
-		/**
-		 * Returns whether the session is in completed state.
-		 *
-		 * [Succeeded] and [Failed] are considered as completed states.
-		 */
-		public val isCompleted: Boolean
-			get() = this is Completed
 
 		/**
 		 * Denotes that a session is not launched yet.
@@ -172,7 +202,7 @@ public interface Session<out F : Failure> {
 	 * It's recommended to use this class for listening to [terminal][State.isTerminal] state updates instead of bare
 	 * [StateListener], because this class handles session's lifecycle appropriately.
 	 */
-	public abstract class DefaultStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
+	public abstract class TerminalStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
 
 		/**
 		 * Notifies that session was completed successfully.
@@ -198,13 +228,13 @@ public interface Session<out F : Failure> {
 				session.removeStateListener(this)
 			}
 			when (state) {
-				State.Pending -> session.launch()
-				State.Active -> session.launch() // re-launch if preparations were interrupted
-				State.Awaiting -> session.commit()
-				State.Committed -> session.commit() // re-commit if confirmation was interrupted
-				State.Cancelled -> onCancelled(sessionId)
-				State.Succeeded -> onSuccess(sessionId)
-				is State.Failed -> onFailure(sessionId, state.failure)
+				Pending -> session.launch()
+				Active -> session.launch() // re-launch if preparations were interrupted
+				Awaiting -> session.commit()
+				Committed -> session.commit() // re-commit if confirmation was interrupted
+				Cancelled -> onCancelled(sessionId)
+				Succeeded -> onSuccess(sessionId)
+				is Failed -> onFailure(sessionId, state.failure)
 			}
 		}
 	}

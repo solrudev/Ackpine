@@ -184,7 +184,7 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	private final class SessionStateListener extends Session.DefaultStateListener<InstallFailure> {
+	private final class SessionStateListener extends Session.TerminalStateListener<InstallFailure> {
 
 		public SessionStateListener(@NonNull Session<? extends InstallFailure> session) {
 			super(session);

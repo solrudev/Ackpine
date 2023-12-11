@@ -315,23 +315,16 @@ public abstract interface class ru/solrudev/ackpine/session/ProgressSession$Prog
 public abstract interface class ru/solrudev/ackpine/session/Session {
 	public abstract fun addStateListener (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/session/Session$StateListener;)Lru/solrudev/ackpine/DisposableSubscription;
 	public abstract fun cancel ()V
-	public abstract fun commit ()V
+	public abstract fun commit ()Z
 	public abstract fun getId ()Ljava/util/UUID;
 	public abstract fun isActive ()Z
-	public abstract fun launch ()V
+	public abstract fun isCancelled ()Z
+	public abstract fun isCompleted ()Z
+	public abstract fun launch ()Z
 	public abstract fun removeStateListener (Lru/solrudev/ackpine/session/Session$StateListener;)V
 }
 
-public abstract class ru/solrudev/ackpine/session/Session$DefaultStateListener : ru/solrudev/ackpine/session/Session$StateListener {
-	public fun <init> (Lru/solrudev/ackpine/session/Session;)V
-	public fun onCancelled (Ljava/util/UUID;)V
-	public fun onFailure (Ljava/util/UUID;Lru/solrudev/ackpine/session/Failure;)V
-	public final fun onStateChanged (Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
-	public fun onSuccess (Ljava/util/UUID;)V
-}
-
 public abstract interface class ru/solrudev/ackpine/session/Session$State {
-	public fun isCompleted ()Z
 	public fun isTerminal ()Z
 }
 
@@ -396,6 +389,14 @@ public abstract interface class ru/solrudev/ackpine/session/Session$State$Termin
 
 public abstract interface class ru/solrudev/ackpine/session/Session$StateListener {
 	public abstract fun onStateChanged (Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
+}
+
+public abstract class ru/solrudev/ackpine/session/Session$TerminalStateListener : ru/solrudev/ackpine/session/Session$StateListener {
+	public fun <init> (Lru/solrudev/ackpine/session/Session;)V
+	public fun onCancelled (Ljava/util/UUID;)V
+	public fun onFailure (Ljava/util/UUID;Lru/solrudev/ackpine/session/Failure;)V
+	public final fun onStateChanged (Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
+	public fun onSuccess (Ljava/util/UUID;)V
 }
 
 public final class ru/solrudev/ackpine/session/parameters/Confirmation : java/lang/Enum {

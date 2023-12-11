@@ -44,7 +44,7 @@ Launching an install or uninstall session with default parameters and getting it
     ```java
     var subscriptions = new DisposableSubscriptionContainer();
     var session = packageInstaller.createSession(new InstallParameters.Builder(apkUri).build());
-    session.addStateListener(subscriptions, new Session.DefaultStateListener<>(session) {
+    session.addStateListener(subscriptions, new Session.TerminalStateListener<>(session) {
         @Override
         public void onSuccess(@NonNull UUID sessionId) {
             System.out.println("Success");
@@ -66,7 +66,7 @@ Launching an install or uninstall session with default parameters and getting it
     });
     ```
 
-    Session launches when `DefaultStateListener` is added to it.
+    Session launches when `TerminalStateListener` is added to it.
 
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
