@@ -54,7 +54,7 @@ public interface Session<out F : Failure> {
 	public val isActive: Boolean
 
 	/**
-	 * Returns `true` if this session has completed its execution successfully or failed.
+	 * Returns `true` if this session has ran to completion without cancelling.
 	 */
 	public val isCompleted: Boolean
 
