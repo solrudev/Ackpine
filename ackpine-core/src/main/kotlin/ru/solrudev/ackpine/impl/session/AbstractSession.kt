@@ -34,6 +34,14 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.Session.State.Active
+import ru.solrudev.ackpine.session.Session.State.Awaiting
+import ru.solrudev.ackpine.session.Session.State.Cancelled
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Completed
+import ru.solrudev.ackpine.session.Session.State.Failed
+import ru.solrudev.ackpine.session.Session.State.Pending
+import ru.solrudev.ackpine.session.Session.State.Succeeded
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
@@ -112,7 +120,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 
 	final override val isActive: Boolean
-		get() = state.let { it !is Session.State.Pending && !it.isTerminal }
+		get() = state.let { it !is Pending && !it.isTerminal }
+
+	final override val isCompleted: Boolean
+		get() = state is Completed
+
+	final override val isCancelled: Boolean
+		get() = state is Cancelled || isCancelling
 
 	/**
 	 * Prepare the session. This method is called on a worker thread. After preparations are done, [notifyAwaiting] must
@@ -134,11 +148,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected open fun doCleanup() {}
 
 	/**
-	 * Notifies that preparations are done and sets session's state to [Session.State.Awaiting].
+	 * Notifies that preparations are done and sets session's state to [Awaiting].
 	 */
 	protected fun notifyAwaiting() {
 		isPreparing = false
-		state = Session.State.Awaiting
+		state = Awaiting
 	}
 
 	/**
@@ -148,7 +162,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected open fun onCommitted() {}
 
 	/**
-	 * This callback method is invoked when the session's been [completed][Session.State.isCompleted]. Processing in
+	 * This callback method is invoked when the session's been [completed][Session.isCompleted]. Processing in
 	 * this method should be lightweight.
 	 */
 	protected open fun onCompleted(success: Boolean) {}
@@ -160,11 +174,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			return
 		}
 		val currentState = state
-		if (currentState !is Session.State.Pending && currentState !is Session.State.Active) {
+		if (currentState !is Pending && currentState !is Active) {
 			return
 		}
 		isPreparing = true
-		state = Session.State.Active
+		state = Active
 		serialExecutor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
@@ -184,7 +198,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			return
 		}
 		val currentState = state
-		if (currentState !is Session.State.Awaiting && currentState !is Session.State.Committed) {
+		if (currentState !is Awaiting && currentState !is Committed) {
 			return
 		}
 		isCommitting = true
@@ -241,17 +255,17 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		isCommitted = true
 		isCommitting = false
 		onCommitted()
-		state = Session.State.Committed
+		state = Committed
 	}
 
-	final override fun complete(state: Session.State.Completed<F>) {
-		onCompleted(state is Session.State.Succeeded)
+	final override fun complete(state: Completed<F>) {
+		onCompleted(state is Succeeded)
 		this.state = state
 		cleanup()
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
-		state = Session.State.Failed(exceptionalFailureFactory(exception))
+		state = Failed(exceptionalFailureFactory(exception))
 		cleanup()
 	}
 
@@ -261,25 +275,25 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun handleCancellation() {
-		state = Session.State.Cancelled
+		state = Cancelled
 		cleanup()
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = serialExecutor.execute {
 		when (value) {
-			is Session.State.Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
+			is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
 		}
 	}
 
 	private fun Session.State<F>.toSessionEntityState() = when (this) {
-		Session.State.Pending -> SessionEntity.State.PENDING
-		Session.State.Active -> SessionEntity.State.ACTIVE
-		Session.State.Awaiting -> SessionEntity.State.AWAITING
-		Session.State.Committed -> SessionEntity.State.COMMITTED
-		Session.State.Cancelled -> SessionEntity.State.CANCELLED
-		Session.State.Succeeded -> SessionEntity.State.SUCCEEDED
-		is Session.State.Failed -> SessionEntity.State.FAILED
+		Pending -> SessionEntity.State.PENDING
+		Active -> SessionEntity.State.ACTIVE
+		Awaiting -> SessionEntity.State.AWAITING
+		Committed -> SessionEntity.State.COMMITTED
+		Cancelled -> SessionEntity.State.CANCELLED
+		Succeeded -> SessionEntity.State.SUCCEEDED
+		is Failed -> SessionEntity.State.FAILED
 	}
 }
 

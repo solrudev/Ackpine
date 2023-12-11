@@ -19,7 +19,14 @@ package ru.solrudev.ackpine.session
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.Session.DefaultStateListener
+import ru.solrudev.ackpine.session.Session.TerminalStateListener
+import ru.solrudev.ackpine.session.Session.State.Active
+import ru.solrudev.ackpine.session.Session.State.Awaiting
+import ru.solrudev.ackpine.session.Session.State.Cancelled
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Failed
+import ru.solrudev.ackpine.session.Session.State.Pending
+import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
@@ -41,10 +48,20 @@ public interface Session<out F : Failure> {
 	public val id: UUID
 
 	/**
-	 * Returns whether this session is active, i.e. it is already [launched][launch] and is not in
+	 * Returns `true` if this session is active, i.e. it is already [launched][launch] and is not in
 	 * [terminal][State.isTerminal] state.
 	 */
 	public val isActive: Boolean
+
+	/**
+	 * Returns `true` if this session has completed its execution successfully or failed.
+	 */
+	public val isCompleted: Boolean
+
+	/**
+	 * Returns `true` if this session was cancelled by invocation of [cancel].
+	 */
+	public val isCancelled: Boolean
 
 	/**
 	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations.
@@ -104,14 +121,6 @@ public interface Session<out F : Failure> {
 		 */
 		public val isTerminal: Boolean
 			get() = this is Terminal
-
-		/**
-		 * Returns whether the session is in completed state.
-		 *
-		 * [Succeeded] and [Failed] are considered as completed states.
-		 */
-		public val isCompleted: Boolean
-			get() = this is Completed
 
 		/**
 		 * Denotes that a session is not launched yet.
@@ -198,13 +207,13 @@ public interface Session<out F : Failure> {
 				session.removeStateListener(this)
 			}
 			when (state) {
-				State.Pending -> session.launch()
-				State.Active -> session.launch() // re-launch if preparations were interrupted
-				State.Awaiting -> session.commit()
-				State.Committed -> session.commit() // re-commit if confirmation was interrupted
-				State.Cancelled -> onCancelled(sessionId)
-				State.Succeeded -> onSuccess(sessionId)
-				is State.Failed -> onFailure(sessionId, state.failure)
+				Pending -> session.launch()
+				Active -> session.launch() // re-launch if preparations were interrupted
+				Awaiting -> session.commit()
+				Committed -> session.commit() // re-commit if confirmation was interrupted
+				Cancelled -> onCancelled(sessionId)
+				Succeeded -> onSuccess(sessionId)
+				is Failed -> onFailure(sessionId, state.failure)
 			}
 		}
 	}
