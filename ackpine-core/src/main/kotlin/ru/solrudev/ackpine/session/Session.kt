@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.session
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.Session.TerminalStateListener
 import ru.solrudev.ackpine.session.Session.State.Active
 import ru.solrudev.ackpine.session.Session.State.Awaiting
 import ru.solrudev.ackpine.session.Session.State.Cancelled
@@ -27,6 +26,7 @@ import ru.solrudev.ackpine.session.Session.State.Committed
 import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Pending
 import ru.solrudev.ackpine.session.Session.State.Succeeded
+import ru.solrudev.ackpine.session.Session.TerminalStateListener
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
@@ -69,6 +69,9 @@ public interface Session<out F : Failure> {
 	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
 	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
 	 *
+	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
+	 * `await()` instead.
+	 *
 	 * @return `true` if session preparations have been launched due to this invocation. `false` if session preparations
 	 * are in progress or have been already done, or session was cancelled.
 	 */
@@ -82,6 +85,9 @@ public interface Session<out F : Failure> {
 	 * confirmation was interrupted with process death.
 	 *
 	 * When committing/confirmation is finished, session is considered [completed][isCompleted].
+	 *
+	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
+	 * `await()` instead.
 	 *
 	 * @return `true` if this session has been committed due to this invocation. `false` if committing/confirmation is
 	 * in progress or has been already finished, or [session preparations][launch] hasn't been done beforehand, or
