@@ -69,7 +69,8 @@ public interface Session<out F : Failure> {
 	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
 	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
 	 *
-	 * @return `true` if session preparations have been launched due to this invocation.
+	 * @return `true` if session preparations have been launched due to this invocation, `false` if session preparations
+	 * are in progress or have been already done.
 	 */
 	public fun launch(): Boolean
 
@@ -80,7 +81,8 @@ public interface Session<out F : Failure> {
 	 * This method allows to re-commit the session when it's not in process of being committed or confirmed, e.g. when
 	 * confirmation was interrupted with process death.
 	 *
-	 * @return `true` if this session has been committed due to this invocation.
+	 * @return `true` if this session has been committed due to this invocation, `false` if committing/confirmation is
+	 * in progress or has been already finished.
 	 */
 	public fun commit(): Boolean
 
