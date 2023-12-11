@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+Version 0.4.0 (2023-12-11)
+--------------------------
+
+### Bug fixes and improvements
+
+- Improve documentation for `Session.launch()` and `Session.commit()` and make them return a boolean to indicate whether their invocation took effect.
+- Add `isCompleted` and `isCancelled` boolean properties to `Session`.
+
+### Public API changes
+
+- Breaking: `Session.DefaultStateListener` is renamed to `Session.TerminalStateListener`.
+- Breaking: `Session.State.isCompleted` is removed.
+- Possibly breaking: `isCompleted` and `isCancelled` boolean properties are added to `Session`.
+- Binary-incompatible: `Session.launch()` and `Session.commit()` now return `Boolean`.
+
 Version 0.3.2 (2023-12-01)
 --------------------------
 
@@ -46,7 +61,7 @@ Version 0.3.0 (2023-11-09)
 
 ### Public API changes
 
-- `Session.addStateListener()` and `ProgressSession.addProgressListener()` now require a `DisposableSubscriptionContainer` to be provided.
+- Breaking: `Session.addStateListener()` and `ProgressSession.addProgressListener()` now require a `DisposableSubscriptionContainer` to be provided.
 - Extension functions `PackageInstaller.getSession()`, `PackageInstaller.getSessions()`, `PackageInstaller.getActiveSessions()` and their respective counterparts for `PackageUninstaller` are not inline functions anymore.
 
 Version 0.2.2 (2023-11-03)
@@ -161,7 +176,7 @@ Version 0.1.0 (2023-08-24)
 
 ### Public API changes
 
-- `Sequence<Apk>.filterIncompatible()` in `ApkSplits` is renamed to `Sequence<Apk>.filterCompatible()`.
+- Breaking: `Sequence<Apk>.filterIncompatible()` in `ApkSplits` is renamed to `Sequence<Apk>.filterCompatible()`.
 
 Version 0.0.11 (2023-08-19)
 --------------------------
