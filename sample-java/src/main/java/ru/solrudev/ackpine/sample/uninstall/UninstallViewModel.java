@@ -155,7 +155,7 @@ public final class UninstallViewModel extends ViewModel {
 		return -1;
 	}
 
-	private final class SessionStateListener extends Session.DefaultStateListener<UninstallFailure> {
+	private final class SessionStateListener extends Session.TerminalStateListener<UninstallFailure> {
 
 		public SessionStateListener(@NonNull Session<? extends UninstallFailure> session) {
 			super(session);

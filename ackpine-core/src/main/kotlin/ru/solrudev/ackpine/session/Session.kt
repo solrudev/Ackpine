@@ -36,7 +36,7 @@ import java.util.UUID
  *
  * The session by itself is passive, so to advance it an observer is needed to appropriately handle its lifecycle by
  * calling necessary methods.
- * [DefaultStateListener] is such an observer.
+ * [TerminalStateListener] is such an observer.
  *
  * @param F a type of [Failure] for this session, may be [InstallFailure] or [UninstallFailure].
  */
@@ -191,7 +191,7 @@ public interface Session<out F : Failure> {
 	 * It's recommended to use this class for listening to [terminal][State.isTerminal] state updates instead of bare
 	 * [StateListener], because this class handles session's lifecycle appropriately.
 	 */
-	public abstract class DefaultStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
+	public abstract class TerminalStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
 
 		/**
 		 * Notifies that session was completed successfully.
