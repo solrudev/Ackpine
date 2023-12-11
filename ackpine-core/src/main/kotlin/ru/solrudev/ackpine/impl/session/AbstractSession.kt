@@ -167,15 +167,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 */
 	protected open fun onCompleted(success: Boolean) {}
 
-	// Implementation allows to re-launch the session when it's not in process of preparations and session's state
-	// hasn't reached Awaiting yet, e.g. when preparations were interrupted with process death.
-	final override fun launch() {
+	final override fun launch(): Boolean {
 		if (isPreparing || isCancelling) {
-			return
+			return false
 		}
 		val currentState = state
 		if (currentState !is Pending && currentState !is Active) {
-			return
+			return false
 		}
 		isPreparing = true
 		state = Active
@@ -189,17 +187,16 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				completeExceptionally(exception)
 			}
 		}
+		return true
 	}
 
-	// Implementation allows to re-commit the session when it's not in process of being committed or confirmed, e.g.
-	// when confirmation was interrupted with process death.
-	final override fun commit() {
+	final override fun commit(): Boolean {
 		if (isCommitted || isCommitting || isCancelling) {
-			return
+			return false
 		}
 		val currentState = state
 		if (currentState !is Awaiting && currentState !is Committed) {
-			return
+			return false
 		}
 		isCommitting = true
 		serialExecutor.execute {
@@ -211,6 +208,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				completeExceptionally(exception)
 			}
 		}
+		return true
 	}
 
 	final override fun cancel() {

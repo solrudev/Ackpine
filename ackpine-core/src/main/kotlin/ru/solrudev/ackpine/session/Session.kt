@@ -65,14 +65,24 @@ public interface Session<out F : Failure> {
 
 	/**
 	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations.
+	 *
+	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
+	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
+	 *
+	 * @return `true` if session preparations have been launched due to this invocation.
 	 */
-	public fun launch()
+	public fun launch(): Boolean
 
 	/**
 	 * Commits everything that was prepared in the session. This will launch user's [confirmation][Confirmation] of
 	 * installation or uninstallation.
+	 *
+	 * This method allows to re-commit the session when it's not in process of being committed or confirmed, e.g. when
+	 * confirmation was interrupted with process death.
+	 *
+	 * @return `true` if this session has been committed due to this invocation.
 	 */
-	public fun commit()
+	public fun commit(): Boolean
 
 	/**
 	 * Cancels this session, rendering it invalid.
