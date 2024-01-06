@@ -46,6 +46,7 @@ public final class ru/solrudev/ackpine/impl/database/AckpineDatabase_Impl {
 
 public final class ru/solrudev/ackpine/impl/database/dao/InstallSessionDao_Impl {
 	public fun <init> (Lru/solrudev/ackpine/impl/database/AckpineDatabase;)V
+	public fun getCommittedInstallSessions ()Ljava/util/List;
 	public fun getFailure (Ljava/lang/String;)Lru/solrudev/ackpine/installer/InstallFailure;
 	public synthetic fun getFailure (Ljava/lang/String;)Lru/solrudev/ackpine/session/Failure;
 	public fun getInstallSession (Ljava/lang/String;)Lru/solrudev/ackpine/impl/database/model/SessionEntity$InstallSession;

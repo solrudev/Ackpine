@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.4.1 (2024-01-06)
+--------------------------
+
+### Bug fixes and improvements
+
+- `SESSION_BASED` package installer sessions are no longer stuck in `COMMITTED` state if they have performed a successful app self-update. This is a partial fix for issue #33.
+
 Version 0.4.0 (2023-12-11)
 --------------------------
 
@@ -14,7 +21,7 @@ Version 0.4.0 (2023-12-11)
 - Breaking: `Session.DefaultStateListener` is renamed to `Session.TerminalStateListener`.
 - Breaking: `Session.State.isCompleted` is removed.
 - Possibly breaking: `isCompleted` and `isCancelled` boolean properties are added to `Session`.
-- Binary-incompatible: `Session.launch()` and `Session.commit()` now return `Boolean`.
+- Possibly breaking: `Session.launch()` and `Session.commit()` now return `Boolean`.
 
 Version 0.3.2 (2023-12-01)
 --------------------------

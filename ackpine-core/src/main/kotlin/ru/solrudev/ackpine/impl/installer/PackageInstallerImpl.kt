@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,6 +44,13 @@ internal class PackageInstallerImpl internal constructor(
 	private val executor: Executor,
 	private val installSessionFactory: InstallSessionFactory
 ) : PackageInstaller {
+
+	init {
+		// When install session is a self-update, session is stuck in Committed state after new process start.
+		// We initialize sessions in Committed state eagerly, so that they can complete themselves if they are in fact
+		// completed. There shouldn't be many of these sessions.
+		initializeCommittedSessions()
+	}
 
 	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
 
@@ -108,6 +115,13 @@ internal class PackageInstallerImpl internal constructor(
 			}
 		}
 		return initializeSessions { sessions -> sessions.filter { it.isActive } }
+	}
+
+	private fun initializeCommittedSessions() = executor.execute {
+		for (session in installSessionDao.getCommittedInstallSessions()) {
+			val installSession = session.toInstallSession()
+			sessions[installSession.id] = installSession
+		}
 	}
 
 	@SuppressLint("RestrictedApi")

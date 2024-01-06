@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,11 @@
 package ru.solrudev.ackpine.impl.database.dao
 
 import androidx.annotation.RestrictTo
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -59,6 +63,10 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	@Transaction
 	@Query("SELECT * FROM sessions")
 	abstract fun getInstallSessions(): List<SessionEntity.InstallSession>
+
+	@Transaction
+	@Query("SELECT * FROM sessions WHERE state = 'COMMITTED'")
+	abstract fun getCommittedInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
 	protected abstract fun insertInstallFailure(id: String, failure: InstallFailure)

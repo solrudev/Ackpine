@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,8 @@ import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -90,7 +92,14 @@ internal class SessionBasedInstallSession internal constructor(
 
 	init {
 		serialExecutor.execute {
-			nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
+			val nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
+			this.nativeSessionId = nativeSessionId
+			// When install session is a self-update, session is stuck in Committed state after new process start.
+			// Fails are guaranteed to be handled by PackageInstallerStatusReceiver,
+			// so if native session doesn't exist, it can only mean that it succeeded.
+			if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
+				complete(Succeeded)
+			}
 		}
 	}
 

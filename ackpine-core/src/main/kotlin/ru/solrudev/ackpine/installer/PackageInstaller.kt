@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.installer
 import android.content.Context
 import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
@@ -111,7 +112,7 @@ public interface PackageInstaller {
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				database.sessionProgressDao(),
-				PackageInstallerPlugin.executor,
+				SerialExecutor(PackageInstallerPlugin.executor),
 				InstallSessionFactoryImpl(
 					context.applicationContext,
 					database.sessionDao(),
