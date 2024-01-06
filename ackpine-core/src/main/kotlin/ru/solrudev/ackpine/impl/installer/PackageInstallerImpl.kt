@@ -45,6 +45,13 @@ internal class PackageInstallerImpl internal constructor(
 	private val installSessionFactory: InstallSessionFactory
 ) : PackageInstaller {
 
+	init {
+		// When install session is a self-update, session is stuck in Committed state after new process start.
+		// We initialize sessions in Committed state eagerly, so that they can complete themselves if they are in fact
+		// completed. There shouldn't be many of these sessions.
+		initializeCommittedSessions()
+	}
+
 	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
 
 	@Volatile
@@ -108,6 +115,13 @@ internal class PackageInstallerImpl internal constructor(
 			}
 		}
 		return initializeSessions { sessions -> sessions.filter { it.isActive } }
+	}
+
+	private fun initializeCommittedSessions() = executor.execute {
+		for (session in installSessionDao.getCommittedInstallSessions()) {
+			val installSession = session.toInstallSession()
+			sessions[installSession.id] = installSession
+		}
 	}
 
 	@SuppressLint("RestrictedApi")
