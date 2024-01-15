@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.4.2 (2024-01-15)
+--------------------------
+
+### Bug fixes and improvements
+
+- `PackageInstaller` and `PackageUninstaller` no longer throw exceptions when trying to get a session of wrong type (install session from `PackageUninstaller` and vice versa).
+- `PackageInstaller` and `PackageUninstaller` no longer throw exceptions when getting a list of sessions if there were both install and uninstall sessions in internal database.
+- Add ProGuard rules and `serialVersionUID` for classes which are `Serializable` for more stable serialization. Note that this requires to purge internal database because of incompatible changes, so all previous sessions will be cleared when Ackpine is updated to 0.4.2.
+
 Version 0.4.1 (2024-01-06)
 --------------------------
 
