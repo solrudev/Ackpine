@@ -36,8 +36,17 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionNameDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
-import ru.solrudev.ackpine.impl.database.model.*
+import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
+import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
+import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
+import ru.solrudev.ackpine.impl.database.model.NotificationIdEntity
+import ru.solrudev.ackpine.impl.database.model.PackageNameEntity
+import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TERMINAL_STATES
+import ru.solrudev.ackpine.impl.database.model.SessionInstallerTypeEntity
+import ru.solrudev.ackpine.impl.database.model.SessionNameEntity
+import ru.solrudev.ackpine.impl.database.model.SessionProgressEntity
+import ru.solrudev.ackpine.impl.database.model.UninstallFailureEntity
 import java.util.concurrent.Executor
 import kotlin.time.Duration.Companion.days
 
@@ -63,7 +72,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 2, to = 3),
 		AutoMigration(from = 3, to = 4)
 	],
-	version = 4,
+	version = 5,
 	exportSchema = true
 )
 @TypeConverters(
@@ -105,15 +114,17 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 		private fun create(context: Context, executor: Executor): AckpineDatabase {
 			return Room.databaseBuilder(context, AckpineDatabase::class.java, ACKPINE_DATABASE_NAME)
 				.openHelperFactory { configuration ->
-					val configBuilder = SupportSQLiteOpenHelper.Configuration.builder(context)
-					configBuilder.name(configuration.name)
+					val config = SupportSQLiteOpenHelper.Configuration.builder(context)
+						.name(configuration.name)
 						.callback(configuration.callback)
 						.noBackupDirectory(true)
 						.allowDataLossOnRecovery(true)
-					FrameworkSQLiteOpenHelperFactory().create(configBuilder.build())
+						.build()
+					FrameworkSQLiteOpenHelperFactory().create(config)
 				}
 				.setQueryExecutor(executor)
 				.addCallback(PurgeCallback)
+				.addMigrations(Migration_4_5)
 				.fallbackToDestructiveMigration()
 				.build()
 		}

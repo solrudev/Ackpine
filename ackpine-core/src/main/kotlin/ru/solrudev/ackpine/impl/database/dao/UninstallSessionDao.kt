@@ -46,11 +46,11 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 	}
 
 	@Transaction
-	@Query("SELECT * FROM sessions WHERE id = :id")
+	@Query("SELECT * FROM sessions WHERE id = :id AND type = 'UNINSTALL'")
 	abstract fun getUninstallSession(id: String): SessionEntity.UninstallSession?
 
 	@Transaction
-	@Query("SELECT * FROM sessions")
+	@Query("SELECT * FROM sessions WHERE type = 'UNINSTALL'")
 	abstract fun getUninstallSessions(): List<SessionEntity.UninstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")

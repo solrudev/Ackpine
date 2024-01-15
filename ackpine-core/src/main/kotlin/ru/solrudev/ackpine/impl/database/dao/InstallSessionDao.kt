@@ -57,15 +57,15 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	}
 
 	@Transaction
-	@Query("SELECT * FROM sessions WHERE id = :id")
+	@Query("SELECT * FROM sessions WHERE id = :id AND type = 'INSTALL'")
 	abstract fun getInstallSession(id: String): SessionEntity.InstallSession?
 
 	@Transaction
-	@Query("SELECT * FROM sessions")
+	@Query("SELECT * FROM sessions WHERE type = 'INSTALL'")
 	abstract fun getInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Transaction
-	@Query("SELECT * FROM sessions WHERE state = 'COMMITTED'")
+	@Query("SELECT * FROM sessions WHERE state = 'COMMITTED' AND type = 'INSTALL'")
 	abstract fun getCommittedInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
