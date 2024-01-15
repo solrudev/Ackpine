@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("Unused")
+
 package ru.solrudev.ackpine.uninstaller
 
 import ru.solrudev.ackpine.session.Failure
