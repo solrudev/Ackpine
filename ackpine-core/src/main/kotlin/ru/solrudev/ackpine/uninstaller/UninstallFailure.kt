@@ -27,16 +27,26 @@ public sealed interface UninstallFailure : Failure, Serializable {
 	/**
 	 * The operation failed in a generic way.
 	 */
-	public data object Generic : UninstallFailure
+	public data object Generic : UninstallFailure {
+		private const val serialVersionUID: Long = -6110974914043192127L
+	}
 
 	/**
 	 * The operation failed because it was actively aborted.
 	 * For example, the user actively declined uninstall request.
 	 */
-	public data class Aborted(public val message: String) : UninstallFailure
+	public data class Aborted(public val message: String) : UninstallFailure {
+		private companion object {
+			private const val serialVersionUID: Long = -2386460202828522962L
+		}
+	}
 
 	/**
 	 * The operation failed because an exception was thrown.
 	 */
-	public data class Exceptional(public override val exception: Exception) : UninstallFailure, Failure.Exceptional
+	public data class Exceptional(public override val exception: Exception) : UninstallFailure, Failure.Exceptional {
+		private companion object {
+			private const val serialVersionUID: Long = -3918656046001035393L
+		}
+	}
 }

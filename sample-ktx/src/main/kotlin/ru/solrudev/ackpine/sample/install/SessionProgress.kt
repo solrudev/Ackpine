@@ -30,4 +30,8 @@ data class SessionProgress(
 
 	val progress: Progress
 		get() = Progress(currentProgress, progressMax)
+
+	private companion object {
+		private const val serialVersionUID: Long = -8422171532182780133L
+	}
 }
