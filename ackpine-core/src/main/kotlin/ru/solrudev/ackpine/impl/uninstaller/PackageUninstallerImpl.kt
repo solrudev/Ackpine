@@ -57,6 +57,7 @@ internal class PackageUninstallerImpl internal constructor(
 				SessionEntity.UninstallSession(
 					session = SessionEntity(
 						id.toString(),
+						SessionEntity.Type.UNINSTALL,
 						SessionEntity.State.PENDING,
 						parameters.confirmation,
 						parameters.notificationData.title,

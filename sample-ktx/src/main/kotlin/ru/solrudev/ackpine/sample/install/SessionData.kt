@@ -24,4 +24,8 @@ data class SessionData(
 	val id: UUID,
 	val name: String,
 	val error: NotificationString = NotificationString.empty()
-) : Serializable
+) : Serializable {
+	private companion object {
+		private const val serialVersionUID: Long = 8755976983702116478L
+	}
+}

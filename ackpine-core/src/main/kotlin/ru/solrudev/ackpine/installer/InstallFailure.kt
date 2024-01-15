@@ -41,7 +41,11 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Exceptional(
 		public override val exception: Exception
-	) : InstallFailure("Install failed due to an exception."), Failure.Exceptional
+	) : InstallFailure("Install failed due to an exception."), Failure.Exceptional {
+		private companion object {
+			private const val serialVersionUID: Long = -9079346194912065953L
+		}
+	}
 
 	/**
 	 * The operation failed in a generic way. The system will always try to provide a more specific failure reason,
@@ -49,13 +53,21 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Generic @JvmOverloads public constructor(
 		public override val message: String? = null
-	) : InstallFailure(message)
+	) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 6785833663285844380L
+		}
+	}
 
 	/**
 	 * The operation failed because it was actively aborted.
 	 * For example, the user actively declined requested permissions, or the session was abandoned.
 	 */
-	public data class Aborted(public override val message: String?) : InstallFailure(message)
+	public data class Aborted(public override val message: String?) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 5217863192717623705L
+		}
+	}
 
 	/**
 	 * The operation failed because it was blocked. For example, a device policy may be blocking the operation,
@@ -66,7 +78,11 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	public data class Blocked @JvmOverloads public constructor(
 		public override val message: String?,
 		public val otherPackageName: String? = null
-	) : InstallFailure(message)
+	) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 8457207819123634411L
+		}
+	}
 
 	/**
 	 * The operation failed because it conflicts (or is inconsistent with) with another package already installed
@@ -78,20 +94,32 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	public data class Conflict @JvmOverloads public constructor(
 		public override val message: String?,
 		public val otherPackageName: String? = null
-	) : InstallFailure(message)
+	) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = -5471020595408614795L
+		}
+	}
 
 	/**
 	 * The operation failed because it is fundamentally incompatible with this device. For example, the app may
 	 * require a hardware feature that doesn't exist, it may be missing native code for the ABIs supported by the
 	 * device, or it requires a newer SDK version, etc.
 	 */
-	public data class Incompatible(public override val message: String?) : InstallFailure(message)
+	public data class Incompatible(public override val message: String?) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 7194911454975521530L
+		}
+	}
 
 	/**
 	 * The operation failed because one or more of the APKs was invalid. For example, they might be malformed,
 	 * corrupt, incorrectly signed, mismatched, etc.
 	 */
-	public data class Invalid(public override val message: String?) : InstallFailure(message)
+	public data class Invalid(public override val message: String?) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 9045650456707265963L
+		}
+	}
 
 	/**
 	 * The operation failed because of storage issues. For example, the device may be running low on space,
@@ -102,9 +130,15 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	public data class Storage @JvmOverloads public constructor(
 		public override val message: String?,
 		public val storagePath: String? = null
-	) : InstallFailure(message)
+	) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = -7427274925677501111L
+		}
+	}
 
 	internal companion object {
+
+		private const val serialVersionUID: Long = -4122677617329666142L
 
 		/**
 		 * Converts Android's [PackageInstaller] failure status code to [InstallFailure] object.

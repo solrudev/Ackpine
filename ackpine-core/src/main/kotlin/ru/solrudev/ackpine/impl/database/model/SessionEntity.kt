@@ -29,6 +29,8 @@ internal data class SessionEntity internal constructor(
 	@PrimaryKey
 	@ColumnInfo(name = "id")
 	val id: String,
+	@ColumnInfo(name = "type", index = true)
+	val type: Type,
 	@ColumnInfo(name = "state", index = true)
 	val state: State,
 	@ColumnInfo(name = "confirmation")
@@ -45,6 +47,11 @@ internal data class SessionEntity internal constructor(
 	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0", index = true)
 	val lastLaunchTimestamp: Long = 0
 ) {
+
+	@RestrictTo(RestrictTo.Scope.LIBRARY)
+	internal enum class Type {
+		INSTALL, UNINSTALL
+	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal enum class State {

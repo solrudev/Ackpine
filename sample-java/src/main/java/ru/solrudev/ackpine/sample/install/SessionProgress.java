@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.sample.install;
 
 import androidx.annotation.NonNull;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -25,6 +26,9 @@ import java.util.UUID;
 import ru.solrudev.ackpine.session.Progress;
 
 public final class SessionProgress implements Serializable {
+
+	@Serial
+	private static final long serialVersionUID = -1923187412469582409L;
 
 	@NonNull
 	private final UUID id;

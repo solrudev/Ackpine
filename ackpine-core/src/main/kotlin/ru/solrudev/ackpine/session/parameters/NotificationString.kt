@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("Unused")
+
 package ru.solrudev.ackpine.session.parameters
 
 import android.content.Context
@@ -91,15 +93,20 @@ public sealed interface NotificationString : Serializable {
 }
 
 private data object Default : NotificationString {
+	private const val serialVersionUID = 809543744617543082L
 	override fun resolve(context: Context): String = ""
 }
 
 private data object Empty : NotificationString {
+	private const val serialVersionUID: Long = 5194188194930148316L
 	override fun resolve(context: Context): String = ""
 }
 
 private data class Raw(val value: String) : NotificationString {
 	override fun resolve(context: Context): String = value
+	private companion object {
+		private const val serialVersionUID: Long = -6824736411987160679L
+	}
 }
 
 private data class Resource(@StringRes val stringId: Int, val args: Array<out Serializable>) : NotificationString {
@@ -119,13 +126,16 @@ private data class Resource(@StringRes val stringId: Int, val args: Array<out Se
 		if (javaClass != other?.javaClass) return false
 		other as Resource
 		if (stringId != other.stringId) return false
-		if (!args.contentEquals(other.args)) return false
-		return true
+		return args.contentEquals(other.args)
 	}
 
 	override fun hashCode(): Int {
 		var result = stringId
 		result = 31 * result + args.contentHashCode()
 		return result
+	}
+
+	private companion object {
+		private const val serialVersionUID: Long = -7822872422889864805L
 	}
 }
