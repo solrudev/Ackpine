@@ -1,6 +1,6 @@
 [versions]
 activity = "1.8.2"
-lifecycle = "2.6.2"
+lifecycle = "2.7.0"
 navigation = "2.7.5"
 room = "2.6.1"
 concurrent = "1.1.0"
