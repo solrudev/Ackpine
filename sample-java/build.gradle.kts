@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  */
 
 import ru.solrudev.ackpine.gradle.Constants
+import ru.solrudev.ackpine.gradle.helpers.getVersionFromPropertiesFile
+import ru.solrudev.ackpine.gradle.helpers.versionCode
 
 description = "Sample application in Java showcasing Ackpine usage"
 
@@ -31,13 +33,13 @@ java {
 android {
 	compileSdk = 34
 	buildToolsVersion = "34.0.0"
-	namespace = Constants.samplePackageName
+	namespace = Constants.SAMPLE_PACKAGE_NAME
 
 	defaultConfig {
-		applicationId = Constants.samplePackageName
+		applicationId = Constants.SAMPLE_PACKAGE_NAME
 		minSdk = 21
 		targetSdk = 34
-		versionCode = 1
+		versionCode = getVersionFromPropertiesFile().versionCode
 		versionName = rootProject.version.toString()
 	}
 

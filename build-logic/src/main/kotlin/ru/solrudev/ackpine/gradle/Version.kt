@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,22 @@
 
 package ru.solrudev.ackpine.gradle
 
-public object Constants {
-	public const val SAMPLE_PACKAGE_NAME: String = "ru.solrudev.ackpine.sample"
-	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine"
-	internal const val signingKeyId = "signing.keyId"
-	internal const val signingPassword = "signing.password"
-	internal const val signingKey = "signing.key"
+public data class Version(
+	public val majorVersion: Int,
+	public val minorVersion: Int,
+	public val patchVersion: Int,
+	public val suffix: String,
+	public val isSnapshot: Boolean
+) {
+	override fun toString(): String {
+		return buildString {
+			append("$majorVersion.$minorVersion.$patchVersion")
+			if (suffix.isNotEmpty()) {
+				append("-$suffix")
+			}
+			if (isSnapshot) {
+				append("-SNAPSHOT")
+			}
+		}
+	}
 }
