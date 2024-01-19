@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+Version 0.4.3 (2024-01-19)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.22.
+- Updated Android Gradle Plugin to 8.2.1.
+- Updated `apksig` to 8.2.1.
+- Updated `androidx.annotation` to 1.7.1.
+- Updated `androidx.activity` to 1.8.2 (sample apps dependency).
+- Updated `androidx.lifecycle` to 2.7.0 (sample apps dependency).
+- Updated `androidx.navigation` to 2.7.6 (sample apps dependency).
+- Updated Material Components to 1.11.0 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Scale Ackpine thread pool size depending on available CPU cores.
+- Associate APK, APKS, APKM and XAPK files with Ackpine sample app.
+
 Version 0.4.2 (2024-01-15)
 --------------------------
 
