@@ -1,7 +1,7 @@
 [versions]
 android-gradleplugin = "8.2.1"
-kotlin = "1.9.21"
-kotlin-ksp = "1.9.21-1.0.15"
+kotlin = "1.9.22"
+kotlin-ksp = "1.9.22-1.0.17"
 
 [libraries]
 materialcomponents = { module = "com.google.android.material:material", version = "1.11.0" }
