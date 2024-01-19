@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,13 +31,14 @@ import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.withProperties
+import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
-		group = Constants.packageName
-		version = versionFromPropertiesFile()
+		group = Constants.PACKAGE_NAME
+		version = getVersionFromPropertiesFile().toString()
 		pluginManager.run {
 			apply(NexusPublishPlugin::class)
 			apply(DokkaPlugin::class)
@@ -86,23 +87,6 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 					nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
 					snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
 				}
-			}
-		}
-	}
-
-	private fun Project.versionFromPropertiesFile(): String = file("version.properties").withProperties {
-		val majorVersion = get("MAJOR_VERSION") as String
-		val minorVersion = get("MINOR_VERSION") as String
-		val patchVersion = get("PATCH_VERSION") as String
-		val suffix = get("SUFFIX") as String
-		val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
-		return buildString {
-			append("$majorVersion.$minorVersion.$patchVersion")
-			if (suffix.isNotEmpty()) {
-				append("-$suffix")
-			}
-			if (isSnapshot) {
-				append("-SNAPSHOT")
 			}
 		}
 	}

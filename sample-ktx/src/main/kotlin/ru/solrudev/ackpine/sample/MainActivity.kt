@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine.sample
 
+import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.Intent.ACTION_VIEW
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -24,6 +27,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import by.kirich1409.viewbindingdelegate.viewBinding
 import ru.solrudev.ackpine.sample.databinding.NavHostBinding
+import ru.solrudev.ackpine.sample.install.InstallFragment
 
 class MainActivity : AppCompatActivity(R.layout.nav_host) {
 
@@ -39,5 +43,26 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 		val navController = navController
 		binding.toolbarNavHost.setupWithNavController(navController, appBarConfiguration)
 		binding.bottomNavigationViewNavHost.setupWithNavController(navController)
+		maybeHandleInstallUri(intent)
+	}
+
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		maybeHandleInstallUri(intent)
+	}
+
+	@SuppressLint("RestrictedApi")
+	private fun maybeHandleInstallUri(intent: Intent) {
+		val uri = intent.data
+		if (intent.action == ACTION_VIEW && uri != null) {
+			val fragmentTag = navController.currentBackStack.value
+				.firstOrNull { it.destination.id == R.id.install_fragment }
+				?.id
+			val installFragment = binding.contentNavHost
+				.getFragment<NavHostFragment>()
+				.childFragmentManager
+				.findFragmentByTag(fragmentTag) as? InstallFragment
+			installFragment?.install(uri)
+		}
 	}
 }

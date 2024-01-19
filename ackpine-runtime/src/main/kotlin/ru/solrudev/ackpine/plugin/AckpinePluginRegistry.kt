@@ -20,12 +20,13 @@ import androidx.annotation.RestrictTo
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.math.roundToInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object AckpinePluginRegistry {
 
 	private val executor = Executors.newFixedThreadPool(
-		8,
+		(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
 		object : ThreadFactory {
 			private val threadCount = AtomicInteger(0)
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public abstract class AckpineExtension @Inject constructor(
 		get() = _id
 		set(value) {
 			_id = value
-			libraryExtension.namespace = "${Constants.packageName}.$value"
+			libraryExtension.namespace = "${Constants.PACKAGE_NAME}.$value"
 		}
 
 	/**
