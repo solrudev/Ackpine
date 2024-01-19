@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle
+package ru.solrudev.ackpine.gradle.versioning
 
 public data class Version(
 	public val majorVersion: Int,

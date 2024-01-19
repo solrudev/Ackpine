@@ -30,8 +30,8 @@ import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.helpers.getVersionFromPropertiesFile
 import ru.solrudev.ackpine.gradle.helpers.withProperties
+import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 

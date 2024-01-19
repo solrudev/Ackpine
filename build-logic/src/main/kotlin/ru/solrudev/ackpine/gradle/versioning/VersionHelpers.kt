@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.helpers
+package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
-import ru.solrudev.ackpine.gradle.Version
+import ru.solrudev.ackpine.gradle.helpers.withProperties
 
 public fun Project.getVersionFromPropertiesFile(): Version = rootProject.file("version.properties").withProperties {
 	val majorVersion = (get("MAJOR_VERSION") as String).toInt()
