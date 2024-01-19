@@ -47,7 +47,9 @@ public final class MainActivity extends AppCompatActivity {
 		final NavController navController = getNavController();
 		NavigationUI.setupWithNavController(binding.toolbarNavHost, navController, appBarConfiguration);
 		NavigationUI.setupWithNavController(binding.bottomNavigationViewNavHost, navController);
-		maybeHandleInstallUri(getIntent());
+		if (savedInstanceState == null) {
+			maybeHandleInstallUri(getIntent());
+		}
 	}
 
 	@Override

@@ -43,7 +43,9 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 		val navController = navController
 		binding.toolbarNavHost.setupWithNavController(navController, appBarConfiguration)
 		binding.bottomNavigationViewNavHost.setupWithNavController(navController)
-		maybeHandleInstallUri(intent)
+		if (savedInstanceState == null) {
+			maybeHandleInstallUri(intent)
+		}
 	}
 
 	override fun onNewIntent(intent: Intent) {
