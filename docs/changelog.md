@@ -17,6 +17,7 @@ Version 0.4.3 (2024-01-19)
 
 ### Bug fixes and improvements
 
+- Fix incorrect `Succeeded` state of `SESSION_BASED` package installer session in some cases if app is killed while installing but system installer Activity remains visible.
 - Scale Ackpine thread pool size depending on available CPU cores.
 - Associate APK, APKS, APKM and XAPK files with Ackpine sample app.
 

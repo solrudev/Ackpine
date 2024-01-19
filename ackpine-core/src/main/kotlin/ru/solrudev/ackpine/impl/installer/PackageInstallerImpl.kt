@@ -46,9 +46,10 @@ internal class PackageInstallerImpl internal constructor(
 ) : PackageInstaller {
 
 	init {
-		// When install session is a self-update, session is stuck in Committed state after new process start.
-		// We initialize sessions in Committed state eagerly, so that they can complete themselves if they are in fact
-		// completed. There shouldn't be many of these sessions.
+		// If app is killed while installing but system installer activity remains visible,
+		// session is stuck in Committed state after new process start.
+		// We initialize sessions in Committed state eagerly, so that they can complete themselves
+		// if they are in fact completed. There shouldn't be many of these sessions.
 		initializeCommittedSessions()
 	}
 

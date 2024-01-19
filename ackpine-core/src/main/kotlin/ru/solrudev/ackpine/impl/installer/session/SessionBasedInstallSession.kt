@@ -94,11 +94,13 @@ internal class SessionBasedInstallSession internal constructor(
 		serialExecutor.execute {
 			val nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
 			this.nativeSessionId = nativeSessionId
-			// When install session is a self-update, session is stuck in Committed state after new process start.
-			// Fails are guaranteed to be handled by PackageInstallerStatusReceiver,
-			// so if native session doesn't exist, it can only mean that it succeeded.
+			// If app is killed while installing but system installer activity remains visible,
+			// session is stuck in Committed state after new process start.
+			// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
+			// success is not handled), so if native session doesn't exist, it can only mean that it succeeded.
+			// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
 			if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
-				complete(Succeeded)
+				handler.postDelayed({ complete(Succeeded) }, 2000)
 			}
 		}
 	}
