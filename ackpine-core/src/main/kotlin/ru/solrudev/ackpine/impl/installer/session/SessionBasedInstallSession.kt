@@ -100,6 +100,7 @@ internal class SessionBasedInstallSession internal constructor(
 			// success is not handled), so if native session doesn't exist, it can only mean that it succeeded.
 			// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
 			if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
+				notifyCommitted() // block clients from committing
 				handler.postDelayed({ complete(Succeeded) }, 2000)
 			}
 		}
