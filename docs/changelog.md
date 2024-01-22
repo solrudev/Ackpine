@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.4.4 (2024-01-22)
+--------------------------
+
+### Bug fixes and improvements
+
+- Prevent clients from committing a `SESSION_BASED` package installer session while it's initializing if it's already completed.
+- Fix an exception when app process is restarted after returning from package uninstall confirmation.
+
 Version 0.4.3 (2024-01-19)
 --------------------------
 
