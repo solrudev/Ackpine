@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -270,6 +270,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private fun cleanup() {
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(notificationTag, notificationId)
+		isCommitted = false
+		isCommitting = false
 	}
 
 	private fun handleCancellation() {
