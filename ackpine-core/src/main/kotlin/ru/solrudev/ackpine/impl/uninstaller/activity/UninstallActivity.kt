@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 private const val TAG = "UninstallActivity"
-private val uninstallPackageContract = UninstallPackageContract()
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
@@ -43,10 +42,21 @@ internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailur
 	}
 
 	private lateinit var ackpinePackageUninstaller: PackageUninstaller
+	private lateinit var uninstallPackageContract: UninstallContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		ackpinePackageUninstaller = PackageUninstaller.getInstance(this)
 		super.onCreate(savedInstanceState)
+		if (packageNameToUninstall == null) {
+			withCompletableSession { session ->
+				session?.completeExceptionally(
+					IllegalStateException("$TAG: packageNameToUninstall was null.")
+				)
+			}
+			finish()
+			return
+		}
+		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall!!)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
 		}
@@ -66,15 +76,7 @@ internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailur
 
 	@SuppressLint("RestrictedApi")
 	private fun launchUninstallActivity() {
-		if (packageNameToUninstall == null) {
-			withCompletableSession { session ->
-				session?.completeExceptionally(
-					IllegalStateException("$TAG: packageNameToUninstall was null.")
-				)
-			}
-			return
-		}
-		val intent = uninstallPackageContract.createIntent(this, packageNameToUninstall!!)
+		val intent = uninstallPackageContract.createIntent(this)
 		startActivityForResult(intent, requestCode)
 		notifySessionCommitted()
 	}
