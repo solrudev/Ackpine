@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,26 +30,23 @@ import androidx.annotation.RestrictTo
  */
 @Suppress("FunctionName")
 @JvmSynthetic
-internal fun UninstallPackageContract(): UninstallContract {
+internal fun UninstallPackageContract(packageName: String): UninstallContract {
 	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-		return ActionUninstallPackageContract()
+		return ActionUninstallPackageContract(packageName)
 	}
-	return ActionDeletePackageContract()
+	return ActionDeletePackageContract(packageName)
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface UninstallContract {
-	fun createIntent(context: Context, input: String): Intent
+	fun createIntent(context: Context): Intent
 	fun parseResult(context: Context, resultCode: Int): Boolean
 }
 
-private class ActionDeletePackageContract : UninstallContract {
+private class ActionDeletePackageContract(private val packageName: String) : UninstallContract {
 
-	private lateinit var packageName: String
-
-	override fun createIntent(context: Context, input: String): Intent {
-		packageName = input
-		val packageUri = Uri.parse("package:$input")
+	override fun createIntent(context: Context): Intent {
+		val packageUri = Uri.parse("package:$packageName")
 		return Intent(Intent.ACTION_DELETE, packageUri)
 	}
 
@@ -62,7 +59,6 @@ private class ActionDeletePackageContract : UninstallContract {
 		false
 	}
 
-	@Suppress("DEPRECATION")
 	private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
 		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
@@ -72,12 +68,12 @@ private class ActionDeletePackageContract : UninstallContract {
 	}
 }
 
-private class ActionUninstallPackageContract : UninstallContract {
+private class ActionUninstallPackageContract(private val packageName: String) : UninstallContract {
 
 	@Suppress("DEPRECATION")
-	override fun createIntent(context: Context, input: String) = Intent().apply {
+	override fun createIntent(context: Context) = Intent().apply {
 		action = Intent.ACTION_UNINSTALL_PACKAGE
-		data = Uri.parse("package:$input")
+		data = Uri.parse("package:$packageName")
 		putExtra(Intent.EXTRA_RETURN_RESULT, true)
 	}
 
