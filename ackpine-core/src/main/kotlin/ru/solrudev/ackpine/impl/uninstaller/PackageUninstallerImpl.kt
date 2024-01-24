@@ -37,7 +37,8 @@ import java.util.concurrent.Executor
 internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionDao: UninstallSessionDao,
 	private val executor: Executor,
-	private val uninstallSessionFactory: UninstallSessionFactory
+	private val uninstallSessionFactory: UninstallSessionFactory,
+	private val uuidFactory: () -> UUID
 ) : PackageUninstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, Session<UninstallFailure>>()
@@ -46,7 +47,7 @@ internal class PackageUninstallerImpl internal constructor(
 	private var isSessionsMapInitialized = false
 
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
-		val id = UUID.randomUUID()
+		val id = uuidFactory()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending

@@ -115,7 +115,8 @@ public interface PackageUninstaller {
 					database.notificationIdDao(),
 					PackageUninstallerPlugin.executor,
 					Handler(context.mainLooper)
-				)
+				),
+				uuidFactory = UUID::randomUUID
 			)
 		}
 	}
