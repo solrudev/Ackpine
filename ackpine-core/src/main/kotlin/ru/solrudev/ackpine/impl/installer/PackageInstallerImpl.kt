@@ -134,8 +134,10 @@ internal class PackageInstallerImpl internal constructor(
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.safeExecuteWith(future) {
 			for (session in installSessionDao.getInstallSessions()) {
-				val installSession = session.toInstallSession()
-				sessions.putIfAbsent(installSession.id, installSession)
+				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+					val installSession = session.toInstallSession()
+					sessions.putIfAbsent(installSession.id, installSession)
+				}
 			}
 			isSessionsMapInitialized = true
 			future.set(transform(sessions.values))

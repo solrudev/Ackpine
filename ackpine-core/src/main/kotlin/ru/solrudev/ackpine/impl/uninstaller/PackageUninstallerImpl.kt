@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,8 +114,10 @@ internal class PackageUninstallerImpl internal constructor(
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
 		executor.safeExecuteWith(future) {
 			for (session in uninstallSessionDao.getUninstallSessions()) {
-				val uninstallSession = session.toUninstallSession()
-				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+					val uninstallSession = session.toUninstallSession()
+					sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+				}
 			}
 			isSessionsMapInitialized = true
 			future.set(transform(sessions.values))
