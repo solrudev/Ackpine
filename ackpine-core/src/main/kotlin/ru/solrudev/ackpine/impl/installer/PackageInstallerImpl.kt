@@ -42,7 +42,8 @@ internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
 	private val sessionProgressDao: SessionProgressDao,
 	private val executor: Executor,
-	private val installSessionFactory: InstallSessionFactory
+	private val installSessionFactory: InstallSessionFactory,
+	private val uuidFactory: () -> UUID
 ) : PackageInstaller {
 
 	init {
@@ -59,7 +60,7 @@ internal class PackageInstallerImpl internal constructor(
 	private var isSessionsMapInitialized = false
 
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
-		val id = UUID.randomUUID()
+		val id = uuidFactory()
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
@@ -133,8 +134,10 @@ internal class PackageInstallerImpl internal constructor(
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.safeExecuteWith(future) {
 			for (session in installSessionDao.getInstallSessions()) {
-				val installSession = session.toInstallSession()
-				sessions.putIfAbsent(installSession.id, installSession)
+				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+					val installSession = session.toInstallSession()
+					sessions.putIfAbsent(installSession.id, installSession)
+				}
 			}
 			isSessionsMapInitialized = true
 			future.set(transform(sessions.values))

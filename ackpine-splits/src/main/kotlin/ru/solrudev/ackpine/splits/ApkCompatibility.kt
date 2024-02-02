@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.sample.install
+package ru.solrudev.ackpine.splits
 
-import ru.solrudev.ackpine.session.parameters.NotificationString
-import java.io.Serializable
-import java.util.UUID
+/**
+ * Represents a result of evaluation of [APK split][Apk] compatibility with a device.
+ */
+public data class ApkCompatibility(
 
-data class SessionData(
-	val id: UUID,
-	val name: String,
-	val error: NotificationString = NotificationString.empty()
-) : Serializable {
-	private companion object {
-		private const val serialVersionUID: Long = 8755976983702116478L
-	}
-}
+	/**
+	 * Indicates whether the [apk] is the most preferred for the device among other splits of the same type.
+	 */
+	public val isPreferred: Boolean,
+
+	/**
+	 * An [APK split][Apk].
+	 */
+	public val apk: Apk
+)

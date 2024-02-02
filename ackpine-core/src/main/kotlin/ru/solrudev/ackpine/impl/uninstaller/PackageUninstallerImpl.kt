@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,7 +37,8 @@ import java.util.concurrent.Executor
 internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionDao: UninstallSessionDao,
 	private val executor: Executor,
-	private val uninstallSessionFactory: UninstallSessionFactory
+	private val uninstallSessionFactory: UninstallSessionFactory,
+	private val uuidFactory: () -> UUID
 ) : PackageUninstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, Session<UninstallFailure>>()
@@ -46,7 +47,7 @@ internal class PackageUninstallerImpl internal constructor(
 	private var isSessionsMapInitialized = false
 
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
-		val id = UUID.randomUUID()
+		val id = uuidFactory()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending
@@ -113,8 +114,10 @@ internal class PackageUninstallerImpl internal constructor(
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
 		executor.safeExecuteWith(future) {
 			for (session in uninstallSessionDao.getUninstallSessions()) {
-				val uninstallSession = session.toUninstallSession()
-				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+					val uninstallSession = session.toUninstallSession()
+					sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+				}
 			}
 			isSessionsMapInitialized = true
 			future.set(transform(sessions.values))

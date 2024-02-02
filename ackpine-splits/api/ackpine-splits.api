@@ -223,10 +223,28 @@ public final class ru/solrudev/ackpine/splits/Apk$ScreenDensity : ru/solrudev/ac
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class ru/solrudev/ackpine/splits/ApkCompatibility {
+	public fun <init> (ZLru/solrudev/ackpine/splits/Apk;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Lru/solrudev/ackpine/splits/Apk;
+	public final fun copy (ZLru/solrudev/ackpine/splits/Apk;)Lru/solrudev/ackpine/splits/ApkCompatibility;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/ApkCompatibility;ZLru/solrudev/ackpine/splits/Apk;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/ApkCompatibility;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApk ()Lru/solrudev/ackpine/splits/Apk;
+	public fun hashCode ()I
+	public final fun isPreferred ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class ru/solrudev/ackpine/splits/ApkSplits {
 	public static final field INSTANCE Lru/solrudev/ackpine/splits/ApkSplits;
+	public static final fun addAllTo (Lkotlin/sequences/Sequence;Ljava/util/List;)Lkotlin/sequences/Sequence;
+	public static final fun filterCompatible (Ljava/lang/Iterable;)Ljava/util/List;
 	public static final fun filterCompatible (Ljava/lang/Iterable;Landroid/content/Context;)Ljava/util/List;
+	public static final fun filterCompatible (Lkotlin/sequences/Sequence;)Lkotlin/sequences/Sequence;
 	public static final fun filterCompatible (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
+	public static final fun sortedByCompatibility (Ljava/lang/Iterable;Landroid/content/Context;)Ljava/util/List;
+	public static final fun sortedByCompatibility (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
 	public static final fun throwOnInvalidSplitPackage (Ljava/lang/Iterable;)Ljava/util/List;
 	public static final fun throwOnInvalidSplitPackage (Lkotlin/sequences/Sequence;)Lkotlin/sequences/Sequence;
 }

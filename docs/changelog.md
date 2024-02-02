@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 0.5.0 (2024-02-02)
+--------------------------
+
+### Bug fixes and improvements
+
+- Add support for timeout install failure introduced in API level 34.
+- Add new `sortedByCompatibility()` and related APIs in `ackpine-splits` module.
+- Fix documentation for `NotificationData` and related APIs.
+- Don't create session object if it already exists when initializing all sessions.
+
+### Public API changes
+
+- Source-incompatible, possibly throwing in runtime: added `Timeout` child to sealed `InstallFailure` class in `ackpine-core` module.
+- Added `ApkCompatibility` class in `ackpine-splits` module.
+- Added extension functions for `Sequence<Apk>`, `Sequence<ApkCompatibility>`, `Iterable<Apk>`, `Iterable<ApkCompatibility>` to `ApkSplits` in `ackpine-splits` module: `sortedByCompatibility()`, `filterCompatible()`, `addAllTo()`.
+
 Version 0.4.4 (2024-01-22)
 --------------------------
 

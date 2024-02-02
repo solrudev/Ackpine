@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,6 +136,15 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		}
 	}
 
+	/**
+	 * The operation failed because it didn't complete within the specified timeout.
+	 */
+	public data class Timeout(public override val message: String?) : InstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 5534247941342428912L
+		}
+	}
+
 	internal companion object {
 
 		private const val serialVersionUID: Long = -4122677617329666142L
@@ -157,6 +166,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 			PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> Incompatible(message)
 			PackageInstaller.STATUS_FAILURE_INVALID -> Invalid(message)
 			PackageInstaller.STATUS_FAILURE_STORAGE -> Storage(message, storagePath)
+			PackageInstaller.STATUS_FAILURE_TIMEOUT -> Timeout(message)
 			else -> Generic()
 		}
 	}

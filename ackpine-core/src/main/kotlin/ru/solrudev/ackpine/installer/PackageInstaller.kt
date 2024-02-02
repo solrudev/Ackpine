@@ -122,7 +122,8 @@ public interface PackageInstaller {
 					database.notificationIdDao(),
 					PackageInstallerPlugin.executor,
 					Handler(context.mainLooper)
-				)
+				),
+				uuidFactory = UUID::randomUUID
 			)
 		}
 	}

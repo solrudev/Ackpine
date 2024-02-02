@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,14 +38,14 @@ public interface NotificationDataDsl {
 	/**
 	 * Notification title.
 	 *
-	 * Empty by default. If empty, default title is used when notification is displayed.
+	 * By default, a string from Ackpine library is used.
 	 */
 	public var title: NotificationString
 
 	/**
 	 * Notification text.
 	 *
-	 * Empty by default. If empty, default text is used when notification is displayed.
+	 * By default, a string from Ackpine library is used.
 	 */
 	public var contentText: NotificationString
 }

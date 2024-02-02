@@ -50,8 +50,12 @@ val description: String
 === "Kotlin"
 
     ```kotlin
+    val sortedSplitsList = mutableListOf<ApkCompatibility>()
+    // Building a one-time pipeline
     val splits = ZippedApkSplits.getApksForUri(zippedFileUri, context)
-        .filterCompatible(context)
+        .sortedByCompatibility(context)
+        .addAllTo(sortedSplitsList)
+        .filterCompatible()
         .throwOnInvalidSplitPackage()
     val splitsList = try {
         splits.toList()
@@ -59,13 +63,20 @@ val description: String
         println(exception)
         emptyList()
     }
+    sortedSplitsList.filterNot { it.isPreferred }
+        .map { it.apk }
+        .forEach(::println) // prints incompatible APKs
     ```
 
 === "Java"
 
     ```java
+    List<ApkCompatibility> sortedSplitsList = new ArrayList<>();
+    // Building a one-time pipeline
     Sequence<Apk> zippedApkSplits = ZippedApkSplits.getApksForUri(uri, context);
-    Sequence<Apk> filteredSplits = ApkSplits.filterCompatible(zippedApkSplits, context);
+    Sequence<ApkCompatibility> sortedSplits = ApkSplits.sortedByCompatibility(zippedApkSplits, context);
+    Sequence<ApkCompatibility> addingToListSplits = ApkSplits.addAllTo(sortedSplits, sortedSplitsList);
+    Sequence<Apk> filteredSplits = ApkSplits.filterCompatible(addingToListSplits);
     Sequence<Apk> splits = ApkSplits.throwOnInvalidSplitPackage(filteredSplits);
     List<Apk> splitsList = new ArrayList<>();
 	try {
@@ -77,6 +88,12 @@ val description: String
         System.out.println(exception);
         splitsList = Collections.emptyList();
     }
+    for (var apkCompatibility : sortedSplitsList) {
+        if (!apkCompatibility.isPreferred()) {
+            System.out.println(apkCompatibility.getApk()); // prints incompatible APKs
+        }
+    }
+    
     ```
 
 Creating APK splits from separate files

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,67 @@ import kotlin.math.abs
 public object ApkSplits {
 
 	/**
-	 * Returns a sequence containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a sequence that yields [APK splits][Apk] sorted according to their compatibility with the device.
+	 *
+	 * This sort is _not stable_.
+	 *
+	 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
+	 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 *
+	 * The operation is _intermediate_ and _stateful_.
+	 */
+	@JvmStatic
+	public fun Sequence<Apk>.sortedByCompatibility(context: Context): Sequence<ApkCompatibility> {
+		val applicationContext = context.applicationContext // avoid capturing context into closure
+		return sequence {
+			val libsSplits = mutableListOf<Apk.Libs>()
+			val densitySplits = mutableListOf<Apk.ScreenDensity>()
+			val localizationSplits = mutableListOf<Apk.Localization>()
+			this@sortedByCompatibility
+				.addSplitsOfTypeTo(libsSplits)
+				.addSplitsOfTypeTo(densitySplits)
+				.addSplitsOfTypeTo(localizationSplits)
+				.filter { apk -> apk is Apk.Base || apk is Apk.Feature || apk is Apk.Other }
+				.forEach { yield(ApkCompatibility(isPreferred = true, it)) }
+			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
+			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
+			libsSplits.sortBy { apk ->
+				val index = Abi.deviceAbis.indexOf(apk.abi)
+				if (index == -1) Int.MAX_VALUE else index
+			}
+			libsSplits.firstOrNull()
+				?.takeIf { apk -> apk.abi in Abi.deviceAbis }
+				?.also { libsSplits -= it }
+				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
+			densitySplits.sortBy { apk -> abs(deviceDensity - apk.dpi.density) }
+			densitySplits.firstOrNull()
+				?.also { densitySplits -= it }
+				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
+			localizationSplits.sortBy { apk ->
+				val index = deviceLanguages.indexOf(apk.locale.language)
+				if (index == -1) Int.MAX_VALUE else index
+			}
+			localizationSplits.firstOrNull()
+				?.takeIf { apk -> apk.locale.language in deviceLanguages }
+				?.also { localizationSplits -= it }
+				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
+			for (apk in libsSplits) {
+				yield(ApkCompatibility(isPreferred = false, apk))
+			}
+			for (apk in densitySplits) {
+				yield(ApkCompatibility(isPreferred = false, apk))
+			}
+			for (apk in localizationSplits) {
+				yield(ApkCompatibility(isPreferred = false, apk))
+			}
+		}
+	}
+
+	/**
+	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
+	 *
 	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 	 * matching split is chosen.
 	 *
@@ -43,31 +103,22 @@ public object ApkSplits {
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.filterCompatible(context: Context): Sequence<Apk> {
-		val applicationContext = context.applicationContext // avoid capturing context into closure
-		return sequence {
-			val libsSplits = mutableListOf<Apk.Libs>()
-			val densitySplits = mutableListOf<Apk.ScreenDensity>()
-			val localizationSplits = mutableListOf<Apk.Localization>()
-			this@filterCompatible
-				.addSplitsOfTypeTo(libsSplits)
-				.addSplitsOfTypeTo(densitySplits)
-				.addSplitsOfTypeTo(localizationSplits)
-				.filter { apk -> apk is Apk.Base || apk is Apk.Feature || apk is Apk.Other }
-				.forEach { yield(it) }
-			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
-			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
-			libsSplits
-				.filter { apk -> apk.abi in Abi.deviceAbis }
-				.minByOrNull { apk -> Abi.deviceAbis.indexOf(apk.abi) }
-				?.let { yield(it) }
-			densitySplits
-				.minByOrNull { apk -> abs(deviceDensity - apk.dpi.density) }
-				?.let { yield(it) }
-			localizationSplits
-				.filter { apk -> apk.locale.language in deviceLanguages }
-				.minByOrNull { apk -> deviceLanguages.indexOf(apk.locale.language) }
-				?.let { yield(it) }
-		}
+		return sortedByCompatibility(context)
+			.filter { it.isPreferred }
+			.map { it.apk }
+	}
+
+	/**
+	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
+	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 *
+	 * The operation is _intermediate_ and _stateless_.
+	 */
+	@JvmStatic
+	public fun Sequence<ApkCompatibility>.filterCompatible(): Sequence<Apk> {
+		return filter { it.isPreferred }
+			.map { it.apk }
 	}
 
 	/**
@@ -86,17 +137,34 @@ public object ApkSplits {
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
-		return throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingPackageNameException,
-			propertySelector = Apk::packageName
-		).throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingVersionCodeException,
-			propertySelector = Apk::versionCode
+		return SplitPackageSequence(
+			source = this,
+			ApkPropertyChecker(
+				propertySelector = Apk::packageName,
+				conflictingPropertyExceptionInitializer = ::ConflictingPackageNameException
+			),
+			ApkPropertyChecker(
+				propertySelector = Apk::versionCode,
+				conflictingPropertyExceptionInitializer = ::ConflictingVersionCodeException
+			)
 		)
 	}
 
 	/**
-	 * Returns a list containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a sequence which adds all elements to the [destination] list as they pass through.
+	 *
+	 * This operation is _intermediate_ and _stateless_.
+	 */
+	@JvmStatic
+	public fun Sequence<ApkCompatibility>.addAllTo(
+		destination: MutableList<ApkCompatibility>
+	): Sequence<ApkCompatibility> {
+		return onEach { destination += it }
+	}
+
+	/**
+	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
+	 *
 	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 	 * matching split is chosen.
 	 *
@@ -105,6 +173,31 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Iterable<Apk>.filterCompatible(context: Context): List<Apk> {
 		return asSequence().filterCompatible(context).toList()
+	}
+
+	/**
+	 * Returns a list containing [APK splits][Apk] sorted according to their compatibility with the device.
+	 *
+	 * This sort is _not stable_.
+	 *
+	 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
+	 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 */
+	@JvmStatic
+	public fun Iterable<Apk>.sortedByCompatibility(context: Context): List<ApkCompatibility> {
+		return asSequence().sortedByCompatibility(context).toList()
+	}
+
+	/**
+	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
+	 *
+	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 */
+	@JvmStatic
+	public fun Iterable<ApkCompatibility>.filterCompatible(): List<Apk> {
+		return asSequence().filterCompatible().toList()
 	}
 
 	/**
@@ -131,38 +224,17 @@ public object ApkSplits {
 			splits += apk
 		}
 	}
-
-	/**
-	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
-	 * property specified with [propertySelector].
-	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the sequence, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 *
-	 * The operation is _intermediate_ and _stateful_.
-	 */
-	private fun <Property> Sequence<Apk>.throwOnConflictingProperty(
-		exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-		propertySelector: (Apk) -> Property
-	): Sequence<Apk> {
-		return SplitPackageSequence(this, exceptionInitializer, propertySelector)
-	}
 }
 
-private class SplitPackageSequence<Property>(
-	private val sequence: Sequence<Apk>,
-	private val exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-	private val propertySelector: (Apk) -> Property
+private class SplitPackageSequence(
+	private val source: Sequence<Apk>,
+	private vararg val propertyCheckers: ApkPropertyChecker<*>
 ) : Sequence<Apk> {
 
 	override fun iterator() = object : Iterator<Apk> {
 
-		private val iterator = sequence.iterator()
+		private val iterator = source.iterator()
 		private var seenBaseApk = false
-		private var baseApkProperty: Property? = null
-		private val propertyValues = mutableListOf<Property>()
 		private val splitNames = hashSetOf<String>()
 
 		override fun hasNext() = iterator.hasNext()
@@ -172,34 +244,52 @@ private class SplitPackageSequence<Property>(
 			if (!splitNames.add(apk.name)) {
 				throw ConflictingSplitNameException(apk.name)
 			}
-			val apkProperty = propertySelector(apk)
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
 					throw ConflictingBaseApkException()
 				}
 				seenBaseApk = true
-				baseApkProperty = apkProperty
 			}
-			val expectedProperty = baseApkProperty
-			if (expectedProperty != null) {
-				checkApkProperty(expectedProperty, apkProperty, apk.name)
-				for (property in propertyValues) {
-					checkApkProperty(expectedProperty, property, apk.name)
-				}
-				propertyValues.clear()
-			} else {
-				propertyValues += apkProperty
+			for (propertyChecker in propertyCheckers) {
+				propertyChecker.checkApk(apk)
 			}
 			if (!hasNext() && !seenBaseApk) {
 				throw NoBaseApkException()
 			}
 			return apk
 		}
+	}
+}
 
-		private fun checkApkProperty(baseProperty: Property, apkProperty: Property, name: String) {
-			if (baseProperty != apkProperty) {
-				throw exceptionInitializer(baseProperty, apkProperty, name)
+private class ApkPropertyChecker<Property>(
+	private val propertySelector: (Apk) -> Property,
+	private val conflictingPropertyExceptionInitializer:
+		(expected: Property, actual: Property, name: String) -> Exception
+) {
+
+	private var baseApkProperty: Property? = null
+	private val propertyValues = mutableListOf<Property>()
+
+	fun checkApk(apk: Apk) {
+		val apkProperty = propertySelector(apk)
+		if (apk is Apk.Base) {
+			baseApkProperty = apkProperty
+		}
+		val expectedProperty = baseApkProperty
+		if (expectedProperty != null) {
+			checkProperty(expectedProperty, apkProperty, apk.name)
+			for (property in propertyValues) {
+				checkProperty(expectedProperty, property, apk.name)
 			}
+			propertyValues.clear()
+		} else {
+			propertyValues += apkProperty
+		}
+	}
+
+	private fun checkProperty(baseProperty: Property, apkProperty: Property, name: String) {
+		if (baseProperty != apkProperty) {
+			throw conflictingPropertyExceptionInitializer(baseProperty, apkProperty, name)
 		}
 	}
 }
