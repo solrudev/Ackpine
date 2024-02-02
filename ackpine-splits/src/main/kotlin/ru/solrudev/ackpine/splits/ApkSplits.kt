@@ -92,7 +92,7 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a sequence containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
 	 *
 	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 	 * matching split is chosen.
@@ -109,7 +109,7 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a sequence containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
@@ -163,7 +163,7 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a list containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
 	 *
 	 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 	 * matching split is chosen.
@@ -191,7 +191,7 @@ public object ApkSplits {
 	}
 
 	/**
-	 * Returns a list containing only [APK splits][Apk] which are most compatible with the device.
+	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
