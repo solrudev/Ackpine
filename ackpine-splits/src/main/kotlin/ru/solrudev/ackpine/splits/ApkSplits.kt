@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,12 +86,16 @@ public object ApkSplits {
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
-		return throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingPackageNameException,
-			propertySelector = Apk::packageName
-		).throwOnConflictingProperty(
-			exceptionInitializer = ::ConflictingVersionCodeException,
-			propertySelector = Apk::versionCode
+		return SplitPackageSequence(
+			source = this,
+			ApkPropertyChecker(
+				propertySelector = Apk::packageName,
+				conflictingPropertyExceptionInitializer = ::ConflictingPackageNameException
+			),
+			ApkPropertyChecker(
+				propertySelector = Apk::versionCode,
+				conflictingPropertyExceptionInitializer = ::ConflictingVersionCodeException
+			)
 		)
 	}
 
@@ -131,38 +135,17 @@ public object ApkSplits {
 			splits += apk
 		}
 	}
-
-	/**
-	 * Returns a sequence which throws on iteration if any [APK split][Apk] conflicts with [base APK][Apk.Base] by
-	 * property specified with [propertySelector].
-	 *
-	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
-	 * base APK in the sequence, [NoBaseApkException] will be thrown.
-	 *
-	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
-	 *
-	 * The operation is _intermediate_ and _stateful_.
-	 */
-	private fun <Property> Sequence<Apk>.throwOnConflictingProperty(
-		exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-		propertySelector: (Apk) -> Property
-	): Sequence<Apk> {
-		return SplitPackageSequence(this, exceptionInitializer, propertySelector)
-	}
 }
 
-private class SplitPackageSequence<Property>(
-	private val sequence: Sequence<Apk>,
-	private val exceptionInitializer: (expected: Property, actual: Property, name: String) -> Exception,
-	private val propertySelector: (Apk) -> Property
+private class SplitPackageSequence(
+	private val source: Sequence<Apk>,
+	private vararg val propertyCheckers: ApkPropertyChecker<*>
 ) : Sequence<Apk> {
 
 	override fun iterator() = object : Iterator<Apk> {
 
-		private val iterator = sequence.iterator()
+		private val iterator = source.iterator()
 		private var seenBaseApk = false
-		private var baseApkProperty: Property? = null
-		private val propertyValues = mutableListOf<Property>()
 		private val splitNames = hashSetOf<String>()
 
 		override fun hasNext() = iterator.hasNext()
@@ -172,34 +155,52 @@ private class SplitPackageSequence<Property>(
 			if (!splitNames.add(apk.name)) {
 				throw ConflictingSplitNameException(apk.name)
 			}
-			val apkProperty = propertySelector(apk)
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
 					throw ConflictingBaseApkException()
 				}
 				seenBaseApk = true
-				baseApkProperty = apkProperty
 			}
-			val expectedProperty = baseApkProperty
-			if (expectedProperty != null) {
-				checkApkProperty(expectedProperty, apkProperty, apk.name)
-				for (property in propertyValues) {
-					checkApkProperty(expectedProperty, property, apk.name)
-				}
-				propertyValues.clear()
-			} else {
-				propertyValues += apkProperty
+			for (propertyChecker in propertyCheckers) {
+				propertyChecker.checkApk(apk)
 			}
 			if (!hasNext() && !seenBaseApk) {
 				throw NoBaseApkException()
 			}
 			return apk
 		}
+	}
+}
 
-		private fun checkApkProperty(baseProperty: Property, apkProperty: Property, name: String) {
-			if (baseProperty != apkProperty) {
-				throw exceptionInitializer(baseProperty, apkProperty, name)
+private class ApkPropertyChecker<Property>(
+	private val propertySelector: (Apk) -> Property,
+	private val conflictingPropertyExceptionInitializer:
+		(expected: Property, actual: Property, name: String) -> Exception
+) {
+
+	private var baseApkProperty: Property? = null
+	private val propertyValues = mutableListOf<Property>()
+
+	fun checkApk(apk: Apk) {
+		val apkProperty = propertySelector(apk)
+		if (apk is Apk.Base) {
+			baseApkProperty = apkProperty
+		}
+		val expectedProperty = baseApkProperty
+		if (expectedProperty != null) {
+			checkProperty(expectedProperty, apkProperty, apk.name)
+			for (property in propertyValues) {
+				checkProperty(expectedProperty, property, apk.name)
 			}
+			propertyValues.clear()
+		} else {
+			propertyValues += apkProperty
+		}
+	}
+
+	private fun checkProperty(baseProperty: Property, apkProperty: Property, name: String) {
+		if (baseProperty != apkProperty) {
+			throw conflictingPropertyExceptionInitializer(baseProperty, apkProperty, name)
 		}
 	}
 }
