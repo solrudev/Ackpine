@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.SerialExecutor
+import ru.solrudev.ackpine.helpers.globalNotificationId
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
@@ -119,11 +120,11 @@ public interface PackageInstaller {
 					database.installSessionDao(),
 					database.sessionProgressDao(),
 					database.nativeSessionIdDao(),
-					database.notificationIdDao(),
 					PackageInstallerPlugin.executor,
 					Handler(context.mainLooper)
 				),
-				uuidFactory = UUID::randomUUID
+				uuidFactory = UUID::randomUUID,
+				notificationIdFactory = globalNotificationId::incrementAndGet
 			)
 		}
 	}

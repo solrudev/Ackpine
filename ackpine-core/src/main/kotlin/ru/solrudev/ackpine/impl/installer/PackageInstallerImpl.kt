@@ -43,7 +43,8 @@ internal class PackageInstallerImpl internal constructor(
 	private val sessionProgressDao: SessionProgressDao,
 	private val executor: Executor,
 	private val installSessionFactory: InstallSessionFactory,
-	private val uuidFactory: () -> UUID
+	private val uuidFactory: () -> UUID,
+	private val notificationIdFactory: () -> Int
 ) : PackageInstaller {
 
 	init {
@@ -61,10 +62,12 @@ internal class PackageInstallerImpl internal constructor(
 
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = uuidFactory()
+		val notificationId = notificationIdFactory()
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
-			initialProgress = Progress()
+			initialProgress = Progress(),
+			notificationId
 		)
 		sessions[id] = session
 		executor.execute {
@@ -82,7 +85,8 @@ internal class PackageInstallerImpl internal constructor(
 					),
 					installerType = parameters.installerType,
 					uris = parameters.apks.toList().map { it.toString() },
-					name = parameters.name
+					name = parameters.name,
+					notificationId
 				)
 			)
 		}
@@ -169,7 +173,8 @@ internal class PackageInstallerImpl internal constructor(
 			parameters,
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, installSessionDao),
-			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress()
+			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
+			notificationId
 		)
 	}
 }

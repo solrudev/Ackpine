@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.helpers.toFile
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -38,7 +37,6 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_M
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
-import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -65,17 +63,16 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
-	notificationIdDao: NotificationIdDao,
 	serialExecutor: Executor,
 	handler: Handler,
-	newNotificationId: Int = globalNotificationId.incrementAndGet()
+	notificationId: Int
 ) : AbstractProgressSession<InstallFailure>(
 	context, INSTALLER_NOTIFICATION_TAG,
 	id, initialState, initialProgress,
-	sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
+	sessionDao, sessionFailureDao, sessionProgressDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	newNotificationId
+	notificationId
 ) {
 
 	private val Context.externalDir: File

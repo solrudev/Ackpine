@@ -50,7 +50,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
 		database.sessionProgressDao().initProgress(session.session.id)
-		database.notificationIdDao().initNotificationId(session.session.id)
+		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId)
 		if (!session.name.isNullOrEmpty()) {
 			database.sessionNameDao().setSessionName(session.session.id, session.name)
 		}

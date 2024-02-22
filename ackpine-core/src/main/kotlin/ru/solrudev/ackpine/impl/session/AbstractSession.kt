@@ -27,7 +27,6 @@ import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -45,12 +44,6 @@ import ru.solrudev.ackpine.session.Session.State.Succeeded
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.random.Random
-import kotlin.random.nextInt
-
-@get:JvmSynthetic
-internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -63,31 +56,15 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
-	private val notificationIdDao: NotificationIdDao,
 	private val serialExecutor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	newNotificationId: Int
+	private val notificationId: Int
 ) : CompletableSession<F> {
-
-	init {
-		serialExecutor.execute {
-			val persistedNotificationId = notificationIdDao.getNotificationId(id.toString())
-			if (persistedNotificationId != null && persistedNotificationId != -1) {
-				notificationId = persistedNotificationId
-			} else {
-				notificationId = newNotificationId
-				notificationIdDao.setNotificationId(id.toString(), newNotificationId)
-			}
-		}
-	}
 
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
-
-	@Volatile
-	private var notificationId = 0
 
 	@Volatile
 	private var isCancelling = false

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.database.dao
+package ru.solrudev.ackpine.helpers
 
-import androidx.annotation.RestrictTo
-import androidx.room.Dao
-import androidx.room.Query
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
+import kotlin.random.nextInt
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-@Dao
-internal interface NotificationIdDao {
-
-	@Query("INSERT INTO sessions_notification_ids(session_id, notification_id) VALUES (:sessionId, :notificationId)")
-	fun initNotificationId(sessionId: String, notificationId: Int)
-}
+@get:JvmSynthetic
+internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
