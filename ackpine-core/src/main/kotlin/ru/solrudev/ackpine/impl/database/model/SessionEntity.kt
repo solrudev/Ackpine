@@ -89,14 +89,14 @@ internal data class SessionEntity internal constructor(
 			entity = SessionNameEntity::class,
 			projection = ["name"]
 		)
-		val name: String? = null,
+		val name: String?,
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
 			entity = NotificationIdEntity::class,
 			projection = ["notification_id"]
 		)
-		val notificationId: Int
+		val notificationId: Int?
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -116,6 +116,6 @@ internal data class SessionEntity internal constructor(
 			entity = NotificationIdEntity::class,
 			projection = ["notification_id"]
 		)
-		val notificationId: Int
+		val notificationId: Int?
 	)
 }

@@ -174,7 +174,7 @@ internal class PackageInstallerImpl internal constructor(
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
-			notificationId
+			notificationId!!
 		)
 	}
 }

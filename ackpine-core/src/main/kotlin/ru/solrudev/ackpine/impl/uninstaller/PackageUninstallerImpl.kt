@@ -144,7 +144,7 @@ internal class PackageUninstallerImpl internal constructor(
 			parameters,
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, uninstallSessionDao),
-			notificationId
+			notificationId!!
 		)
 	}
 }
