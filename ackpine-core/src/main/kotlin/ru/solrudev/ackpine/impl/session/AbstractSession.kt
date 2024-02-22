@@ -51,7 +51,6 @@ import java.util.concurrent.Executor
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val context: Context,
-	private val notificationTag: String,
 	override val id: UUID,
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
@@ -246,7 +245,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	private fun cleanup() {
 		doCleanup()
-		context.getSystemService<NotificationManager>()?.cancel(notificationTag, notificationId)
+		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 		isCommitted = false
 		isCommitting = false
 	}

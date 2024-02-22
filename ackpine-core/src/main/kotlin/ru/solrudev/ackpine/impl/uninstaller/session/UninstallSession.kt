@@ -49,8 +49,7 @@ internal class UninstallSession internal constructor(
 	handler: Handler,
 	notificationId: Int
 ) : AbstractSession<UninstallFailure>(
-	context, UNINSTALLER_NOTIFICATION_TAG,
-	id, initialState,
+	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
@@ -66,7 +65,7 @@ internal class UninstallSession internal constructor(
 		context.launchConfirmation<UninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
-			UNINSTALLER_NOTIFICATION_TAG, notificationId,
+			notificationId,
 			generateRequestCode(),
 			UPDATE_CURRENT_FLAGS
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }

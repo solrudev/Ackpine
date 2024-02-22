@@ -76,8 +76,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val handler: Handler,
 	notificationId: Int
 ) : AbstractProgressSession<InstallFailure>(
-	context, INSTALLER_NOTIFICATION_TAG,
-	id, initialState, initialProgress,
+	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
@@ -136,7 +135,7 @@ internal class SessionBasedInstallSession internal constructor(
 		context.launchConfirmation<SessionBasedInstallCommitActivity>(
 			confirmation, notificationData,
 			sessionId = id,
-			INSTALLER_NOTIFICATION_TAG, notificationId,
+			notificationId,
 			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }

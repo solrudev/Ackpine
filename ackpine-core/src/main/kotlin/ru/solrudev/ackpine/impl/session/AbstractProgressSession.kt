@@ -39,7 +39,6 @@ import java.util.concurrent.Executor
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> protected constructor(
 	context: Context,
-	notificationTag: String,
 	id: UUID,
 	initialState: Session.State<F>,
 	initialProgress: Progress,
@@ -51,7 +50,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	exceptionalFailureFactory: (Exception) -> F,
 	notificationId: Int
 ) : AbstractSession<F>(
-	context, notificationTag, id, initialState,
+	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	serialExecutor, handler, exceptionalFailureFactory, notificationId
 ), ProgressSession<F> {

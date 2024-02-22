@@ -67,8 +67,7 @@ internal class IntentBasedInstallSession internal constructor(
 	handler: Handler,
 	notificationId: Int
 ) : AbstractProgressSession<InstallFailure>(
-	context, INSTALLER_NOTIFICATION_TAG,
-	id, initialState, initialProgress,
+	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
@@ -100,7 +99,7 @@ internal class IntentBasedInstallSession internal constructor(
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
-			INSTALLER_NOTIFICATION_TAG, notificationId,
+			notificationId,
 			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }
