@@ -45,13 +45,13 @@ internal class UninstallSession internal constructor(
 	private val notificationData: NotificationData,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
-	serialExecutor: Executor,
+	executor: Executor,
 	handler: Handler,
 	notificationId: Int
 ) : AbstractSession<UninstallFailure>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
-	serialExecutor, handler,
+	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
 	notificationId
 ) {

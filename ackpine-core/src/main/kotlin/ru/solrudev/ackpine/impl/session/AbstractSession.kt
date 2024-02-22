@@ -55,7 +55,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
-	private val serialExecutor: Executor,
+	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
 	private val notificationId: Int
@@ -153,7 +153,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		isPreparing = true
 		state = Active
-		serialExecutor.execute {
+		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare(cancellationSignal)
@@ -175,7 +175,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			return false
 		}
 		isCommitting = true
-		serialExecutor.execute {
+		executor.execute {
 			try {
 				launchConfirmation(cancellationSignal, notificationId)
 			} catch (_: OperationCanceledException) {
@@ -255,7 +255,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		cleanup()
 	}
 
-	private fun persistSessionState(value: Session.State<F>) = serialExecutor.execute {
+	private fun persistSessionState(value: Session.State<F>) = executor.execute {
 		when (value) {
 			is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())

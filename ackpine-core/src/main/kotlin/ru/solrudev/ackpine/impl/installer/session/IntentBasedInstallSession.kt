@@ -63,13 +63,13 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
-	serialExecutor: Executor,
+	executor: Executor,
 	handler: Handler,
 	notificationId: Int
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
-	serialExecutor, handler,
+	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
 	notificationId
 ) {

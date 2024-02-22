@@ -78,7 +78,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao,
-			SerialExecutor(executor), handler, notificationId
+			executor, handler, notificationId
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(

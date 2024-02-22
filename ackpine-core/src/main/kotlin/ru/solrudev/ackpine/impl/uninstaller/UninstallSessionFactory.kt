@@ -66,7 +66,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.packageName),
 			sessionDao, sessionFailureDao,
-			SerialExecutor(executor), handler, notificationId
+			executor, handler, notificationId
 		)
 	}
 
