@@ -1,0 +1,318 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Builder</title>
+<link href="../../../../images/logo-icon.svg" rel="icon" type="image/svg">    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script></head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+<a class="library-name--link" href="../../../../index.html">
+                            Ackpine
+                    </a>            </div>
+            <div class="library-version">0.5.1
+            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":ackpine-core:dokkaHtmlPartial/release">androidJvm</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="ackpine-core::ru.solrudev.ackpine.installer.parameters/InstallParameters.Builder///PointingToDeclaration//-1257173760">
+  <div class="breadcrumbs"><a href="../../../index.html">ackpine-core</a><span class="delimiter">/</span><a href="../../index.html">ru.solrudev.ackpine.installer.parameters</a><span class="delimiter">/</span><a href="../index.html">InstallParameters</a><span class="delimiter">/</span><span class="current">Builder</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Builder</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">Builder</a> : <a href="../../../ru.solrudev.ackpine.session.parameters/-confirmation-aware/index.html">ConfirmationAware</a></div><p class="paragraph">Builder for <a href="../index.html">InstallParameters</a>.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1625844686%2FConstructors%2F-1257173760" anchor-label="Builder" id="-1625844686%2FConstructors%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-builder.html"><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1625844686%2FConstructors%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">baseApk<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">21</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apks<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html">Iterable</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1199174976%2FProperties%2F-1257173760" anchor-label="apks" id="-1199174976%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="apks.html"><span><span>apks</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1199174976%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="apks.html">apks</a><span class="token operator">: </span><a href="../../-apk-list/index.html">ApkList</a></div><div class="brief "><p class="paragraph">List of APKs <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">URIs</a> to install in one session.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-873171934%2FProperties%2F-1257173760" anchor-label="confirmation" id="-873171934%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="confirmation.html"><span><span>confirmation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-873171934%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="confirmation.html">confirmation</a><span class="token operator">: </span><a href="../../../ru.solrudev.ackpine.session.parameters/-confirmation/index.html">Confirmation</a></div><div class="brief "><p class="paragraph">A strategy for handling user's confirmation of installation or uninstallation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1958528865%2FProperties%2F-1257173760" anchor-label="installerType" id="1958528865%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="installer-type.html"><span>installer</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1958528865%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="installer-type.html">installerType</a><span class="token operator">: </span><a href="../../-installer-type/index.html">InstallerType</a></div><div class="brief "><p class="paragraph">Type of the package installer implementation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="236244108%2FProperties%2F-1257173760" anchor-label="name" id="236244108%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="236244108%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Optional name of the session. It may be a name of the app being installed or a file name. Used in default notification content text.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1247007778%2FProperties%2F-1257173760" anchor-label="notificationData" id="1247007778%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="notification-data.html"><span>notification</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1247007778%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="notification-data.html">notificationData</a><span class="token operator">: </span><a href="../../../ru.solrudev.ackpine.session.parameters/-notification-data/index.html">NotificationData</a></div><div class="brief "><p class="paragraph">Data for a high-priority notification which launches confirmation activity.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-336786787%2FProperties%2F-1257173760" anchor-label="requireUserAction" id="-336786787%2FProperties%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-user-action.html"><span>require</span><wbr><span>User</span><wbr><span><span>Action</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-336786787%2FProperties%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="require-user-action.html">requireUserAction</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Indicate whether user action should be required when the session is committed. By default equals to <code class="lang-kotlin">true</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1500915562%2FFunctions%2F-1257173760" anchor-label="addApk" id="1500915562%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-apk.html"><span>add</span><wbr><span><span>Apk</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1500915562%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">21</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-apk.html"><span class="token function">addApk</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apk<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Adds <a href="add-apk.html">apk</a> to <a href="../apks.html">InstallParameters.apks</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2122829127%2FFunctions%2F-1257173760" anchor-label="addApks" id="2122829127%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add-apks.html"><span>add</span><wbr><span><span>Apks</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2122829127%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">21</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword"></span><span class="token keyword">fun </span><a href="add-apks.html"><span class="token function">addApks</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">apks<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterable/index.html">Iterable</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Adds <a href="add-apks.html">apks</a> to <a href="../apks.html">InstallParameters.apks</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-163761323%2FFunctions%2F-1257173760" anchor-label="build" id="-163761323%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build.html"><span><span>build</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-163761323%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="build.html"><span class="token function">build</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">InstallParameters</a></div><div class="brief "><p class="paragraph">Constructs a new instance of <a href="../index.html">InstallParameters</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="585636715%2FFunctions%2F-1257173760" anchor-label="setConfirmation" id="585636715%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-confirmation.html"><span>set</span><wbr><span><span>Confirmation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="585636715%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-confirmation.html"><span class="token function">setConfirmation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">confirmation<span class="token operator">: </span><a href="../../../ru.solrudev.ackpine.session.parameters/-confirmation/index.html">Confirmation</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Sets <a href="../confirmation.html">InstallParameters.confirmation</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-414140803%2FFunctions%2F-1257173760" anchor-label="setInstallerType" id="-414140803%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-installer-type.html"><span>set</span><wbr><span>Installer</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-414140803%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-installer-type.html"><span class="token function">setInstallerType</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">installerType<span class="token operator">: </span><a href="../../-installer-type/index.html">InstallerType</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Sets <a href="../installer-type.html">InstallParameters.installerType</a>, maintaining the following invariants:</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-765203026%2FFunctions%2F-1257173760" anchor-label="setName" id="-765203026%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-name.html"><span>set</span><wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-765203026%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-name.html"><span class="token function">setName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Sets <a href="../name.html">InstallParameters.name</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="353840619%2FFunctions%2F-1257173760" anchor-label="setNotificationData" id="353840619%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-notification-data.html"><span>set</span><wbr><span>Notification</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="353840619%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-notification-data.html"><span class="token function">setNotificationData</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">notificationData<span class="token operator">: </span><a href="../../../ru.solrudev.ackpine.session.parameters/-notification-data/index.html">NotificationData</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Sets <a href="../notification-data.html">InstallParameters.notificationData</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-12629416%2FFunctions%2F-1257173760" anchor-label="setRequireUserAction" id="-12629416%2FFunctions%2F-1257173760" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release"></a>
+          <div class="table-row" data-filterable-current=":ackpine-core:dokkaHtmlPartial/release" data-filterable-set=":ackpine-core:dokkaHtmlPartial/release">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-require-user-action.html"><span>set</span><wbr><span>Require</span><wbr><span>User</span><wbr><span><span>Action</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-12629416%2FFunctions%2F-1257173760"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-core:dokkaHtmlPartial/release"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="set-require-user-action.html"><span class="token function">setRequireUserAction</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">requireUserAction<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">InstallParameters.Builder</a></div><div class="brief "><p class="paragraph">Sets <a href="../require-user-action.html">InstallParameters.requireUserAction</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
