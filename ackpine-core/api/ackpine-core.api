@@ -66,10 +66,8 @@ public final class ru/solrudev/ackpine/impl/database/dao/NativeSessionIdDao_Impl
 
 public final class ru/solrudev/ackpine/impl/database/dao/NotificationIdDao_Impl : ru/solrudev/ackpine/impl/database/dao/NotificationIdDao {
 	public fun <init> (Landroidx/room/RoomDatabase;)V
-	public fun getNotificationId (Ljava/lang/String;)Ljava/lang/Integer;
 	public static fun getRequiredConverters ()Ljava/util/List;
-	public fun initNotificationId (Ljava/lang/String;)V
-	public fun setNotificationId (Ljava/lang/String;I)V
+	public fun initNotificationId (Ljava/lang/String;I)V
 }
 
 public final class ru/solrudev/ackpine/impl/database/dao/SessionDao_Impl : ru/solrudev/ackpine/impl/database/dao/SessionDao {
