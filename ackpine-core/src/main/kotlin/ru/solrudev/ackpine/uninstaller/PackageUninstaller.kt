@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.uninstaller
 import android.content.Context
 import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.globalNotificationId
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.impl.uninstaller.UninstallSessionFactoryImpl
@@ -112,11 +113,11 @@ public interface PackageUninstaller {
 					context.applicationContext,
 					database.sessionDao(),
 					database.uninstallSessionDao(),
-					database.notificationIdDao(),
 					PackageUninstallerPlugin.executor,
 					Handler(context.mainLooper)
 				),
-				uuidFactory = UUID::randomUUID
+				uuidFactory = UUID::randomUUID,
+				notificationIdFactory = globalNotificationId::incrementAndGet
 			)
 		}
 	}

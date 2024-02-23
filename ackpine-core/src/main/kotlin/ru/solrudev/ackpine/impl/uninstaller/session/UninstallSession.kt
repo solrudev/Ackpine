@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,9 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.session.AbstractSession
-import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
@@ -47,17 +45,15 @@ internal class UninstallSession internal constructor(
 	private val notificationData: NotificationData,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
-	notificationIdDao: NotificationIdDao,
-	serialExecutor: Executor,
+	executor: Executor,
 	handler: Handler,
-	newNotificationId: Int = globalNotificationId.incrementAndGet()
+	notificationId: Int
 ) : AbstractSession<UninstallFailure>(
-	context, UNINSTALLER_NOTIFICATION_TAG,
-	id, initialState,
-	sessionDao, sessionFailureDao, notificationIdDao,
-	serialExecutor, handler,
+	context, id, initialState,
+	sessionDao, sessionFailureDao,
+	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
-	newNotificationId
+	notificationId
 ) {
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
@@ -69,7 +65,7 @@ internal class UninstallSession internal constructor(
 		context.launchConfirmation<UninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
-			UNINSTALLER_NOTIFICATION_TAG, notificationId,
+			notificationId,
 			generateRequestCode(),
 			UPDATE_CURRENT_FLAGS
 		) { intent -> intent.putExtra(UninstallActivity.PACKAGE_NAME_KEY, packageName) }

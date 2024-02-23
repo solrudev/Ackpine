@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConf
 	confirmation: Confirmation,
 	notificationData: NotificationData,
 	sessionId: UUID,
-	tag: String,
 	notificationId: Int,
 	requestCode: Int,
 	flags: Int,
@@ -64,7 +63,7 @@ internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConf
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 		Confirmation.DEFERRED -> showNotification(
 			PendingIntent.getActivity(this, requestCode, intent, flags),
-			notificationData, tag, notificationId
+			notificationData, sessionId.toString(), notificationId
 		)
 	}
 }

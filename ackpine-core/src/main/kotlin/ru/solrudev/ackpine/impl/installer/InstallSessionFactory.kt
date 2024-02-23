@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.helpers.SerialExecutor
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -48,7 +47,8 @@ internal interface InstallSessionFactory {
 		parameters: InstallParameters,
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
-		initialProgress: Progress
+		initialProgress: Progress,
+		notificationId: Int
 	): ProgressSession<InstallFailure>
 }
 
@@ -59,7 +59,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val sessionFailureDao: SessionFailureDao<InstallFailure>,
 	private val sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
-	private val notificationIdDao: NotificationIdDao,
 	private val executor: Executor,
 	private val handler: Handler
 ) : InstallSessionFactory {
@@ -69,7 +68,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		parameters: InstallParameters,
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
-		initialProgress: Progress
+		initialProgress: Progress,
+		notificationId: Int
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -77,8 +77,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id, initialState, initialProgress,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
-			sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
-			SerialExecutor(executor), handler
+			sessionDao, sessionFailureDao, sessionProgressDao,
+			executor, handler, notificationId
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -88,8 +88,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
 			parameters.requireUserAction,
-			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, notificationIdDao,
-			executor, SerialExecutor(executor), handler
+			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
+			executor, SerialExecutor(executor), handler, notificationId
 		)
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,12 +24,6 @@ import androidx.room.Query
 @Dao
 internal interface NotificationIdDao {
 
-	@Query("SELECT notification_id FROM sessions_notification_ids WHERE session_id = :sessionId")
-	fun getNotificationId(sessionId: String): Int?
-
-	@Query("UPDATE sessions_notification_ids SET notification_id = :notificationId WHERE session_id = :sessionId")
-	fun setNotificationId(sessionId: String, notificationId: Int)
-
-	@Query("INSERT INTO sessions_notification_ids(session_id, notification_id) VALUES (:sessionId, -1)")
-	fun initNotificationId(sessionId: String)
+	@Query("INSERT INTO sessions_notification_ids(session_id, notification_id) VALUES (:sessionId, :notificationId)")
+	fun initNotificationId(sessionId: String, notificationId: Int)
 }

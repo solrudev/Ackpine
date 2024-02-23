@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.SerialExecutor
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
@@ -40,7 +39,8 @@ internal interface UninstallSessionFactory {
 	fun create(
 		parameters: UninstallParameters,
 		id: UUID,
-		initialState: Session.State<UninstallFailure>
+		initialState: Session.State<UninstallFailure>,
+		notificationId: Int
 	): Session<UninstallFailure>
 }
 
@@ -49,7 +49,6 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<UninstallFailure>,
-	private val notificationIdDao: NotificationIdDao,
 	private val executor: Executor,
 	private val handler: Handler
 ) : UninstallSessionFactory {
@@ -57,7 +56,8 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	override fun create(
 		parameters: UninstallParameters,
 		id: UUID,
-		initialState: Session.State<UninstallFailure>
+		initialState: Session.State<UninstallFailure>,
+		notificationId: Int
 	): Session<UninstallFailure> {
 		return UninstallSession(
 			applicationContext,
@@ -65,8 +65,8 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			id, initialState,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.packageName),
-			sessionDao, sessionFailureDao, notificationIdDao,
-			SerialExecutor(executor), handler
+			sessionDao, sessionFailureDao,
+			executor, handler, notificationId
 		)
 	}
 

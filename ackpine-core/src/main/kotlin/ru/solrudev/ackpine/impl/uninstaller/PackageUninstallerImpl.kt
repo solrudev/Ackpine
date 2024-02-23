@@ -38,7 +38,8 @@ internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionDao: UninstallSessionDao,
 	private val executor: Executor,
 	private val uninstallSessionFactory: UninstallSessionFactory,
-	private val uuidFactory: () -> UUID
+	private val uuidFactory: () -> UUID,
+	private val notificationIdFactory: () -> Int
 ) : PackageUninstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, Session<UninstallFailure>>()
@@ -48,9 +49,11 @@ internal class PackageUninstallerImpl internal constructor(
 
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = uuidFactory()
+		val notificationId = notificationIdFactory()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
-			initialState = Session.State.Pending
+			initialState = Session.State.Pending,
+			notificationId
 		)
 		sessions[id] = session
 		executor.execute {
@@ -66,7 +69,8 @@ internal class PackageUninstallerImpl internal constructor(
 						parameters.notificationData.icon,
 						requireUserAction = true
 					),
-					packageName = parameters.packageName
+					packageName = parameters.packageName,
+					notificationId
 				)
 			)
 		}
@@ -139,7 +143,8 @@ internal class PackageUninstallerImpl internal constructor(
 		return uninstallSessionFactory.create(
 			parameters,
 			UUID.fromString(session.id),
-			initialState = session.state.toSessionState(session.id, uninstallSessionDao)
+			initialState = session.state.toSessionState(session.id, uninstallSessionDao),
+			notificationId!!
 		)
 	}
 }

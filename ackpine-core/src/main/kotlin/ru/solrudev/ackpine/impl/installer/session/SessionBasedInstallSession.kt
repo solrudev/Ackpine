@@ -33,7 +33,6 @@ import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.handleResult
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -42,7 +41,6 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_M
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
-import ru.solrudev.ackpine.impl.session.globalNotificationId
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -73,18 +71,16 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
-	notificationIdDao: NotificationIdDao,
 	private val executor: Executor,
 	serialExecutor: Executor,
 	private val handler: Handler,
-	newNotificationId: Int = globalNotificationId.incrementAndGet()
+	notificationId: Int
 ) : AbstractProgressSession<InstallFailure>(
-	context, INSTALLER_NOTIFICATION_TAG,
-	id, initialState, initialProgress,
-	sessionDao, sessionFailureDao, sessionProgressDao, notificationIdDao,
+	context, id, initialState, initialProgress,
+	sessionDao, sessionFailureDao, sessionProgressDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	newNotificationId
+	notificationId
 ) {
 
 	@Volatile
@@ -139,7 +135,7 @@ internal class SessionBasedInstallSession internal constructor(
 		context.launchConfirmation<SessionBasedInstallCommitActivity>(
 			confirmation, notificationData,
 			sessionId = id,
-			INSTALLER_NOTIFICATION_TAG, notificationId,
+			notificationId,
 			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }

@@ -42,7 +42,7 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 	open fun insertUninstallSession(session: SessionEntity.UninstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertPackageName(session.session.id, session.packageName)
-		database.notificationIdDao().initNotificationId(session.session.id)
+		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)
 	}
 
 	@Transaction

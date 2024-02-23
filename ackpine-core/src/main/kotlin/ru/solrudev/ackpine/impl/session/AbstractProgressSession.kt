@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -40,23 +39,20 @@ import java.util.concurrent.Executor
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> protected constructor(
 	context: Context,
-	notificationTag: String,
 	id: UUID,
 	initialState: Session.State<F>,
 	initialProgress: Progress,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
-	notificationIdDao: NotificationIdDao,
-	private val serialExecutor: Executor,
+	private val executor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
-	newNotificationId: Int
+	notificationId: Int
 ) : AbstractSession<F>(
-	context, notificationTag,
-	id, initialState,
-	sessionDao, sessionFailureDao, notificationIdDao,
-	serialExecutor, handler, exceptionalFailureFactory, newNotificationId
+	context, id, initialState,
+	sessionDao, sessionFailureDao,
+	executor, handler, exceptionalFailureFactory, notificationId
 ), ProgressSession<F> {
 
 	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()
@@ -96,7 +92,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 		progressListeners -= listener
 	}
 
-	private fun persistSessionProgress(value: Progress) = serialExecutor.execute {
+	private fun persistSessionProgress(value: Progress) = executor.execute {
 		sessionProgressDao.updateProgress(id.toString(), value.progress, value.max)
 	}
 }

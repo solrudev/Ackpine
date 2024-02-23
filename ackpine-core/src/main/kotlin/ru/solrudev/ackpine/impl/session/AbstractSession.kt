@@ -27,7 +27,6 @@ import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
-import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -45,12 +44,6 @@ import ru.solrudev.ackpine.session.Session.State.Succeeded
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.atomic.AtomicInteger
-import kotlin.random.Random
-import kotlin.random.nextInt
-
-@get:JvmSynthetic
-internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -58,36 +51,19 @@ internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000)
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val context: Context,
-	private val notificationTag: String,
 	override val id: UUID,
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<F>,
-	private val notificationIdDao: NotificationIdDao,
-	private val serialExecutor: Executor,
+	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	newNotificationId: Int
+	private val notificationId: Int
 ) : CompletableSession<F> {
-
-	init {
-		serialExecutor.execute {
-			val persistedNotificationId = notificationIdDao.getNotificationId(id.toString())
-			if (persistedNotificationId != null && persistedNotificationId != -1) {
-				notificationId = persistedNotificationId
-			} else {
-				notificationId = newNotificationId
-				notificationIdDao.setNotificationId(id.toString(), newNotificationId)
-			}
-		}
-	}
 
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
 	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
-
-	@Volatile
-	private var notificationId = 0
 
 	@Volatile
 	private var isCancelling = false
@@ -177,7 +153,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		isPreparing = true
 		state = Active
-		serialExecutor.execute {
+		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare(cancellationSignal)
@@ -199,7 +175,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			return false
 		}
 		isCommitting = true
-		serialExecutor.execute {
+		executor.execute {
 			try {
 				launchConfirmation(cancellationSignal, notificationId)
 			} catch (_: OperationCanceledException) {
@@ -269,7 +245,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	private fun cleanup() {
 		doCleanup()
-		context.getSystemService<NotificationManager>()?.cancel(notificationTag, notificationId)
+		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 		isCommitted = false
 		isCommitting = false
 	}
@@ -279,7 +255,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		cleanup()
 	}
 
-	private fun persistSessionState(value: Session.State<F>) = serialExecutor.execute {
+	private fun persistSessionState(value: Session.State<F>) = executor.execute {
 		when (value) {
 			is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())

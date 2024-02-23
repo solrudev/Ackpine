@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.uninstaller.session
+package ru.solrudev.ackpine.helpers
+
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 @get:JvmSynthetic
-internal const val UNINSTALLER_NOTIFICATION_TAG = "ru.solrudev.ackpine.UNINSTALLER_NOTIFICATION"
+internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
