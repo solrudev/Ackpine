@@ -1,6 +1,23 @@
 Change Log
 ==========
 
+Version 0.5.1 (2024-02-23)
+--------------------------
+
+### Dependencies
+
+- Updated Gradle wrapper to 8.6.
+- Updated Android Gradle Plugin to 8.2.2.
+- Updated `apksig` to 8.2.2.
+- Updated `kotlinx.coroutines` to 1.8.0.
+- Updated `binary-compatibility-validator` to 0.14.0 .
+- Updated `androidx.navigation` to 2.7.7 (sample apps dependency).
+- Updated Guava to 33.0.0-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Fix possibility of sessions' notification ID inconsistencies.
+
 Version 0.5.0 (2024-02-02)
 --------------------------
 
