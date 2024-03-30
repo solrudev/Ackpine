@@ -42,6 +42,7 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.session.helpers.commitSession
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
@@ -131,8 +132,12 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
-		context.launchConfirmation<SessionBasedInstallCommitActivity>(
+	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) = when (confirmation) {
+		Confirmation.IMMEDIATE -> packageInstaller.commitSession(
+			context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
+		)
+
+		Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
 			confirmation, notificationData,
 			sessionId = id,
 			notificationId,
