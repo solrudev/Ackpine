@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 
 package ru.solrudev.ackpine.impl.installer.activity
 
-import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build
@@ -28,8 +27,7 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
-import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
-import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.session.helpers.commitSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
@@ -44,23 +42,9 @@ internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG,
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
-			commitSession()
+			packageInstaller.commitSession(applicationContext, sessionId, ackpineSessionId, requestCode)
+			finish()
 		}
-	}
-
-	private fun commitSession() {
-		val receiverIntent = Intent(applicationContext, PackageInstallerStatusReceiver::class.java).apply {
-			action = PackageInstallerStatusReceiver.getAction(applicationContext)
-			putExtra(SESSION_ID_KEY, ackpineSessionId)
-		}
-		val receiverPendingIntent = PendingIntent.getBroadcast(
-			applicationContext, requestCode, receiverIntent, UPDATE_CURRENT_FLAGS
-		)
-		val statusReceiver = receiverPendingIntent.intentSender
-		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			packageInstaller.openSession(sessionId).commit(statusReceiver)
-		}
-		finish()
 	}
 }
 

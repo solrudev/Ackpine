@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 0.5.2 (2024-03-30)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.23.
+- Updated Gradle wrapper to 8.7.
+- Updated Android Gradle Plugin to 8.3.1.
+- Updated `apksig` to 8.3.1.
+- Updated Dokka to 1.9.20.
+- Updated Guava to 33.1.0-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Allow to commit `SESSION_BASED` package installer sessions from background.
+
 Version 0.5.1 (2024-02-23)
 --------------------------
 

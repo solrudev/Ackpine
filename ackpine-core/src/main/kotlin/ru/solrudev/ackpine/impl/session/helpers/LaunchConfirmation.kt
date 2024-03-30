@@ -20,11 +20,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInstaller
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -65,6 +68,25 @@ internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConf
 			PendingIntent.getActivity(this, requestCode, intent, flags),
 			notificationData, sessionId.toString(), notificationId
 		)
+	}
+}
+
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+@JvmSynthetic
+internal fun PackageInstaller.commitSession(
+	context: Context,
+	sessionId: Int,
+	ackpineSessionId: UUID,
+	requestCode: Int
+) {
+	val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
+		action = PackageInstallerStatusReceiver.getAction(context)
+		putExtra(SessionCommitActivity.SESSION_ID_KEY, ackpineSessionId)
+	}
+	val receiverPendingIntent = PendingIntent.getBroadcast(context, requestCode, receiverIntent, UPDATE_CURRENT_FLAGS)
+	val statusReceiver = receiverPendingIntent.intentSender
+	if (getSessionInfo(sessionId) != null) {
+		openSession(sessionId).commit(statusReceiver)
 	}
 }
 
