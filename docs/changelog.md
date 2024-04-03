@@ -15,7 +15,7 @@ Version 0.5.2 (2024-03-30)
 
 ### Bug fixes and improvements
 
-- Allow to commit `SESSION_BASED` package installer sessions from background.
+- Allow to commit `SESSION_BASED` package installer sessions from background when using `requireUserAction = false` and `Confirmation.IMMEDIATE`.
 
 Version 0.5.1 (2024-02-23)
 --------------------------
