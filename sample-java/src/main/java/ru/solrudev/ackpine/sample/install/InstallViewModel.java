@@ -181,6 +181,10 @@ public final class InstallViewModel extends ViewModel {
 						e.getExpected(), e.getActual(), e.getName()));
 			}
 			return Collections.emptyList();
+		} catch (Exception exception) {
+			final var message = exception.getMessage() != null ? exception.getMessage() : "";
+			error.postValue(NotificationString.raw(message));
+			return Collections.emptyList();
 		}
 	}
 
