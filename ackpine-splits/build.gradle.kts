@@ -33,5 +33,6 @@ dependencies {
 	api(androidx.annotation)
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.core.ktx)
+	implementation(libs.apache.commons.compress)
 	implementation(libs.apksig)
 }

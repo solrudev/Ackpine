@@ -41,7 +41,7 @@ val description: String
 ```
 
 !!! Note
-    If your application doesn't have direct access to files (via `MANAGE_EXTERNAL_STORAGE` or `READ_EXTERNAL_STORAGE` permissions), parsing and iteration of the sequences will be much slower, because Ackpine will fall back to using `ZipInputStream` for these operations.
+    If your application doesn't have direct access to files (via `MANAGE_EXTERNAL_STORAGE` or `READ_EXTERNAL_STORAGE` permissions), parsing and iteration of the sequences may be much slower, because Ackpine may fall back to using `ZipInputStream` for these operations.
 
 `Apk` has the following types: `Base` for base APK, `Feature` for a feature split, `Libs` for an APK split containing native libraries, `ScreenDensity` for an APK split containing graphic resources tailored to specific screen density, `Localization` for an APK split containing localized resources and `Other` for an unknown APK split. They also have their specific properties. Refer to [API documentation](api/ackpine-splits/index.html) for details.
 
