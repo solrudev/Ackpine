@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import kotlin.sequences.Sequence;
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
@@ -52,6 +51,7 @@ import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.installer.PackageInstaller;
 import ru.solrudev.ackpine.installer.parameters.InstallParameters;
 import ru.solrudev.ackpine.sample.R;
+import ru.solrudev.ackpine.sample.ThreadPool;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
@@ -225,7 +225,7 @@ public final class InstallViewModel extends ViewModel {
 				final var packageInstaller = PackageInstaller.getInstance(application);
 				final var savedStateHandle = createSavedStateHandle(creationExtras);
 				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
-				final var executor = Executors.newFixedThreadPool(8);
+				final var executor = ThreadPool.INSTANCE;
 				return new InstallViewModel(packageInstaller, sessionsRepository, executor);
 			}
 	);
