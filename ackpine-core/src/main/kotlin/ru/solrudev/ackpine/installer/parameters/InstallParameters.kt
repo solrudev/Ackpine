@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -209,7 +209,7 @@ public class InstallParameters private constructor(
 		/**
 		 * Sets [InstallParameters.installerType], maintaining the following invariants:
 		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always set regardless of the provided value;
-		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
+		 * * When on API level >= 21 and [apks] contains more than one entry, [InstallerType.SESSION_BASED] is always
 		 * set regardless of the provided value.
 		 */
 		public fun setInstallerType(installerType: InstallerType): Builder = apply {

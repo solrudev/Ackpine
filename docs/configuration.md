@@ -80,6 +80,6 @@ Available for install sessions. Ackpine supports two different package installer
 `InstallParameters` builder will maintain the following invariants when configuring the installer type:
 
 - When on API level < 21, `INTENT_BASED` is always set regardless of the provided value;
-- When on API level >= 21 and `InstallParameters.Builder.apks` contain more than one entry, `SESSION_BASED` is always set regardless of the provided value.
+- When on API level >= 21 and `InstallParameters.Builder.apks` contains more than one entry, `SESSION_BASED` is always set regardless of the provided value.
 
 By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level >= 21 is `SESSION_BASED`.
