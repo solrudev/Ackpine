@@ -75,7 +75,8 @@ public object ZippedApkSplits {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				try {
 					yieldAllUsingFileChannel(applicationContext, uri)
-				} catch (_: Throwable) {
+				} catch (exception: Exception) {
+					exception.printStackTrace()
 					yieldAllUsingZipInputStream(applicationContext, uri)
 				}
 				return@sequence

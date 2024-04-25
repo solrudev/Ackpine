@@ -214,7 +214,8 @@ public class ZippedFileProvider : ContentProvider() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			return try {
 				openZipEntryStreamUsingFileChannel(zipFileUri, uri.encodedQuery)
-			} catch (_: Throwable) {
+			} catch (exception: Exception) {
+				exception.printStackTrace()
 				openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
 			}
 		}
