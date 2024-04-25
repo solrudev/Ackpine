@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,12 @@ package ru.solrudev.ackpine.splits
 
 import android.content.Context
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
 import java.io.File
+import java.io.FileInputStream
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
@@ -69,12 +72,46 @@ public object ZippedApkSplits {
 				yieldAll(getApksForFile(file))
 				return@sequence
 			}
-			// fall back to ZipInputStream if file is not readable directly
-			ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
-				zipStream.entries()
-					.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
-					.forEach { yield(it) }
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				try {
+					yieldAllUsingFileChannel(applicationContext, uri)
+				} catch (exception: Exception) {
+					exception.printStackTrace()
+					yieldAllUsingZipInputStream(applicationContext, uri)
+				}
+				return@sequence
 			}
+			yieldAllUsingZipInputStream(applicationContext, uri)
 		}.constrainOnce()
+	}
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	private suspend inline fun SequenceScope<Apk>.yieldAllUsingFileChannel(applicationContext: Context, uri: Uri) {
+		applicationContext.contentResolver.openFileDescriptor(uri, "r").use { fd ->
+			fd ?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
+			FileInputStream(fd.fileDescriptor).use { fileInputStream ->
+				org.apache.commons.compress.archivers.zip.ZipFile.builder()
+					.setSeekableByteChannel(fileInputStream.channel)
+					.get()
+					.use { zipFile ->
+						zipFile.entries
+							.asSequence()
+							.mapNotNull { zipEntry ->
+								zipFile.getInputStream(zipEntry).use { entryStream ->
+									Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
+								}
+							}
+							.forEach { yield(it) }
+					}
+			}
+		}
+	}
+
+	private suspend inline fun SequenceScope<Apk>.yieldAllUsingZipInputStream(applicationContext: Context, uri: Uri) {
+		ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
+			zipStream.entries()
+				.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
+				.forEach { yield(it) }
+		}
 	}
 }

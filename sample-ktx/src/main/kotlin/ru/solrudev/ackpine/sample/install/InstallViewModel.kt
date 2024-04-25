@@ -159,6 +159,9 @@ class InstallViewModel(
 			}
 			error.value = errorString
 			return emptyList()
+		} catch (exception: Exception) {
+			error.value = NotificationString.raw(exception.message.orEmpty())
+			return emptyList()
 		}
 	}
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,25 +14,11 @@
  * limitations under the License.
  */
 
-description = "Utilities for working with split APKs"
+package ru.solrudev.ackpine.sample;
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-}
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-ackpine {
-	id = "splits"
-	minSdk = 21
-	artifact {
-		name = "Ackpine Splits"
-	}
-}
-
-dependencies {
-	api(androidx.annotation)
-	implementation(projects.ackpineRuntime)
-	implementation(androidx.core.ktx)
-	implementation(libs.apache.commons.compress)
-	implementation(libs.apksig)
+public class ThreadPool {
+	public static ExecutorService INSTANCE = Executors.newFixedThreadPool(8);
 }

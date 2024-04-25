@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
+import ru.solrudev.ackpine.sample.ThreadPool;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.Session;
 import ru.solrudev.ackpine.session.parameters.Confirmation;
@@ -186,7 +186,7 @@ public final class UninstallViewModel extends ViewModel {
 				assert application != null;
 				final var packageUninstaller = PackageUninstaller.getInstance(application);
 				final var savedStateHandle = createSavedStateHandle(creationExtras);
-				final var executor = Executors.newFixedThreadPool(8);
+				final var executor = ThreadPool.INSTANCE;
 				return new UninstallViewModel(packageUninstaller, savedStateHandle, executor);
 			}
 	);

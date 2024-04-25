@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,17 +26,20 @@ import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.plugin.AckpinePlugin
 import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -202,23 +205,57 @@ public class ZippedFileProvider : ContentProvider() {
 			val zipFile = ZipFile(file)
 			return try {
 				val zipEntry = zipFile.getEntry(uri.encodedQuery)
-				ZipEntryStream(zipFile, zipFile.getInputStream(zipEntry), zipEntry.size)
+				ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
 			} catch (t: Throwable) {
 				zipFile.close()
 				throw t
 			}
 		}
-		// fall back to ZipInputStream if file is not readable directly
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			return try {
+				openZipEntryStreamUsingFileChannel(zipFileUri, uri.encodedQuery)
+			} catch (exception: Exception) {
+				exception.printStackTrace()
+				openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
+			}
+		}
+		return openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	private fun openZipEntryStreamUsingFileChannel(zipFileUri: Uri, zipEntryName: String?): ZipEntryStream {
+		val fd = context?.contentResolver?.openFileDescriptor(zipFileUri, "r")
+			?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
+		val fileInputStream = FileInputStream(fd.fileDescriptor)
+		val zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
+			.setSeekableByteChannel(fileInputStream.channel)
+			.get()
+		return try {
+			val zipEntry = zipFile.getEntry(zipEntryName)
+			ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
+		} catch (t: Throwable) {
+			fd.close()
+			fileInputStream.close()
+			zipFile.close()
+			throw t
+		}
+	}
+
+	private fun openZipEntryStreamUsingZipInputStream(
+		zipFileUri: Uri,
+		zipEntryName: String?,
+		signal: CancellationSignal?
+	): ZipEntryStream {
 		val zipStream = ZipInputStream(context?.contentResolver?.openInputStream(zipFileUri))
 		val zipEntry = try {
 			zipStream.entries()
 				.onEach { signal?.throwIfCanceled() }
-				.first { it.name == uri.encodedQuery }
+				.first { it.name == zipEntryName }
 		} catch (t: Throwable) {
 			zipStream.close()
 			throw t
 		}
-		return ZipEntryStream(zipFile = null, zipStream, zipEntry.size)
+		return ZipEntryStream(zipStream, zipEntry.size)
 	}
 
 	private fun zipFileUri(uri: Uri): Uri {
@@ -327,9 +364,9 @@ private object ZippedFileProviderPlugin : AckpinePlugin {
 }
 
 private class ZipEntryStream(
-	private val zipFile: ZipFile?,
 	private val inputStream: InputStream,
-	val size: Long
+	val size: Long,
+	private vararg val resources: AutoCloseable
 ) : InputStream() {
 
 	override fun read(): Int = inputStream.read()
@@ -342,7 +379,9 @@ private class ZipEntryStream(
 	override fun skip(n: Long): Long = inputStream.skip(n)
 
 	override fun close() {
-		zipFile?.close()
+		for (resource in resources) {
+			resource.close()
+		}
 		inputStream.close()
 	}
 
