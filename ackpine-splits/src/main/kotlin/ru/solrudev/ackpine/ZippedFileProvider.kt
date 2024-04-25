@@ -224,15 +224,16 @@ public class ZippedFileProvider : ContentProvider() {
 	@RequiresApi(Build.VERSION_CODES.O)
 	private fun openZipEntryStreamUsingFileChannel(zipFileUri: Uri, zipEntryName: String?): ZipEntryStream {
 		val fd = context?.contentResolver?.openFileDescriptor(zipFileUri, "r")
-		val fileInputStream = FileInputStream(fd?.fileDescriptor)
+			?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
+		val fileInputStream = FileInputStream(fd.fileDescriptor)
 		val zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
 			.setSeekableByteChannel(fileInputStream.channel)
 			.get()
 		return try {
 			val zipEntry = zipFile.getEntry(zipEntryName)
-			ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd!!)
+			ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
 		} catch (t: Throwable) {
-			fd?.close()
+			fd.close()
 			fileInputStream.close()
 			zipFile.close()
 			throw t

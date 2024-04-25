@@ -87,7 +87,8 @@ public object ZippedApkSplits {
 	@RequiresApi(Build.VERSION_CODES.O)
 	private suspend inline fun SequenceScope<Apk>.yieldAllUsingFileChannel(applicationContext: Context, uri: Uri) {
 		applicationContext.contentResolver.openFileDescriptor(uri, "r").use { fd ->
-			FileInputStream(fd?.fileDescriptor).use { fileInputStream ->
+			fd ?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
+			FileInputStream(fd.fileDescriptor).use { fileInputStream ->
 				org.apache.commons.compress.archivers.zip.ZipFile.builder()
 					.setSeekableByteChannel(fileInputStream.channel)
 					.get()
