@@ -7,6 +7,8 @@ Version 0.5.4 (2024-04-26)
 ### Bug fixes and improvements
 
 - Fix `SESSION_BASED` package installer session not notifying about transitioning into `Committed` state when installation is performed without user's action via setting `requireUserAction` to `false`.
+- Fix `SESSION_BASED` package installer session not updating its progress if it's already prepared and app process is restarted.
+- Don't allow to commit `SESSION_BASED` package installer session after app process restart when an actual installation process in the system is ongoing.
 
 Version 0.5.3 (2024-04-25)
 --------------------------
