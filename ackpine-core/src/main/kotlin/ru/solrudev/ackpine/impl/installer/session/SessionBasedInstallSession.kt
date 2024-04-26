@@ -87,6 +87,9 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var nativeSessionId = -1
 
+	@Volatile
+	private var sessionCallback: PackageInstaller.SessionCallback? = null
+
 	init {
 		if (initialProgress.progress >= 81) { // means that actual installation is ongoing or is completed
 			notifyCommitted() // block clients from committing
@@ -94,6 +97,9 @@ internal class SessionBasedInstallSession internal constructor(
 		serialExecutor.execute {
 			val nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
 			this.nativeSessionId = nativeSessionId
+			if (nativeSessionId != -1) {
+				sessionCallback = packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
+			}
 			// If app is killed while installing but system installer activity remains visible,
 			// session is stuck in Committed state after new process start.
 			// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
@@ -108,11 +114,10 @@ internal class SessionBasedInstallSession internal constructor(
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
 
-	private var sessionCallback: PackageInstaller.SessionCallback? = null
-
 	override fun prepare(cancellationSignal: CancellationSignal) {
 		if (nativeSessionId != -1) {
 			abandonSession()
+			packageInstaller.clearSessionCallback()
 		}
 		val sessionId = packageInstaller.createSession(createSessionParams())
 		nativeSessionId = sessionId
@@ -155,9 +160,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun doCleanup() {
 		executor.execute(::abandonSession) // may be long if storage is under load
-		handler.post {
-			sessionCallback?.let(packageInstaller::unregisterSessionCallback)
-		}
+		packageInstaller.clearSessionCallback()
 	}
 
 	private fun createSessionParams(): PackageInstaller.SessionParams {
@@ -239,6 +242,14 @@ internal class SessionBasedInstallSession internal constructor(
 		return callback
 	}
 
+	private fun PackageInstaller.clearSessionCallback() {
+		val callback = sessionCallback ?: return
+		sessionCallback = null
+		handler.post {
+			unregisterSessionCallback(callback)
+		}
+	}
+
 	private fun packageInstallerSessionCallback(nativeSessionId: Int) = object : PackageInstaller.SessionCallback() {
 		override fun onCreated(sessionId: Int) {}
 		override fun onBadgingChanged(sessionId: Int) {}
@@ -254,7 +265,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun abandonSession() {
 		try {
-			context.packageManager.packageInstaller.abandonSession(nativeSessionId)
+			packageInstaller.abandonSession(nativeSessionId)
 		} catch (_: Throwable) {
 		}
 	}
