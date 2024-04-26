@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.5.4 (2024-04-26)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `SESSION_BASED` package installer session not notifying about transitioning into `Committed` state when installation is performed without user's action via setting `requireUserAction` to `false`.
+- Fix `SESSION_BASED` package installer session not updating its progress if it's already prepared and app process is restarted.
+- Don't allow to commit `SESSION_BASED` package installer session after app process restart when an actual installation process in the system is ongoing.
+
 Version 0.5.3 (2024-04-25)
 --------------------------
 
@@ -12,7 +21,7 @@ Version 0.5.3 (2024-04-25)
 
 ### Bug fixes and improvements
 
-- Use `FileChannel` to read zipped APKs on Android Oreo+ if possible. This drastically improves performance when direct access through `java.io` APIs is not available and allows to process problematic ZIP files (such as XAPK files).
+- `ackpine-splits`: use `FileChannel` to read zipped APKs on Android Oreo+ if possible. This drastically improves performance when direct access through `java.io` APIs is not available and allows to process problematic ZIP files (such as XAPK files).
 - Don't crash if exception occurs while iterating APK sequence in sample apps, and display the exception message instead.
 
 Version 0.5.2 (2024-03-30)
