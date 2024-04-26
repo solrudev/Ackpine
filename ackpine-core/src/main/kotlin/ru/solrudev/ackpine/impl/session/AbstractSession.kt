@@ -228,8 +228,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	final override fun notifyCommitted() {
 		isCommitted = true
 		isCommitting = false
-		onCommitted()
-		state = Committed
+		if (state !is Committed) {
+			onCommitted()
+			state = Committed
+		}
 	}
 
 	final override fun complete(state: Completed<F>) {

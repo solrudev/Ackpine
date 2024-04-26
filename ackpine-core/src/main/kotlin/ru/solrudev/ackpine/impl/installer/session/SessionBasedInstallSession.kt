@@ -132,18 +132,23 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) = when (confirmation) {
-		Confirmation.IMMEDIATE -> packageInstaller.commitSession(
-			context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
-		)
+	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
+		when (confirmation) {
+			Confirmation.IMMEDIATE -> packageInstaller.commitSession(
+				context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
+			)
 
-		Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
-			confirmation, notificationData,
-			sessionId = id,
-			notificationId,
-			generateRequestCode(),
-			CANCEL_CURRENT_FLAGS
-		) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
+			Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
+				confirmation, notificationData,
+				sessionId = id,
+				notificationId,
+				generateRequestCode(),
+				CANCEL_CURRENT_FLAGS
+			) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
+		}
+		if (!requireUserAction && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			notifyCommitted()
+		}
 	}
 
 	override fun doCleanup() {
