@@ -12,7 +12,7 @@ Version 0.5.3 (2024-04-25)
 
 ### Bug fixes and improvements
 
-- Use `FileChannel` to read zipped APKs on Android Oreo+ if possible. This drastically improves performance when direct access through `java.io` APIs is not available and allows to process problematic ZIP files (such as XAPK files).
+- `ackpine-splits`: use `FileChannel` to read zipped APKs on Android Oreo+ if possible. This drastically improves performance when direct access through `java.io` APIs is not available and allows to process problematic ZIP files (such as XAPK files).
 - Don't crash if exception occurs while iterating APK sequence in sample apps, and display the exception message instead.
 
 Version 0.5.2 (2024-03-30)
