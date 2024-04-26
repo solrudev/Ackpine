@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.5.4 (2024-04-26)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `SESSION_BASED` package installer session not notifying about transitioning into `Committed` state when installation is performed without user's action via setting `requireUserAction` to `false`.
+
 Version 0.5.3 (2024-04-25)
 --------------------------
 
