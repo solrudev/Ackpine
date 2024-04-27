@@ -91,6 +91,17 @@ internal class SessionBasedInstallSession internal constructor(
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
 	init {
+		initialize(initialState, initialProgress, serialExecutor)
+	}
+
+	private fun initialize(
+		initialState: Session.State<InstallFailure>,
+		initialProgress: Progress,
+		serialExecutor: Executor
+	) {
+		if (initialState.isTerminal) {
+			return
+		}
 		if (initialProgress.progress >= 81) { // means that actual installation is ongoing or is completed
 			notifyCommitted() // block clients from committing
 		}
