@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.5.5 (2024-04-29)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix some internal state of `SESSION_BASED` package installer session when it's in terminal state and is being initialized on retrieval from `PackageInstaller`.
+
 Version 0.5.4 (2024-04-26)
 --------------------------
 
