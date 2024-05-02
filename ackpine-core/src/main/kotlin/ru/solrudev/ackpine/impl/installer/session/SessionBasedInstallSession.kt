@@ -152,10 +152,12 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
 		when (confirmation) {
-			Confirmation.IMMEDIATE -> packageInstaller.commitSession(
-				context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
-			)
-
+			Confirmation.IMMEDIATE -> {
+				packageInstaller.commitSession(
+					context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
+				)
+				notifyCommitted()
+			}
 			Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
 				confirmation, notificationData,
 				sessionId = id,
@@ -163,9 +165,6 @@ internal class SessionBasedInstallSession internal constructor(
 				generateRequestCode(),
 				CANCEL_CURRENT_FLAGS
 			) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
-		}
-		if (!requireUserAction && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			notifyCommitted()
 		}
 	}
 
