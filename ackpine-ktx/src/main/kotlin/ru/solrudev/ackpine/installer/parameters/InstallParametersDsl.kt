@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,13 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
 	public var requireUserAction: Boolean
+
+	/**
+	 * Mode for an install session. Takes effect only when using [InstallerType.SESSION_BASED] installer.
+	 *
+	 * Default value is [InstallMode.Full].
+	 */
+	public var installMode: InstallMode
 }
 
 @PublishedApi
@@ -111,6 +118,12 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		get() = builder.requireUserAction
 		set(value) {
 			builder.setRequireUserAction(value)
+		}
+
+	override var installMode: InstallMode
+		get() = builder.installMode
+		set(value) {
+			builder.setInstallMode(value)
 		}
 
 	fun build() = builder.build()

@@ -64,7 +64,7 @@ android {
 dependencies {
 	implementation(projects.ackpineCore)
 	implementation(projects.ackpineSplits)
-	implementation(androidx.activity.java)
+	implementation(androidx.activity)
 	implementation(androidx.appcompat)
 	implementation(androidx.recyclerview)
 	implementation(androidx.constraintlayout)

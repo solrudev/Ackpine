@@ -18,7 +18,11 @@ package ru.solrudev.ackpine.impl.database.model
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Embedded
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+import androidx.room.Relation
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationString
@@ -96,7 +100,21 @@ internal data class SessionEntity internal constructor(
 			entity = NotificationIdEntity::class,
 			projection = ["notification_id"]
 		)
-		val notificationId: Int?
+		val notificationId: Int?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = InstallModeEntity::class,
+			projection = ["install_mode"]
+		)
+		val installMode: InstallModeEntity.InstallMode?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = PackageNameEntity::class,
+			projection = ["package_name"]
+		)
+		val packageName: String?
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

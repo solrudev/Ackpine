@@ -24,10 +24,12 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
+import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
@@ -70,6 +72,14 @@ internal class PackageInstallerImpl internal constructor(
 			notificationId
 		)
 		sessions[id] = session
+		var packageName: String? = null
+		val installMode = when (parameters.installMode) {
+			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
+			is InstallMode.InheritExisting -> {
+				packageName = parameters.installMode.packageName
+				InstallModeEntity.InstallMode.INHERIT_EXISTING
+			}
+		}
 		executor.execute {
 			installSessionDao.insertInstallSession(
 				SessionEntity.InstallSession(
@@ -86,7 +96,7 @@ internal class PackageInstallerImpl internal constructor(
 					installerType = parameters.installerType,
 					uris = parameters.apks.toList().map { it.toString() },
 					name = parameters.name,
-					notificationId
+					notificationId, installMode, packageName
 				)
 			)
 		}
@@ -151,6 +161,13 @@ internal class PackageInstallerImpl internal constructor(
 
 	@SuppressLint("NewApi")
 	private fun SessionEntity.InstallSession.toInstallSession(): ProgressSession<InstallFailure> {
+		val installMode = when (installMode) {
+			null -> InstallMode.Full
+			InstallModeEntity.InstallMode.FULL -> InstallMode.Full
+			InstallModeEntity.InstallMode.INHERIT_EXISTING -> InstallMode.InheritExisting(
+				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" }
+			)
+		}
 		val parameters = InstallParameters.Builder(uris.map(String::toUri))
 			.setInstallerType(installerType)
 			.setConfirmation(session.confirmation)
@@ -168,6 +185,7 @@ internal class PackageInstallerImpl internal constructor(
 				}
 			}
 			.setRequireUserAction(session.requireUserAction)
+			.setInstallMode(installMode)
 			.build()
 		return installSessionFactory.create(
 			parameters,

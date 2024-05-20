@@ -17,6 +17,7 @@ An example of creating a session with custom parameters:
         apks += apkSplitsUris
         confirmation = Confirmation.DEFERRED
         installerType = InstallerType.SESSION_BASED
+        installMode = InstallMode.InheritExisting("com.example.package")
         name = fileName
         requireUserAction = false
         notification {
@@ -34,6 +35,7 @@ An example of creating a session with custom parameters:
             .addApks(apkSplitsUris)
             .setConfirmation(Confirmation.DEFERRED)
             .setInstallerType(InstallerType.SESSION_BASED)
+            .setInstallMode(new InstallMode.InheritExisting("com.example.package"))
             .setName(fileName)
             .setRequireUserAction(false)
             .setNotificationData(new NotificationData.Builder()
@@ -49,9 +51,9 @@ User's confirmation
 
 A strategy for handling user's confirmation of installation or uninstallation. Can be `DEFERRED` (used by default) or `IMMEDIATE`.
 
-`DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
+- `DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
 
-`IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable for launching session directly from the UI when app is in foreground.
+- `IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable for launching session directly from the UI when app is in foreground.
 
 It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
@@ -83,3 +85,16 @@ Available for install sessions. Ackpine supports two different package installer
 - When on API level >= 21 and `InstallParameters.Builder.apks` contains more than one entry, `SESSION_BASED` is always set regardless of the provided value.
 
 By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level >= 21 is `SESSION_BASED`.
+
+Install mode
+------------
+
+Takes effect only when using `SESSION_BASED` installer.
+
+- `Full` (default) — mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
+
+- `InheritExisting` — mode for an install session that should inherit any existing APKs for the target app, unless they have been explicitly overridden (based on split name) by the session.
+
+    If there are no existing APKs for the target app, this behaves like `Full`.
+
+    Requires package name of the app being installed. If the APKs staged in the session aren't consistent with the set package name, the install will fail.
