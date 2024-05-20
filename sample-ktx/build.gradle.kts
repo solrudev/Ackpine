@@ -70,7 +70,7 @@ tasks.withType<KotlinJvmCompile>().configureEach {
 dependencies {
 	implementation(projects.ackpineSplits)
 	implementation(projects.ackpineKtx)
-	implementation(androidx.activity.ktx)
+	implementation(androidx.activity)
 	implementation(androidx.appcompat)
 	implementation(androidx.recyclerview)
 	implementation(androidx.constraintlayout)
