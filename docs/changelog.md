@@ -1,6 +1,28 @@
 Change Log
 ==========
 
+Version 0.6.0 (2024-05-20)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 1.9.24.
+- Updated `androidx.annotation` to 1.8.0.
+- Updated `androidx.activity` to 1.9.0 (sample apps dependency).
+- Updated Guava to 33.2.0-android (sample apps dependency).
+- Updated Material Components to 1.12.0 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Introduce an install mode option for `InstallParameters`.
+- More consistent behavior of `COMMITTED` session state notifications when installer app is privileged for silent installs.
+
+### Public API changes
+
+- Added `InstallMode` sealed interface with two children (`Full` and `InheritExisting`) in `ackpine-core` module.
+- Added `installMode` property to `InstallParameters` and its builder in `ackpine-core` module.
+- Added `installMode` property to `InstallParametersDsl` in `ackpine-ktx` module.
+
 Version 0.5.5 (2024-04-29)
 --------------------------
 
