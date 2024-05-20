@@ -23,6 +23,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
+import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -46,6 +47,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	open fun insertInstallSession(session: SessionEntity.InstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertInstallerType(session.session.id, session.installerType)
+		insertInstallMode(session.session.id, session.installMode ?: InstallModeEntity.InstallMode.FULL)
 		insertUris(session.uris.map { uri ->
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
@@ -53,6 +55,9 @@ internal abstract class InstallSessionDao protected constructor(private val data
 		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)
 		if (!session.name.isNullOrEmpty()) {
 			database.sessionNameDao().setSessionName(session.session.id, session.name)
+		}
+		if (session.packageName != null) {
+			insertPackageName(session.session.id, session.packageName)
 		}
 	}
 
@@ -73,6 +78,12 @@ internal abstract class InstallSessionDao protected constructor(private val data
 
 	@Query("INSERT OR IGNORE INTO sessions_installer_types(session_id, installer_type) VALUES (:id, :installerType)")
 	protected abstract fun insertInstallerType(id: String, installerType: InstallerType)
+
+	@Query("INSERT OR IGNORE INTO sessions_install_modes(session_id, install_mode) VALUES (:id, :installMode)")
+	protected abstract fun insertInstallMode(id: String, installMode: InstallModeEntity.InstallMode)
+
+	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
+	protected abstract fun insertPackageName(id: String, packageName: String)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)

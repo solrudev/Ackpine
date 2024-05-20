@@ -19,6 +19,8 @@ package ru.solrudev.ackpine.impl.installer.session
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
+import android.content.pm.PackageInstaller.SessionParams.MODE_INHERIT_EXISTING
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
 import android.net.Uri
@@ -45,6 +47,7 @@ import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.commitSession
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
@@ -68,6 +71,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val confirmation: Confirmation,
 	private val notificationData: NotificationData,
 	private val requireUserAction: Boolean,
+	private val installMode: InstallMode,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
@@ -174,12 +178,17 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun createSessionParams(): PackageInstaller.SessionParams {
-		val sessionParams = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)
+		val sessionParams = when (installMode) {
+			is InstallMode.Full -> PackageInstaller.SessionParams(MODE_FULL_INSTALL)
+			is InstallMode.InheritExisting -> PackageInstaller.SessionParams(MODE_INHERIT_EXISTING).apply {
+				setAppPackageName(installMode.packageName)
+			}
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			sessionParams.setOriginatingUid(Process.myUid())
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 			val requireUserAction = if (requireUserAction) {

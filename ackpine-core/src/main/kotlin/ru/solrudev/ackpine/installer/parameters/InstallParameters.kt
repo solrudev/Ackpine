@@ -73,7 +73,14 @@ public class InstallParameters private constructor(
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
-	public val requireUserAction: Boolean
+	public val requireUserAction: Boolean,
+
+	/**
+	 * Mode for an install session. Takes effect only when using [InstallerType.SESSION_BASED] installer.
+	 *
+	 * Default value is [InstallMode.Full].
+	 */
+	public val installMode: InstallMode
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -86,6 +93,7 @@ public class InstallParameters private constructor(
 		if (notificationData != other.notificationData) return false
 		if (name != other.name) return false
 		if (requireUserAction != other.requireUserAction) return false
+		if (installMode != other.installMode) return false
 		return true
 	}
 
@@ -96,6 +104,7 @@ public class InstallParameters private constructor(
 		result = 31 * result + notificationData.hashCode()
 		result = 31 * result + name.hashCode()
 		result = 31 * result + requireUserAction.hashCode()
+		result = 31 * result + installMode.hashCode()
 		return result
 	}
 
@@ -105,7 +114,8 @@ public class InstallParameters private constructor(
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
 				"name='$name', " +
-				"requireUserAction=$requireUserAction)"
+				"requireUserAction=$requireUserAction, " +
+				"installMode=$installMode)"
 	}
 
 	/**
@@ -191,6 +201,14 @@ public class InstallParameters private constructor(
 			private set
 
 		/**
+		 * Mode for an install session. Takes effect only when using [InstallerType.SESSION_BASED] installer.
+		 *
+		 * Default value is [InstallMode.Full].
+		 */
+		public var installMode: InstallMode = InstallMode.Full
+			private set
+
+		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -245,11 +263,20 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.installMode].
+		 */
+		public fun setInstallMode(installMode: InstallMode): Builder = apply {
+			this.installMode = installMode
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			return InstallParameters(apks, installerType, confirmation, notificationData, name, requireUserAction)
+			return InstallParameters(
+				apks, installerType, confirmation, notificationData, name, requireUserAction, installMode
+			)
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {

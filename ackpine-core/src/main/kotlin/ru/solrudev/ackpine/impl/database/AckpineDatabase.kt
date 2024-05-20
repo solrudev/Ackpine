@@ -37,6 +37,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionNameDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
+import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
 import ru.solrudev.ackpine.impl.database.model.NotificationIdEntity
@@ -65,14 +66,16 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		SessionProgressEntity::class,
 		NativeSessionIdEntity::class,
 		NotificationIdEntity::class,
-		SessionNameEntity::class
+		SessionNameEntity::class,
+		InstallModeEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
 		AutoMigration(from = 2, to = 3),
-		AutoMigration(from = 3, to = 4)
+		AutoMigration(from = 3, to = 4),
+		AutoMigration(from = 5, to = 6)
 	],
-	version = 5,
+	version = 6,
 	exportSchema = true
 )
 @TypeConverters(
