@@ -23,6 +23,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
@@ -52,7 +53,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			explicitApi()
 
 			compilerOptions {
-				jvmTarget.set(JVM_1_8)
+				jvmTarget = JVM_1_8
 				freeCompilerArgs.addAll("-Xjvm-default=all")
 			}
 		}
