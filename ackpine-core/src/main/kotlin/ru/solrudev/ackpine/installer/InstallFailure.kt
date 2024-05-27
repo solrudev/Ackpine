@@ -31,7 +31,8 @@ import java.io.Serializable
 /**
  * Represents the cause of installation failure. Contains string representation in [message] property.
  *
- * May be either [Exceptional], [Generic], [Aborted], [Blocked], [Conflict], [Incompatible], [Invalid] or [Storage].
+ * May be either [Exceptional], [Generic], [Aborted], [Blocked], [Conflict], [Incompatible], [Invalid], [Storage] or
+ * [Timeout].
  * @property message Detailed string representation of the status, including raw details that are useful for debugging.
  */
 public sealed class InstallFailure(public open val message: String?) : Failure, Serializable {
