@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,11 +26,9 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -51,11 +49,11 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
 			jvmToolchain(17)
-		}
-		tasks.withType<KotlinJvmCompile>().configureEach {
+			explicitApi()
+
 			compilerOptions {
 				jvmTarget.set(JVM_1_8)
-				freeCompilerArgs.addAll("-Xjvm-default=all", "-Xexplicit-api=strict")
+				freeCompilerArgs.addAll("-Xjvm-default=all")
 			}
 		}
 	}
