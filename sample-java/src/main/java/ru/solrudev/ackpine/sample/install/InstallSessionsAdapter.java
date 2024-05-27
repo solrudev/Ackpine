@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.sample.install;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -52,9 +51,9 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		private final Consumer<UUID> onClick;
 		private SessionData currentSessionData;
 
-		public SessionViewHolder(@NonNull View itemView, Consumer<UUID> onClick) {
-			super(itemView);
-			binding = ItemInstallSessionBinding.bind(itemView);
+		public SessionViewHolder(@NonNull ItemInstallSessionBinding itemBinding, Consumer<UUID> onClick) {
+			super(itemBinding.getRoot());
+			binding = itemBinding;
 			this.onClick = onClick;
 			binding.buttonSessionCancel.setOnClickListener(v -> this.onClick.accept(currentSessionData.id()));
 		}
@@ -98,9 +97,9 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	@NonNull
 	@Override
 	public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		final var view = LayoutInflater.from(parent.getContext())
-				.inflate(R.layout.item_install_session, parent, false);
-		return new SessionViewHolder(view, onClick);
+		final var itemBinding = ItemInstallSessionBinding
+				.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+		return new SessionViewHolder(itemBinding, onClick);
 	}
 
 	@Override

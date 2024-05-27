@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.sample.install
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
@@ -34,15 +33,14 @@ class InstallSessionsAdapter(
 ) : ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder>(SessionDiffCallback) {
 
 	class SessionViewHolder(
-		itemView: View,
+		private val itemBinding: ItemInstallSessionBinding,
 		private val onClick: (UUID) -> Unit
-	) : RecyclerView.ViewHolder(itemView) {
+	) : RecyclerView.ViewHolder(itemBinding.root) {
 
-		private val binding = ItemInstallSessionBinding.bind(itemView)
 		private var currentSessionData: SessionData? = null
 
 		init {
-			binding.buttonSessionCancel.setOnClickListener {
+			itemBinding.buttonSessionCancel.setOnClickListener {
 				currentSessionData?.let { sessionData ->
 					onClick(sessionData.id)
 				}
@@ -55,14 +53,14 @@ class InstallSessionsAdapter(
 		val sessionId: UUID?
 			get() = currentSessionData?.id
 
-		fun bind(sessionData: SessionData) = with(binding) {
+		fun bind(sessionData: SessionData) = with(itemBinding) {
 			currentSessionData = sessionData
 			progressBarSession.setProgressCompat(0, false)
 			textViewSessionName.text = sessionData.name
 			setError(sessionData.error)
 		}
 
-		fun setProgress(sessionProgress: Progress) = with(binding) {
+		fun setProgress(sessionProgress: Progress) = with(itemBinding) {
 			val progress = sessionProgress.progress
 			val max = sessionProgress.max
 			progressBarSession.setProgressCompat(progress, true)
@@ -72,7 +70,7 @@ class InstallSessionsAdapter(
 			)
 		}
 
-		private fun setError(error: NotificationString) = with(binding) {
+		private fun setError(error: NotificationString) = with(itemBinding) {
 			val hasError = !error.isEmpty
 			textViewSessionName.isVisible = !hasError
 			progressBarSession.isVisible = !hasError
@@ -84,8 +82,10 @@ class InstallSessionsAdapter(
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
-		val view = LayoutInflater.from(parent.context).inflate(R.layout.item_install_session, parent, false)
-		return SessionViewHolder(view, onClick)
+		val itemBinding = ItemInstallSessionBinding.inflate(
+			LayoutInflater.from(parent.context), parent, false
+		)
+		return SessionViewHolder(itemBinding, onClick)
 	}
 
 	override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
