@@ -36,7 +36,7 @@
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.Ackpine"
         tools:ignore="AllowBackup"
-        tools:targetApi="tiramisu">
+        tools:targetApi="34">
 
         <activity
             android:name=".MainActivity"
