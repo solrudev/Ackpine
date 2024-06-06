@@ -7,7 +7,7 @@ concurrent = "1.1.0"
 [libraries]
 activity = { module = "androidx.activity:activity", version = "1.9.0" }
 annotation = { module = "androidx.annotation:annotation", version = "1.8.0" }
-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1" }
+appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 concurrent-futures-core = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
 concurrent-futures-ktx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.4" }
