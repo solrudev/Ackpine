@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
 import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.extra
@@ -77,28 +78,28 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 					from(components.getByName("release"))
 
 					pom {
-						name.set(artifact.name)
-						description.set(this@afterEvaluate.description)
-						url.set("https://solrudev.github.io/Ackpine")
+						name = artifact.name
+						description = this@afterEvaluate.description
+						url = "https://solrudev.github.io/Ackpine"
 
 						licenses {
 							license {
-								name.set("The Apache Software License, Version 2.0")
-								url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+								name = "The Apache Software License, Version 2.0"
+								url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 							}
 						}
 
 						developers {
 							developer {
-								id.set("solrudev")
-								name.set("Ilya Fomichev")
+								id = "solrudev"
+								name = "Ilya Fomichev"
 							}
 						}
 
 						scm {
-							connection.set("scm:git:github.com/solrudev/Ackpine.git")
-							developerConnection.set("scm:git:ssh://github.com/solrudev/Ackpine.git")
-							url.set("https://github.com/solrudev/Ackpine/tree/master")
+							connection = "scm:git:github.com/solrudev/Ackpine.git"
+							developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
+							url = "https://github.com/solrudev/Ackpine/tree/master"
 						}
 					}
 				}

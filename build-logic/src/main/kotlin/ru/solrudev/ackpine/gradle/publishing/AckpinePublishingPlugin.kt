@@ -22,6 +22,7 @@ import io.github.gradlenexus.publishplugin.NexusPublishPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.hasPlugin
@@ -44,7 +45,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 			apply(DokkaPlugin::class)
 		}
 		tasks.withType<DokkaMultiModuleTask>().configureEach {
-			outputDirectory.set(layout.projectDirectory.dir("docs/api"))
+			outputDirectory = layout.projectDirectory.dir("docs/api")
 		}
 		registerBuildAckpineTask()
 		configurePublishing()
@@ -81,11 +82,11 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 		extensions.configure<NexusPublishExtension> {
 			repositories {
 				sonatype {
-					stagingProfileId.set(sonatypeStagingProfileId)
-					username.set(ossrhUsername)
-					password.set(ossrhPassword)
-					nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
-					snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+					stagingProfileId = sonatypeStagingProfileId
+					username = ossrhUsername
+					password = ossrhPassword
+					nexusUrl = uri("https://s01.oss.sonatype.org/service/local/")
+					snapshotRepositoryUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
 				}
 			}
 		}

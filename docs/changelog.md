@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+Version 0.6.1 (2024-06-11)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.0.0.
+- Updated Gradle wrapper to 8.8.
+- Updated Android Gradle Plugin to 8.4.2.
+- Updated Apache Commons Compress to 1.26.2.
+- Updated `apksig` to 8.4.2.
+- Updated `kotlinx.coroutines` to 1.8.1.
+- Updated `androidx.lifecycle` to 2.8.1 (sample apps dependency).
+- Updated `androidx.appcompat` to 1.7.0 (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Introduce an API for deleting previously created Ackpine's notification channel.
+- Add info about notification channel initialization to documentation.
+
+### Public API changes
+
+- Added `Ackpine.deleteNotificationChannel()` static method in `ackpine-core` module.
+
 Version 0.6.0 (2024-05-20)
 --------------------------
 

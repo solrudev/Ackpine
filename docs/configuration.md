@@ -57,6 +57,20 @@ A strategy for handling user's confirmation of installation or uninstallation. C
 
 It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
+If `DEFERRED` confirmation is never used in the app, it's possible to remove Ackpine's notification channel from the app's notification settings, which is used for posting confirmation notifications and is set up automatically. For this, disable automatic Ackpine initialization by adding the following lines to the app's `AndroidManifest.xml`:
+```xml
+<provider
+    android:name="androidx.startup.InitializationProvider"
+    android:authorities="${applicationId}.androidx-startup"
+    android:exported="false"
+    tools:node="merge">
+    <meta-data
+        android:name="ru.solrudev.ackpine.AckpineInitializer"
+        tools:node="remove" />
+</provider>
+```
+Then, if the notification channel was already created previously, call `Ackpine.deleteNotificationChannel()` when initializing the app.
+
 Notification
 ------------
 
@@ -89,7 +103,7 @@ By default, the value of installer type on API level < 21 is `INTENT_BASED`, and
 Install mode
 ------------
 
-Takes effect only when using `SESSION_BASED` installer.
+Available for install sessions. Takes effect only when using `SESSION_BASED` installer.
 
 - `Full` (default) — mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
 

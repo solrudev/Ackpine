@@ -26,7 +26,7 @@ plugins {
 
 java {
 	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(17))
+		languageVersion = JavaLanguageVersion.of(17)
 	}
 }
 
@@ -68,8 +68,8 @@ dependencies {
 	implementation(androidx.appcompat)
 	implementation(androidx.recyclerview)
 	implementation(androidx.constraintlayout)
-	implementation(androidx.bundles.lifecycle.java)
-	implementation(androidx.bundles.navigation.java)
+	implementation(androidx.bundles.lifecycle)
+	implementation(androidx.bundles.navigation)
 	implementation(androidx.swiperefreshlayout)
 	implementation(libs.materialcomponents)
 	implementation(libs.guava)

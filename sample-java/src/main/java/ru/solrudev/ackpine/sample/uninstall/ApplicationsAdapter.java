@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.sample.uninstall;
 
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -26,7 +25,6 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
-import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.ItemApplicationBinding;
 
 public final class ApplicationsAdapter extends ListAdapter<ApplicationData, ApplicationsAdapter.ApplicationViewHolder> {
@@ -45,9 +43,9 @@ public final class ApplicationsAdapter extends ListAdapter<ApplicationData, Appl
 		private final Consumer<String> onClick;
 		private ApplicationData currentApplicationData;
 
-		public ApplicationViewHolder(@NonNull View itemView, Consumer<String> onClick) {
-			super(itemView);
-			binding = ItemApplicationBinding.bind(itemView);
+		public ApplicationViewHolder(@NonNull ItemApplicationBinding itemBinding, Consumer<String> onClick) {
+			super(itemBinding.getRoot());
+			binding = itemBinding;
 			this.onClick = onClick;
 			binding.buttonAppUninstall.setOnClickListener(v ->
 					this.onClick.accept(currentApplicationData.packageName()));
@@ -64,9 +62,9 @@ public final class ApplicationsAdapter extends ListAdapter<ApplicationData, Appl
 	@NonNull
 	@Override
 	public ApplicationViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		final var view = LayoutInflater.from(parent.getContext())
-				.inflate(R.layout.item_application, parent, false);
-		return new ApplicationViewHolder(view, onClick);
+		final var itemBinding = ItemApplicationBinding
+				.inflate(LayoutInflater.from(parent.getContext()), parent, false);
+		return new ApplicationViewHolder(itemBinding, onClick);
 	}
 
 	@Override

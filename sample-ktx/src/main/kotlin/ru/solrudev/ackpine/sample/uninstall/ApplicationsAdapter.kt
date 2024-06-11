@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 package ru.solrudev.ackpine.sample.uninstall
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.ItemApplicationBinding
 
 class ApplicationsAdapter(
@@ -30,22 +28,21 @@ class ApplicationsAdapter(
 ) : ListAdapter<ApplicationData, ApplicationsAdapter.ApplicationViewHolder>(ApplicationDiffCallback) {
 
 	class ApplicationViewHolder(
-		itemView: View,
+		private val itemBinding: ItemApplicationBinding,
 		private val onClick: (String) -> Unit
-	) : RecyclerView.ViewHolder(itemView) {
+	) : RecyclerView.ViewHolder(itemBinding.root) {
 
-		private val binding = ItemApplicationBinding.bind(itemView)
 		private var currentApplicationData: ApplicationData? = null
 
 		init {
-			binding.buttonAppUninstall.setOnClickListener {
+			itemBinding.buttonAppUninstall.setOnClickListener {
 				currentApplicationData?.let { applicationData ->
 					onClick(applicationData.packageName)
 				}
 			}
 		}
 
-		fun bind(applicationData: ApplicationData) = with(binding) {
+		fun bind(applicationData: ApplicationData) = with(itemBinding) {
 			currentApplicationData = applicationData
 			imageViewAppIcon.setImageDrawable(applicationData.icon)
 			textViewAppName.text = applicationData.name
@@ -54,8 +51,10 @@ class ApplicationsAdapter(
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ApplicationViewHolder {
-		val view = LayoutInflater.from(parent.context).inflate(R.layout.item_application, parent, false)
-		return ApplicationViewHolder(view, onClick)
+		val itemBinding = ItemApplicationBinding.inflate(
+			LayoutInflater.from(parent.context), parent, false
+		)
+		return ApplicationViewHolder(itemBinding, onClick)
 	}
 
 	override fun onBindViewHolder(holder: ApplicationViewHolder, position: Int) {

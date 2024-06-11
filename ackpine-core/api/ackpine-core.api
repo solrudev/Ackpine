@@ -1,5 +1,6 @@
 public final class ru/solrudev/ackpine/Ackpine {
 	public static final field INSTANCE Lru/solrudev/ackpine/Ackpine;
+	public static final fun deleteNotificationChannel (Landroid/content/Context;)V
 }
 
 public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Initializer {
