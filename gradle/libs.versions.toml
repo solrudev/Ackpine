@@ -10,7 +10,7 @@ plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
 plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.14.0" }
-apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.26.1" }
+apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.26.2" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
 listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
 guava = { module = "com.google.guava:guava", version = "33.2.0-android" }
