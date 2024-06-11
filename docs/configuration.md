@@ -89,7 +89,7 @@ By default, the value of installer type on API level < 21 is `INTENT_BASED`, and
 Install mode
 ------------
 
-Takes effect only when using `SESSION_BASED` installer.
+Available for install sessions. Takes effect only when using `SESSION_BASED` installer.
 
 - `Full` (default) — mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
 
