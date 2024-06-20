@@ -82,7 +82,7 @@ class InstallViewModel(
 		sessionDataRepository.sessions,
 		sessionDataRepository.sessionsProgress,
 		::InstallUiState
-	).stateIn(viewModelScope, SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000), InstallUiState())
+	).stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
 
 	fun installPackage(apks: Sequence<Apk>, fileName: String) = viewModelScope.launch {
 		val uris = runInterruptible(Dispatchers.IO) { apks.toUrisList() }
