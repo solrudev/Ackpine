@@ -43,7 +43,7 @@ import java.util.concurrent.Executor
 internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
 	private val sessionProgressDao: SessionProgressDao,
-	private val executor: Executor,
+	private val serialExecutor: Executor,
 	private val installSessionFactory: InstallSessionFactory,
 	private val uuidFactory: () -> UUID,
 	private val notificationIdFactory: () -> Int
@@ -80,7 +80,7 @@ internal class PackageInstallerImpl internal constructor(
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
-		executor.execute {
+		serialExecutor.execute {
 			installSessionDao.insertInstallSession(
 				SessionEntity.InstallSession(
 					session = SessionEntity(
@@ -106,7 +106,7 @@ internal class PackageInstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
 		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+		sessions[sessionId]?.let(future::set) ?: serialExecutor.safeExecuteWith(future) {
 			val session = installSessionDao.getInstallSession(sessionId.toString())
 			val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
 			future.set(installSession)
@@ -134,7 +134,7 @@ internal class PackageInstallerImpl internal constructor(
 		return initializeSessions { sessions -> sessions.filter { it.isActive } }
 	}
 
-	private fun initializeCommittedSessions() = executor.execute {
+	private fun initializeCommittedSessions() = serialExecutor.execute {
 		for (session in installSessionDao.getCommittedInstallSessions()) {
 			val installSession = session.toInstallSession()
 			sessions[installSession.id] = installSession
@@ -146,7 +146,7 @@ internal class PackageInstallerImpl internal constructor(
 		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		executor.safeExecuteWith(future) {
+		serialExecutor.safeExecuteWith(future) {
 			for (session in installSessionDao.getInstallSessions()) {
 				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
 					val installSession = session.toInstallSession()
