@@ -81,24 +81,26 @@ internal class PackageInstallerImpl internal constructor(
 			}
 		}
 		serialExecutor.execute {
-			installSessionDao.insertInstallSession(
-				SessionEntity.InstallSession(
-					session = SessionEntity(
-						id.toString(),
-						SessionEntity.Type.INSTALL,
-						SessionEntity.State.PENDING,
-						parameters.confirmation,
-						parameters.notificationData.title,
-						parameters.notificationData.contentText,
-						parameters.notificationData.icon,
-						parameters.requireUserAction
-					),
-					installerType = parameters.installerType,
-					uris = parameters.apks.toList().map { it.toString() },
-					name = parameters.name,
-					notificationId, installMode, packageName
+			synchronized(session) {
+				installSessionDao.insertInstallSession(
+					SessionEntity.InstallSession(
+						session = SessionEntity(
+							id.toString(),
+							SessionEntity.Type.INSTALL,
+							SessionEntity.State.PENDING,
+							parameters.confirmation,
+							parameters.notificationData.title,
+							parameters.notificationData.contentText,
+							parameters.notificationData.icon,
+							parameters.requireUserAction
+						),
+						installerType = parameters.installerType,
+						uris = parameters.apks.toList().map { it.toString() },
+						name = parameters.name,
+						notificationId, installMode, packageName
+					)
 				)
-			)
+			}
 		}
 		return session
 	}

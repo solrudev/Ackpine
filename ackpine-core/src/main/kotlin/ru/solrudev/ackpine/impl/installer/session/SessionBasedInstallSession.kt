@@ -289,7 +289,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun persistNativeSessionId(nativeSessionId: Int) {
+	private fun persistNativeSessionId(nativeSessionId: Int) = synchronized(this) {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
 
