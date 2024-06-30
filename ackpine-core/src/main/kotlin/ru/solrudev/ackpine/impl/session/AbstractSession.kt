@@ -44,6 +44,7 @@ import ru.solrudev.ackpine.session.Session.State.Succeeded
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -58,7 +59,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	private val notificationId: Int
+	private val notificationId: Int,
+	private val insertSemaphore: Semaphore
 ) : CompletableSession<F> {
 
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
@@ -258,9 +260,14 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
-		when (value) {
-			is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
-			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+		insertSemaphore.acquire()
+		try {
+			when (value) {
+				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
+				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+			}
+		} finally {
+			insertSemaphore.release()
 		}
 	}
 

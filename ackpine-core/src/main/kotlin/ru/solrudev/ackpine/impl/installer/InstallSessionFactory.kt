@@ -39,6 +39,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface InstallSessionFactory {
@@ -48,7 +49,8 @@ internal interface InstallSessionFactory {
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
-		notificationId: Int
+		notificationId: Int,
+		insertSemaphore: Semaphore
 	): ProgressSession<InstallFailure>
 }
 
@@ -69,7 +71,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
-		notificationId: Int
+		notificationId: Int,
+		insertSemaphore: Semaphore
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -78,7 +81,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao,
-			executor, handler, notificationId
+			executor, handler, notificationId, insertSemaphore
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -90,7 +93,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.requireUserAction,
 			parameters.installMode,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
-			executor, SerialExecutor(executor), handler, notificationId
+			executor, SerialExecutor(executor), handler, notificationId, insertSemaphore
 		)
 	}
 

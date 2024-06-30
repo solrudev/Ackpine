@@ -56,6 +56,7 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -79,13 +80,14 @@ internal class SessionBasedInstallSession internal constructor(
 	private val executor: Executor,
 	serialExecutor: Executor,
 	private val handler: Handler,
-	notificationId: Int
+	notificationId: Int,
+	private val insertSemaphore: Semaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	serialExecutor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	notificationId
+	notificationId, insertSemaphore
 ) {
 
 	@Volatile
@@ -290,7 +292,12 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun persistNativeSessionId(nativeSessionId: Int) {
-		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
+		insertSemaphore.acquire()
+		try {
+			nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
+		} finally {
+			insertSemaphore.release()
+		}
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)

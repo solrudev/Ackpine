@@ -38,6 +38,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
@@ -65,41 +66,15 @@ internal class PackageInstallerImpl internal constructor(
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
+		val insertSemaphore = Semaphore(1)
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
 			initialProgress = Progress(),
-			notificationId
+			notificationId, insertSemaphore
 		)
 		sessions[id] = session
-		var packageName: String? = null
-		val installMode = when (parameters.installMode) {
-			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
-			is InstallMode.InheritExisting -> {
-				packageName = parameters.installMode.packageName
-				InstallModeEntity.InstallMode.INHERIT_EXISTING
-			}
-		}
-		serialExecutor.execute {
-			installSessionDao.insertInstallSession(
-				SessionEntity.InstallSession(
-					session = SessionEntity(
-						id.toString(),
-						SessionEntity.Type.INSTALL,
-						SessionEntity.State.PENDING,
-						parameters.confirmation,
-						parameters.notificationData.title,
-						parameters.notificationData.contentText,
-						parameters.notificationData.icon,
-						parameters.requireUserAction
-					),
-					installerType = parameters.installerType,
-					uris = parameters.apks.toList().map { it.toString() },
-					name = parameters.name,
-					notificationId, installMode, packageName
-				)
-			)
-		}
+		persistSession(id, parameters, insertSemaphore, notificationId)
 		return session
 	}
 
@@ -159,6 +134,52 @@ internal class PackageInstallerImpl internal constructor(
 		return future
 	}
 
+	private fun persistSession(
+		id: UUID,
+		parameters: InstallParameters,
+		insertSemaphore: Semaphore,
+		notificationId: Int
+	) {
+		var packageName: String? = null
+		val installMode = when (parameters.installMode) {
+			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
+			is InstallMode.InheritExisting -> {
+				packageName = parameters.installMode.packageName
+				InstallModeEntity.InstallMode.INHERIT_EXISTING
+			}
+		}
+		insertSemaphore.acquire()
+		try {
+			serialExecutor.execute {
+				try {
+					installSessionDao.insertInstallSession(
+						SessionEntity.InstallSession(
+							session = SessionEntity(
+								id.toString(),
+								SessionEntity.Type.INSTALL,
+								SessionEntity.State.PENDING,
+								parameters.confirmation,
+								parameters.notificationData.title,
+								parameters.notificationData.contentText,
+								parameters.notificationData.icon,
+								parameters.requireUserAction
+							),
+							installerType = parameters.installerType,
+							uris = parameters.apks.toList().map { it.toString() },
+							name = parameters.name,
+							notificationId, installMode, packageName
+						)
+					)
+				} finally {
+					insertSemaphore.release()
+				}
+			}
+		} catch (e: Exception) {
+			insertSemaphore.release()
+			throw e
+		}
+	}
+
 	@SuppressLint("NewApi")
 	private fun SessionEntity.InstallSession.toInstallSession(): ProgressSession<InstallFailure> {
 		val installMode = when (installMode) {
@@ -192,7 +213,7 @@ internal class PackageInstallerImpl internal constructor(
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
-			notificationId!!
+			notificationId!!, Semaphore(1)
 		)
 	}
 }

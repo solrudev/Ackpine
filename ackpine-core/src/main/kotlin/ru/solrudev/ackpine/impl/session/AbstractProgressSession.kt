@@ -32,6 +32,7 @@ import ru.solrudev.ackpine.session.Session
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 
 /**
  * A base implementation for Ackpine [sessions with progress][ProgressSession].
@@ -48,11 +49,12 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	private val executor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
-	notificationId: Int
+	notificationId: Int,
+	insertSemaphore: Semaphore
 ) : AbstractSession<F>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
-	executor, handler, exceptionalFailureFactory, notificationId
+	executor, handler, exceptionalFailureFactory, notificationId, insertSemaphore
 ), ProgressSession<F> {
 
 	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()

@@ -47,6 +47,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -65,13 +66,14 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionProgressDao: SessionProgressDao,
 	executor: Executor,
 	handler: Handler,
-	notificationId: Int
+	notificationId: Int,
+	insertSemaphore: Semaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	notificationId
+	notificationId, insertSemaphore
 ) {
 
 	private val Context.externalDir: File

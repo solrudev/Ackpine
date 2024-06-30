@@ -32,6 +32,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -47,13 +48,14 @@ internal class UninstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	executor: Executor,
 	handler: Handler,
-	notificationId: Int
+	notificationId: Int,
+	insertSemaphore: Semaphore
 ) : AbstractSession<UninstallFailure>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
-	notificationId
+	notificationId, insertSemaphore
 ) {
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
