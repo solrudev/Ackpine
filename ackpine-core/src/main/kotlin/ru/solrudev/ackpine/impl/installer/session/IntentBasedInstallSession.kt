@@ -67,13 +67,13 @@ internal class IntentBasedInstallSession internal constructor(
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	insertSemaphore: BinarySemaphore
+	dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	notificationId, insertSemaphore
+	notificationId, dbWriteSemaphore
 ) {
 
 	private val Context.externalDir: File

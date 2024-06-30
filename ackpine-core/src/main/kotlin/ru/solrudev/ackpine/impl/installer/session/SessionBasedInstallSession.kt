@@ -82,13 +82,13 @@ internal class SessionBasedInstallSession internal constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	notificationId: Int,
-	private val semaphore: BinarySemaphore
+	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	notificationId, semaphore
+	notificationId, dbWriteSemaphore
 ) {
 
 	@Volatile
@@ -292,7 +292,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun persistNativeSessionId(nativeSessionId: Int) = semaphore.withBinarySemaphore {
+	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withBinarySemaphore {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
 

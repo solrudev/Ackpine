@@ -72,15 +72,15 @@ internal class PackageInstallerImpl internal constructor(
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val semaphore = BinarySemaphore()
+		val dbWriteSemaphore = BinarySemaphore()
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
 			initialProgress = Progress(),
-			notificationId, semaphore
+			notificationId, dbWriteSemaphore
 		)
 		sessions[id] = session
-		persistSession(id, parameters, semaphore, notificationId)
+		persistSession(id, parameters, dbWriteSemaphore, notificationId)
 		return session
 	}
 
@@ -157,7 +157,7 @@ internal class PackageInstallerImpl internal constructor(
 	private fun persistSession(
 		id: UUID,
 		parameters: InstallParameters,
-		semaphore: BinarySemaphore,
+		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
 	) {
 		var packageName: String? = null
@@ -168,7 +168,7 @@ internal class PackageInstallerImpl internal constructor(
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
-		executor.executeWithSemaphore(semaphore) {
+		executor.executeWithSemaphore(dbWriteSemaphore) {
 			installSessionDao.insertInstallSession(
 				SessionEntity.InstallSession(
 					session = SessionEntity(

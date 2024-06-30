@@ -52,14 +52,14 @@ internal class PackageUninstallerImpl internal constructor(
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val semaphore = BinarySemaphore()
+		val dbWriteSemaphore = BinarySemaphore()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
-			notificationId, semaphore
+			notificationId, dbWriteSemaphore
 		)
 		sessions[id] = session
-		persistSession(id, parameters, semaphore, notificationId)
+		persistSession(id, parameters, dbWriteSemaphore, notificationId)
 		return session
 	}
 
@@ -118,9 +118,9 @@ internal class PackageUninstallerImpl internal constructor(
 	private fun persistSession(
 		id: UUID,
 		parameters: UninstallParameters,
-		semaphore: BinarySemaphore,
+		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
-	) = executor.executeWithSemaphore(semaphore) {
+	) = executor.executeWithSemaphore(dbWriteSemaphore) {
 		uninstallSessionDao.insertUninstallSession(
 			SessionEntity.UninstallSession(
 				session = SessionEntity(
