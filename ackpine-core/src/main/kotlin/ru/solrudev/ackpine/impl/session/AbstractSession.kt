@@ -60,7 +60,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
 	private val notificationId: Int,
-	private val insertSemaphore: Semaphore
+	private val semaphore: Semaphore
 ) : CompletableSession<F> {
 
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
@@ -260,14 +260,14 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
-		insertSemaphore.acquire()
+		semaphore.acquire()
 		try {
 			when (value) {
 				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
 			}
 		} finally {
-			insertSemaphore.release()
+			semaphore.release()
 		}
 	}
 

@@ -66,15 +66,15 @@ internal class PackageInstallerImpl internal constructor(
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val insertSemaphore = Semaphore(1)
+		val semaphore = Semaphore(1)
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
 			initialProgress = Progress(),
-			notificationId, insertSemaphore
+			notificationId, semaphore
 		)
 		sessions[id] = session
-		persistSession(id, parameters, insertSemaphore, notificationId)
+		persistSession(id, parameters, semaphore, notificationId)
 		return session
 	}
 
@@ -134,12 +134,7 @@ internal class PackageInstallerImpl internal constructor(
 		return future
 	}
 
-	private fun persistSession(
-		id: UUID,
-		parameters: InstallParameters,
-		insertSemaphore: Semaphore,
-		notificationId: Int
-	) {
+	private fun persistSession(id: UUID, parameters: InstallParameters, semaphore: Semaphore, notificationId: Int) {
 		var packageName: String? = null
 		val installMode = when (parameters.installMode) {
 			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
@@ -148,7 +143,7 @@ internal class PackageInstallerImpl internal constructor(
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
-		insertSemaphore.acquire()
+		semaphore.acquire()
 		try {
 			serialExecutor.execute {
 				try {
@@ -171,11 +166,11 @@ internal class PackageInstallerImpl internal constructor(
 						)
 					)
 				} finally {
-					insertSemaphore.release()
+					semaphore.release()
 				}
 			}
 		} catch (e: Exception) {
-			insertSemaphore.release()
+			semaphore.release()
 			throw e
 		}
 	}

@@ -41,7 +41,7 @@ internal interface UninstallSessionFactory {
 		id: UUID,
 		initialState: Session.State<UninstallFailure>,
 		notificationId: Int,
-		insertSemaphore: Semaphore
+		semaphore: Semaphore
 	): Session<UninstallFailure>
 }
 
@@ -59,7 +59,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		id: UUID,
 		initialState: Session.State<UninstallFailure>,
 		notificationId: Int,
-		insertSemaphore: Semaphore
+		semaphore: Semaphore
 	): Session<UninstallFailure> {
 		return UninstallSession(
 			applicationContext,
@@ -68,7 +68,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.packageName),
 			sessionDao, sessionFailureDao,
-			executor, handler, notificationId, insertSemaphore
+			executor, handler, notificationId, semaphore
 		)
 	}
 

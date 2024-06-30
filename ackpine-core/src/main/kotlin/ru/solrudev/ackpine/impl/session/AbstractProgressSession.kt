@@ -50,11 +50,11 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
 	notificationId: Int,
-	insertSemaphore: Semaphore
+	semaphore: Semaphore
 ) : AbstractSession<F>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
-	executor, handler, exceptionalFailureFactory, notificationId, insertSemaphore
+	executor, handler, exceptionalFailureFactory, notificationId, semaphore
 ), ProgressSession<F> {
 
 	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()

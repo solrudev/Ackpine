@@ -50,7 +50,7 @@ internal interface InstallSessionFactory {
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
 		notificationId: Int,
-		insertSemaphore: Semaphore
+		semaphore: Semaphore
 	): ProgressSession<InstallFailure>
 }
 
@@ -72,7 +72,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
 		notificationId: Int,
-		insertSemaphore: Semaphore
+		semaphore: Semaphore
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -81,7 +81,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao,
-			executor, handler, notificationId, insertSemaphore
+			executor, handler, notificationId, semaphore
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -93,7 +93,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.requireUserAction,
 			parameters.installMode,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
-			executor, SerialExecutor(executor), handler, notificationId, insertSemaphore
+			executor, SerialExecutor(executor), handler, notificationId, semaphore
 		)
 	}
 

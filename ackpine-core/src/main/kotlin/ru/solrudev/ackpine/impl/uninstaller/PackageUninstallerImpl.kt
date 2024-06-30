@@ -51,14 +51,14 @@ internal class PackageUninstallerImpl internal constructor(
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val insertSemaphore = Semaphore(1)
+		val semaphore = Semaphore(1)
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
-			notificationId, insertSemaphore
+			notificationId, semaphore
 		)
 		sessions[id] = session
-		persistSession(id, parameters, insertSemaphore, notificationId)
+		persistSession(id, parameters, semaphore, notificationId)
 		return session
 	}
 
@@ -114,13 +114,8 @@ internal class PackageUninstallerImpl internal constructor(
 		return future
 	}
 
-	private fun persistSession(
-		id: UUID,
-		parameters: UninstallParameters,
-		insertSemaphore: Semaphore,
-		notificationId: Int
-	) {
-		insertSemaphore.acquire()
+	private fun persistSession(id: UUID, parameters: UninstallParameters, semaphore: Semaphore, notificationId: Int) {
+		semaphore.acquire()
 		try {
 			executor.execute {
 				try {
@@ -141,11 +136,11 @@ internal class PackageUninstallerImpl internal constructor(
 						)
 					)
 				} finally {
-					insertSemaphore.release()
+					semaphore.release()
 				}
 			}
 		} catch (e: Exception) {
-			insertSemaphore.release()
+			semaphore.release()
 			throw e
 		}
 	}

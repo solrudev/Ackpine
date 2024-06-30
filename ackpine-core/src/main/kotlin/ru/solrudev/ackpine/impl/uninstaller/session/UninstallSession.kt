@@ -49,13 +49,13 @@ internal class UninstallSession internal constructor(
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	insertSemaphore: Semaphore
+	semaphore: Semaphore
 ) : AbstractSession<UninstallFailure>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
-	notificationId, insertSemaphore
+	notificationId, semaphore
 ) {
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
