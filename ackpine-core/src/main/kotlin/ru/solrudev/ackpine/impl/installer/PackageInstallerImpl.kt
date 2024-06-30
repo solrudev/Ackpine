@@ -21,7 +21,10 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.safeExecuteWith
+import ru.solrudev.ackpine.helpers.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
@@ -38,17 +41,25 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
 	private val sessionProgressDao: SessionProgressDao,
-	private val serialExecutor: Executor,
+	private val executor: Executor,
 	private val installSessionFactory: InstallSessionFactory,
 	private val uuidFactory: () -> UUID,
 	private val notificationIdFactory: () -> Int
 ) : PackageInstaller {
+
+	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
+	private val committedSessionsInitSemaphore = BinarySemaphore()
+
+	@Volatile
+	private var isSessionsMapInitialized = false
+
+	@Volatile
+	private var areCommittedSessionsInitialized = false
 
 	init {
 		// If app is killed while installing but system installer activity remains visible,
@@ -58,15 +69,10 @@ internal class PackageInstallerImpl internal constructor(
 		initializeCommittedSessions()
 	}
 
-	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
-
-	@Volatile
-	private var isSessionsMapInitialized = false
-
 	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val semaphore = Semaphore(1)
+		val semaphore = BinarySemaphore()
 		val session = installSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
@@ -81,10 +87,14 @@ internal class PackageInstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
 		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: serialExecutor.safeExecuteWith(future) {
-			val session = installSessionDao.getInstallSession(sessionId.toString())
-			val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-			future.set(installSession)
+		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+			if (areCommittedSessionsInitialized) {
+				getSessionFromDb(sessionId, future)
+			} else {
+				committedSessionsInitSemaphore.withBinarySemaphore {
+					getSessionFromDb(sessionId, future)
+				}
+			}
 		}
 		return future
 	}
@@ -109,11 +119,19 @@ internal class PackageInstallerImpl internal constructor(
 		return initializeSessions { sessions -> sessions.filter { it.isActive } }
 	}
 
-	private fun initializeCommittedSessions() = serialExecutor.execute {
+	private fun initializeCommittedSessions() = executor.executeWithSemaphore(committedSessionsInitSemaphore) {
 		for (session in installSessionDao.getCommittedInstallSessions()) {
 			val installSession = session.toInstallSession()
 			sessions[installSession.id] = installSession
 		}
+		areCommittedSessionsInitialized = true
+	}
+
+	@SuppressLint("RestrictedApi")
+	private fun getSessionFromDb(sessionId: UUID, future: ResolvableFuture<ProgressSession<InstallFailure>>) {
+		val session = installSessionDao.getInstallSession(sessionId.toString())
+		val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
+		future.set(installSession)
 	}
 
 	@SuppressLint("RestrictedApi")
@@ -121,20 +139,27 @@ internal class PackageInstallerImpl internal constructor(
 		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		serialExecutor.safeExecuteWith(future) {
-			for (session in installSessionDao.getInstallSessions()) {
-				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
-					val installSession = session.toInstallSession()
-					sessions.putIfAbsent(installSession.id, installSession)
+		executor.safeExecuteWith(future) {
+			committedSessionsInitSemaphore.withBinarySemaphore {
+				for (session in installSessionDao.getInstallSessions()) {
+					if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+						val installSession = session.toInstallSession()
+						sessions.putIfAbsent(installSession.id, installSession)
+					}
 				}
+				isSessionsMapInitialized = true
+				future.set(transform(sessions.values))
 			}
-			isSessionsMapInitialized = true
-			future.set(transform(sessions.values))
 		}
 		return future
 	}
 
-	private fun persistSession(id: UUID, parameters: InstallParameters, semaphore: Semaphore, notificationId: Int) {
+	private fun persistSession(
+		id: UUID,
+		parameters: InstallParameters,
+		semaphore: BinarySemaphore,
+		notificationId: Int
+	) {
 		var packageName: String? = null
 		val installMode = when (parameters.installMode) {
 			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
@@ -143,35 +168,25 @@ internal class PackageInstallerImpl internal constructor(
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
-		semaphore.acquire()
-		try {
-			serialExecutor.execute {
-				try {
-					installSessionDao.insertInstallSession(
-						SessionEntity.InstallSession(
-							session = SessionEntity(
-								id.toString(),
-								SessionEntity.Type.INSTALL,
-								SessionEntity.State.PENDING,
-								parameters.confirmation,
-								parameters.notificationData.title,
-								parameters.notificationData.contentText,
-								parameters.notificationData.icon,
-								parameters.requireUserAction
-							),
-							installerType = parameters.installerType,
-							uris = parameters.apks.toList().map { it.toString() },
-							name = parameters.name,
-							notificationId, installMode, packageName
-						)
-					)
-				} finally {
-					semaphore.release()
-				}
-			}
-		} catch (e: Exception) {
-			semaphore.release()
-			throw e
+		executor.executeWithSemaphore(semaphore) {
+			installSessionDao.insertInstallSession(
+				SessionEntity.InstallSession(
+					session = SessionEntity(
+						id.toString(),
+						SessionEntity.Type.INSTALL,
+						SessionEntity.State.PENDING,
+						parameters.confirmation,
+						parameters.notificationData.title,
+						parameters.notificationData.contentText,
+						parameters.notificationData.icon,
+						parameters.requireUserAction
+					),
+					installerType = parameters.installerType,
+					uris = parameters.apks.toList().map { it.toString() },
+					name = parameters.name,
+					notificationId, installMode, packageName
+				)
+			)
 		}
 	}
 
@@ -208,7 +223,7 @@ internal class PackageInstallerImpl internal constructor(
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
-			notificationId!!, Semaphore(1)
+			notificationId!!, BinarySemaphore()
 		)
 	}
 }

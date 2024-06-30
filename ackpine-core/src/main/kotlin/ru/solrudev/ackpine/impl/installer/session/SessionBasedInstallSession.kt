@@ -33,7 +33,10 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.handleResult
+import ru.solrudev.ackpine.helpers.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -56,7 +59,6 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -78,14 +80,13 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
 	private val executor: Executor,
-	serialExecutor: Executor,
 	private val handler: Handler,
 	notificationId: Int,
-	private val semaphore: Semaphore
+	private val semaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
-	serialExecutor, handler,
+	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
 	notificationId, semaphore
 ) {
@@ -96,22 +97,20 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
+	private val nativeSessionIdSemaphore = BinarySemaphore()
+
 	init {
-		initialize(initialState, initialProgress, serialExecutor)
+		initialize(initialState, initialProgress)
 	}
 
-	private fun initialize(
-		initialState: Session.State<InstallFailure>,
-		initialProgress: Progress,
-		serialExecutor: Executor
-	) {
+	private fun initialize(initialState: Session.State<InstallFailure>, initialProgress: Progress) {
 		if (initialState.isTerminal) {
 			return
 		}
 		if (initialProgress.progress >= 81) { // means that actual installation is ongoing or is completed
 			notifyCommitted() // block clients from committing
 		}
-		serialExecutor.execute {
+		executor.executeWithSemaphore(nativeSessionIdSemaphore) {
 			val nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
 			this.nativeSessionId = nativeSessionId
 			if (nativeSessionId != -1) {
@@ -132,9 +131,11 @@ internal class SessionBasedInstallSession internal constructor(
 		get() = context.packageManager.packageInstaller
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
-		if (nativeSessionId != -1) {
-			abandonSession()
-			packageInstaller.clearSessionCallback()
+		nativeSessionIdSemaphore.withBinarySemaphore {
+			if (nativeSessionId != -1) {
+				abandonSession()
+				packageInstaller.clearSessionCallback()
+			}
 		}
 		val sessionId = packageInstaller.createSession(createSessionParams())
 		nativeSessionId = sessionId
@@ -291,13 +292,8 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun persistNativeSessionId(nativeSessionId: Int) {
-		semaphore.acquire()
-		try {
-			nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
-		} finally {
-			semaphore.release()
-		}
+	private fun persistNativeSessionId(nativeSessionId: Int) = semaphore.withBinarySemaphore {
+		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)

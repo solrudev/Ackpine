@@ -22,6 +22,7 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
+import ru.solrudev.ackpine.helpers.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -32,7 +33,6 @@ import ru.solrudev.ackpine.session.Session
 import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 
 /**
  * A base implementation for Ackpine [sessions with progress][ProgressSession].
@@ -50,7 +50,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
 	notificationId: Int,
-	semaphore: Semaphore
+	semaphore: BinarySemaphore
 ) : AbstractSession<F>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,

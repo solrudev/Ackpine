@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.helpers
 import android.annotation.SuppressLint
 import androidx.concurrent.futures.ResolvableFuture
 import java.util.concurrent.Executor
+import java.util.concurrent.Semaphore
 
 @SuppressLint("RestrictedApi")
 @JvmSynthetic
@@ -31,7 +32,24 @@ internal inline fun <V> Executor.safeExecuteWith(future: ResolvableFuture<V>, cr
 				future.setException(t)
 			}
 		}
-	} catch (t: Throwable) {
-		future.setException(t)
+	} catch (throwable: Throwable) {
+		future.setException(throwable)
+	}
+}
+
+@JvmSynthetic
+internal inline fun Executor.executeWithSemaphore(semaphore: Semaphore, crossinline command: () -> Unit) {
+	semaphore.acquire()
+	try {
+		execute {
+			try {
+				command()
+			} finally {
+				semaphore.release()
+			}
+		}
+	} catch (exception: Exception) {
+		semaphore.release()
+		throw exception
 	}
 }

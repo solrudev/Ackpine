@@ -20,6 +20,8 @@ import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -32,7 +34,6 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageUninstallerImpl internal constructor(
@@ -51,7 +52,7 @@ internal class PackageUninstallerImpl internal constructor(
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
-		val semaphore = Semaphore(1)
+		val semaphore = BinarySemaphore()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
@@ -114,35 +115,28 @@ internal class PackageUninstallerImpl internal constructor(
 		return future
 	}
 
-	private fun persistSession(id: UUID, parameters: UninstallParameters, semaphore: Semaphore, notificationId: Int) {
-		semaphore.acquire()
-		try {
-			executor.execute {
-				try {
-					uninstallSessionDao.insertUninstallSession(
-						SessionEntity.UninstallSession(
-							session = SessionEntity(
-								id.toString(),
-								SessionEntity.Type.UNINSTALL,
-								SessionEntity.State.PENDING,
-								parameters.confirmation,
-								parameters.notificationData.title,
-								parameters.notificationData.contentText,
-								parameters.notificationData.icon,
-								requireUserAction = true
-							),
-							packageName = parameters.packageName,
-							notificationId
-						)
-					)
-				} finally {
-					semaphore.release()
-				}
-			}
-		} catch (e: Exception) {
-			semaphore.release()
-			throw e
-		}
+	private fun persistSession(
+		id: UUID,
+		parameters: UninstallParameters,
+		semaphore: BinarySemaphore,
+		notificationId: Int
+	) = executor.executeWithSemaphore(semaphore) {
+		uninstallSessionDao.insertUninstallSession(
+			SessionEntity.UninstallSession(
+				session = SessionEntity(
+					id.toString(),
+					SessionEntity.Type.UNINSTALL,
+					SessionEntity.State.PENDING,
+					parameters.confirmation,
+					parameters.notificationData.title,
+					parameters.notificationData.contentText,
+					parameters.notificationData.icon,
+					requireUserAction = true
+				),
+				packageName = parameters.packageName,
+				notificationId
+			)
+		)
 	}
 
 	private fun SessionEntity.UninstallSession.toUninstallSession(): Session<UninstallFailure> {
@@ -160,7 +154,7 @@ internal class PackageUninstallerImpl internal constructor(
 			parameters,
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, uninstallSessionDao),
-			notificationId!!, Semaphore(1)
+			notificationId!!, BinarySemaphore()
 		)
 	}
 }

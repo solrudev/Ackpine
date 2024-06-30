@@ -28,6 +28,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
+import ru.solrudev.ackpine.helpers.BinarySemaphore
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -47,7 +48,6 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -67,7 +67,7 @@ internal class IntentBasedInstallSession internal constructor(
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	insertSemaphore: Semaphore
+	insertSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,

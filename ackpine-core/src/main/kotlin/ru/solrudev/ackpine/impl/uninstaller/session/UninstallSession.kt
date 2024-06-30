@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.helpers.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.session.AbstractSession
@@ -32,7 +33,6 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
-import java.util.concurrent.Semaphore
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -49,7 +49,7 @@ internal class UninstallSession internal constructor(
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	semaphore: Semaphore
+	semaphore: BinarySemaphore
 ) : AbstractSession<UninstallFailure>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
