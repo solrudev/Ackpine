@@ -21,8 +21,8 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.executeWithFuture
 import ru.solrudev.ackpine.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
@@ -66,7 +66,7 @@ internal class PackageUninstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?> {
 		val future = ResolvableFuture.create<Session<UninstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
 			val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
 			val uninstallSession = session?.toUninstallSession()?.let {
 				sessions.putIfAbsent(sessionId, it) ?: it
@@ -102,7 +102,7 @@ internal class PackageUninstallerImpl internal constructor(
 		crossinline transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
 	): ListenableFuture<List<Session<UninstallFailure>>> {
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
-		executor.safeExecuteWith(future) {
+		executor.executeWithFuture(future) {
 			for (session in uninstallSessionDao.getUninstallSessions()) {
 				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
 					val uninstallSession = session.toUninstallSession()

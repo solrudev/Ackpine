@@ -22,8 +22,8 @@ import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.executeWithFuture
 import ru.solrudev.ackpine.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.helpers.safeExecuteWith
 import ru.solrudev.ackpine.helpers.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -87,7 +87,7 @@ internal class PackageInstallerImpl internal constructor(
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
 		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
 			if (areCommittedSessionsInitialized) {
 				getSessionFromDb(sessionId, future)
 			} else {
@@ -139,7 +139,7 @@ internal class PackageInstallerImpl internal constructor(
 		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		executor.safeExecuteWith(future) {
+		executor.executeWithFuture(future) {
 			committedSessionsInitSemaphore.withBinarySemaphore {
 				for (session in installSessionDao.getInstallSessions()) {
 					if (!sessions.containsKey(UUID.fromString(session.session.id))) {

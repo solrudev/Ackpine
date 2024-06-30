@@ -23,7 +23,7 @@ import java.util.concurrent.Semaphore
 
 @SuppressLint("RestrictedApi")
 @JvmSynthetic
-internal inline fun <V> Executor.safeExecuteWith(future: ResolvableFuture<V>, crossinline command: () -> Unit) {
+internal inline fun <V> Executor.executeWithFuture(future: ResolvableFuture<V>, crossinline command: () -> Unit) {
 	try {
 		execute {
 			try {
