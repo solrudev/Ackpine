@@ -18,16 +18,13 @@ package ru.solrudev.ackpine.sample.install;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
-import static android.provider.Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.view.View;
 
@@ -164,20 +161,12 @@ public final class InstallFragment extends Fragment {
 
 	private void requestPermissions() {
 		requestReadStoragePermission();
-		requestManageAllFilesPermission();
 		requestNotificationPermission();
 	}
 
 	private void requestReadStoragePermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 			requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
-		}
-	}
-
-	private void requestManageAllFilesPermission() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-			startActivity(new Intent(ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					.setData(Uri.parse("package:" + requireContext().getPackageName())));
 		}
 	}
 
@@ -191,11 +180,9 @@ public final class InstallFragment extends Fragment {
 		final var readStorage = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
 				|| Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-		final var storageManager = Build.VERSION.SDK_INT < Build.VERSION_CODES.R
-				|| Environment.isExternalStorageManager();
 		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-		return readStorage && storageManager && notifications;
+		return readStorage && notifications;
 	}
 
 	private final class SwipeCallback extends ItemTouchHelper.SimpleCallback {

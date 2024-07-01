@@ -19,18 +19,14 @@ package ru.solrudev.ackpine.sample.install
 import android.Manifest.permission.POST_NOTIFICATIONS
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.content.ActivityNotFoundException
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
-import android.provider.Settings
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
 import androidx.annotation.RequiresApi
-import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -128,22 +124,12 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 
 	private fun requestPermissions() {
 		requestReadStoragePermission()
-		requestManageAllFilesPermission()
 		requestNotificationPermission()
 	}
 
 	private fun requestReadStoragePermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 			requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE)
-		}
-	}
-
-	private fun requestManageAllFilesPermission() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
-			startActivity(
-				Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-					.setData("package:${requireContext().packageName}".toUri())
-			)
 		}
 	}
 
@@ -157,10 +143,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		val readStorage = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
 				|| Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-		val storageManager = Build.VERSION.SDK_INT < Build.VERSION_CODES.R || Environment.isExternalStorageManager()
 		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-		return readStorage && storageManager && notifications
+		return readStorage && notifications
 	}
 
 	private inner class SwipeCallback(
