@@ -25,7 +25,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.annotation.RequiresApi
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -58,7 +58,11 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	}
 
 	@RequiresApi(Build.VERSION_CODES.M)
-	private val requestPermissionLauncher = registerForActivityResult(RequestPermission()) { }
+	private val requestPermissionsLauncher = registerForActivityResult(RequestMultiplePermissions()) { results ->
+		if (results.values.all { it }) {
+			chooseFile()
+		}
+	}
 
 	private val pickerLauncher = registerForActivityResult(GetContent(), ::install)
 
@@ -94,6 +98,10 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 			requestPermissions()
 			return
 		}
+		chooseFile()
+	}
+
+	private fun chooseFile() {
 		try {
 			pickerLauncher.launch("*/*")
 		} catch (_: ActivityNotFoundException) {
@@ -123,25 +131,24 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	}
 
 	private fun requestPermissions() {
-		requestReadStoragePermission()
-		requestNotificationPermission()
-	}
-
-	private fun requestReadStoragePermission() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-			requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE)
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return
 		}
-	}
-
-	private fun requestNotificationPermission() {
+		val permissions = mutableSetOf<String>()
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+			permissions += READ_EXTERNAL_STORAGE
+		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			requestPermissionLauncher.launch(POST_NOTIFICATIONS)
+			permissions += POST_NOTIFICATIONS
 		}
+		requestPermissionsLauncher.launch(permissions.toTypedArray())
 	}
 
 	private fun allPermissionsGranted(): Boolean {
-		val readStorage = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-				|| Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return true
+		}
+		val readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED

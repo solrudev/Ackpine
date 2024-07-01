@@ -30,7 +30,7 @@ import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts.GetContent;
-import androidx.activity.result.contract.ActivityResultContracts.RequestPermission;
+import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -44,6 +44,7 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Objects;
 
 import kotlin.sequences.Sequence;
@@ -62,8 +63,15 @@ public final class InstallFragment extends Fragment {
 	private final InstallSessionsAdapter adapter = new InstallSessionsAdapter(id -> viewModel.cancelSession(id));
 
 	@RequiresApi(Build.VERSION_CODES.M)
-	private final ActivityResultLauncher<String> requestPermissionLauncher =
-			registerForActivityResult(new RequestPermission(), isGranted -> {
+	private final ActivityResultLauncher<String[]> requestPermissionsLauncher = registerForActivityResult(
+			new RequestMultiplePermissions(),
+			results -> {
+				for (final var isGranted : results.values()) {
+					if (!isGranted) {
+						return;
+					}
+				}
+				chooseFile();
 			});
 
 	private final ActivityResultLauncher<String> pickerLauncher =
@@ -119,6 +127,10 @@ public final class InstallFragment extends Fragment {
 			requestPermissions();
 			return;
 		}
+		chooseFile();
+	}
+
+	private void chooseFile() {
 		try {
 			pickerLauncher.launch("*/*");
 		} catch (ActivityNotFoundException ignored) {
@@ -160,25 +172,24 @@ public final class InstallFragment extends Fragment {
 	}
 
 	private void requestPermissions() {
-		requestReadStoragePermission();
-		requestNotificationPermission();
-	}
-
-	private void requestReadStoragePermission() {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-			requestPermissionLauncher.launch(READ_EXTERNAL_STORAGE);
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return;
 		}
-	}
-
-	private void requestNotificationPermission() {
+		final var permissions = new HashSet<String>();
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+			permissions.add(READ_EXTERNAL_STORAGE);
+		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			requestPermissionLauncher.launch(POST_NOTIFICATIONS);
+			permissions.add(POST_NOTIFICATIONS);
 		}
+		requestPermissionsLauncher.launch(permissions.toArray(new String[]{}));
 	}
 
 	private boolean allPermissionsGranted() {
-		final var readStorage = Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-				|| Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return true;
+		}
+		final var readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
