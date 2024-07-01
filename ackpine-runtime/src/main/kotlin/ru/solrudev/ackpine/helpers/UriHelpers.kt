@@ -21,7 +21,9 @@ import android.content.Context
 import android.net.Uri
 import android.os.Build
 import android.os.CancellationSignal
+import android.os.Environment
 import android.os.Process
+import android.provider.DocumentsContract
 import androidx.annotation.RestrictTo
 import java.io.File
 import java.io.FileNotFoundException
@@ -49,11 +51,31 @@ public fun Uri.toFile(context: Context, signal: CancellationSignal? = null): Fil
 				}
 			}
 			if (canonicalPath == path) {
-				return File("")
+				return tryFileFromExternalDocumentUri(context, this) ?: File("")
 			}
 			return File(canonicalPath)
 		}
 	} catch (_: FileNotFoundException) {
 		return File("")
 	}
+}
+
+private fun tryFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
+	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || !DocumentsContract.isDocumentUri(context, uri)) {
+		return null
+	}
+	if (uri.authority != "com.android.externalstorage.documents") {
+		return null
+	}
+	val documentId = DocumentsContract.getDocumentId(uri)
+	val segments = documentId.split(':', limit = 2)
+	val storageId = segments[0]
+	if (storageId.lowercase() != "primary") {
+		return File("storage/${documentId.replace(':', '/')}")
+	}
+	if (segments.size > 1) {
+		val name = segments[1]
+		return File("${Environment.getExternalStorageDirectory().absolutePath}/$name/")
+	}
+	return Environment.getExternalStorageDirectory()
 }
