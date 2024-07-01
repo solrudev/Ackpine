@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
-import ru.solrudev.ackpine.helpers.handleResult
+import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure

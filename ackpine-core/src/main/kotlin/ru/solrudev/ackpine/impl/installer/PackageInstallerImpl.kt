@@ -21,10 +21,10 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.BinarySemaphore
-import ru.solrudev.ackpine.helpers.executeWithFuture
-import ru.solrudev.ackpine.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.helpers.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
+import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity

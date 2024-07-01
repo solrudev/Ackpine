@@ -27,8 +27,8 @@ import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
-import ru.solrudev.ackpine.helpers.BinarySemaphore
-import ru.solrudev.ackpine.helpers.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity

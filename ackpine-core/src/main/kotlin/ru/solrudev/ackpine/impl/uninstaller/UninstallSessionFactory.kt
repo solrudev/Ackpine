@@ -20,7 +20,7 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
-import ru.solrudev.ackpine.helpers.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel

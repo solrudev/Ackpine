@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.helpers.concurrent
 
 import androidx.annotation.RestrictTo
 import java.util.concurrent.Semaphore

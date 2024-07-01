@@ -33,10 +33,10 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.BinarySemaphore
-import ru.solrudev.ackpine.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.helpers.handleResult
-import ru.solrudev.ackpine.helpers.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
+import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
