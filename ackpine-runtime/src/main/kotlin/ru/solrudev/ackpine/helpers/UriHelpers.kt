@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,9 @@ public fun Uri.toFile(context: Context, signal: CancellationSignal? = null): Fil
 				} else {
 					canonicalPath
 				}
+			}
+			if (canonicalPath == path) {
+				return File("")
 			}
 			return File(canonicalPath)
 		}
