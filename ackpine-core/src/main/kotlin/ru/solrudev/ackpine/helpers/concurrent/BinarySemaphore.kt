@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,24 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.helpers.concurrent
 
-import android.annotation.SuppressLint
-import androidx.concurrent.futures.ResolvableFuture
-import java.util.concurrent.Executor
+import androidx.annotation.RestrictTo
+import java.util.concurrent.Semaphore
 
-@SuppressLint("RestrictedApi")
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal class BinarySemaphore : Semaphore(1) {
+	private companion object {
+		private const val serialVersionUID: Long = -1496811586616841420L
+	}
+}
+
 @JvmSynthetic
-internal inline fun <V> Executor.safeExecuteWith(future: ResolvableFuture<V>, crossinline command: () -> Unit) {
+internal inline fun <T> BinarySemaphore.withBinarySemaphore(action: () -> T): T {
+	acquire()
 	try {
-		execute {
-			try {
-				command()
-			} catch (t: Throwable) {
-				future.setException(t)
-			}
-		}
-	} catch (t: Throwable) {
-		future.setException(t)
+		return action()
+	} finally {
+		release()
 	}
 }

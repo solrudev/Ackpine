@@ -28,6 +28,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toFile
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -65,13 +66,14 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionProgressDao: SessionProgressDao,
 	executor: Executor,
 	handler: Handler,
-	notificationId: Int
+	notificationId: Int,
+	dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
-	notificationId
+	notificationId, dbWriteSemaphore
 ) {
 
 	private val Context.externalDir: File

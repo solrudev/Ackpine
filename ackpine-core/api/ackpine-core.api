@@ -242,11 +242,7 @@ public abstract interface class ru/solrudev/ackpine/installer/parameters/ApkList
 }
 
 public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallMode {
-	public static final field Companion Lru/solrudev/ackpine/installer/parameters/InstallMode$Companion;
 	public static final field FULL Lru/solrudev/ackpine/installer/parameters/InstallMode$Full;
-}
-
-public final class ru/solrudev/ackpine/installer/parameters/InstallMode$Companion {
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallMode$Full : ru/solrudev/ackpine/installer/parameters/InstallMode {

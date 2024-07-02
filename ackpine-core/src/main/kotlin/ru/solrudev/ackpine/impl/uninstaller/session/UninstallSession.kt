@@ -20,6 +20,7 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.session.AbstractSession
@@ -47,13 +48,14 @@ internal class UninstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	executor: Executor,
 	handler: Handler,
-	notificationId: Int
+	notificationId: Int,
+	dbWriteSemaphore: BinarySemaphore
 ) : AbstractSession<UninstallFailure>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
-	notificationId
+	notificationId, dbWriteSemaphore
 ) {
 
 	override fun prepare(cancellationSignal: CancellationSignal) {

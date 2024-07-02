@@ -27,6 +27,8 @@ import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -58,7 +60,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	private val notificationId: Int
+	private val notificationId: Int,
+	private val dbWriteSemaphore: BinarySemaphore
 ) : CompletableSession<F> {
 
 	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
@@ -258,9 +261,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
-		when (value) {
-			is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
-			else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+		dbWriteSemaphore.withBinarySemaphore {
+			when (value) {
+				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
+				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+			}
 		}
 	}
 

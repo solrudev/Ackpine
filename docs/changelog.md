@@ -1,6 +1,31 @@
 Change Log
 ==========
 
+Version 0.7.0 (2024-07-02)
+--------------------------
+
+### Dependencies
+
+- Updated Android Gradle Plugin to 8.5.0.
+- Updated `apksig` to 8.5.0.
+- Updated `androidx.concurrent` to 1.2.0.
+- Updated `androidx.lifecycle` to 2.8.3 (sample apps dependency).
+- Updated Guava to 33.2.1-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Fix race conditions leading to `SQLiteConstraintException: FOREIGN KEY constraint failed` (#68).
+- Fix sessions getting stuck after launching when there's a lot of them created concurrently.
+- Fix `FileNotFoundException` and `ZipException` when reading zipped files in some cases.
+- Add support for external storage `Uri`s when trying to directly access files.
+- Log APK parsing exceptions in sample apps.
+- Open file picker immediately after granting all permissions in sample apps.
+- Remove `MANAGE_EXTERNAL_STORAGE` permission from sample apps.
+
+### Public API changes
+
+- `InstallMode.Companion` is made private.
+
 Version 0.6.1 (2024-06-11)
 --------------------------
 

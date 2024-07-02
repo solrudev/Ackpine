@@ -20,7 +20,9 @@ import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.ResolvableFuture
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.safeExecuteWith
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
+import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
@@ -50,37 +52,21 @@ internal class PackageUninstallerImpl internal constructor(
 	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
+		val dbWriteSemaphore = BinarySemaphore()
 		val session = uninstallSessionFactory.create(
 			parameters, id,
 			initialState = Session.State.Pending,
-			notificationId
+			notificationId, dbWriteSemaphore
 		)
 		sessions[id] = session
-		executor.execute {
-			uninstallSessionDao.insertUninstallSession(
-				SessionEntity.UninstallSession(
-					session = SessionEntity(
-						id.toString(),
-						SessionEntity.Type.UNINSTALL,
-						SessionEntity.State.PENDING,
-						parameters.confirmation,
-						parameters.notificationData.title,
-						parameters.notificationData.contentText,
-						parameters.notificationData.icon,
-						requireUserAction = true
-					),
-					packageName = parameters.packageName,
-					notificationId
-				)
-			)
-		}
+		persistSession(id, parameters, dbWriteSemaphore, notificationId)
 		return session
 	}
 
 	@SuppressLint("RestrictedApi")
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?> {
 		val future = ResolvableFuture.create<Session<UninstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.safeExecuteWith(future) {
+		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
 			val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
 			val uninstallSession = session?.toUninstallSession()?.let {
 				sessions.putIfAbsent(sessionId, it) ?: it
@@ -116,7 +102,7 @@ internal class PackageUninstallerImpl internal constructor(
 		crossinline transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
 	): ListenableFuture<List<Session<UninstallFailure>>> {
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
-		executor.safeExecuteWith(future) {
+		executor.executeWithFuture(future) {
 			for (session in uninstallSessionDao.getUninstallSessions()) {
 				if (!sessions.containsKey(UUID.fromString(session.session.id))) {
 					val uninstallSession = session.toUninstallSession()
@@ -127,6 +113,30 @@ internal class PackageUninstallerImpl internal constructor(
 			future.set(transform(sessions.values))
 		}
 		return future
+	}
+
+	private fun persistSession(
+		id: UUID,
+		parameters: UninstallParameters,
+		dbWriteSemaphore: BinarySemaphore,
+		notificationId: Int
+	) = executor.executeWithSemaphore(dbWriteSemaphore) {
+		uninstallSessionDao.insertUninstallSession(
+			SessionEntity.UninstallSession(
+				session = SessionEntity(
+					id.toString(),
+					SessionEntity.Type.UNINSTALL,
+					SessionEntity.State.PENDING,
+					parameters.confirmation,
+					parameters.notificationData.title,
+					parameters.notificationData.contentText,
+					parameters.notificationData.icon,
+					requireUserAction = true
+				),
+				packageName = parameters.packageName,
+				notificationId
+			)
+		)
 	}
 
 	private fun SessionEntity.UninstallSession.toUninstallSession(): Session<UninstallFailure> {
@@ -144,7 +154,7 @@ internal class PackageUninstallerImpl internal constructor(
 			parameters,
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, uninstallSessionDao),
-			notificationId!!
+			notificationId!!, BinarySemaphore()
 		)
 	}
 }

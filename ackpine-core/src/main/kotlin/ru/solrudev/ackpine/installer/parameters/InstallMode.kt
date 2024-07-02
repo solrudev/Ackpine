@@ -49,11 +49,12 @@ public sealed interface InstallMode {
 	 */
 	public data class InheritExisting(val packageName: String) : InstallMode
 
-	public companion object {
+	private companion object {
 
 		/**
 		 * Mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
 		 */
+		@Suppress("RedundantVisibilityModifier")
 		@JvmField
 		public val FULL: Full = Full
 	}

@@ -20,7 +20,7 @@ import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
-import ru.solrudev.ackpine.helpers.SerialExecutor
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
@@ -40,7 +40,8 @@ internal interface UninstallSessionFactory {
 		parameters: UninstallParameters,
 		id: UUID,
 		initialState: Session.State<UninstallFailure>,
-		notificationId: Int
+		notificationId: Int,
+		dbWriteSemaphore: BinarySemaphore
 	): Session<UninstallFailure>
 }
 
@@ -57,7 +58,8 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		parameters: UninstallParameters,
 		id: UUID,
 		initialState: Session.State<UninstallFailure>,
-		notificationId: Int
+		notificationId: Int,
+		dbWriteSemaphore: BinarySemaphore
 	): Session<UninstallFailure> {
 		return UninstallSession(
 			applicationContext,
@@ -66,7 +68,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.packageName),
 			sessionDao, sessionFailureDao,
-			executor, handler, notificationId
+			executor, handler, notificationId, dbWriteSemaphore
 		)
 	}
 

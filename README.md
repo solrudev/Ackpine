@@ -9,8 +9,6 @@
 
 See the [project website](https://solrudev.github.io/Ackpine/) for documentation and API reference.
 
-Article about the library: [Painless building of an Android package installer app](https://medium.com/@solrudev/painless-building-of-an-android-package-installer-app-d5a09b5df432)
-
 A library providing consistent APIs for installing and uninstalling apps on an Android device.
 
 Key features of Ackpine:
@@ -33,7 +31,7 @@ Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.6.1"
+    val ackpineVersion = "0.7.0"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support

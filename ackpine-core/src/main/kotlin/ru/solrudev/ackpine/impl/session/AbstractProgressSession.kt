@@ -22,6 +22,7 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -48,11 +49,12 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	private val executor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
-	notificationId: Int
+	notificationId: Int,
+	dbWriteSemaphore: BinarySemaphore
 ) : AbstractSession<F>(
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
-	executor, handler, exceptionalFailureFactory, notificationId
+	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
 ), ProgressSession<F> {
 
 	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()

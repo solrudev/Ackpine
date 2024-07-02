@@ -22,7 +22,7 @@ import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
-import ru.solrudev.ackpine.helpers.SerialExecutor
+import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -48,7 +48,8 @@ internal interface InstallSessionFactory {
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
-		notificationId: Int
+		notificationId: Int,
+		dbWriteSemaphore: BinarySemaphore
 	): ProgressSession<InstallFailure>
 }
 
@@ -69,7 +70,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		id: UUID,
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
-		notificationId: Int
+		notificationId: Int,
+		dbWriteSemaphore: BinarySemaphore
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -78,7 +80,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
 			sessionDao, sessionFailureDao, sessionProgressDao,
-			executor, handler, notificationId
+			executor, handler, notificationId, dbWriteSemaphore
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
@@ -90,7 +92,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.requireUserAction,
 			parameters.installMode,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
-			executor, SerialExecutor(executor), handler, notificationId
+			executor, handler, notificationId, dbWriteSemaphore
 		)
 	}
 
