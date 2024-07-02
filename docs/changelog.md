@@ -9,7 +9,7 @@ Version 0.7.0 (2024-07-02)
 - Updated Android Gradle Plugin to 8.5.0.
 - Updated `apksig` to 8.5.0.
 - Updated `androidx.concurrent` to 1.2.0.
-- Updated `androidx.lifecycle` to 2.8.2 (sample apps dependency).
+- Updated `androidx.lifecycle` to 2.8.3 (sample apps dependency).
 - Updated Guava to 33.2.1-android (sample apps dependency).
 
 ### Bug fixes and improvements
