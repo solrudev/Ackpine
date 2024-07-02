@@ -15,7 +15,7 @@ Version 0.7.0 (2024-07-02)
 ### Bug fixes and improvements
 
 - Fix race conditions leading to `SQLiteConstraintException: FOREIGN KEY constraint failed` (#68).
-- Fix sessions getting stale after launching when there's a lot of them created concurrently.
+- Fix sessions getting stuck after launching when there's a lot of them created concurrently.
 - Fix `FileNotFoundException` and `ZipException` when reading zipped files in some cases.
 - Add support for external storage `Uri`s when trying to directly access files.
 - Log APK parsing exceptions in sample apps.
