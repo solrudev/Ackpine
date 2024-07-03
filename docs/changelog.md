@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.7.1 (2024-07-03)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `ConcurrentModificationException` in `Session` in very rare cases (#70).
+
 Version 0.7.0 (2024-07-02)
 --------------------------
 
