@@ -44,7 +44,9 @@ import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Pending
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import java.lang.ref.WeakReference
+import java.util.Collections
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 /**
@@ -64,7 +66,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val dbWriteSemaphore: BinarySemaphore
 ) : CompletableSession<F> {
 
-	private val stateListeners = mutableSetOf<Session.StateListener<F>>()
+	private val stateListeners = Collections.newSetFromMap(
+		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
+	)
+
 	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
 

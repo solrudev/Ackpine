@@ -31,7 +31,9 @@ import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import java.lang.ref.WeakReference
+import java.util.Collections
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 /**
@@ -57,7 +59,9 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
 ), ProgressSession<F> {
 
-	private val progressListeners = mutableSetOf<ProgressSession.ProgressListener>()
+	private val progressListeners = Collections.newSetFromMap(
+		ConcurrentHashMap<ProgressSession.ProgressListener, Boolean>()
+	)
 
 	@Volatile
 	protected var progress = initialProgress
