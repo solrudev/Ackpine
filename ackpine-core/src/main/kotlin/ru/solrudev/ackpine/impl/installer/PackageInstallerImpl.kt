@@ -24,7 +24,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
-import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
@@ -91,7 +91,7 @@ internal class PackageInstallerImpl internal constructor(
 			if (areCommittedSessionsInitialized) {
 				getSessionFromDb(sessionId, future)
 			} else {
-				committedSessionsInitSemaphore.withBinarySemaphore {
+				committedSessionsInitSemaphore.withPermit {
 					getSessionFromDb(sessionId, future)
 				}
 			}
@@ -140,7 +140,7 @@ internal class PackageInstallerImpl internal constructor(
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.executeWithFuture(future) {
-			committedSessionsInitSemaphore.withBinarySemaphore {
+			committedSessionsInitSemaphore.withPermit {
 				for (session in installSessionDao.getInstallSessions()) {
 					if (!sessions.containsKey(UUID.fromString(session.session.id))) {
 						val installSession = session.toInstallSession()

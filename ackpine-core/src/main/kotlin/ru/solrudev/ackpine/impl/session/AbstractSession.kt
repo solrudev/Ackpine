@@ -28,7 +28,7 @@ import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -266,7 +266,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
-		dbWriteSemaphore.withBinarySemaphore {
+		dbWriteSemaphore.withPermit {
 			when (value) {
 				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
 				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
