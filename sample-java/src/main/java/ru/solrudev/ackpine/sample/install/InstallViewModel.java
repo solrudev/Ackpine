@@ -72,7 +72,7 @@ public final class InstallViewModel extends ViewModel {
 		this.packageInstaller = packageInstaller;
 		this.sessionDataRepository = sessionDataRepository;
 		this.executor = executor;
-		final var sessions = sessionDataRepository.getSessions().getValue();
+		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
 				addSessionListeners(sessionData.id());
@@ -139,7 +139,7 @@ public final class InstallViewModel extends ViewModel {
 	protected void onCleared() {
 		subscriptions.clear();
 		executor.shutdownNow();
-		final var sessions = sessionDataRepository.getSessions().getValue();
+		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
 				cancelSession(sessionData.id());
@@ -162,6 +162,10 @@ public final class InstallViewModel extends ViewModel {
 			public void onFailure(@NonNull Throwable t) {
 			}
 		}, MoreExecutors.directExecutor());
+	}
+
+	private List<SessionData> getSessionsSnapshot() {
+		return sessionDataRepository.getSessions().getValue();
 	}
 
 	@NonNull
