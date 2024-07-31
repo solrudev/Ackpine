@@ -139,6 +139,13 @@ public final class InstallViewModel extends ViewModel {
 	protected void onCleared() {
 		subscriptions.clear();
 		executor.shutdownNow();
+		final var sessions = sessionDataRepository.getSessions().getValue();
+		if (sessions != null && !sessions.isEmpty()) {
+			for (final var sessionData : sessions) {
+				cancelSession(sessionData.id());
+				sessionDataRepository.removeSessionData(sessionData.id());
+			}
+		}
 	}
 
 	private void addSessionListeners(@NonNull UUID id) {
