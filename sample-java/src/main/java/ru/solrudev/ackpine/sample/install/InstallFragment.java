@@ -102,8 +102,9 @@ public final class InstallFragment extends Fragment {
 
 	@Override
 	public void onDestroyView() {
-		super.onDestroyView();
+		binding.recyclerViewInstall.setAdapter(null);
 		binding = null;
+		super.onDestroyView();
 	}
 
 	private void observeViewModel() {

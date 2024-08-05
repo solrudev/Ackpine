@@ -77,6 +77,11 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		observeViewModel()
 	}
 
+	override fun onDestroyView() {
+		binding.recyclerViewInstall.adapter = null
+		super.onDestroyView()
+	}
+
 	private fun observeViewModel() = viewLifecycleOwner.lifecycleScope.launch {
 		viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 			viewModel.uiState.collect { uiState ->
