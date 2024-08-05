@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine.sample.install;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -25,9 +27,12 @@ import androidx.core.view.ViewKt;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.Fade;
+import androidx.transition.TransitionManager;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import ru.solrudev.ackpine.sample.R;
@@ -39,6 +44,8 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 	private final static SessionDiffCallback DIFF_CALLBACK = new SessionDiffCallback();
 	private final Consumer<UUID> onClick;
+	private final Handler handler = new Handler(Looper.getMainLooper());
+	private boolean isReattaching = false;
 
 	public InstallSessionsAdapter(Consumer<UUID> onClick) {
 		super(DIFF_CALLBACK);
@@ -59,31 +66,39 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		}
 
 		public boolean isSwipeable() {
+			if (currentSessionData == null) {
+				return false;
+			}
 			return !currentSessionData.error().isEmpty();
 		}
 
 		@NonNull
 		public UUID getSessionId() {
-			return currentSessionData.id();
+			return Objects.requireNonNull(currentSessionData.id(), "currentSessionData");
 		}
 
 		public void bind(@NonNull SessionData sessionData) {
+			if (currentSessionData != null && !currentSessionData.id().equals(sessionData.id())) {
+				binding.progressBarSession.setProgressCompat(0, false);
+			}
 			currentSessionData = sessionData;
-			binding.progressBarSession.setProgressCompat(0, false);
 			binding.textViewSessionName.setText(sessionData.name());
 			setError(sessionData.error());
 		}
 
-		public void setProgress(@NonNull Progress sessionProgress) {
+		public void setProgress(@NonNull Progress sessionProgress, boolean animate) {
 			final var progress = sessionProgress.getProgress();
 			final var max = sessionProgress.getMax();
-			binding.progressBarSession.setProgressCompat(progress, true);
+			binding.progressBarSession.setProgressCompat(progress, animate);
 			binding.progressBarSession.setMax(max);
 			binding.textViewSessionPercentage.setText(itemView.getContext().getString(
 					R.string.percentage, (int) (((double) progress) / max * 100)));
 		}
 
 		private void setError(@NonNull NotificationString error) {
+			final var fade = new Fade();
+			fade.setDuration(150);
+			TransitionManager.beginDelayedTransition(binding.getRoot(), fade);
 			final var hasError = !error.isEmpty();
 			ViewKt.setVisible(binding.textViewSessionName, !hasError);
 			ViewKt.setVisible(binding.progressBarSession, !hasError);
@@ -92,6 +107,11 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 			ViewKt.setVisible(binding.textViewSessionError, hasError);
 			binding.textViewSessionError.setText(error.resolve(itemView.getContext()));
 		}
+	}
+
+	@Override
+	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+		isReattaching = true;
 	}
 
 	@NonNull
@@ -113,14 +133,29 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		if (payloads.isEmpty()) {
 			holder.bind(sessionData);
 		} else {
-			holder.setProgress((Progress) payloads.get(0));
+			final var progressUpdate = (ProgressUpdate) payloads.get(0);
+			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
 		}
 	}
 
 	public void submitProgress(@NonNull List<SessionProgress> progress) {
-		for (int i = 0; i < progress.size(); i++) {
-			notifyItemChanged(i, progress.get(i).progress());
+		if (isReattaching) {
+			handler.post(() -> {
+				notifyProgressChanged(progress);
+				isReattaching = false;
+			});
+			return;
 		}
+		notifyProgressChanged(progress);
+	}
+
+	private void notifyProgressChanged(@NonNull List<SessionProgress> progress) {
+		for (int i = 0; i < progress.size(); i++) {
+			notifyItemChanged(i, new ProgressUpdate(progress.get(i).progress(), !isReattaching));
+		}
+	}
+
+	private record ProgressUpdate(Progress progress, boolean animate) {
 	}
 
 	private final static class SessionDiffCallback extends DiffUtil.ItemCallback<SessionData> {

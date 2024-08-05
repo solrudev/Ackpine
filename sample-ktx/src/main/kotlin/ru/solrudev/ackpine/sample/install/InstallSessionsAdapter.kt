@@ -16,12 +16,16 @@
 
 package ru.solrudev.ackpine.sample.install
 
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.Fade
+import androidx.transition.TransitionManager
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding
 import ru.solrudev.ackpine.session.Progress
@@ -31,6 +35,9 @@ import java.util.UUID
 class InstallSessionsAdapter(
 	private val onClick: (UUID) -> Unit
 ) : ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder>(SessionDiffCallback) {
+
+	private val handler = Handler(Looper.getMainLooper())
+	private var isReattaching = false
 
 	class SessionViewHolder(
 		private val itemBinding: ItemInstallSessionBinding,
@@ -50,20 +57,22 @@ class InstallSessionsAdapter(
 		val isSwipeable: Boolean
 			get() = currentSessionData?.error?.isEmpty?.not() ?: false
 
-		val sessionId: UUID?
-			get() = currentSessionData?.id
+		val sessionId: UUID
+			get() = requireNotNull(currentSessionData?.id) { "currentSessionData" }
 
 		fun bind(sessionData: SessionData) = with(itemBinding) {
+			if (currentSessionData?.id != sessionData.id) {
+				progressBarSession.setProgressCompat(0, false)
+			}
 			currentSessionData = sessionData
-			progressBarSession.setProgressCompat(0, false)
 			textViewSessionName.text = sessionData.name
 			setError(sessionData.error)
 		}
 
-		fun setProgress(sessionProgress: Progress) = with(itemBinding) {
+		fun setProgress(sessionProgress: Progress, animate: Boolean) = with(itemBinding) {
 			val progress = sessionProgress.progress
 			val max = sessionProgress.max
-			progressBarSession.setProgressCompat(progress, true)
+			progressBarSession.setProgressCompat(progress, animate)
 			progressBarSession.max = max
 			textViewSessionPercentage.text = itemView.context.getString(
 				R.string.percentage, (progress.toDouble() / max * 100).toInt()
@@ -71,6 +80,7 @@ class InstallSessionsAdapter(
 		}
 
 		private fun setError(error: NotificationString) = with(itemBinding) {
+			TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 			val hasError = !error.isEmpty
 			textViewSessionName.isVisible = !hasError
 			progressBarSession.isVisible = !hasError
@@ -79,6 +89,10 @@ class InstallSessionsAdapter(
 			textViewSessionError.isVisible = hasError
 			textViewSessionError.text = error.resolve(itemView.context)
 		}
+	}
+
+	override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+		isReattaching = true
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
@@ -97,15 +111,29 @@ class InstallSessionsAdapter(
 		if (payloads.isEmpty()) {
 			holder.bind(sessionData)
 		} else {
-			holder.setProgress(payloads.first() as Progress)
+			val progressUpdate = payloads.first() as ProgressUpdate
+			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
 		}
 	}
 
 	fun submitProgress(progress: List<SessionProgress>) {
+		if (isReattaching) {
+			handler.post {
+				notifyProgressChanged(progress)
+				isReattaching = false
+			}
+			return
+		}
+		notifyProgressChanged(progress)
+	}
+
+	private fun notifyProgressChanged(progress: List<SessionProgress>) {
 		progress.forEachIndexed { index, sessionProgress ->
-			notifyItemChanged(index, sessionProgress.progress)
+			notifyItemChanged(index, ProgressUpdate(sessionProgress.progress, !isReattaching))
 		}
 	}
+
+	private data class ProgressUpdate(val progress: Progress, val animate: Boolean)
 
 	private object SessionDiffCallback : DiffUtil.ItemCallback<SessionData>() {
 
