@@ -66,6 +66,7 @@ class InstallSessionsAdapter(
 			}
 			currentSessionData = sessionData
 			textViewSessionName.text = sessionData.name
+			buttonSessionCancel.isEnabled = sessionData.isCancellable
 			setError(sessionData.error)
 		}
 

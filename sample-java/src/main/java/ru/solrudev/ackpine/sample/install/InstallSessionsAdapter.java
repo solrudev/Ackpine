@@ -83,6 +83,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 			}
 			currentSessionData = sessionData;
 			binding.textViewSessionName.setText(sessionData.name());
+			binding.buttonSessionCancel.setEnabled(sessionData.isCancellable());
 			setError(sessionData.error());
 		}
 
@@ -151,7 +152,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 	private void notifyProgressChanged(@NonNull List<SessionProgress> progress) {
 		for (int i = 0; i < progress.size(); i++) {
-			notifyItemChanged(i, new ProgressUpdate(progress.get(i).progress(), !isReattaching));
+			notifyItemChanged(i, new ProgressUpdate(progress.get(i).toProgress(), !isReattaching));
 		}
 	}
 

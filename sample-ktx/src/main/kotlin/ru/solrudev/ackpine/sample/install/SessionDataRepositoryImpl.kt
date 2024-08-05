@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,6 +67,19 @@ class SessionDataRepositoryImpl(private val savedStateHandle: SavedStateHandle) 
 			sessionsProgress[sessionProgressIndex] = SessionProgress(id, progress)
 		}
 		_sessionsProgress = sessionsProgress
+		if (progress.progress <= 80) {
+			return
+		}
+		val sessionDataIndex = _sessions.indexOfFirst { it.id == id }
+		if (sessionDataIndex != -1) {
+			val sessionData = _sessions[sessionDataIndex]
+			if (!sessionData.isCancellable) {
+				return
+			}
+			val sessions = _sessions.toMutableList()
+			sessions[sessionDataIndex] = sessionData.copy(isCancellable = false)
+			_sessions = sessions
+		}
 	}
 
 	override fun setError(id: UUID, error: NotificationString) {
@@ -74,7 +87,7 @@ class SessionDataRepositoryImpl(private val savedStateHandle: SavedStateHandle) 
 		val sessionDataIndex = sessions.indexOfFirst { it.id == id }
 		if (sessionDataIndex != -1) {
 			val sessionData = sessions[sessionDataIndex]
-			sessions[sessionDataIndex] = SessionData(sessionData.id, sessionData.name, error)
+			sessions[sessionDataIndex] = sessionData.copy(error = error)
 		}
 		_sessions = sessions
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,23 +55,23 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 
 	@Override
 	public void addSessionData(@NonNull SessionData sessionData) {
-		final var sessions = getCurrentSessions();
+		final var sessions = getCurrentSessionsCopy();
 		sessions.add(sessionData);
 		this.sessions.postValue(sessions);
-		final var sessionsProgress = getCurrentSessionsProgress();
+		final var sessionsProgress = getCurrentSessionsProgressCopy();
 		sessionsProgress.add(new SessionProgress(sessionData.id(), new Progress()));
 		this.sessionsProgress.postValue(sessionsProgress);
 	}
 
 	@Override
 	public void removeSessionData(@NonNull UUID id) {
-		final var sessions = getCurrentSessions();
+		final var sessions = getCurrentSessionsCopy();
 		final var sessionDataIndex = getSessionDataIndexById(sessions, id);
 		if (sessionDataIndex != -1) {
 			sessions.remove(sessionDataIndex);
 		}
 		this.sessions.setValue(sessions);
-		final var sessionsProgress = getCurrentSessionsProgress();
+		final var sessionsProgress = getCurrentSessionsProgressCopy();
 		final var sessionProgressIndex = getSessionProgressIndexById(sessionsProgress, id);
 		if (sessionProgressIndex != -1) {
 			sessionsProgress.remove(sessionProgressIndex);
@@ -81,32 +81,52 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 
 	@Override
 	public void updateSessionProgress(@NonNull UUID id, @NonNull Progress progress) {
-		final var sessionsProgress = getCurrentSessionsProgress();
+		final var sessionsProgress = getCurrentSessionsProgressCopy();
 		final var sessionProgressIndex = getSessionProgressIndexById(sessionsProgress, id);
 		if (sessionProgressIndex != -1) {
 			sessionsProgress.set(sessionProgressIndex, new SessionProgress(id, progress));
 		}
 		this.sessionsProgress.setValue(sessionsProgress);
+		if (progress.getProgress() <= 80) {
+			return;
+		}
+		final var sessionDataIndex = getSessionDataIndexById(getCurrentSessions(), id);
+		if (sessionDataIndex != -1) {
+			final var sessionData = getCurrentSessions().get(sessionDataIndex);
+			if (!sessionData.isCancellable()) {
+				return;
+			}
+			final var sessions = getCurrentSessionsCopy();
+			sessions.set(sessionDataIndex,
+					new SessionData(sessionData.id(), sessionData.name(), sessionData.error(), false));
+			this.sessions.setValue(sessions);
+		}
 	}
 
 	@Override
 	public void setError(@NonNull UUID id, @NonNull NotificationString error) {
-		final var sessions = getCurrentSessions();
+		final var sessions = getCurrentSessionsCopy();
 		final var sessionDataIndex = getSessionDataIndexById(sessions, id);
 		if (sessionDataIndex != -1) {
 			final var sessionData = sessions.get(sessionDataIndex);
-			sessions.set(sessionDataIndex, new SessionData(sessionData.id(), sessionData.name(), error));
+			sessions.set(sessionDataIndex,
+					new SessionData(sessionData.id(), sessionData.name(), error, sessionData.isCancellable()));
 		}
 		this.sessions.setValue(sessions);
 	}
 
 	@NonNull
-	private List<SessionData> getCurrentSessions() {
+	private List<SessionData> getCurrentSessionsCopy() {
 		return new ArrayList<>(Objects.requireNonNull(sessions.getValue()));
 	}
 
 	@NonNull
-	private List<SessionProgress> getCurrentSessionsProgress() {
+	private List<SessionData> getCurrentSessions() {
+		return Objects.requireNonNull(sessions.getValue());
+	}
+
+	@NonNull
+	private List<SessionProgress> getCurrentSessionsProgressCopy() {
 		return new ArrayList<>(Objects.requireNonNull(sessionsProgress.getValue()));
 	}
 
