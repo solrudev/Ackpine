@@ -158,4 +158,53 @@ Install sessions provide progress updates:
     });
     ```
 
+Error handling
+--------------
+
+Error causes are delivered as `Failure` objects through state listener or as a return value from `await()`. They're sealed hierarchies of typed errors, and you can match on their type. For example:
+
+=== "Kotlin"
+
+    ```kotlin
+    val failure = installError.cause
+    val error = when (failure) {
+        is InstallFailure.Aborted -> "Aborted"
+        is InstallFailure.Blocked -> "Blocked by ${failure.otherPackageName}"
+        is InstallFailure.Conflict -> "Conflicting with ${failure.otherPackageName}"
+        is InstallFailure.Exceptional -> failure.exception.message
+        is InstallFailure.Generic -> "Generic failure"
+        is InstallFailure.Incompatible -> "Incompatible"
+        is InstallFailure.Invalid -> "Invalid"
+        is InstallFailure.Storage -> "Storage path: ${failure.storagePath}"
+        is InstallFailure.Timeout -> "Timeout"
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var error = "";
+    if (failure instanceof InstallFailure.Aborted) {
+        error = "Aborted";
+    } else if (failure instanceof InstallFailure.Blocked f) {
+        error = "Blocked by " + f.getOtherPackageName();
+    } else if (failure instanceof InstallFailure.Conflict f) {
+        error = "Conflicting with " + f.getOtherPackageName();
+    } else if (failure instanceof InstallFailure.Exceptional f) {
+        error = f.getException().getMessage();
+    } else if (failure instanceof InstallFailure.Generic) {
+        error = "Generic failure";
+    } else if (failure instanceof InstallFailure.Incompatible) {
+        error = "Incompatible";
+    } else if (failure instanceof InstallFailure.Invalid) {
+        error = "Invalid";
+    } else if (failure instanceof InstallFailure.Storage f) {
+        error = "Storage path: " + f.getStoragePath();
+    } else if (failure instanceof InstallFailure.Timeout) {
+        error = "Timeout";
+    }
+    ```
+
+When using `await()`, exceptions are never delivered as a `Failure.Exceptional` object. Instead, they are thrown.
+
 Every example on this page is using `PackageInstaller`, but APIs for `PackageUninstaller` are absolutely the same except for progress updates.
