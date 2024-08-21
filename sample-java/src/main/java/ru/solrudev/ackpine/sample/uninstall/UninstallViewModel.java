@@ -66,7 +66,7 @@ public final class UninstallViewModel extends ViewModel {
 		this.packageUninstaller = packageUninstaller;
 		this.savedStateHandle = savedStateHandle;
 		this.executor = executor;
-		final UUID sessionId = getSessionId();
+		final var sessionId = getSessionId();
 		if (sessionId != null) {
 			addSessionListener(sessionId);
 		}
@@ -76,7 +76,7 @@ public final class UninstallViewModel extends ViewModel {
 	protected void onCleared() {
 		subscriptions.clear();
 		executor.shutdownNow();
-		final UUID sessionId = getSessionId();
+		final var sessionId = getSessionId();
 		if (sessionId != null) {
 			cancelSession(sessionId);
 			clearSavedState();
