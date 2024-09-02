@@ -50,7 +50,7 @@ internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_C
  * Launches session's confirmation with regards to provided [confirmation] mode.
  */
 @JvmSynthetic
-internal inline fun <reified T : SessionCommitActivity<*, *>> Context.launchConfirmation(
+internal inline fun <reified T : SessionCommitActivity<*>> Context.launchConfirmation(
 	confirmation: Confirmation,
 	notificationData: NotificationData,
 	sessionId: UUID,
