@@ -5,7 +5,7 @@ room = "2.6.1"
 concurrent = "1.2.0"
 
 [libraries]
-activity = { module = "androidx.activity:activity", version = "1.9.0" }
+activity = { module = "androidx.activity:activity", version = "1.9.2" }
 annotation = { module = "androidx.annotation:annotation", version = "1.8.0" }
 appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 concurrent-futures-core = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
