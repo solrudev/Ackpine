@@ -54,7 +54,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 			compilerOptions {
 				jvmTarget = JVM_1_8
-				freeCompilerArgs.addAll("-Xjvm-default=all")
+				freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 			}
 		}
 	}
