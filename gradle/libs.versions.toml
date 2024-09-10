@@ -9,7 +9,7 @@ plugin-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", versi
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-gradleplugin" }
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
-plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.14.0" }
+plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.16.3" }
 apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
 listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
