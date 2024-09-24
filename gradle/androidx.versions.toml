@@ -1,6 +1,6 @@
 [versions]
 lifecycle = "2.8.6"
-navigation = "2.8.0"
+navigation = "2.8.1"
 room = "2.6.1"
 concurrent = "1.2.0"
 
