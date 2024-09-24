@@ -19,7 +19,7 @@ navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "n
 recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.3.2" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-startup = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
+startup = { module = "androidx.startup:startup-runtime", version = "1.2.0" }
 swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
 
 [bundles]
