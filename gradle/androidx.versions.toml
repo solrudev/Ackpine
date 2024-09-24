@@ -1,5 +1,5 @@
 [versions]
-lifecycle = "2.8.5"
+lifecycle = "2.8.6"
 navigation = "2.8.0"
 room = "2.6.1"
 concurrent = "1.2.0"
