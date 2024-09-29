@@ -27,6 +27,7 @@ Version 0.7.2 (2024-09-30)
 - Improve documentation about split APKs.
 - Fix some visual bugs with sessions' progress in sample apps.
 - Disable cancel button when install session is committed in sample apps.
+- Cancel sessions when ViewModel is cleared in Java sample app.
 
 Version 0.7.1 (2024-07-03)
 --------------------------
