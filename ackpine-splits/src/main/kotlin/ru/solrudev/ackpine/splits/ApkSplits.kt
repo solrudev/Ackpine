@@ -137,6 +137,9 @@ public object ApkSplits {
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
+		if (this is SplitPackageSequence) {
+			return this
+		}
 		return SplitPackageSequence(
 			source = this,
 			ApkPropertyChecker(
