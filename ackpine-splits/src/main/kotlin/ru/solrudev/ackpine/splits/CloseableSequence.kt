@@ -28,19 +28,9 @@ internal interface CloseableSequence<T> : Sequence<T>, AutoCloseable
 /**
  * Builds a [CloseableSequence] lazily yielding values one by one.
  */
-@Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
 @JvmSynthetic
 internal fun <T> closeableSequence(block: suspend CloseableSequenceScope<T>.() -> Unit): CloseableSequence<T> {
-	var scope: SequenceScope<T>? = null
-	val sequence = CloseableSequenceImpl(scopeProducer = { scope!! }).apply {
-		iteratorProducer = {
-			iterator {
-				scope = this
-				block()
-			}
-		}
-	}
-	return sequence
+	return CloseableSequenceImpl(block)
 }
 
 /**
@@ -49,22 +39,19 @@ internal fun <T> closeableSequence(block: suspend CloseableSequenceScope<T>.() -
  *
  * @see closeableSequence
  */
-@Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RestrictsSuspension
-internal abstract class CloseableSequenceScope<T>(scopeProducer: () -> SequenceScope<T>) {
-
-	private val scope by lazy(LazyThreadSafetyMode.PUBLICATION, scopeProducer)
+internal interface CloseableSequenceScope<T> {
 
 	/**
 	 * Adds a [resource] to a set of [AutoCloseable] resources managed by the [CloseableSequence].
 	 */
-	abstract fun addCloseableResource(resource: AutoCloseable)
+	fun addCloseableResource(resource: AutoCloseable)
 
 	/**
 	 * Yields a value to the [Iterator] being built and suspends until the next value is requested.
 	 */
-	suspend fun yield(value: T) = scope.yield(value)
+	suspend fun yield(value: T)
 
 	/**
 	 * Yields potentially infinite sequence of values  to the [Iterator] being built and suspends until all these values
@@ -72,14 +59,13 @@ internal abstract class CloseableSequenceScope<T>(scopeProducer: () -> SequenceS
 	 *
 	 * The sequence can be potentially infinite.
 	 */
-	suspend fun yieldAll(sequence: Sequence<T>) = scope.yieldAll(sequence)
+	suspend fun yieldAll(sequence: Sequence<T>)
 }
 
 private class CloseableSequenceImpl<T>(
-	scopeProducer: () -> SequenceScope<T>
-) : CloseableSequenceScope<T>(scopeProducer), CloseableSequence<T> {
+	private val block: suspend CloseableSequenceScope<T>.() -> Unit
+) : CloseableSequence<T> {
 
-	lateinit var iteratorProducer: () -> Iterator<T>
 	private val resources = mutableSetOf<AutoCloseable>()
 
 	@Volatile
@@ -93,10 +79,25 @@ private class CloseableSequenceImpl<T>(
 			throw IllegalStateException("This sequence can be consumed only once.")
 		}
 		isConsumed = true
-		return object : Iterator<T> {
-			private val iterator = iteratorProducer()
+		@Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
+		return object : Iterator<T>, CloseableSequenceScope<T> {
+
+			@Volatile
+			private lateinit var scope: SequenceScope<T>
+
+			private val iterator = iterator {
+				scope = this
+				block()
+			}
+
+			override fun addCloseableResource(resource: AutoCloseable) {
+				resources += resource
+			}
+
 			override fun hasNext() = iterator.hasNext() && !isClosed
 			override fun next() = iterator.next()
+			override suspend fun yield(value: T) = scope.yield(value)
+			override suspend fun yieldAll(sequence: Sequence<T>) = scope.yieldAll(sequence)
 		}
 	}
 
@@ -105,9 +106,5 @@ private class CloseableSequenceImpl<T>(
 		for (resource in resources) {
 			resource.close()
 		}
-	}
-
-	override fun addCloseableResource(resource: AutoCloseable) {
-		resources += resource
 	}
 }
