@@ -1,6 +1,33 @@
 Change Log
 ==========
 
+Version 0.7.2 (2024-09-30)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.0.20.
+- Updated Gradle wrapper to 8.9.
+- Updated Android Gradle Plugin to 8.6.1.
+- Updated Apache Commons Compress to 1.27.1.
+- Updated `apksig` to 8.6.1.
+- Updated `binary-compatibility-validator` to 0.16.3.
+- Updated `foojay-resolver-convention` to 0.8.0.
+- Updated `kotlinx.coroutines` to 1.9.0.
+- Updated `androidx.startup` to 1.2.0.
+- Updated `androidx.annotation` to 1.8.2.
+- Updated `androidx.activity` to 1.9.2 (sample apps dependency).
+- Updated `androidx.lifecycle` to 2.8.6 (sample apps dependency).
+- Updated `androidx.navigation` to 2.8.1 (sample apps dependency).
+- Updated Guava to 33.3.0-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Make split APKs sequences created with `ZippedApkSplits` factories cooperate with `throwOnInvalidSplitPackage()` operation. They will now close held resources when split package validation fails if not consumed in whole. Now the recommended order of applying `throwOnInvalidSplitPackage()` is immediately after creating a sequence.
+- Improve documentation about split APKs.
+- Fix some visual bugs with sessions' progress in sample apps.
+- Disable cancel button when install session is committed in sample apps.
+
 Version 0.7.1 (2024-07-03)
 --------------------------
 
