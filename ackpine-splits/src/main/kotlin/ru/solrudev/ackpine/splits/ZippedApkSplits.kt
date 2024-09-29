@@ -102,6 +102,7 @@ public object ZippedApkSplits {
 							.asSequence()
 							.mapNotNull { zipEntry ->
 								zipFile.getInputStream(zipEntry).use { entryStream ->
+									addCloseableResource(entryStream)
 									Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
 								}
 							}
