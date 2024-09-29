@@ -160,9 +160,9 @@ public final class InstallFragment extends Fragment {
 		final var extension = extensionIndex != 0 ? name.substring(extensionIndex).toLowerCase() : "";
 		return switch (extension) {
 			case "apk" -> new SingletonApkSequence(uri, requireContext());
-			case "zip", "apks", "xapk", "apkm" -> ApkSplits.throwOnInvalidSplitPackage(
-					ApkSplits.filterCompatible(ZippedApkSplits.getApksForUri(uri, requireContext()),
-							requireContext()));
+			case "zip", "apks", "xapk", "apkm" -> ApkSplits.filterCompatible(
+					ApkSplits.throwOnInvalidSplitPackage(ZippedApkSplits.getApksForUri(uri, requireContext())),
+					requireContext());
 			default -> SequencesKt.emptySequence();
 		};
 	}
