@@ -113,8 +113,6 @@ public object ApkSplits {
 	/**
 	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
 	 *
-	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
-	 *
 	 * The operation is _intermediate_ and _stateless_.
 	 */
 	@JvmStatic
@@ -202,8 +200,6 @@ public object ApkSplits {
 
 	/**
 	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
-	 *
-	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
 	@JvmStatic
 	public fun Iterable<ApkCompatibility>.filterCompatible(): List<Apk> {
