@@ -99,6 +99,8 @@ public object ApkSplits {
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
+	 * This operation is equivalent to `sortedByCompatibility(context).filterCompatible()`.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -132,6 +134,9 @@ public object ApkSplits {
 	 * base APK in the sequence, [NoBaseApkException] will be thrown.
 	 *
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 *
+	 * To correctly close I/O resources and skip unnecessary I/O operations, it's best to apply this operation
+	 * immediately after creating the sequence with [ZippedApkSplits] factories.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
@@ -172,6 +177,8 @@ public object ApkSplits {
 	 * matching split is chosen.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 *
+	 * This operation is equivalent to `sortedByCompatibility(context).filterCompatible()`.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.filterCompatible(context: Context): List<Apk> {
@@ -229,6 +236,10 @@ public object ApkSplits {
 	}
 }
 
+/**
+ * A sequence which performs validation of split package and throws [SplitPackageException] if it's not valid.
+ * This sequence handles closing of any resources held in upstream sequence when terminating with failure.
+ */
 private class SplitPackageSequence(
 	private val source: Sequence<Apk>,
 	private vararg val propertyCheckers: ApkPropertyChecker<*>
