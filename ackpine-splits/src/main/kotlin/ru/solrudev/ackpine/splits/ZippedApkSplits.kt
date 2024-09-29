@@ -45,6 +45,7 @@ public object ZippedApkSplits {
 			addCloseableResource(zipFile)
 			zipFile.entries()
 				.asSequence()
+				.filterNot { isClosed }
 				.mapNotNull { zipEntry ->
 					zipFile.getInputStream(zipEntry).use { entryStream ->
 						Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
@@ -100,6 +101,7 @@ public object ZippedApkSplits {
 						addCloseableResource(zipFile)
 						zipFile.entries
 							.asSequence()
+							.filterNot { isClosed }
 							.mapNotNull { zipEntry ->
 								zipFile.getInputStream(zipEntry).use { entryStream ->
 									addCloseableResource(entryStream)
@@ -116,6 +118,7 @@ public object ZippedApkSplits {
 		ZipInputStream(context.contentResolver.openInputStream(uri)).use { zipStream ->
 			addCloseableResource(zipStream)
 			zipStream.entries()
+				.filterNot { isClosed }
 				.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
 				.forEach { yield(it) }
 		}

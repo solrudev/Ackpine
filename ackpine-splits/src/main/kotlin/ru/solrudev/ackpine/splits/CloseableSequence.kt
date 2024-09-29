@@ -44,6 +44,11 @@ internal fun <T> closeableSequence(block: suspend CloseableSequenceScope<T>.() -
 internal interface CloseableSequenceScope<T> {
 
 	/**
+	 * Returns whether the [CloseableSequence] was closed though a call to [close()][CloseableSequence.close].
+	 */
+	val isClosed: Boolean
+
+	/**
 	 * Adds a [resource] to a set of [AutoCloseable] resources managed by the [CloseableSequence].
 	 */
 	fun addCloseableResource(resource: AutoCloseable)
@@ -62,42 +67,30 @@ internal interface CloseableSequenceScope<T> {
 	suspend fun yieldAll(sequence: Sequence<T>)
 }
 
+@Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
 private class CloseableSequenceImpl<T>(
 	private val block: suspend CloseableSequenceScope<T>.() -> Unit
-) : CloseableSequence<T> {
+) : CloseableSequence<T>, CloseableSequenceScope<T> {
 
-	private val resources = mutableSetOf<AutoCloseable>()
+	@Volatile
+	override var isClosed = false
 
 	@Volatile
 	private var isConsumed = false
 
 	@Volatile
-	private var isClosed = false
+	private lateinit var scope: SequenceScope<T>
+
+	private val resources = mutableSetOf<AutoCloseable>()
 
 	override fun iterator(): Iterator<T> {
 		if (isConsumed) {
 			throw IllegalStateException("This sequence can be consumed only once.")
 		}
 		isConsumed = true
-		@Suppress("ILLEGAL_RESTRICTED_SUSPENDING_FUNCTION_CALL")
-		return object : Iterator<T>, CloseableSequenceScope<T> {
-
-			@Volatile
-			private lateinit var scope: SequenceScope<T>
-
-			private val iterator = iterator {
-				scope = this
-				block()
-			}
-
-			override fun addCloseableResource(resource: AutoCloseable) {
-				resources += resource
-			}
-
-			override fun hasNext() = iterator.hasNext() && !isClosed
-			override fun next() = iterator.next()
-			override suspend fun yield(value: T) = scope.yield(value)
-			override suspend fun yieldAll(sequence: Sequence<T>) = scope.yieldAll(sequence)
+		return iterator {
+			scope = this
+			block()
 		}
 	}
 
@@ -108,4 +101,11 @@ private class CloseableSequenceImpl<T>(
 		}
 		resources.clear()
 	}
+
+	override fun addCloseableResource(resource: AutoCloseable) {
+		resources += resource
+	}
+
+	override suspend fun yield(value: T) = scope.yield(value)
+	override suspend fun yieldAll(sequence: Sequence<T>) = scope.yieldAll(sequence)
 }
