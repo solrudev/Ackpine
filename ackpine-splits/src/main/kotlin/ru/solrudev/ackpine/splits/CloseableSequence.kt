@@ -32,13 +32,13 @@ internal interface CloseableSequence<T> : Sequence<T>, AutoCloseable
 @JvmSynthetic
 internal fun <T> closeableSequence(block: suspend CloseableSequenceScope<T>.() -> Unit): CloseableSequence<T> {
 	var scope: SequenceScope<T>? = null
-	var iterator: Iterator<T>? = null
-	val sequence = CloseableSequenceImpl(
-		iteratorProducer = { iterator!! }, scopeProducer = { scope!! }
-	)
-	iterator = iterator {
-		scope = this
-		sequence.block()
+	val sequence = CloseableSequenceImpl(scopeProducer = { scope!! }).apply {
+		iteratorProducer = {
+			iterator {
+				scope = this
+				block()
+			}
+		}
 	}
 	return sequence
 }
@@ -76,11 +76,10 @@ internal abstract class CloseableSequenceScope<T>(scopeProducer: () -> SequenceS
 }
 
 private class CloseableSequenceImpl<T>(
-	iteratorProducer: () -> Iterator<T>,
 	scopeProducer: () -> SequenceScope<T>
 ) : CloseableSequenceScope<T>(scopeProducer), CloseableSequence<T> {
 
-	private val iterator by lazy(LazyThreadSafetyMode.PUBLICATION, iteratorProducer)
+	lateinit var iteratorProducer: () -> Iterator<T>
 	private val resources = mutableSetOf<AutoCloseable>()
 
 	@Volatile
@@ -95,6 +94,7 @@ private class CloseableSequenceImpl<T>(
 		}
 		isConsumed = true
 		return object : Iterator<T> {
+			private val iterator = iteratorProducer()
 			override fun hasNext() = iterator.hasNext() && !isClosed
 			override fun next() = iterator.next()
 		}
