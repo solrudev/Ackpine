@@ -242,21 +242,32 @@ private class SplitPackageSequence(
 		override fun next(): Apk {
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
+				closeSource()
 				throw ConflictingSplitNameException(apk.name)
 			}
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
+					closeSource()
 					throw ConflictingBaseApkException()
 				}
 				seenBaseApk = true
 			}
 			for (propertyChecker in propertyCheckers) {
-				propertyChecker.checkApk(apk)
+				propertyChecker.check(apk)
+					.onFailure { closeSource() }
+					.getOrThrow()
 			}
 			if (!hasNext() && !seenBaseApk) {
+				closeSource()
 				throw NoBaseApkException()
 			}
 			return apk
+		}
+	}
+
+	private fun closeSource() {
+		if (source is CloseableSequence) {
+			source.close()
 		}
 	}
 }
@@ -264,32 +275,31 @@ private class SplitPackageSequence(
 private class ApkPropertyChecker<Property>(
 	private val propertySelector: (Apk) -> Property,
 	private val conflictingPropertyExceptionInitializer:
-		(expected: Property, actual: Property, name: String) -> Exception
+		(expected: Property, actual: Property, name: String) -> SplitPackageException
 ) {
 
 	private var baseApkProperty: Property? = null
 	private val propertyValues = mutableListOf<Property>()
 
-	fun checkApk(apk: Apk) {
+	fun check(apk: Apk): Result<Unit> {
 		val apkProperty = propertySelector(apk)
 		if (apk is Apk.Base) {
 			baseApkProperty = apkProperty
 		}
 		val expectedProperty = baseApkProperty
 		if (expectedProperty != null) {
-			checkProperty(expectedProperty, apkProperty, apk.name)
+			if (expectedProperty != apkProperty) {
+				return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, apkProperty, apk.name))
+			}
 			for (property in propertyValues) {
-				checkProperty(expectedProperty, property, apk.name)
+				if (expectedProperty != property) {
+					return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, property, apk.name))
+				}
 			}
 			propertyValues.clear()
 		} else {
 			propertyValues += apkProperty
 		}
-	}
-
-	private fun checkProperty(baseProperty: Property, apkProperty: Property, name: String) {
-		if (baseProperty != apkProperty) {
-			throw conflictingPropertyExceptionInitializer(baseProperty, apkProperty, name)
-		}
+		return Result.success(Unit)
 	}
 }
