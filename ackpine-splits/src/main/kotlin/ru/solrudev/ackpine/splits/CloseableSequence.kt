@@ -104,7 +104,8 @@ private class CloseableSequenceImpl<T>(
 	override fun close() {
 		isClosed = true
 		for (resource in resources) {
-			resource.close()
+			runCatching { resource.close() }
 		}
+		resources.clear()
 	}
 }
