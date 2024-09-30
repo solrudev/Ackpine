@@ -36,7 +36,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.helpers.concurrent.withBinarySemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -131,7 +131,7 @@ internal class SessionBasedInstallSession internal constructor(
 		get() = context.packageManager.packageInstaller
 
 	override fun prepare(cancellationSignal: CancellationSignal) {
-		nativeSessionIdSemaphore.withBinarySemaphore {
+		nativeSessionIdSemaphore.withPermit {
 			if (nativeSessionId != -1) {
 				abandonSession()
 				packageInstaller.clearSessionCallback()
@@ -292,7 +292,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withBinarySemaphore {
+	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withPermit {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
 

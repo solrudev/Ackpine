@@ -27,7 +27,7 @@ internal class BinarySemaphore : Semaphore(1) {
 }
 
 @JvmSynthetic
-internal inline fun <T> BinarySemaphore.withBinarySemaphore(action: () -> T): T {
+internal inline fun <T> BinarySemaphore.withPermit(action: () -> T): T {
 	acquire()
 	try {
 		return action()

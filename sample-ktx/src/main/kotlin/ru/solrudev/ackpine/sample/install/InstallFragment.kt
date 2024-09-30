@@ -33,6 +33,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -72,9 +73,17 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 			onInstallButtonClick()
 		}
 		binding.recyclerViewInstall.adapter = adapter
+		binding.recyclerViewInstall.itemAnimator = object : DefaultItemAnimator() {
+			override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder) = true
+		}
 		ItemTouchHelper(SwipeCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT))
 			.attachToRecyclerView(binding.recyclerViewInstall)
 		observeViewModel()
+	}
+
+	override fun onDestroyView() {
+		binding.recyclerViewInstall.adapter = null
+		super.onDestroyView()
 	}
 
 	private fun observeViewModel() = viewLifecycleOwner.lifecycleScope.launch {
@@ -123,8 +132,8 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		return when (extension) {
 			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
 			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, requireContext())
-				.filterCompatible(requireContext())
 				.throwOnInvalidSplitPackage()
+				.filterCompatible(requireContext())
 
 			else -> emptySequence()
 		}
@@ -167,7 +176,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		) = false
 
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-			viewModel.removeSession((viewHolder as SessionViewHolder).sessionId!!)
+			viewModel.removeSession((viewHolder as SessionViewHolder).sessionId)
 		}
 
 		override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {

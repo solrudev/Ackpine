@@ -99,6 +99,8 @@ public object ApkSplits {
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
+	 * This operation is equivalent to `sortedByCompatibility(context).filterCompatible()`.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
@@ -110,8 +112,6 @@ public object ApkSplits {
 
 	/**
 	 * Returns a sequence containing only [APK splits][Apk] which are the most compatible with the device.
-	 *
-	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
 	 * The operation is _intermediate_ and _stateless_.
 	 */
@@ -133,10 +133,16 @@ public object ApkSplits {
 	 *
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 *
+	 * To correctly close I/O resources and skip unnecessary I/O operations, it's best to apply this operation
+	 * immediately after creating the sequence with [ZippedApkSplits] factories.
+	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
+		if (this is SplitPackageSequence) {
+			return this
+		}
 		return SplitPackageSequence(
 			source = this,
 			ApkPropertyChecker(
@@ -169,6 +175,8 @@ public object ApkSplits {
 	 * matching split is chosen.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
+	 *
+	 * This operation is equivalent to `sortedByCompatibility(context).filterCompatible()`.
 	 */
 	@JvmStatic
 	public fun Iterable<Apk>.filterCompatible(context: Context): List<Apk> {
@@ -192,8 +200,6 @@ public object ApkSplits {
 
 	/**
 	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
-	 *
-	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
 	@JvmStatic
 	public fun Iterable<ApkCompatibility>.filterCompatible(): List<Apk> {
@@ -226,6 +232,10 @@ public object ApkSplits {
 	}
 }
 
+/**
+ * A sequence which performs validation of split package and throws [SplitPackageException] if it's not valid.
+ * This sequence handles closing of any resources held in upstream sequence when terminating with failure.
+ */
 private class SplitPackageSequence(
 	private val source: Sequence<Apk>,
 	private vararg val propertyCheckers: ApkPropertyChecker<*>
@@ -242,21 +252,32 @@ private class SplitPackageSequence(
 		override fun next(): Apk {
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
+				closeSource()
 				throw ConflictingSplitNameException(apk.name)
 			}
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
+					closeSource()
 					throw ConflictingBaseApkException()
 				}
 				seenBaseApk = true
 			}
 			for (propertyChecker in propertyCheckers) {
-				propertyChecker.checkApk(apk)
+				propertyChecker.check(apk)
+					.onFailure { closeSource() }
+					.getOrThrow()
 			}
 			if (!hasNext() && !seenBaseApk) {
+				closeSource()
 				throw NoBaseApkException()
 			}
 			return apk
+		}
+	}
+
+	private fun closeSource() {
+		if (source is CloseableSequence) {
+			source.close()
 		}
 	}
 }
@@ -264,32 +285,31 @@ private class SplitPackageSequence(
 private class ApkPropertyChecker<Property>(
 	private val propertySelector: (Apk) -> Property,
 	private val conflictingPropertyExceptionInitializer:
-		(expected: Property, actual: Property, name: String) -> Exception
+		(expected: Property, actual: Property, name: String) -> SplitPackageException
 ) {
 
 	private var baseApkProperty: Property? = null
 	private val propertyValues = mutableListOf<Property>()
 
-	fun checkApk(apk: Apk) {
+	fun check(apk: Apk): Result<Unit> {
 		val apkProperty = propertySelector(apk)
 		if (apk is Apk.Base) {
 			baseApkProperty = apkProperty
 		}
 		val expectedProperty = baseApkProperty
 		if (expectedProperty != null) {
-			checkProperty(expectedProperty, apkProperty, apk.name)
+			if (expectedProperty != apkProperty) {
+				return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, apkProperty, apk.name))
+			}
 			for (property in propertyValues) {
-				checkProperty(expectedProperty, property, apk.name)
+				if (expectedProperty != property) {
+					return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, property, apk.name))
+				}
 			}
 			propertyValues.clear()
 		} else {
 			propertyValues += apkProperty
 		}
-	}
-
-	private fun checkProperty(baseProperty: Property, apkProperty: Property, name: String) {
-		if (baseProperty != apkProperty) {
-			throw conflictingPropertyExceptionInitializer(baseProperty, apkProperty, name)
-		}
+		return Result.success(Unit)
 	}
 }

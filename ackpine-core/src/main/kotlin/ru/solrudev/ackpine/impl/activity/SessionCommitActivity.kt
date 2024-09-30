@@ -44,13 +44,13 @@ private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> protected constructor(
+internal abstract class SessionCommitActivity<F : Failure> protected constructor(
 	private val tag: String,
 	private val startsActivity: Boolean,
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
-	protected abstract val ackpineSessionFuture: ListenableFuture<S?>
+	protected abstract val ackpineSessionFuture: ListenableFuture<out Session<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getSerializableCompat<UUID>(SESSION_ID_KEY) ?: error("ackpineSessionId was null")
@@ -98,7 +98,6 @@ internal abstract class SessionCommitActivity<S : Session<F>, F : Failure> prote
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
 	}
 
-	@Suppress("UNCHECKED_CAST")
 	@JvmSynthetic
 	internal inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
 		ackpineSessionFuture.handleResult { session ->

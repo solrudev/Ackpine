@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,13 +21,12 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
-import ru.solrudev.ackpine.session.ProgressSession
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class InstallActivity protected constructor(
 	tag: String,
 	startsActivity: Boolean
-) : SessionCommitActivity<ProgressSession<InstallFailure>, InstallFailure>(
+) : SessionCommitActivity<InstallFailure>(
 	tag, startsActivity,
 	abortedStateFailureFactory = InstallFailure::Aborted
 ) {

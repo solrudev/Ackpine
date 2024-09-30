@@ -3,8 +3,8 @@ Split APKs
 
 `ackpine-splits` artifact contains utilities for working with split APK files.
 
-Working with zipped splits
---------------------------
+Reading zipped splits
+---------------------
 
 `ZippedApkSplits` class contains factory methods for sequences of APK splits which are contained inside of a zipped file such as ZIP, APKS, APKM and XAPK.
 
@@ -45,7 +45,10 @@ val description: String
 
 `Apk` has the following types: `Base` for base APK, `Feature` for a feature split, `Libs` for an APK split containing native libraries, `ScreenDensity` for an APK split containing graphic resources tailored to specific screen density, `Localization` for an APK split containing localized resources and `Other` for an unknown APK split. They also have their specific properties. Refer to [API documentation](api/ackpine-splits/index.html) for details.
 
-`ApkSplits` class contains utilities for transforming `Apk` sequences.
+Working with splits
+-------------------
+
+`ApkSplits` class contains utilities for transforming `Apk` sequences. In Kotlin they appear as extensions of `Sequence<Apk>` and `Sequence<ApkCompatibility>`.
 
 === "Kotlin"
 
@@ -53,10 +56,10 @@ val description: String
     val sortedSplitsList = mutableListOf<ApkCompatibility>()
     // Building a one-time pipeline
     val splits = ZippedApkSplits.getApksForUri(zippedFileUri, context)
+        .throwOnInvalidSplitPackage()
         .sortedByCompatibility(context)
         .addAllTo(sortedSplitsList)
         .filterCompatible()
-        .throwOnInvalidSplitPackage()
     val splitsList = try {
         splits.toList()
     } catch (exception: SplitPackageException) {
@@ -74,13 +77,13 @@ val description: String
     List<ApkCompatibility> sortedSplitsList = new ArrayList<>();
     // Building a one-time pipeline
     Sequence<Apk> zippedApkSplits = ZippedApkSplits.getApksForUri(uri, context);
-    Sequence<ApkCompatibility> sortedSplits = ApkSplits.sortedByCompatibility(zippedApkSplits, context);
+    Sequence<Apk> verifiedSplits = ApkSplits.throwOnInvalidSplitPackage(zippedApkSplits);
+    Sequence<ApkCompatibility> sortedSplits = ApkSplits.sortedByCompatibility(verifiedSplits, context);
     Sequence<ApkCompatibility> addingToListSplits = ApkSplits.addAllTo(sortedSplits, sortedSplitsList);
     Sequence<Apk> filteredSplits = ApkSplits.filterCompatible(addingToListSplits);
-    Sequence<Apk> splits = ApkSplits.throwOnInvalidSplitPackage(filteredSplits);
     List<Apk> splitsList = new ArrayList<>();
 	try {
-	    for (var iterator = splits.iterator(); iterator.hasNext(); ) {
+	    for (var iterator = filteredSplits.iterator(); iterator.hasNext(); ) {
             var apk = iterator.next();
             splitsList.add(apk);
         }
@@ -95,6 +98,15 @@ val description: String
     }
     
     ```
+
+- `throwOnInvalidSplitPackage()` operation validates a split package and throws `SplitPackageException` if it's not valid when the sequence is iterated.
+
+- `sortedByCompatibility(Context)` operation returns a sequence that contains APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one. The returned sequence contains `ApkCompatibility` objects, which are pairs of an `isPreferred` flag and an `Apk` object being checked.
+
+- `filterCompatible()` operation filters out the splits which are not the most preferred for the device. A `filterCompatible(Context)` overload is the same as writing `sortedByCompatibility(context).filterCompatible()`.
+
+!!! Note
+    To correctly close I/O resources and skip unnecessary I/O operations, it's best to apply `throwOnInvalidSplitPackage()` immediately after creating the sequence with `ZippedApkSplits` factories.
 
 Creating APK splits from separate files
 ---------------------------------------

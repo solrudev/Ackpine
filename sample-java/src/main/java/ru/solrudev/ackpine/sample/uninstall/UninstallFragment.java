@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,8 +70,9 @@ public final class UninstallFragment extends Fragment {
 
 	@Override
 	public void onDestroyView() {
-		super.onDestroyView();
+		binding.recyclerViewUninstall.setAdapter(null);
 		binding = null;
+		super.onDestroyView();
 	}
 
 	private void observeViewModel() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public final class UninstallViewModel extends ViewModel {
 		this.packageUninstaller = packageUninstaller;
 		this.savedStateHandle = savedStateHandle;
 		this.executor = executor;
-		final UUID sessionId = savedStateHandle.get(SESSION_ID_KEY);
+		final var sessionId = getSessionId();
 		if (sessionId != null) {
 			addSessionListener(sessionId);
 		}
@@ -76,6 +76,11 @@ public final class UninstallViewModel extends ViewModel {
 	protected void onCleared() {
 		subscriptions.clear();
 		executor.shutdownNow();
+		final var sessionId = getSessionId();
+		if (sessionId != null) {
+			cancelSession(sessionId);
+			clearSavedState();
+		}
 	}
 
 	@NonNull
@@ -117,6 +122,25 @@ public final class UninstallViewModel extends ViewModel {
 			applications.remove(applicationDataIndex);
 		}
 		this.applications.setValue(applications);
+	}
+
+	private UUID getSessionId() {
+		return savedStateHandle.get(SESSION_ID_KEY);
+	}
+
+	private void cancelSession(@NonNull UUID id) {
+		Futures.addCallback(packageUninstaller.getSessionAsync(id), new FutureCallback<>() {
+			@Override
+			public void onSuccess(@Nullable Session<UninstallFailure> session) {
+				if (session != null) {
+					session.cancel();
+				}
+			}
+
+			@Override
+			public void onFailure(@NonNull Throwable t) {
+			}
+		}, MoreExecutors.directExecutor());
 	}
 
 	private void addSessionListener(@NonNull UUID id) {
@@ -176,6 +200,11 @@ public final class UninstallViewModel extends ViewModel {
 			if (failure instanceof Failure.Exceptional f) {
 				Log.e("UninstallViewModel", null, f.getException());
 			}
+		}
+
+		@Override
+		public void onCancelled(@NonNull UUID sessionId) {
+			clearSavedState();
 		}
 	}
 

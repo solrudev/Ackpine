@@ -40,10 +40,12 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForFile(file: File): Sequence<Apk> = sequence {
+	public fun getApksForFile(file: File): Sequence<Apk> = closeableSequence {
 		ZipFile(file).use { zipFile ->
+			addCloseableResource(zipFile)
 			zipFile.entries()
 				.asSequence()
+				.filterNot { isClosed }
 				.mapNotNull { zipEntry ->
 					zipFile.getInputStream(zipEntry).use { entryStream ->
 						Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
@@ -51,7 +53,7 @@ public object ZippedApkSplits {
 				}
 				.forEach { yield(it) }
 		}
-	}.constrainOnce()
+	}
 
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at
@@ -66,11 +68,11 @@ public object ZippedApkSplits {
 	@JvmStatic
 	public fun getApksForUri(uri: Uri, context: Context): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
-		return sequence {
+		return closeableSequence {
 			val file = uri.toFile(applicationContext)
 			if (file.canRead()) {
 				yieldAll(getApksForFile(file))
-				return@sequence
+				return@closeableSequence
 			}
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 				try {
@@ -79,25 +81,30 @@ public object ZippedApkSplits {
 					exception.printStackTrace()
 					yieldAllUsingZipInputStream(applicationContext, uri)
 				}
-				return@sequence
+				return@closeableSequence
 			}
 			yieldAllUsingZipInputStream(applicationContext, uri)
-		}.constrainOnce()
+		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)
-	private suspend inline fun SequenceScope<Apk>.yieldAllUsingFileChannel(applicationContext: Context, uri: Uri) {
-		applicationContext.contentResolver.openFileDescriptor(uri, "r").use { fd ->
+	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFileChannel(context: Context, uri: Uri) {
+		context.contentResolver.openFileDescriptor(uri, "r").use { fd ->
 			fd ?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
+			addCloseableResource(fd)
 			FileInputStream(fd.fileDescriptor).use { fileInputStream ->
+				addCloseableResource(fileInputStream)
 				org.apache.commons.compress.archivers.zip.ZipFile.builder()
 					.setSeekableByteChannel(fileInputStream.channel)
 					.get()
 					.use { zipFile ->
+						addCloseableResource(zipFile)
 						zipFile.entries
 							.asSequence()
+							.filterNot { isClosed }
 							.mapNotNull { zipEntry ->
 								zipFile.getInputStream(zipEntry).use { entryStream ->
+									addCloseableResource(entryStream)
 									Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
 								}
 							}
@@ -107,9 +114,11 @@ public object ZippedApkSplits {
 		}
 	}
 
-	private suspend inline fun SequenceScope<Apk>.yieldAllUsingZipInputStream(applicationContext: Context, uri: Uri) {
-		ZipInputStream(applicationContext.contentResolver.openInputStream(uri)).use { zipStream ->
+	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingZipInputStream(context: Context, uri: Uri) {
+		ZipInputStream(context.contentResolver.openInputStream(uri)).use { zipStream ->
+			addCloseableResource(zipStream)
 			zipStream.entries()
+				.filterNot { isClosed }
 				.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
 				.forEach { yield(it) }
 		}

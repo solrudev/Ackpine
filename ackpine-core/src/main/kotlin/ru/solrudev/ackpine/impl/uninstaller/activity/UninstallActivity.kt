@@ -28,7 +28,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 private const val TAG = "UninstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class UninstallActivity : SessionCommitActivity<Session<UninstallFailure>, UninstallFailure>(
+internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 	TAG, startsActivity = true,
 	abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
