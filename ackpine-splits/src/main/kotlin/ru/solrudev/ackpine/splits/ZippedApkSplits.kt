@@ -41,18 +41,7 @@ public object ZippedApkSplits {
 	 */
 	@JvmStatic
 	public fun getApksForFile(file: File): Sequence<Apk> = closeableSequence {
-		ZipFile(file).use { zipFile ->
-			addCloseableResource(zipFile)
-			zipFile.entries()
-				.asSequence()
-				.filterNot { isClosed }
-				.mapNotNull { zipEntry ->
-					zipFile.getInputStream(zipEntry).use { entryStream ->
-						Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
-					}
-				}
-				.forEach { yield(it) }
-		}
+		yieldAllUsingFile(file)
 	}
 
 	/**
@@ -71,7 +60,7 @@ public object ZippedApkSplits {
 		return closeableSequence {
 			val file = uri.toFile(applicationContext)
 			if (file.canRead()) {
-				yieldAll(getApksForFile(file))
+				yieldAllUsingFile(file)
 				return@closeableSequence
 			}
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -87,40 +76,47 @@ public object ZippedApkSplits {
 		}
 	}
 
+	@Suppress("BlockingMethodInNonBlockingContext")
+	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFile(file: File) {
+		val zipFile = ZipFile(file).use()
+		zipFile.entries()
+			.asSequence()
+			.filterNot { isClosed }
+			.mapNotNull { zipEntry ->
+				zipFile.getInputStream(zipEntry).use { entryStream ->
+					// java.util.zip.ZipFile closes all entry streams when closed, no need to apply .use()
+					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+				}
+			}
+			.forEach { yield(it) }
+	}
+
 	@RequiresApi(Build.VERSION_CODES.O)
 	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFileChannel(context: Context, uri: Uri) {
-		context.contentResolver.openFileDescriptor(uri, "r").use { fd ->
-			fd ?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
-			addCloseableResource(fd)
-			FileInputStream(fd.fileDescriptor).use { fileInputStream ->
-				addCloseableResource(fileInputStream)
-				org.apache.commons.compress.archivers.zip.ZipFile.builder()
-					.setSeekableByteChannel(fileInputStream.channel)
-					.get()
-					.use { zipFile ->
-						addCloseableResource(zipFile)
-						zipFile.entries
-							.asSequence()
-							.filterNot { isClosed }
-							.mapNotNull { zipEntry ->
-								zipFile.getInputStream(zipEntry).use { entryStream ->
-									addCloseableResource(entryStream)
-									Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
-								}
-							}
-							.forEach { yield(it) }
-					}
+		val fd = context.contentResolver.openFileDescriptor(uri, "r")?.use()
+			?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
+		val fileInputStream = FileInputStream(fd.fileDescriptor).use()
+		val zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
+			.setSeekableByteChannel(fileInputStream.channel)
+			.get()
+			.use()
+		zipFile.entries
+			.asSequence()
+			.filterNot { isClosed }
+			.mapNotNull { zipEntry ->
+				zipFile.getInputStream(zipEntry).use { entryStream ->
+					entryStream.use()
+					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
+				}
 			}
-		}
+			.forEach { yield(it) }
 	}
 
 	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingZipInputStream(context: Context, uri: Uri) {
-		ZipInputStream(context.contentResolver.openInputStream(uri)).use { zipStream ->
-			addCloseableResource(zipStream)
-			zipStream.entries()
-				.filterNot { isClosed }
-				.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
-				.forEach { yield(it) }
-		}
+		val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri)).use()
+		zipStream.entries()
+			.filterNot { isClosed }
+			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
+			.forEach { yield(it) }
 	}
 }
