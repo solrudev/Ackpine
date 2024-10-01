@@ -17,6 +17,8 @@
 package ru.solrudev.ackpine.splits
 
 import androidx.annotation.RestrictTo
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.RestrictsSuspension
 
 /**
@@ -35,7 +37,7 @@ internal fun <T> closeableSequence(block: suspend CloseableSequenceScope<T>.() -
 
 /**
  * The scope for yielding values of a [CloseableSequence], provides [yield] and [yieldAll] suspension functions and
- * [addCloseableResource] function to manage [AutoCloseable] resources.
+ * [use] function to manage [AutoCloseable] resources.
  *
  * @see closeableSequence
  */
@@ -49,9 +51,9 @@ internal interface CloseableSequenceScope<T> {
 	val isClosed: Boolean
 
 	/**
-	 * Adds a [resource] to a set of [AutoCloseable] resources managed by the [CloseableSequence].
+	 * Adds a resource to a set of [AutoCloseable] resources managed by the [CloseableSequence].
 	 */
-	fun addCloseableResource(resource: AutoCloseable)
+	fun <T : AutoCloseable> T.use(): T
 
 	/**
 	 * Yields a value to the [Iterator] being built and suspends until the next value is requested.
@@ -81,7 +83,9 @@ private class CloseableSequenceImpl<T>(
 	@Volatile
 	private lateinit var scope: SequenceScope<T>
 
-	private val resources = mutableSetOf<AutoCloseable>()
+	private val resources = Collections.newSetFromMap(
+		ConcurrentHashMap<AutoCloseable, Boolean>()
+	)
 
 	override fun iterator(): Iterator<T> {
 		if (isConsumed) {
@@ -90,7 +94,9 @@ private class CloseableSequenceImpl<T>(
 		isConsumed = true
 		return iterator {
 			scope = this
-			block()
+			use {
+				block()
+			}
 		}
 	}
 
@@ -102,8 +108,9 @@ private class CloseableSequenceImpl<T>(
 		resources.clear()
 	}
 
-	override fun addCloseableResource(resource: AutoCloseable) {
-		resources += resource
+	override fun <T : AutoCloseable> T.use(): T {
+		resources += this
+		return this
 	}
 
 	override suspend fun yield(value: T) = scope.yield(value)
