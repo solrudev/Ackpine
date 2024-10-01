@@ -41,17 +41,7 @@ public object ZippedApkSplits {
 	 */
 	@JvmStatic
 	public fun getApksForFile(file: File): Sequence<Apk> = closeableSequence {
-		val zipFile = ZipFile(file).use()
-		zipFile.entries()
-			.asSequence()
-			.filterNot { isClosed }
-			.mapNotNull { zipEntry ->
-				zipFile.getInputStream(zipEntry).use { entryStream ->
-					// java.util.zip.ZipFile closes all entry streams when closed, no need to apply .use()
-					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
-				}
-			}
-			.forEach { yield(it) }
+		yieldAllUsingFile(file)
 	}
 
 	/**
@@ -70,7 +60,7 @@ public object ZippedApkSplits {
 		return closeableSequence {
 			val file = uri.toFile(applicationContext)
 			if (file.canRead()) {
-				yieldAll(getApksForFile(file))
+				yieldAllUsingFile(file)
 				return@closeableSequence
 			}
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -84,6 +74,21 @@ public object ZippedApkSplits {
 			}
 			yieldAllUsingZipInputStream(applicationContext, uri)
 		}
+	}
+
+	@Suppress("BlockingMethodInNonBlockingContext")
+	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFile(file: File) {
+		val zipFile = ZipFile(file).use()
+		zipFile.entries()
+			.asSequence()
+			.filterNot { isClosed }
+			.mapNotNull { zipEntry ->
+				zipFile.getInputStream(zipEntry).use { entryStream ->
+					// java.util.zip.ZipFile closes all entry streams when closed, no need to apply .use()
+					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+				}
+			}
+			.forEach { yield(it) }
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)
