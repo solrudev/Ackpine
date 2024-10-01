@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.7.3 (2024-10-01)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix resources not closing when throwing if `throwOnInvalidSplitPackage()` is applied and `ZippedApkSplits.getApksForUri()` delegates to `ZippedApkSplits.getApksForFile()`.
+
 Version 0.7.2 (2024-09-30)
 --------------------------
 
