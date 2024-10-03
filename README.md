@@ -7,7 +7,7 @@
 
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
 
-See the [project website](https://solrudev.github.io/Ackpine/) for documentation and API reference.
+See the [project website](https://ackpine.solrudev.ru) for documentation and API reference.
 
 A library providing consistent APIs for installing and uninstalling apps on an Android device.
 
