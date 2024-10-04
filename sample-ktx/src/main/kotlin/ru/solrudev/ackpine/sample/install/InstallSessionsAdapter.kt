@@ -38,6 +38,7 @@ class InstallSessionsAdapter(
 
 	private val handler = Handler(Looper.getMainLooper())
 	private var isReattaching = false
+	private var currentProgress = emptyList<SessionProgress>()
 
 	class SessionViewHolder(
 		private val itemBinding: ItemInstallSessionBinding,
@@ -109,8 +110,10 @@ class InstallSessionsAdapter(
 
 	override fun onBindViewHolder(holder: SessionViewHolder, position: Int, payloads: List<Any>) {
 		val sessionData = getItem(position)
+		holder.bind(sessionData)
 		if (payloads.isEmpty()) {
-			holder.bind(sessionData)
+			val progress = currentProgress[position]
+			holder.setProgress(progress.progress, animate = false)
 		} else {
 			val progressUpdate = payloads.first() as ProgressUpdate
 			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
@@ -118,6 +121,7 @@ class InstallSessionsAdapter(
 	}
 
 	fun submitProgress(progress: List<SessionProgress>) {
+		currentProgress = progress
 		if (isReattaching) {
 			handler.post {
 				notifyProgressChanged(progress)

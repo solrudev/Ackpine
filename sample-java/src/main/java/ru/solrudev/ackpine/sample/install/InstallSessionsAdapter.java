@@ -46,6 +46,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	private final Consumer<UUID> onClick;
 	private final Handler handler = new Handler(Looper.getMainLooper());
 	private boolean isReattaching = false;
+	private List<SessionProgress> currentProgress = Collections.emptyList();
 
 	public InstallSessionsAdapter(Consumer<UUID> onClick) {
 		super(DIFF_CALLBACK);
@@ -131,8 +132,10 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	@Override
 	public void onBindViewHolder(@NonNull SessionViewHolder holder, int position, @NonNull List<Object> payloads) {
 		final var sessionData = getItem(position);
+		holder.bind(sessionData);
 		if (payloads.isEmpty()) {
-			holder.bind(sessionData);
+			final var progress = currentProgress.get(position);
+			holder.setProgress(progress.toProgress(), false);
 		} else {
 			final var progressUpdate = (ProgressUpdate) payloads.get(0);
 			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
@@ -140,6 +143,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	}
 
 	public void submitProgress(@NonNull List<SessionProgress> progress) {
+		currentProgress = progress;
 		if (isReattaching) {
 			handler.post(() -> {
 				notifyProgressChanged(progress);
