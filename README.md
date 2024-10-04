@@ -7,7 +7,7 @@
 
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
 
-See the [project website](https://solrudev.github.io/Ackpine/) for documentation and API reference.
+See the [project website](https://ackpine.solrudev.ru) for documentation and API reference.
 
 A library providing consistent APIs for installing and uninstalling apps on an Android device.
 
@@ -31,7 +31,7 @@ Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.7.3"
+    val ackpineVersion = "0.7.4"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support

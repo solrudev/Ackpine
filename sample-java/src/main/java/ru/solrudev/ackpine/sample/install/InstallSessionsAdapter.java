@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.core.util.Consumer;
 import androidx.core.view.ViewKt;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,9 +44,11 @@ import ru.solrudev.ackpine.session.parameters.NotificationString;
 public final class InstallSessionsAdapter extends ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder> {
 
 	private final static SessionDiffCallback DIFF_CALLBACK = new SessionDiffCallback();
+	private final static ItemAnimator ITEM_ANIMATOR = new ItemAnimator();
 	private final Consumer<UUID> onClick;
 	private final Handler handler = new Handler(Looper.getMainLooper());
 	private boolean isReattaching = false;
+	private List<SessionProgress> currentProgress = Collections.emptyList();
 
 	public InstallSessionsAdapter(Consumer<UUID> onClick) {
 		super(DIFF_CALLBACK);
@@ -112,7 +115,13 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 	@Override
 	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+		recyclerView.setItemAnimator(ITEM_ANIMATOR);
 		isReattaching = true;
+	}
+
+	@Override
+	public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
+		recyclerView.setItemAnimator(new DefaultItemAnimator());
 	}
 
 	@NonNull
@@ -131,8 +140,10 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	@Override
 	public void onBindViewHolder(@NonNull SessionViewHolder holder, int position, @NonNull List<Object> payloads) {
 		final var sessionData = getItem(position);
+		holder.bind(sessionData);
 		if (payloads.isEmpty()) {
-			holder.bind(sessionData);
+			final var progress = currentProgress.get(position);
+			holder.setProgress(progress.toProgress(), false);
 		} else {
 			final var progressUpdate = (ProgressUpdate) payloads.get(0);
 			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
@@ -140,6 +151,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	}
 
 	public void submitProgress(@NonNull List<SessionProgress> progress) {
+		currentProgress = progress;
 		if (isReattaching) {
 			handler.post(() -> {
 				notifyProgressChanged(progress);
@@ -169,6 +181,14 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		@Override
 		public boolean areContentsTheSame(@NonNull SessionData oldItem, @NonNull SessionData newItem) {
 			return oldItem.equals(newItem);
+		}
+	}
+
+	private final static class ItemAnimator extends DefaultItemAnimator {
+
+		@Override
+		public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
+			return true;
 		}
 	}
 }

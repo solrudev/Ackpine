@@ -37,7 +37,6 @@ import androidx.annotation.RequiresApi;
 import androidx.core.view.ViewKt;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -96,12 +95,6 @@ public final class InstallFragment extends Fragment {
 				.setLiftOnScrollTargetView(binding.recyclerViewInstall);
 		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());
 		binding.recyclerViewInstall.setAdapter(adapter);
-		binding.recyclerViewInstall.setItemAnimator(new DefaultItemAnimator() {
-			@Override
-			public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
-				return true;
-			}
-		});
 		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
 				.attachToRecyclerView(binding.recyclerViewInstall);
 		observeViewModel();

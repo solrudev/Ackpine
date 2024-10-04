@@ -68,6 +68,7 @@ dependencies {
 	implementation(androidx.appcompat)
 	implementation(androidx.recyclerview)
 	implementation(androidx.constraintlayout)
+	implementation(androidx.coordinatorlayout)
 	implementation(androidx.bundles.lifecycle)
 	implementation(androidx.bundles.navigation)
 	implementation(androidx.swiperefreshlayout)

@@ -21,6 +21,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -38,6 +39,7 @@ class InstallSessionsAdapter(
 
 	private val handler = Handler(Looper.getMainLooper())
 	private var isReattaching = false
+	private var currentProgress = emptyList<SessionProgress>()
 
 	class SessionViewHolder(
 		private val itemBinding: ItemInstallSessionBinding,
@@ -93,7 +95,12 @@ class InstallSessionsAdapter(
 	}
 
 	override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+		recyclerView.itemAnimator = ItemAnimator
 		isReattaching = true
+	}
+
+	override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+		recyclerView.itemAnimator = DefaultItemAnimator()
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
@@ -109,8 +116,10 @@ class InstallSessionsAdapter(
 
 	override fun onBindViewHolder(holder: SessionViewHolder, position: Int, payloads: List<Any>) {
 		val sessionData = getItem(position)
+		holder.bind(sessionData)
 		if (payloads.isEmpty()) {
-			holder.bind(sessionData)
+			val progress = currentProgress[position]
+			holder.setProgress(progress.progress, animate = false)
 		} else {
 			val progressUpdate = payloads.first() as ProgressUpdate
 			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
@@ -118,6 +127,7 @@ class InstallSessionsAdapter(
 	}
 
 	fun submitProgress(progress: List<SessionProgress>) {
+		currentProgress = progress
 		if (isReattaching) {
 			handler.post {
 				notifyProgressChanged(progress)
@@ -145,5 +155,9 @@ class InstallSessionsAdapter(
 		override fun areContentsTheSame(oldItem: SessionData, newItem: SessionData): Boolean {
 			return oldItem == newItem
 		}
+	}
+
+	private object ItemAnimator : DefaultItemAnimator() {
+		override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder) = true
 	}
 }

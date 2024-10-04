@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 0.7.4 (2024-10-04)
+--------------------------
+
+### Dependencies
+
+- Added direct dependency on `androidx.coordinatorlayout:coordinatorlayout:1.2.0` to sample projects.
+
+### Bug fixes and improvements
+
+- Improve error handling in `ackpine-splits`. This also allowed to avoid duplicate `Apk` objects in sequences returned from `ZippedApkSplits` factories in some possible cases of errors.
+- Fix incorrect sessions' progress when there are list items beyond visible area in sample apps.
+- Hide floating Install button when scrolling down in sample apps.
+
 Version 0.7.3 (2024-10-01)
 --------------------------
 

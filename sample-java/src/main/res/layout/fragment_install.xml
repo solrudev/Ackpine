@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2023 Ilya Fomichev
+  ~ Copyright (C) 2023-2024 Ilya Fomichev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
   ~ limitations under the License.
   -->
 
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:id="@+id/container_install"
@@ -38,6 +38,7 @@
 		android:layout_gravity="end|bottom"
 		android:layout_margin="@dimen/fab_margin"
 		android:text="@string/fab_install"
+		app:layout_behavior="ru.solrudev.ackpine.sample.install.HideFabOnScrollBehavior"
 		app:icon="@drawable/ic_install_outlined" />
 
 	<TextView
@@ -51,4 +52,4 @@
 		android:textAppearance="?textAppearanceTitleLarge"
 		android:visibility="gone" />
 
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

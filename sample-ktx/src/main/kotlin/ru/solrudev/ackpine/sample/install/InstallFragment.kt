@@ -33,7 +33,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -73,9 +72,6 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 			onInstallButtonClick()
 		}
 		binding.recyclerViewInstall.adapter = adapter
-		binding.recyclerViewInstall.itemAnimator = object : DefaultItemAnimator() {
-			override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder) = true
-		}
 		ItemTouchHelper(SwipeCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT))
 			.attachToRecyclerView(binding.recyclerViewInstall)
 		observeViewModel()
