@@ -207,38 +207,47 @@ public class ZippedFileProvider : ContentProvider() {
 			return try {
 				val zipEntry = zipFile.getEntry(uri.encodedQuery)
 				ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
-			} catch (t: Throwable) {
-				zipFile.closeWithException(t)
-				throw t
+			} catch (throwable: Throwable) {
+				zipFile.closeWithException(throwable)
+				throw throwable
 			}
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			return try {
-				openZipEntryStreamUsingFileChannel(zipFileUri, uri.encodedQuery)
-			} catch (exception: Exception) {
-				exception.printStackTrace()
-				openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
-			}
+			return openZipEntryStreamApi26(zipFileUri, uri.encodedQuery, signal)
 		}
 		return openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)
-	private fun openZipEntryStreamUsingFileChannel(zipFileUri: Uri, zipEntryName: String?): ZipEntryStream {
-		val fd = context?.contentResolver?.openFileDescriptor(zipFileUri, "r")
-			?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
-		val fileInputStream = FileInputStream(fd.fileDescriptor)
-		val zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
-			.setSeekableByteChannel(fileInputStream.channel)
-			.get()
-		return try {
+	private fun openZipEntryStreamApi26(
+		zipFileUri: Uri,
+		zipEntryName: String?,
+		signal: CancellationSignal?
+	): ZipEntryStream {
+		var fd: ParcelFileDescriptor? = null
+		var fileInputStream: FileInputStream? = null
+		val zipFile: org.apache.commons.compress.archivers.zip.ZipFile
+		try {
+			fd = context?.contentResolver?.openFileDescriptor(zipFileUri, "r", signal)
+				?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
+			fileInputStream = FileInputStream(fd.fileDescriptor)
+			zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
+				.setSeekableByteChannel(fileInputStream.channel)
+				.get()
+		} catch (throwable: Throwable) {
+			fd?.closeWithException(throwable)
+			fileInputStream?.closeWithException(throwable)
+			throwable.printStackTrace()
+			return openZipEntryStreamUsingZipInputStream(zipFileUri, zipEntryName, signal)
+		}
+		try {
 			val zipEntry = zipFile.getEntry(zipEntryName)
-			ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
-		} catch (t: Throwable) {
-			fd.closeWithException(t)
-			fileInputStream.closeWithException(t)
-			zipFile.closeWithException(t)
-			throw t
+			return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
+		} catch (throwable: Throwable) {
+			fd.closeWithException(throwable)
+			fileInputStream.closeWithException(throwable)
+			zipFile.closeWithException(throwable)
+			throw throwable
 		}
 	}
 
@@ -252,9 +261,9 @@ public class ZippedFileProvider : ContentProvider() {
 			zipStream.entries()
 				.onEach { signal?.throwIfCanceled() }
 				.first { it.name == zipEntryName }
-		} catch (t: Throwable) {
-			zipStream.closeWithException(t)
-			throw t
+		} catch (throwable: Throwable) {
+			zipStream.closeWithException(throwable)
+			throw throwable
 		}
 		return ZipEntryStream(zipStream, zipEntry.size)
 	}
@@ -286,8 +295,8 @@ public class ZippedFileProvider : ContentProvider() {
 		var exception: Throwable? = null
 		try {
 			FileOutputStream(fileDescriptor).buffered().use(block)
-		} catch (t: Throwable) {
-			exception = t
+		} catch (throwable: Throwable) {
+			exception = throwable
 		} finally {
 			try {
 				if (exception != null) {
@@ -295,8 +304,8 @@ public class ZippedFileProvider : ContentProvider() {
 				} else {
 					close()
 				}
-			} catch (t: Throwable) {
-				exception?.addSuppressed(t)
+			} catch (throwable: Throwable) {
+				exception?.addSuppressed(throwable)
 				exception?.printStackTrace()
 			}
 		}
@@ -367,7 +376,7 @@ private object ZippedFileProviderPlugin : AckpinePlugin {
 private class ZipEntryStream(
 	private val inputStream: InputStream,
 	val size: Long,
-	private vararg val resources: AutoCloseable
+	private vararg var resources: AutoCloseable
 ) : InputStream() {
 
 	override fun read(): Int = inputStream.read()
@@ -381,8 +390,9 @@ private class ZipEntryStream(
 
 	override fun close() {
 		for (resource in resources) {
-			resource.close()
+			runCatching { resource.close() }
 		}
+		resources = emptyArray()
 		inputStream.close()
 	}
 
