@@ -3,6 +3,7 @@
 [![CI](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml/badge.svg)](https://github.com/solrudev/Ackpine/actions/workflows/ci.yml)
 ![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/solrudev/Ackpine/blob/master/LICENSE)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/c3014b1eee9648959b70ee6bbad51489)](https://app.codacy.com/gh/solrudev/Ackpine/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Android Weekly](https://androidweekly.net/issues/issue-593/badge)](https://androidweekly.net/issues/issue-593)
 
 <span style="color:#808080">_**Ackpine** - **A**ndroid **C**oroutines-friendly **K**otlin-first **P**ackage **In**staller **e**xtensions_</span>
