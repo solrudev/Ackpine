@@ -147,7 +147,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		final var sessionData = getItem(position);
 		holder.bind(sessionData);
 		if (payloads.isEmpty()) {
-			final var progress = currentProgress.get(position);
+			final var progress = currentProgress.get(Math.min(position, currentProgress.size() - 1));
 			holder.setProgress(progress.toProgress(), false);
 		} else {
 			final var progressUpdate = (ProgressUpdate) payloads.get(0);

@@ -122,7 +122,7 @@ class InstallSessionsAdapter(
 		val sessionData = getItem(position)
 		holder.bind(sessionData)
 		if (payloads.isEmpty()) {
-			val progress = currentProgress[position]
+			val progress = currentProgress[position.coerceAtMost(currentProgress.size - 1)]
 			holder.setProgress(progress.progress, animate = false)
 		} else {
 			val progressUpdate = payloads.first() as ProgressUpdate
