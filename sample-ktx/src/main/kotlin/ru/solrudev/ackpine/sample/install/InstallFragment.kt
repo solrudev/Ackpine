@@ -33,14 +33,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
 import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding
-import ru.solrudev.ackpine.sample.install.InstallSessionsAdapter.SessionViewHolder
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
 import ru.solrudev.ackpine.sample.util.getDisplayName
 import ru.solrudev.ackpine.splits.Apk
@@ -53,9 +50,14 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	private val binding by viewBinding(FragmentInstallBinding::bind, R.id.container_install)
 	private val viewModel: InstallViewModel by viewModels { InstallViewModel.Factory }
 
-	private val adapter = InstallSessionsAdapter { sessionId ->
-		viewModel.cancelSession(sessionId)
-	}
+	private val adapter = InstallSessionsAdapter(
+		onCancelClick = { sessionId ->
+			viewModel.cancelSession(sessionId)
+		},
+		onItemSwipe = { sessionId ->
+			viewModel.removeSession(sessionId)
+		}
+	)
 
 	@RequiresApi(Build.VERSION_CODES.M)
 	private val requestPermissionsLauncher = registerForActivityResult(RequestMultiplePermissions()) { results ->
@@ -72,8 +74,6 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 			onInstallButtonClick()
 		}
 		binding.recyclerViewInstall.adapter = adapter
-		ItemTouchHelper(SwipeCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT))
-			.attachToRecyclerView(binding.recyclerViewInstall)
 		observeViewModel()
 	}
 
@@ -158,28 +158,5 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 		return readStorage && notifications
-	}
-
-	private inner class SwipeCallback(
-		dragDirs: Int,
-		swipeDirs: Int
-	) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
-
-		override fun onMove(
-			recyclerView: RecyclerView,
-			viewHolder: RecyclerView.ViewHolder,
-			target: RecyclerView.ViewHolder
-		) = false
-
-		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-			viewModel.removeSession((viewHolder as SessionViewHolder).sessionId)
-		}
-
-		override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-			if ((viewHolder as SessionViewHolder).isSwipeable) {
-				return super.getSwipeDirs(recyclerView, viewHolder)
-			}
-			return 0
-		}
 	}
 }

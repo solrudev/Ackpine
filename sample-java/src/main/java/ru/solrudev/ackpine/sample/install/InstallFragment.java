@@ -37,8 +37,6 @@ import androidx.annotation.RequiresApi;
 import androidx.core.view.ViewKt;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
@@ -51,7 +49,6 @@ import kotlin.sequences.Sequence;
 import kotlin.sequences.SequencesKt;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
-import ru.solrudev.ackpine.sample.install.InstallSessionsAdapter.SessionViewHolder;
 import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.ApkSplits;
 import ru.solrudev.ackpine.splits.ZippedApkSplits;
@@ -60,7 +57,9 @@ public final class InstallFragment extends Fragment {
 
 	private FragmentInstallBinding binding;
 	private InstallViewModel viewModel;
-	private final InstallSessionsAdapter adapter = new InstallSessionsAdapter(id -> viewModel.cancelSession(id));
+
+	private final InstallSessionsAdapter adapter = new InstallSessionsAdapter(id -> viewModel.cancelSession(id),
+			id -> viewModel.removeSession(id));
 
 	@RequiresApi(Build.VERSION_CODES.M)
 	private final ActivityResultLauncher<String[]> requestPermissionsLauncher = registerForActivityResult(
@@ -95,8 +94,6 @@ public final class InstallFragment extends Fragment {
 				.setLiftOnScrollTargetView(binding.recyclerViewInstall);
 		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());
 		binding.recyclerViewInstall.setAdapter(adapter);
-		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
-				.attachToRecyclerView(binding.recyclerViewInstall);
 		observeViewModel();
 	}
 
@@ -195,32 +192,5 @@ public final class InstallFragment extends Fragment {
 		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
 		return readStorage && notifications;
-	}
-
-	private final class SwipeCallback extends ItemTouchHelper.SimpleCallback {
-
-		public SwipeCallback(int dragDirs, int swipeDirs) {
-			super(dragDirs, swipeDirs);
-		}
-
-		@Override
-		public boolean onMove(@NonNull RecyclerView recyclerView,
-							  @NonNull RecyclerView.ViewHolder viewHolder,
-							  @NonNull RecyclerView.ViewHolder target) {
-			return false;
-		}
-
-		@Override
-		public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-			viewModel.removeSession(((SessionViewHolder) viewHolder).getSessionId());
-		}
-
-		@Override
-		public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
-			if (((SessionViewHolder) viewHolder).isSwipeable()) {
-				return super.getSwipeDirs(recyclerView, viewHolder);
-			}
-			return 0;
-		}
 	}
 }

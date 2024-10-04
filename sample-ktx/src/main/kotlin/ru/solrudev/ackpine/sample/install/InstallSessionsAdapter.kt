@@ -23,6 +23,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Fade
@@ -34,7 +35,8 @@ import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 
 class InstallSessionsAdapter(
-	private val onClick: (UUID) -> Unit
+	private val onCancelClick: (UUID) -> Unit,
+	private val onItemSwipe: (UUID) -> Unit
 ) : ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder>(SessionDiffCallback) {
 
 	private val handler = Handler(Looper.getMainLooper())
@@ -96,6 +98,8 @@ class InstallSessionsAdapter(
 
 	override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
 		recyclerView.itemAnimator = ItemAnimator
+		ItemTouchHelper(SwipeCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT))
+			.attachToRecyclerView(recyclerView)
 		isReattaching = true
 	}
 
@@ -107,7 +111,7 @@ class InstallSessionsAdapter(
 		val itemBinding = ItemInstallSessionBinding.inflate(
 			LayoutInflater.from(parent.context), parent, false
 		)
-		return SessionViewHolder(itemBinding, onClick)
+		return SessionViewHolder(itemBinding, onCancelClick)
 	}
 
 	override fun onBindViewHolder(holder: SessionViewHolder, position: Int) {
@@ -118,7 +122,7 @@ class InstallSessionsAdapter(
 		val sessionData = getItem(position)
 		holder.bind(sessionData)
 		if (payloads.isEmpty()) {
-			val progress = currentProgress[position]
+			val progress = currentProgress[position.coerceAtMost(currentProgress.size - 1)]
 			holder.setProgress(progress.progress, animate = false)
 		} else {
 			val progressUpdate = payloads.first() as ProgressUpdate
@@ -159,5 +163,28 @@ class InstallSessionsAdapter(
 
 	private object ItemAnimator : DefaultItemAnimator() {
 		override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder) = true
+	}
+
+	private inner class SwipeCallback(
+		dragDirs: Int,
+		swipeDirs: Int
+	) : ItemTouchHelper.SimpleCallback(dragDirs, swipeDirs) {
+
+		override fun onMove(
+			recyclerView: RecyclerView,
+			viewHolder: RecyclerView.ViewHolder,
+			target: RecyclerView.ViewHolder
+		) = false
+
+		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+			onItemSwipe((viewHolder as SessionViewHolder).sessionId)
+		}
+
+		override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+			if ((viewHolder as SessionViewHolder).isSwipeable) {
+				return super.getSwipeDirs(recyclerView, viewHolder)
+			}
+			return 0
+		}
 	}
 }

@@ -26,6 +26,7 @@ import androidx.core.util.Consumer;
 import androidx.core.view.ViewKt;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.transition.Fade;
@@ -45,14 +46,16 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 	private final static SessionDiffCallback DIFF_CALLBACK = new SessionDiffCallback();
 	private final static ItemAnimator ITEM_ANIMATOR = new ItemAnimator();
-	private final Consumer<UUID> onClick;
+	private final Consumer<UUID> onCancelClick;
+	private final Consumer<UUID> onItemSwipe;
 	private final Handler handler = new Handler(Looper.getMainLooper());
 	private boolean isReattaching = false;
 	private List<SessionProgress> currentProgress = Collections.emptyList();
 
-	public InstallSessionsAdapter(Consumer<UUID> onClick) {
+	public InstallSessionsAdapter(Consumer<UUID> onCancelClick, Consumer<UUID> onItemSwipe) {
 		super(DIFF_CALLBACK);
-		this.onClick = onClick;
+		this.onCancelClick = onCancelClick;
+		this.onItemSwipe = onItemSwipe;
 	}
 
 	public final static class SessionViewHolder extends RecyclerView.ViewHolder {
@@ -116,6 +119,8 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	@Override
 	public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
 		recyclerView.setItemAnimator(ITEM_ANIMATOR);
+		new ItemTouchHelper(new SwipeCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT))
+				.attachToRecyclerView(recyclerView);
 		isReattaching = true;
 	}
 
@@ -129,7 +134,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 		final var itemBinding = ItemInstallSessionBinding
 				.inflate(LayoutInflater.from(parent.getContext()), parent, false);
-		return new SessionViewHolder(itemBinding, onClick);
+		return new SessionViewHolder(itemBinding, onCancelClick);
 	}
 
 	@Override
@@ -142,7 +147,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		final var sessionData = getItem(position);
 		holder.bind(sessionData);
 		if (payloads.isEmpty()) {
-			final var progress = currentProgress.get(position);
+			final var progress = currentProgress.get(Math.min(position, currentProgress.size() - 1));
 			holder.setProgress(progress.toProgress(), false);
 		} else {
 			final var progressUpdate = (ProgressUpdate) payloads.get(0);
@@ -189,6 +194,33 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		@Override
 		public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {
 			return true;
+		}
+	}
+
+	private final class SwipeCallback extends ItemTouchHelper.SimpleCallback {
+
+		public SwipeCallback(int dragDirs, int swipeDirs) {
+			super(dragDirs, swipeDirs);
+		}
+
+		@Override
+		public boolean onMove(@NonNull RecyclerView recyclerView,
+							  @NonNull RecyclerView.ViewHolder viewHolder,
+							  @NonNull RecyclerView.ViewHolder target) {
+			return false;
+		}
+
+		@Override
+		public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+			onItemSwipe.accept(((SessionViewHolder) viewHolder).getSessionId());
+		}
+
+		@Override
+		public int getSwipeDirs(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder) {
+			if (((SessionViewHolder) viewHolder).isSwipeable()) {
+				return super.getSwipeDirs(recyclerView, viewHolder);
+			}
+			return 0;
 		}
 	}
 }
