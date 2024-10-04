@@ -21,6 +21,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -94,7 +95,12 @@ class InstallSessionsAdapter(
 	}
 
 	override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+		recyclerView.itemAnimator = ItemAnimator
 		isReattaching = true
+	}
+
+	override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+		recyclerView.itemAnimator = DefaultItemAnimator()
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
@@ -149,5 +155,9 @@ class InstallSessionsAdapter(
 		override fun areContentsTheSame(oldItem: SessionData, newItem: SessionData): Boolean {
 			return oldItem == newItem
 		}
+	}
+
+	private object ItemAnimator : DefaultItemAnimator() {
+		override fun canReuseUpdatedViewHolder(viewHolder: RecyclerView.ViewHolder) = true
 	}
 }
