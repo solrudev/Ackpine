@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright (C) 2023 Ilya Fomichev
+  ~ Copyright (C) 2023-2024 Ilya Fomichev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@
 		android:layout_gravity="end|bottom"
 		android:layout_margin="@dimen/fab_margin"
 		android:text="@string/fab_install"
-		app:layout_behavior="com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
+		app:layout_behavior="ru.solrudev.ackpine.sample.install.HideFabOnScrollBehavior"
 		app:icon="@drawable/ic_install_outlined" />
 
 	<TextView
