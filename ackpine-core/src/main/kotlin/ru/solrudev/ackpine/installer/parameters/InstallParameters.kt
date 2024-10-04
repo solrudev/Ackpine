@@ -296,7 +296,9 @@ private class RealMutableApkList : MutableApkList {
 	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 	constructor(apks: Iterable<Uri>) {
 		this.apks = apks.toMutableList()
-		require(this.apks.size > 0) { "No APKs provided. It's required to have at least one base APK to create a session." }
+		require(this.apks.isNotEmpty()) {
+			"No APKs provided. It's required to have at least one base APK to create a session."
+		}
 		if (this.apks.size > 1) {
 			checkSplitPackagesSupport()
 		}
@@ -308,7 +310,7 @@ private class RealMutableApkList : MutableApkList {
 	private val apks: MutableList<Uri>
 
 	override fun add(apk: Uri) {
-		if (this.apks.size != 0) {
+		if (this.apks.isNotEmpty()) {
 			checkSplitPackagesSupport()
 		}
 		this.apks.add(apk)
@@ -316,7 +318,7 @@ private class RealMutableApkList : MutableApkList {
 
 	override fun addAll(apks: Iterable<Uri>) {
 		val apksList = apks.toList()
-		if (this.apks.size != 0 || apksList.size > 1) {
+		if (this.apks.isNotEmpty() || apksList.size > 1) {
 			checkSplitPackagesSupport()
 		}
 		this.apks.addAll(apksList)
