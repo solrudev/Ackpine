@@ -34,6 +34,7 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
 import ru.solrudev.ackpine.plugin.AckpinePlugin
@@ -207,7 +208,7 @@ public class ZippedFileProvider : ContentProvider() {
 				val zipEntry = zipFile.getEntry(uri.encodedQuery)
 				ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
 			} catch (t: Throwable) {
-				zipFile.close()
+				zipFile.closeWithException(t)
 				throw t
 			}
 		}
@@ -234,9 +235,9 @@ public class ZippedFileProvider : ContentProvider() {
 			val zipEntry = zipFile.getEntry(zipEntryName)
 			ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
 		} catch (t: Throwable) {
-			fd.close()
-			fileInputStream.close()
-			zipFile.close()
+			fd.closeWithException(t)
+			fileInputStream.closeWithException(t)
+			zipFile.closeWithException(t)
 			throw t
 		}
 	}
@@ -252,7 +253,7 @@ public class ZippedFileProvider : ContentProvider() {
 				.onEach { signal?.throwIfCanceled() }
 				.first { it.name == zipEntryName }
 		} catch (t: Throwable) {
-			zipStream.close()
+			zipStream.closeWithException(t)
 			throw t
 		}
 		return ZipEntryStream(zipStream, zipEntry.size)
