@@ -48,6 +48,8 @@ import java.util.Collections
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -72,18 +74,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
-
-	@Volatile
-	private var isCancelling = false
+	private val isCancelling = AtomicBoolean(false)
+	private val isCommitCalled = AtomicBoolean(false)
 
 	@Volatile
 	private var isPreparing = false
-
-	@Volatile
-	private var isCommitting = false
-
-	@Volatile
-	private var isCommitted = false
 
 	@Volatile
 	private var state = initialState
@@ -95,12 +90,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				}
 				field = value
 			}
-			persistSessionState(value)
-			for (listener in stateListeners) {
-				handler.post {
-					listener.onStateChanged(id, value)
-				}
-			}
+			notifyStateListeners(value)
 		}
 
 	final override val isActive: Boolean
@@ -110,7 +100,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		get() = state is Completed
 
 	final override val isCancelled: Boolean
-		get() = state is Cancelled || isCancelling
+		get() = state is Cancelled || isCancelling.get()
 
 	/**
 	 * Prepare the session. This method is called on a worker thread. After preparations are done, [notifyAwaiting] must
@@ -135,8 +125,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
 	 */
 	protected fun notifyAwaiting() {
-		isPreparing = false
 		state = Awaiting
+		isPreparing = false
 	}
 
 	/**
@@ -152,15 +142,17 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected open fun onCompleted(success: Boolean) {}
 
 	final override fun launch(): Boolean {
-		if (isPreparing || isCancelling) {
+		if (isPreparing || isCancelling.get()) {
 			return false
 		}
-		val currentState = state
-		if (currentState !is Pending && currentState !is Active) {
+		val isStateChangedToActive = stateUpdater.compareAndSet(this, Pending, Active)
+		if (isStateChangedToActive) {
+			notifyStateListeners(Active)
+		}
+		if (!isStateChangedToActive || state !is Active) {
 			return false
 		}
 		isPreparing = true
-		state = Active
 		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
@@ -175,14 +167,16 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun commit(): Boolean {
-		if (isCommitted || isCommitting || isCancelling) {
+		if (isCancelling.get()) {
 			return false
 		}
 		val currentState = state
 		if (currentState !is Awaiting && currentState !is Committed) {
 			return false
 		}
-		isCommitting = true
+		if (!isCommitCalled.compareAndSet(false, true)) {
+			return false
+		}
 		executor.execute {
 			try {
 				launchConfirmation(cancellationSignal, notificationId)
@@ -196,17 +190,16 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun cancel() {
-		if (state.isTerminal || isCancelling) {
+		if (state.isTerminal || !isCancelling.compareAndSet(false, true)) {
 			return
 		}
-		isCancelling = true
 		try {
 			cancellationSignal.cancel()
 			handleCancellation()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
 		} finally {
-			isCancelling = false
+			isCancelling.set(false)
 		}
 	}
 
@@ -234,8 +227,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun notifyCommitted() {
-		isCommitted = true
-		isCommitting = false
+		isCommitCalled.set(true)
 		if (state !is Committed) {
 			onCommitted()
 			state = Committed
@@ -253,11 +245,18 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		cleanup()
 	}
 
+	private fun notifyStateListeners(value: Session.State<F>) {
+		persistSessionState(value)
+		for (listener in stateListeners) {
+			handler.post {
+				listener.onStateChanged(id, value)
+			}
+		}
+	}
+
 	private fun cleanup() {
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
-		isCommitted = false
-		isCommitting = false
 	}
 
 	private fun handleCancellation() {
@@ -282,6 +281,12 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		Cancelled -> SessionEntity.State.CANCELLED
 		Succeeded -> SessionEntity.State.SUCCEEDED
 		is Failed -> SessionEntity.State.FAILED
+	}
+
+	private companion object {
+		private val stateUpdater = AtomicReferenceFieldUpdater.newUpdater(
+			AbstractSession::class.java, Session.State::class.java, "state"
+		)
 	}
 }
 
