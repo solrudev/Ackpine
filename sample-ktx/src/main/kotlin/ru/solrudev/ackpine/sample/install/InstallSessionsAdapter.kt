@@ -61,17 +61,20 @@ class InstallSessionsAdapter(
 		val isSwipeable: Boolean
 			get() = currentSessionData?.error?.isEmpty?.not() ?: false
 
-		val sessionId: UUID
-			get() = requireNotNull(currentSessionData?.id) { "currentSessionData" }
+		val sessionId: UUID?
+			get() = currentSessionData?.id
 
 		fun bind(sessionData: SessionData) = with(itemBinding) {
-			if (currentSessionData?.id != sessionData.id) {
-				progressBarSession.setProgressCompat(0, false)
-			}
 			currentSessionData = sessionData
 			textViewSessionName.text = sessionData.name
 			buttonSessionCancel.isEnabled = sessionData.isCancellable
 			setError(sessionData.error)
+		}
+
+		fun resetProgress() = with(itemBinding) {
+			progressBarSession.setProgressCompat(0, false)
+			progressBarSession.max = 100
+			textViewSessionPercentage.text = itemView.context.getString(R.string.percentage, 0)
 		}
 
 		fun setProgress(sessionProgress: Progress, animate: Boolean) = with(itemBinding) {
@@ -120,11 +123,16 @@ class InstallSessionsAdapter(
 
 	override fun onBindViewHolder(holder: SessionViewHolder, position: Int, payloads: List<Any>) {
 		val sessionData = getItem(position)
+		if (holder.sessionId != sessionData.id) {
+			if (currentProgress.isEmpty()) {
+				holder.resetProgress()
+			} else {
+				val progress = currentProgress[position.coerceAtMost(currentProgress.size - 1)]
+				holder.setProgress(progress.progress, animate = false)
+			}
+		}
 		holder.bind(sessionData)
-		if (payloads.isEmpty()) {
-			val progress = currentProgress[position.coerceAtMost(currentProgress.size - 1)]
-			holder.setProgress(progress.progress, animate = false)
-		} else {
+		if (payloads.isNotEmpty()) {
 			val progressUpdate = payloads.first() as ProgressUpdate
 			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
 		}
@@ -177,7 +185,8 @@ class InstallSessionsAdapter(
 		) = false
 
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-			onItemSwipe((viewHolder as SessionViewHolder).sessionId)
+			val sessionId = requireNotNull((viewHolder as SessionViewHolder).sessionId) { "sessionId" }
+			onItemSwipe(sessionId)
 		}
 
 		override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {

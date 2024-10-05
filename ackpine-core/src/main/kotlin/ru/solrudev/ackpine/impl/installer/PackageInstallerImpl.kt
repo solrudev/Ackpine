@@ -129,6 +129,10 @@ internal class PackageInstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	private fun getSessionFromDb(sessionId: UUID, future: ResolvableFuture<ProgressSession<InstallFailure>>) {
+		sessions[sessionId]?.let { session ->
+			future.set(session)
+			return
+		}
 		val session = installSessionDao.getInstallSession(sessionId.toString())
 		val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
 		future.set(installSession)
@@ -141,17 +145,28 @@ internal class PackageInstallerImpl internal constructor(
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.executeWithFuture(future) {
 			committedSessionsInitSemaphore.withPermit {
-				for (session in installSessionDao.getInstallSessions()) {
-					if (!sessions.containsKey(UUID.fromString(session.session.id))) {
-						val installSession = session.toInstallSession()
-						sessions.putIfAbsent(installSession.id, installSession)
-					}
-				}
-				isSessionsMapInitialized = true
-				future.set(transform(sessions.values))
+				initializeSessions(future, transform)
 			}
 		}
 		return future
+	}
+
+	@SuppressLint("RestrictedApi")
+	private inline fun initializeSessions(
+		future: ResolvableFuture<List<ProgressSession<InstallFailure>>>,
+		transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
+	) {
+		if (isSessionsMapInitialized) {
+			return
+		}
+		for (session in installSessionDao.getInstallSessions()) {
+			if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+				val installSession = session.toInstallSession()
+				sessions.putIfAbsent(installSession.id, installSession)
+			}
+		}
+		isSessionsMapInitialized = true
+		future.set(transform(sessions.values))
 	}
 
 	private fun persistSession(

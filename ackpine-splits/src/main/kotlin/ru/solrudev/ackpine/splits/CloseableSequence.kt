@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.splits
 import androidx.annotation.RestrictTo
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.RestrictsSuspension
 
 /**
@@ -77,8 +78,7 @@ private class CloseableSequenceImpl<T>(
 	@Volatile
 	override var isClosed = false
 
-	@Volatile
-	private var isConsumed = false
+	private val isConsumed = AtomicBoolean(false)
 
 	@Volatile
 	private lateinit var scope: SequenceScope<T>
@@ -88,10 +88,9 @@ private class CloseableSequenceImpl<T>(
 	)
 
 	override fun iterator(): Iterator<T> {
-		if (isConsumed) {
+		if (!isConsumed.compareAndSet(false, true)) {
 			throw IllegalStateException("This sequence can be consumed only once.")
 		}
-		isConsumed = true
 		return iterator {
 			scope = this
 			use {

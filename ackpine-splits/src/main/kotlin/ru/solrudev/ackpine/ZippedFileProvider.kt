@@ -396,7 +396,13 @@ private class ZipEntryStream(
 		inputStream.close()
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if (other !is ZipEntryStream) {
+			return false
+		}
+		return inputStream == other
+	}
+
 	override fun hashCode(): Int = inputStream.hashCode()
-	override fun equals(other: Any?): Boolean = inputStream == other
 	override fun toString(): String = inputStream.toString()
 }

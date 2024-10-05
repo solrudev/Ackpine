@@ -34,8 +34,14 @@ internal class NonClosingInputStream private constructor(private val inputStream
 		// no-op
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if (other !is NonClosingInputStream) {
+			return false
+		}
+		return inputStream == other
+	}
+
 	override fun hashCode(): Int = inputStream.hashCode()
-	override fun equals(other: Any?): Boolean = inputStream == other
 	override fun toString(): String = inputStream.toString()
 
 	internal companion object {
