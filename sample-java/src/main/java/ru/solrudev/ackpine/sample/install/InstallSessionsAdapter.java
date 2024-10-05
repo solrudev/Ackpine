@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.util.Consumer;
 import androidx.core.view.ViewKt;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -78,19 +79,25 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 			return !currentSessionData.error().isEmpty();
 		}
 
-		@NonNull
+		@Nullable
 		public UUID getSessionId() {
-			return Objects.requireNonNull(currentSessionData.id(), "currentSessionData");
+			if (currentSessionData == null) {
+				return null;
+			}
+			return currentSessionData.id();
 		}
 
 		public void bind(@NonNull SessionData sessionData) {
-			if (currentSessionData != null && !currentSessionData.id().equals(sessionData.id())) {
-				binding.progressBarSession.setProgressCompat(0, false);
-			}
 			currentSessionData = sessionData;
 			binding.textViewSessionName.setText(sessionData.name());
 			binding.buttonSessionCancel.setEnabled(sessionData.isCancellable());
 			setError(sessionData.error());
+		}
+
+		public void resetProgress() {
+			binding.progressBarSession.setProgressCompat(0, false);
+			binding.progressBarSession.setMax(100);
+			binding.textViewSessionPercentage.setText(itemView.getContext().getString(R.string.percentage, 0));
 		}
 
 		public void setProgress(@NonNull Progress sessionProgress, boolean animate) {
@@ -145,11 +152,16 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	@Override
 	public void onBindViewHolder(@NonNull SessionViewHolder holder, int position, @NonNull List<Object> payloads) {
 		final var sessionData = getItem(position);
+		if (!Objects.equals(holder.getSessionId(), sessionData.id())) {
+			if (currentProgress.isEmpty()) {
+				holder.resetProgress();
+			} else {
+				final var progress = currentProgress.get(Math.min(position, currentProgress.size() - 1));
+				holder.setProgress(progress.toProgress(), false);
+			}
+		}
 		holder.bind(sessionData);
-		if (payloads.isEmpty()) {
-			final var progress = currentProgress.get(Math.min(position, currentProgress.size() - 1));
-			holder.setProgress(progress.toProgress(), false);
-		} else {
+		if (!payloads.isEmpty()) {
 			final var progressUpdate = (ProgressUpdate) payloads.get(0);
 			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
 		}
@@ -212,7 +224,8 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 
 		@Override
 		public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
-			onItemSwipe.accept(((SessionViewHolder) viewHolder).getSessionId());
+			final var sessionId = Objects.requireNonNull(((SessionViewHolder) viewHolder).getSessionId(), "sessionId");
+			onItemSwipe.accept(sessionId);
 		}
 
 		@Override
