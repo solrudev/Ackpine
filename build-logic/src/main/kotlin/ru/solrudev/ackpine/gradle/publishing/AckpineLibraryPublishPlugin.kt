@@ -80,7 +80,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 					pom {
 						name = artifact.name
 						description = this@afterEvaluate.description
-						url = "https://solrudev.github.io/Ackpine"
+						url = "https://ackpine.solrudev.ru"
 
 						licenses {
 							license {
