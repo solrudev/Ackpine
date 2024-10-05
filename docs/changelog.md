@@ -7,6 +7,7 @@ Version 0.7.5 (2024-10-06)
 ### Bug fixes and improvements
 
 - Improve thread-safety of `Session`, `PackageInstaller` and `PackageUninstaller` implementations.
+- Fix progress changing without animation when session is committed in sample apps.
 
 Version 0.7.4 (2024-10-04)
 --------------------------
