@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.7.5 (2024-10-06)
+--------------------------
+
+### Bug fixes and improvements
+
+- Improve thread-safety of `Session`, `PackageInstaller` and `PackageUninstaller` implementations.
+
 Version 0.7.4 (2024-10-04)
 --------------------------
 
