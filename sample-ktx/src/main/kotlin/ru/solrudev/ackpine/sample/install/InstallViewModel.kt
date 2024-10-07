@@ -30,8 +30,10 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -60,28 +62,29 @@ class InstallViewModel(
 	private val sessionDataRepository: SessionDataRepository
 ) : ViewModel() {
 
-	init {
-		viewModelScope.launch {
-			val sessions = sessionDataRepository.sessions.value
-			if (sessions.isNotEmpty()) {
-				sessions
-					.map { sessionData ->
-						async { packageInstaller.getSession(sessionData.id) }
-					}
-					.awaitAll()
-					.filterNotNull()
-					.forEach(::awaitSession)
-			}
+	private val awaitSessionsFromSavedState = channelFlow<Nothing> {
+		val sessions = sessionDataRepository.sessions.value
+		if (sessions.isNotEmpty()) {
+			sessions
+				.map { sessionData ->
+					async { packageInstaller.getSession(sessionData.id) }
+				}
+				.awaitAll()
+				.filterNotNull()
+				.forEach(::awaitSession)
 		}
 	}
 
 	private val error = MutableStateFlow(NotificationString.empty())
 
-	val uiState = combine(
-		error,
-		sessionDataRepository.sessions,
-		sessionDataRepository.sessionsProgress,
-		::InstallUiState
+	val uiState = merge(
+		awaitSessionsFromSavedState,
+		combine(
+			error,
+			sessionDataRepository.sessions,
+			sessionDataRepository.sessionsProgress,
+			::InstallUiState
+		)
 	).stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
 
 	fun installPackage(apks: Sequence<Apk>, fileName: String) = viewModelScope.launch {
