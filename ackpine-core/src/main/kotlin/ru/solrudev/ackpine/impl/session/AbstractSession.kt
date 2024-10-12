@@ -232,6 +232,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			onCommitted()
 			state = Committed
 		}
+		executor.execute {
+			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
+		}
 	}
 
 	final override fun complete(state: Completed<F>) {

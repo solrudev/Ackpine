@@ -34,6 +34,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
@@ -119,8 +120,35 @@ internal class PackageInstallerImpl internal constructor(
 		return initializeSessions { sessions -> sessions.filter { it.isActive } }
 	}
 
+	@SuppressLint("NewApi")
 	private fun initializeCommittedSessions() = executor.executeWithSemaphore(committedSessionsInitSemaphore) {
+		val intentBasedSessions = mutableListOf<SessionEntity.InstallSession>()
 		for (session in installSessionDao.getCommittedInstallSessions()) {
+			when (session.installerType) {
+				InstallerType.INTENT_BASED -> intentBasedSessions += session
+				InstallerType.SESSION_BASED -> {
+					val installSession = session.toInstallSession()
+					sessions[installSession.id] = installSession
+				}
+			}
+		}
+		// InstallSessionDao.getCommittedInstallSessions() list is sorted by last commit timestamp
+		// in descending order. We complete only the last committed intent-based session if
+		// self-update succeeded. Unfortunately, on Android 10+, if there were multiple installer
+		// activities visible before force stop, the activities in back stack under the last one
+		// remain visible (behavior observed with Google's system package installer), and we are
+		// not able to work around the process stop and determine whether installations launched
+		// from them were successful, so they will remain in COMMITTED state. Luckily, it can be
+		// believed that this usage scenario is not very probable.
+		intentBasedSessions.firstOrNull()
+			?.toInstallSession(needToCompleteIfSucceeded = true)
+			?.let { installSession ->
+				sessions[installSession.id] = installSession
+				intentBasedSessions.removeFirst()
+			}
+		// Initialize remaining committed intent-based sessions anyway
+		// so that they can handle their state properly.
+		for (session in intentBasedSessions) {
 			val installSession = session.toInstallSession()
 			sessions[installSession.id] = installSession
 		}
@@ -199,14 +227,17 @@ internal class PackageInstallerImpl internal constructor(
 					installerType = parameters.installerType,
 					uris = parameters.apks.toList().map { it.toString() },
 					name = parameters.name,
-					notificationId, installMode, packageName
+					notificationId, installMode, packageName,
+					lastUpdateTimestamp = Long.MAX_VALUE
 				)
 			)
 		}
 	}
 
 	@SuppressLint("NewApi")
-	private fun SessionEntity.InstallSession.toInstallSession(): ProgressSession<InstallFailure> {
+	private fun SessionEntity.InstallSession.toInstallSession(
+		needToCompleteIfSucceeded: Boolean = false
+	): ProgressSession<InstallFailure> {
 		val installMode = when (installMode) {
 			null -> InstallMode.Full
 			InstallModeEntity.InstallMode.FULL -> InstallMode.Full
@@ -238,7 +269,10 @@ internal class PackageInstallerImpl internal constructor(
 			UUID.fromString(session.id),
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
-			notificationId!!, BinarySemaphore()
+			notificationId!!, BinarySemaphore(),
+			packageName = packageName.orEmpty(),
+			lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
+			needToCompleteIfSucceeded
 		)
 	}
 }

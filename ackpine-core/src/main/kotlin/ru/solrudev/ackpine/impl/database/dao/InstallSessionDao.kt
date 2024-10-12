@@ -70,7 +70,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	abstract fun getInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Transaction
-	@Query("SELECT * FROM sessions WHERE state = 'COMMITTED' AND type = 'INSTALL'")
+	@Query("SELECT * FROM sessions WHERE state = 'COMMITTED' AND type = 'INSTALL' ORDER BY last_commit_timestamp DESC")
 	abstract fun getCommittedInstallSessions(): List<SessionEntity.InstallSession>
 
 	@Query("INSERT OR IGNORE INTO sessions_install_failures(session_id, failure) VALUES (:id, :failure)")
@@ -83,7 +83,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	protected abstract fun insertInstallMode(id: String, installMode: InstallModeEntity.InstallMode)
 
 	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
-	protected abstract fun insertPackageName(id: String, packageName: String)
+	abstract fun insertPackageName(id: String, packageName: String)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)

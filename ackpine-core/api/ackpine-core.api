@@ -37,6 +37,7 @@ public final class ru/solrudev/ackpine/impl/database/AckpineDatabase_Impl {
 	public fun getAutoMigrations (Ljava/util/Map;)Ljava/util/List;
 	public fun getRequiredAutoMigrationSpecs ()Ljava/util/Set;
 	public fun installSessionDao ()Lru/solrudev/ackpine/impl/database/dao/InstallSessionDao;
+	public fun lastUpdateTimestampDao ()Lru/solrudev/ackpine/impl/database/dao/LastUpdateTimestampDao;
 	public fun nativeSessionIdDao ()Lru/solrudev/ackpine/impl/database/dao/NativeSessionIdDao;
 	public fun notificationIdDao ()Lru/solrudev/ackpine/impl/database/dao/NotificationIdDao;
 	public fun sessionDao ()Lru/solrudev/ackpine/impl/database/dao/SessionDao;
@@ -54,8 +55,16 @@ public final class ru/solrudev/ackpine/impl/database/dao/InstallSessionDao_Impl 
 	public fun getInstallSessions ()Ljava/util/List;
 	public static fun getRequiredConverters ()Ljava/util/List;
 	public fun insertInstallSession (Lru/solrudev/ackpine/impl/database/model/SessionEntity$InstallSession;)V
+	public fun insertPackageName (Ljava/lang/String;Ljava/lang/String;)V
 	public fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/installer/InstallFailure;)V
 	public synthetic fun setFailure (Ljava/lang/String;Lru/solrudev/ackpine/session/Failure;)V
+}
+
+public final class ru/solrudev/ackpine/impl/database/dao/LastUpdateTimestampDao_Impl {
+	public fun <init> (Lru/solrudev/ackpine/impl/database/AckpineDatabase;)V
+	public static fun getRequiredConverters ()Ljava/util/List;
+	public fun setLastUpdateTimestamp (Ljava/lang/String;J)V
+	public fun setLastUpdateTimestamp (Ljava/lang/String;Ljava/lang/String;J)V
 }
 
 public final class ru/solrudev/ackpine/impl/database/dao/NativeSessionIdDao_Impl : ru/solrudev/ackpine/impl/database/dao/NativeSessionIdDao {
@@ -75,6 +84,7 @@ public final class ru/solrudev/ackpine/impl/database/dao/SessionDao_Impl : ru/so
 	public fun <init> (Landroidx/room/RoomDatabase;)V
 	public static fun getRequiredConverters ()Ljava/util/List;
 	public fun insertSession (Lru/solrudev/ackpine/impl/database/model/SessionEntity;)V
+	public fun updateLastCommitTimestamp (Ljava/lang/String;J)V
 	public fun updateLastLaunchTimestamp (Ljava/lang/String;J)V
 	public fun updateSessionState (Ljava/lang/String;Lru/solrudev/ackpine/impl/database/model/SessionEntity$State;)V
 }
