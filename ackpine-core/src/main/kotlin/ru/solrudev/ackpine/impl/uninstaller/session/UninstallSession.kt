@@ -63,7 +63,7 @@ internal class UninstallSession internal constructor(
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
+	override fun launchConfirmation(notificationId: Int) {
 		context.launchConfirmation<UninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
