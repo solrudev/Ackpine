@@ -98,6 +98,14 @@ internal class IntentBasedInstallSession internal constructor(
 		if (initialState.isTerminal) {
 			return
 		}
+		// Though it somewhat helps with self-update sessions, it's still faulty:
+		// if app is force-stopped while the session is committed (not confirmed) and in the meantime
+		// another installer updates the app, this session will be viewed as completed successfully.
+		// We can check that initiating installer package is the same as ours, but then if this session
+		// was successful, and before launching the app again it was updated by another installer,
+		// the session will be stuck as committed. Sadly, without centralized system
+		// sessions repository, such as android.content.pm.PackageInstaller, we can't reliably determine
+		// whether the intent-based Ackpine session was really successful.
 		val isSuccessfulSelfUpdate = if (initialState is Committed && context.packageName == packageName) {
 			getLastSelfUpdateTimestamp() > lastUpdateTimestamp
 		} else {
