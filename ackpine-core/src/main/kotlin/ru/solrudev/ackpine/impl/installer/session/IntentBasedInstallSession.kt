@@ -141,7 +141,7 @@ internal class IntentBasedInstallSession internal constructor(
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
+	override fun launchConfirmation(notificationId: Int) {
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,

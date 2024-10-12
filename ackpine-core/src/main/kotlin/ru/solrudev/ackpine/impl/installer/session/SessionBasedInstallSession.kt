@@ -157,7 +157,7 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
+	override fun launchConfirmation(notificationId: Int) {
 		when (confirmation) {
 			Confirmation.IMMEDIATE -> {
 				packageInstaller.commitSession(
