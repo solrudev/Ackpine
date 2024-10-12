@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,8 +32,10 @@ import ru.solrudev.ackpine.splits.parsing.AndroidManifest
 import ru.solrudev.ackpine.splits.parsing.androidManifest
 import java.io.File
 import java.io.InputStream
+import java.nio.ByteBuffer
 import java.util.Locale
 import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 /**
@@ -174,7 +176,9 @@ public sealed class Apk(
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
 			context.contentResolver.openInputStream(uri).use { inputStream ->
 				inputStream ?: return null
-				return createApkSplit(inputStream, name, uri, size)
+				val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() }
+					?: return null
+				return createApkSplit(androidManifest, name, uri, size)
 			}
 		}
 
@@ -185,7 +189,8 @@ public sealed class Apk(
 			}
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
-			return createApkSplit(inputStream, name, uri, zipEntry.size)
+			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() } ?: return null
+			return createApkSplit(androidManifest, name, uri, zipEntry.size)
 		}
 
 		private fun fromFile(file: File, uri: Uri): Apk? {
@@ -193,14 +198,14 @@ public sealed class Apk(
 				return null
 			}
 			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
-			file.inputStream().use { inputStream ->
-				return createApkSplit(inputStream, name, uri, file.length())
+			ZipFile(file).use { zipFile ->
+				val androidManifest = zipFile.androidManifest() ?: return null
+				return createApkSplit(androidManifest, name, uri, file.length())
 			}
 		}
 
-		private fun createApkSplit(inputStream: InputStream, name: String, uri: Uri, size: Long): Apk? {
-			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() } ?: return null
-			val manifest = AndroidManifest(androidManifest) ?: return null
+		private fun createApkSplit(manifestByteBuffer: ByteBuffer, name: String, uri: Uri, size: Long): Apk? {
+			val manifest = AndroidManifest(manifestByteBuffer) ?: return null
 			return when {
 				manifest.splitName.isEmpty() -> {
 					Base(uri, name, size, manifest.packageName, manifest.versionCode, manifest.versionName)
