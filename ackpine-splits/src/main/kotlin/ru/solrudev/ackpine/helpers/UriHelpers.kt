@@ -24,12 +24,11 @@ import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Process
 import android.provider.DocumentsContract
-import androidx.annotation.RestrictTo
 import java.io.File
 import java.io.FileNotFoundException
 
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public fun Uri.toFile(context: Context, signal: CancellationSignal? = null): File {
+@JvmSynthetic
+internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): File {
 	if (scheme == ContentResolver.SCHEME_FILE) {
 		return File(requireNotNull(path) { "Uri path is null: $this" })
 	}
