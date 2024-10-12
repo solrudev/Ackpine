@@ -23,6 +23,7 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -49,13 +50,17 @@ internal interface InstallSessionFactory {
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
 		notificationId: Int,
-		dbWriteSemaphore: BinarySemaphore
+		dbWriteSemaphore: BinarySemaphore,
+		packageName: String = "",
+		lastUpdateTimestamp: Long = Long.MAX_VALUE,
+		needToCompleteIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure>
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
+	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<InstallFailure>,
 	private val sessionProgressDao: SessionProgressDao,
@@ -71,7 +76,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 		initialState: Session.State<InstallFailure>,
 		initialProgress: Progress,
 		notificationId: Int,
-		dbWriteSemaphore: BinarySemaphore
+		dbWriteSemaphore: BinarySemaphore,
+		packageName: String,
+		lastUpdateTimestamp: Long,
+		needToCompleteIfSucceeded: Boolean
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -79,8 +87,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id, initialState, initialProgress,
 			parameters.confirmation,
 			parameters.notificationData.resolveDefault(parameters.name),
-			sessionDao, sessionFailureDao, sessionProgressDao,
-			executor, handler, notificationId, dbWriteSemaphore
+			lastUpdateTimestampDao, sessionDao, sessionFailureDao, sessionProgressDao,
+			executor, handler,
+			notificationId, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded,
+			dbWriteSemaphore
 		)
 
 		InstallerType.SESSION_BASED -> SessionBasedInstallSession(

@@ -100,10 +100,10 @@ internal class SessionBasedInstallSession internal constructor(
 	private val nativeSessionIdSemaphore = BinarySemaphore()
 
 	init {
-		initialize(initialState, initialProgress)
+		completeIfSucceeded(initialState, initialProgress)
 	}
 
-	private fun initialize(initialState: Session.State<InstallFailure>, initialProgress: Progress) {
+	private fun completeIfSucceeded(initialState: Session.State<InstallFailure>, initialProgress: Progress) {
 		if (initialState.isTerminal) {
 			return
 		}
@@ -157,7 +157,7 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
+	override fun launchConfirmation(notificationId: Int) {
 		when (confirmation) {
 			Confirmation.IMMEDIATE -> {
 				packageInstaller.commitSession(

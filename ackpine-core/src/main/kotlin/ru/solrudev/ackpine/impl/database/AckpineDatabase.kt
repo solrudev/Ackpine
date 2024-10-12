@@ -30,6 +30,7 @@ import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
 import ru.solrudev.ackpine.impl.database.converters.NotificationStringConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
+import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -39,6 +40,7 @@ import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
+import ru.solrudev.ackpine.impl.database.model.LastUpdateTimestampEntity
 import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
 import ru.solrudev.ackpine.impl.database.model.NotificationIdEntity
 import ru.solrudev.ackpine.impl.database.model.PackageNameEntity
@@ -67,15 +69,17 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		NativeSessionIdEntity::class,
 		NotificationIdEntity::class,
 		SessionNameEntity::class,
-		InstallModeEntity::class
+		InstallModeEntity::class,
+		LastUpdateTimestampEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
 		AutoMigration(from = 2, to = 3),
 		AutoMigration(from = 3, to = 4),
-		AutoMigration(from = 5, to = 6)
+		AutoMigration(from = 5, to = 6),
+		AutoMigration(from = 6, to = 7)
 	],
-	version = 6,
+	version = 7,
 	exportSchema = true
 )
 @TypeConverters(
@@ -90,6 +94,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun nativeSessionIdDao(): NativeSessionIdDao
 	abstract fun notificationIdDao(): NotificationIdDao
 	abstract fun sessionNameDao(): SessionNameDao
+	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
 
 	internal companion object {
 

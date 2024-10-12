@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,8 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
@@ -49,17 +50,15 @@ class UninstallViewModel(
 	private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-	init {
-		viewModelScope.launch {
-			val sessionId = savedStateHandle.get<UUID>(SESSION_ID_KEY)
-			if (sessionId != null) {
-				packageUninstaller.getSession(sessionId)?.let(::awaitSession)
-			}
+	private val awaitSessionFromSavedState = flow<Nothing> {
+		val sessionId = savedStateHandle.get<UUID>(SESSION_ID_KEY)
+		if (sessionId != null) {
+			packageUninstaller.getSession(sessionId)?.let(::awaitSession)
 		}
 	}
 
 	private val _uiState = MutableStateFlow(UninstallUiState())
-	val uiState = _uiState.asStateFlow()
+	val uiState = merge(awaitSessionFromSavedState, _uiState)
 
 	fun loadApplications(refresh: Boolean, applicationsFactory: () -> List<ApplicationData>) {
 		if (!refresh && _uiState.value.applications.isNotEmpty()) {

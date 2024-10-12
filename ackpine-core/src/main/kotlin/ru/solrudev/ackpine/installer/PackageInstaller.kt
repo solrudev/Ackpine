@@ -115,6 +115,7 @@ public interface PackageInstaller {
 				PackageInstallerPlugin.executor,
 				InstallSessionFactoryImpl(
 					context.applicationContext,
+					database.lastUpdateTimestampDao(),
 					database.sessionDao(),
 					database.installSessionDao(),
 					database.sessionProgressDao(),

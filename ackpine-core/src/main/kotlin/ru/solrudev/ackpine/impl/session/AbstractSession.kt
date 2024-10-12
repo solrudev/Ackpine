@@ -113,7 +113,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Launch session's confirmation with [Context.launchConfirmation]. This method is called on a worker thread.
 	 */
 	@WorkerThread
-	protected abstract fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int)
+	protected abstract fun launchConfirmation(notificationId: Int)
 
 	/**
 	 * Release any held resources after session's completion or cancellation. Processing in this method should be
@@ -179,7 +179,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		executor.execute {
 			try {
-				launchConfirmation(cancellationSignal, notificationId)
+				launchConfirmation(notificationId)
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
@@ -231,6 +231,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		if (state !is Committed) {
 			onCommitted()
 			state = Committed
+		}
+		executor.execute {
+			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
 		}
 	}
 

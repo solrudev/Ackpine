@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
-import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import android.os.Build
@@ -25,11 +24,12 @@ import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import androidx.core.content.FileProvider
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
+import ru.solrudev.ackpine.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
@@ -43,6 +43,8 @@ import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
@@ -61,13 +63,17 @@ internal class IntentBasedInstallSession internal constructor(
 	initialProgress: Progress,
 	private val confirmation: Confirmation,
 	private val notificationData: NotificationData,
+	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	dbWriteSemaphore: BinarySemaphore
+	packageName: String,
+	lastUpdateTimestamp: Long,
+	needToCompleteIfSucceeded: Boolean,
+	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
@@ -75,6 +81,37 @@ internal class IntentBasedInstallSession internal constructor(
 	exceptionalFailureFactory = InstallFailure::Exceptional,
 	notificationId, dbWriteSemaphore
 ) {
+
+	private val apkFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
+
+	init {
+		completeIfSucceeded(initialState, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded, executor)
+	}
+
+	private fun completeIfSucceeded(
+		initialState: Session.State<InstallFailure>,
+		packageName: String,
+		lastUpdateTimestamp: Long,
+		needToCompleteIfSucceeded: Boolean,
+		executor: Executor
+	) {
+		if (initialState.isTerminal) {
+			return
+		}
+		val isSuccessfulSelfUpdate = if (initialState is Committed && context.packageName == packageName) {
+			getLastSelfUpdateTimestamp() > lastUpdateTimestamp
+		} else {
+			false
+		}
+		if (isSuccessfulSelfUpdate && needToCompleteIfSucceeded) {
+			complete(Succeeded)
+		}
+		if (isSuccessfulSelfUpdate) {
+			executor.executeWithSemaphore(dbWriteSemaphore) {
+				lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
+			}
+		}
+	}
 
 	private val Context.externalDir: File
 		get() {
@@ -86,29 +123,36 @@ internal class IntentBasedInstallSession internal constructor(
 			}
 		}
 
-	private val copyFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
-
 	override fun prepare(cancellationSignal: CancellationSignal) {
-		val (_, mustCopy) = getApkUri(cancellationSignal)
-		if (mustCopy) {
-			createApkCopy(cancellationSignal)
+		createApkCopy(cancellationSignal)
+		val apkPackageName = context.packageManager
+			.getPackageArchiveInfo(apkFile.absolutePath, 0)
+			?.packageName
+			.orEmpty()
+		if (context.packageName == apkPackageName) {
+			dbWriteSemaphore.withPermit {
+				lastUpdateTimestampDao.setLastUpdateTimestamp(
+					id.toString(),
+					apkPackageName,
+					getLastSelfUpdateTimestamp()
+				)
+			}
 		}
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(cancellationSignal: CancellationSignal, notificationId: Int) {
-		val (apkUri, _) = getApkUri(cancellationSignal)
+	override fun launchConfirmation(notificationId: Int) {
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
 			notificationId,
 			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
-		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, apkUri) }
+		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, getApkUri()) }
 	}
 
 	override fun doCleanup() {
-		copyFile.delete()
+		apkFile.delete()
 	}
 
 	override fun onCommitted() {
@@ -121,33 +165,24 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun getApkUri(cancellationSignal: CancellationSignal): ApkUri {
+	private fun getApkUri(): Uri {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-			val file = apk.toFile(context, cancellationSignal)
-			if (file.canRead()) {
-				return ApkUri(file.toUri(), mustCopy = false)
-			}
-			return ApkUri(copyFile.toUri(), mustCopy = true)
+			return apkFile.toUri()
 		}
-		if (apk.scheme == ContentResolver.SCHEME_FILE) {
-			return ApkUri(
-				FileProvider.getUriForFile(context, AckpineFileProvider.authority, apk.toFile()),
-				mustCopy = false
-			)
-		}
-		return ApkUri(apk, mustCopy = false)
+		return FileProvider.getUriForFile(context, AckpineFileProvider.authority, apkFile)
+
 	}
 
 	private fun createApkCopy(cancellationSignal: CancellationSignal) {
-		if (copyFile.exists()) {
-			copyFile.delete()
+		if (apkFile.exists()) {
+			apkFile.delete()
 		}
-		copyFile.parentFile?.mkdirs()
-		copyFile.createNewFile()
+		apkFile.parentFile?.mkdirs()
+		apkFile.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: error("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
-			val outputStream = copyFile.outputStream()
+			val outputStream = apkFile.outputStream()
 			outputStream.buffered().use { bufferedOutputStream ->
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
@@ -160,7 +195,9 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun generateRequestCode() = Random.nextInt(2000000..3000000)
+	private fun getLastSelfUpdateTimestamp(): Long {
+		return context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
+	}
 
-	private data class ApkUri(val uri: Uri, val mustCopy: Boolean)
+	private fun generateRequestCode() = Random.nextInt(2000000..3000000)
 }

@@ -3,7 +3,7 @@ Permissions
 
 Ackpine adds the following permissions to `AndroidManifest.xml`:
 
-- `WRITE_EXTERNAL_STORAGE` — used by `INTENT_BASED` package installer to create temporary APK copy if needed;
+- `WRITE_EXTERNAL_STORAGE` — used by `INTENT_BASED` package installer to create temporary APK copy;
 - `REQUEST_INSTALL_PACKAGES` and `REQUEST_DELETE_PACKAGES` — self-explanatory;
 - `VIBRATE` — to be able to set heads-up notifications' vibration when using `DEFERRED` confirmation;
 - `POST_NOTIFICATIONS` — for posting notifications when using `DEFERRED` confirmation;

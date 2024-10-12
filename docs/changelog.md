@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version 0.7.6 (2024-10-12)
+--------------------------
+
+### Dependencies
+
+- Reverted `androidx.startup` to 1.1.1.
+
+### Bug fixes and improvements
+
+- `INTENT_BASED` package installer sessions are no longer stuck in `COMMITTED` state if they have performed a successful app self-update (not in all scenarios). This is an (almost) fix for issue #33.
+- Use `ZipFile` API for reading `AndroidManifest.xml` when possible while parsing single APK with `Apk.fromFile()` and `Apk.fromUri()`.
+
 Version 0.7.5 (2024-10-06)
 --------------------------
 

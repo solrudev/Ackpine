@@ -49,7 +49,9 @@ internal data class SessionEntity internal constructor(
 	@ColumnInfo(name = "require_user_action", defaultValue = "true")
 	val requireUserAction: Boolean,
 	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0", index = true)
-	val lastLaunchTimestamp: Long = 0
+	val lastLaunchTimestamp: Long = 0,
+	@ColumnInfo(name = "last_commit_timestamp", defaultValue = "0", index = true)
+	val lastCommitTimestamp: Long = 0
 ) {
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -114,7 +116,14 @@ internal data class SessionEntity internal constructor(
 			entity = PackageNameEntity::class,
 			projection = ["package_name"]
 		)
-		val packageName: String?
+		val packageName: String?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = LastUpdateTimestampEntity::class,
+			projection = ["last_update_timestamp"]
+		)
+		val lastUpdateTimestamp: Long?
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

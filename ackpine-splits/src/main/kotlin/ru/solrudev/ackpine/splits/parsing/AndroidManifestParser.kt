@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.android.apksig.internal.apk.AndroidBinXmlParser
 import ru.solrudev.ackpine.helpers.entries
 import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
+import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
 private const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
@@ -63,4 +64,14 @@ internal fun ZipInputStream.androidManifest(): ByteBuffer? {
 	val buffer = ByteArrayOutputStream()
 	copyTo(buffer)
 	return ByteBuffer.wrap(buffer.toByteArray())
+}
+
+@JvmSynthetic
+internal fun ZipFile.androidManifest(): ByteBuffer? {
+	val androidManifestZipEntry = getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
+	getInputStream(androidManifestZipEntry).use { entryStream ->
+		val buffer = ByteArrayOutputStream()
+		entryStream.copyTo(buffer)
+		return ByteBuffer.wrap(buffer.toByteArray())
+	}
 }

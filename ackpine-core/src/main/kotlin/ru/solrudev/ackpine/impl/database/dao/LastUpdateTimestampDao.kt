@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,24 +18,21 @@ package ru.solrudev.ackpine.impl.database.dao
 
 import androidx.annotation.RestrictTo
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import androidx.room.Transaction
+import ru.solrudev.ackpine.impl.database.AckpineDatabase
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
-internal interface SessionDao {
+internal abstract class LastUpdateTimestampDao protected constructor(private val database: AckpineDatabase) {
 
-	@Insert(onConflict = OnConflictStrategy.IGNORE)
-	fun insertSession(session: SessionEntity)
+	@Transaction
+	open fun setLastUpdateTimestamp(sessionId: String, packageName: String, lastUpdateTimestamp: Long) {
+		database.installSessionDao().insertPackageName(sessionId, packageName)
+		setLastUpdateTimestamp(sessionId, lastUpdateTimestamp)
+	}
 
-	@Query("UPDATE sessions SET state = :state WHERE id = :id")
-	fun updateSessionState(id: String, state: SessionEntity.State)
-
-	@Query("UPDATE sessions SET last_launch_timestamp = :lastLaunchTimestamp WHERE id = :id")
-	fun updateLastLaunchTimestamp(id: String, lastLaunchTimestamp: Long)
-
-	@Query("UPDATE sessions SET last_commit_timestamp = :lastCommitTimestamp WHERE id = :id")
-	fun updateLastCommitTimestamp(id: String, lastCommitTimestamp: Long)
+	@Query("INSERT OR REPLACE INTO sessions_last_install_timestamps(session_id, last_update_timestamp) " +
+				"VALUES (:sessionId, :lastUpdateTimestamp)")
+	abstract fun setLastUpdateTimestamp(sessionId: String, lastUpdateTimestamp: Long)
 }
