@@ -126,7 +126,7 @@ public final class InstallViewModel extends ViewModel {
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // noop
 			}
 		}, MoreExecutors.directExecutor());
 	}
@@ -159,7 +159,7 @@ public final class InstallViewModel extends ViewModel {
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // noop
 			}
 		}, MoreExecutors.directExecutor());
 	}

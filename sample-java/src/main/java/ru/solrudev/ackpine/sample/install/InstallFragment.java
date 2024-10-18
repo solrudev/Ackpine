@@ -131,7 +131,7 @@ public final class InstallFragment extends Fragment {
 	private void chooseFile() {
 		try {
 			pickerLauncher.launch("*/*");
-		} catch (ActivityNotFoundException ignored) {
+		} catch (ActivityNotFoundException ignored) { // noop
 		}
 	}
 

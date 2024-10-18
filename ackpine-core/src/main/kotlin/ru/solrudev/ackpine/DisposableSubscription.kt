@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,5 +75,5 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal data object DummyDisposableSubscription : DisposableSubscription {
 	override val isDisposed: Boolean = true
-	override fun dispose() {}
+	override fun dispose() { /* noop */ }
 }

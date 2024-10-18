@@ -138,7 +138,7 @@ public final class UninstallViewModel extends ViewModel {
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // noop
 			}
 		}, MoreExecutors.directExecutor());
 	}
@@ -153,7 +153,7 @@ public final class UninstallViewModel extends ViewModel {
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // noop
 			}
 		}, MoreExecutors.directExecutor());
 	}
