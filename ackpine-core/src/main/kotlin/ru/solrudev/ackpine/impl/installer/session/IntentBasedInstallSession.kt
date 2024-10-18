@@ -106,11 +106,9 @@ internal class IntentBasedInstallSession internal constructor(
 		// the session will be stuck as committed. Sadly, without centralized system
 		// sessions repository, such as android.content.pm.PackageInstaller, we can't reliably determine
 		// whether the intent-based Ackpine session was really successful.
-		val isSuccessfulSelfUpdate = if (initialState is Committed && context.packageName == packageName) {
-			getLastSelfUpdateTimestamp() > lastUpdateTimestamp
-		} else {
-			false
-		}
+		val isSelfUpdate = initialState is Committed && context.packageName == packageName
+		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
+		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
 		if (isSuccessfulSelfUpdate && needToCompleteIfSucceeded) {
 			complete(Succeeded)
 		}
