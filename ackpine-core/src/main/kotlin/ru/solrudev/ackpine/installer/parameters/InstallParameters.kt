@@ -325,7 +325,14 @@ private class RealMutableApkList : MutableApkList {
 	}
 
 	override fun toList() = apks.toList()
-	override fun equals(other: Any?) = apks == other
+
+	override fun equals(other: Any?): Boolean {
+		if (other !is RealMutableApkList) {
+			return false
+		}
+		return apks == other
+	}
+
 	override fun hashCode() = apks.hashCode()
 	override fun toString() = "ApkList($apks)"
 
