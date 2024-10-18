@@ -51,8 +51,8 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters;
 
 public final class UninstallViewModel extends ViewModel {
 
-	private final static String SESSION_ID_KEY = "SESSION_ID";
-	private final static String PACKAGE_NAME_KEY = "PACKAGE_NAME";
+	private static final String SESSION_ID_KEY = "SESSION_ID";
+	private static final String PACKAGE_NAME_KEY = "PACKAGE_NAME";
 	private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 	private final MutableLiveData<List<ApplicationData>> applications = new MutableLiveData<>(new ArrayList<>());
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
