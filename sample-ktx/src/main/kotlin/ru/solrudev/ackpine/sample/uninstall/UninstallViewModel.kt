@@ -27,8 +27,9 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.merge
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
@@ -50,15 +51,11 @@ class UninstallViewModel(
 	private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-	private val awaitSessionFromSavedState = flow<Nothing> {
-		val sessionId = savedStateHandle.get<UUID>(SESSION_ID_KEY)
-		if (sessionId != null) {
-			packageUninstaller.getSession(sessionId)?.let(::awaitSession)
-		}
-	}
-
 	private val _uiState = MutableStateFlow(UninstallUiState())
-	val uiState = merge(awaitSessionFromSavedState, _uiState)
+
+	val uiState = _uiState
+		.onStart { awaitSessionFromSavedState() }
+		.stateIn(viewModelScope, SharingStarted.Lazily, UninstallUiState())
 
 	fun loadApplications(refresh: Boolean, applicationsFactory: () -> List<ApplicationData>) {
 		if (!refresh && _uiState.value.applications.isNotEmpty()) {
@@ -84,6 +81,13 @@ class UninstallViewModel(
 		val applications = _uiState.value.applications.toMutableList()
 		applications.removeAll { it.packageName == packageName }
 		_uiState.update { it.copy(applications = applications) }
+	}
+
+	private fun awaitSessionFromSavedState() = viewModelScope.launch {
+		val sessionId = savedStateHandle.get<UUID>(SESSION_ID_KEY)
+		if (sessionId != null) {
+			packageUninstaller.getSession(sessionId)?.let(::awaitSession)
+		}
 	}
 
 	private fun clearSavedState() {
