@@ -288,7 +288,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun abandonSession() {
 		try {
 			packageInstaller.abandonSession(nativeSessionId)
-		} catch (_: Throwable) {
+		} catch (_: Throwable) { // noop
 		}
 	}
 
