@@ -27,7 +27,6 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -113,8 +112,10 @@ internal class IntentBasedInstallSession internal constructor(
 			complete(Succeeded)
 		}
 		if (isSuccessfulSelfUpdate) {
-			executor.executeWithSemaphore(dbWriteSemaphore) {
-				lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
+			executor.execute {
+				dbWriteSemaphore.withPermit {
+					lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
+				}
 			}
 		}
 	}
