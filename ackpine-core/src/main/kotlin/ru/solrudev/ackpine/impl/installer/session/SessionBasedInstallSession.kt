@@ -48,6 +48,7 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescripto
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.commitSession
+import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallMode
@@ -107,7 +108,8 @@ internal class SessionBasedInstallSession internal constructor(
 		if (initialState.isTerminal) {
 			return
 		}
-		if (initialProgress.progress >= 81) { // means that actual installation is ongoing or is completed
+		if (initialProgress.progress >= (context.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()) {
+			// means that actual installation is ongoing or is completed
 			notifyCommitted() // block clients from committing
 		}
 		executor.executeWithSemaphore(nativeSessionIdSemaphore) {

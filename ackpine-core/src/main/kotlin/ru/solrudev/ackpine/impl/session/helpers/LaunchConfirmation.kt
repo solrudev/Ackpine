@@ -19,11 +19,13 @@ package ru.solrudev.ackpine.impl.session.helpers
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.content.edit
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
@@ -31,6 +33,9 @@ import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceive
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
+
+private const val ACKPINE_SESSION_BASED_INSTALLER = "ackpine_session_based_installer"
+private const val SESSION_COMMIT_PROGRESS_VALUE = "session_commit_progress_value"
 
 @get:JvmSynthetic
 internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -87,7 +92,19 @@ internal fun PackageInstaller.commitSession(
 	val statusReceiver = receiverPendingIntent.intentSender
 	if (getSessionInfo(sessionId) != null) {
 		openSession(sessionId).commit(statusReceiver)
+		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		if (!preferences.contains(SESSION_COMMIT_PROGRESS_VALUE)) {
+			preferences.edit {
+				putFloat(SESSION_COMMIT_PROGRESS_VALUE, getSessionInfo(sessionId)!!.progress + 0.01f)
+			}
+		}
 	}
+}
+
+@JvmSynthetic
+internal fun Context.getSessionBasedSessionCommitProgressValue(): Float {
+	return getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		.getFloat(SESSION_COMMIT_PROGRESS_VALUE, 1f)
 }
 
 private fun Context.showNotification(
