@@ -33,7 +33,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
-import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
+import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -163,12 +163,12 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	override fun onCommitted() {
-		progress = Progress((STREAM_COPY_PROGRESS_MAX * 0.9).roundToInt(), STREAM_COPY_PROGRESS_MAX)
+		setProgress((PROGRESS_MAX * 0.9).roundToInt())
 	}
 
 	override fun onCompleted(success: Boolean) {
 		if (success) {
-			progress = Progress(STREAM_COPY_PROGRESS_MAX, STREAM_COPY_PROGRESS_MAX)
+			setProgress(PROGRESS_MAX)
 		}
 	}
 
@@ -194,7 +194,7 @@ internal class IntentBasedInstallSession internal constructor(
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
 					currentProgress += delta
-					progress = Progress((currentProgress * 0.8).roundToInt(), STREAM_COPY_PROGRESS_MAX)
+					setProgress((currentProgress * 0.8).roundToInt())
 				})
 				bufferedOutputStream.flush()
 				outputStream.fd.sync()

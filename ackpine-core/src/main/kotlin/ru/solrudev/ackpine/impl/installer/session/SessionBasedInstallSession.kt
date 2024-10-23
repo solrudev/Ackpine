@@ -42,7 +42,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity
-import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
+import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -209,7 +209,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val future = ResolvableFuture.create<Unit>()
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
-		val progressMax = apks.size * STREAM_COPY_PROGRESS_MAX
+		val progressMax = apks.size * PROGRESS_MAX
 		apks.forEachIndexed { index, uri ->
 			val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
 				?: error("AssetFileDescriptor was null: $uri")
@@ -280,7 +280,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 		override fun onProgressChanged(sessionId: Int, progress: Float) {
 			if (sessionId == nativeSessionId) {
-				this@SessionBasedInstallSession.progress = Progress((progress * 100).toInt(), 100)
+				setProgress((progress * PROGRESS_MAX).toInt())
 			}
 		}
 	}
