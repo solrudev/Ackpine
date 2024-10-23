@@ -31,6 +31,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -49,10 +50,12 @@ import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.session.ProgressSession
+import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.parameters.NotificationString
 import ru.solrudev.ackpine.session.progress
+import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.splits.Apk
 import java.util.UUID
 
@@ -112,6 +115,10 @@ class InstallViewModel(
 	private fun awaitSession(session: ProgressSession<InstallFailure>) = viewModelScope.launch {
 		session.progress
 			.onEach { progress -> sessionDataRepository.updateSessionProgress(session.id, progress) }
+			.launchIn(this)
+		session.state
+			.filterIsInstance<Session.State.Committed>()
+			.onEach { sessionDataRepository.updateSessionIsCancellable(session.id, isCancellable = false) }
 			.launchIn(this)
 		try {
 			when (val result = session.await()) {

@@ -87,20 +87,22 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 			sessionsProgress.set(sessionProgressIndex, new SessionProgress(id, progress));
 		}
 		this.sessionsProgress.setValue(sessionsProgress);
-		if (progress.getProgress() <= 80) {
+	}
+
+	@Override
+	public void updateSessionIsCancellable(@NonNull UUID id, boolean isCancellable) {
+		final var sessionDataIndex = getSessionDataIndexById(getCurrentSessions(), id);
+		if (sessionDataIndex == -1) {
 			return;
 		}
-		final var sessionDataIndex = getSessionDataIndexById(getCurrentSessions(), id);
-		if (sessionDataIndex != -1) {
-			final var sessionData = getCurrentSessions().get(sessionDataIndex);
-			if (!sessionData.isCancellable()) {
-				return;
-			}
-			final var sessions = getCurrentSessionsCopy();
-			sessions.set(sessionDataIndex,
-					new SessionData(sessionData.id(), sessionData.name(), sessionData.error(), false));
-			this.sessions.setValue(sessions);
+		final var sessionData = getCurrentSessions().get(sessionDataIndex);
+		if (sessionData.isCancellable() == isCancellable) {
+			return;
 		}
+		final var sessions = getCurrentSessionsCopy();
+		sessions.set(sessionDataIndex,
+				new SessionData(sessionData.id(), sessionData.name(), sessionData.error(), isCancellable));
+		this.sessions.setValue(sessions);
 	}
 
 	@Override

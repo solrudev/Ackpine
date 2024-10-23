@@ -92,8 +92,7 @@ public final class InstallViewModel extends ViewModel {
 					.build());
 			final var sessionData = new SessionData(session.getId(), fileName);
 			sessionDataRepository.addSessionData(sessionData);
-			session.addStateListener(subscriptions, new SessionStateListener(session));
-			session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+			addSessionListeners(session);
 		});
 	}
 
@@ -153,8 +152,7 @@ public final class InstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
-					session.addStateListener(subscriptions, new SessionStateListener(session));
-					session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+					addSessionListeners(session);
 				}
 			}
 
@@ -162,6 +160,16 @@ public final class InstallViewModel extends ViewModel {
 			public void onFailure(@NonNull Throwable t) { // no-op
 			}
 		}, MoreExecutors.directExecutor());
+	}
+
+	private void addSessionListeners(@NonNull ProgressSession<InstallFailure> session) {
+		session.addStateListener(subscriptions, new SessionStateListener(session));
+		session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+		session.addStateListener(subscriptions, (sessionId, state) -> {
+			if (state instanceof Session.State.Committed) {
+				sessionDataRepository.updateSessionIsCancellable(sessionId, false);
+			}
+		});
 	}
 
 	private List<SessionData> getSessionsSnapshot() {

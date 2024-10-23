@@ -67,19 +67,20 @@ class SessionDataRepositoryImpl(private val savedStateHandle: SavedStateHandle) 
 			sessionsProgress[sessionProgressIndex] = SessionProgress(id, progress)
 		}
 		_sessionsProgress = sessionsProgress
-		if (progress.progress <= 80) {
+	}
+
+	override fun updateSessionIsCancellable(id: UUID, isCancellable: Boolean) {
+		val sessionDataIndex = _sessions.indexOfFirst { it.id == id }
+		if (sessionDataIndex == -1) {
 			return
 		}
-		val sessionDataIndex = _sessions.indexOfFirst { it.id == id }
-		if (sessionDataIndex != -1) {
-			val sessionData = _sessions[sessionDataIndex]
-			if (!sessionData.isCancellable) {
-				return
-			}
-			val sessions = _sessions.toMutableList()
-			sessions[sessionDataIndex] = sessionData.copy(isCancellable = false)
-			_sessions = sessions
+		val sessionData = _sessions[sessionDataIndex]
+		if (sessionData.isCancellable == isCancellable) {
+			return
 		}
+		val sessions = _sessions.toMutableList()
+		sessions[sessionDataIndex] = sessionData.copy(isCancellable = isCancellable)
+		_sessions = sessions
 	}
 
 	override fun setError(id: UUID, error: NotificationString) {

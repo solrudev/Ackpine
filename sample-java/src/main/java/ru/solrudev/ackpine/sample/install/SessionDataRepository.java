@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ public interface SessionDataRepository {
 	void removeSessionData(@NonNull UUID id);
 
 	void updateSessionProgress(@NonNull UUID id, @NonNull Progress progress);
+
+	void updateSessionIsCancellable(@NonNull UUID id, boolean isCancellable);
 
 	void setError(@NonNull UUID id, @NonNull NotificationString error);
 }
