@@ -273,10 +273,10 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun packageInstallerSessionCallback(nativeSessionId: Int) = object : PackageInstaller.SessionCallback() {
-		override fun onCreated(sessionId: Int) { /* noop */ }
-		override fun onBadgingChanged(sessionId: Int) { /* noop */ }
-		override fun onActiveChanged(sessionId: Int, active: Boolean) { /* noop */ }
-		override fun onFinished(sessionId: Int, success: Boolean) { /* noop */ }
+		override fun onCreated(sessionId: Int) { /* no-op */ }
+		override fun onBadgingChanged(sessionId: Int) { /* no-op */ }
+		override fun onActiveChanged(sessionId: Int, active: Boolean) { /* no-op */ }
+		override fun onFinished(sessionId: Int, success: Boolean) { /* no-op */ }
 
 		override fun onProgressChanged(sessionId: Int, progress: Float) {
 			if (sessionId == nativeSessionId) {
@@ -288,7 +288,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun abandonSession() {
 		try {
 			packageInstaller.abandonSession(nativeSessionId)
-		} catch (_: Throwable) { // noop
+		} catch (_: Throwable) { // no-op
 		}
 	}
 
