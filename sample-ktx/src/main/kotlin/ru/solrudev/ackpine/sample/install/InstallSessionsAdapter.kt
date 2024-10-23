@@ -133,7 +133,7 @@ class InstallSessionsAdapter(
 		}
 		holder.bind(sessionData)
 		if (payloads.isNotEmpty()) {
-			val progressUpdate = payloads.first() as ProgressUpdate
+			val progressUpdate = payloads.last() as ProgressUpdate
 			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
 		}
 	}

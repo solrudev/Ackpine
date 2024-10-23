@@ -162,7 +162,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		}
 		holder.bind(sessionData);
 		if (!payloads.isEmpty()) {
-			final var progressUpdate = (ProgressUpdate) payloads.get(0);
+			final var progressUpdate = (ProgressUpdate) payloads.get(payloads.size() - 1);
 			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
 		}
 	}
