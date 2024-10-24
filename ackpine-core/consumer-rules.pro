@@ -1,10 +1,10 @@
 # Serializable
 -keep class ru.solrudev.ackpine.session.parameters.NotificationString { *; }
 -keep class ru.solrudev.ackpine.session.parameters.NotificationString$* { *; }
--keep class ru.solrudev.ackpine.session.parameters.Default { *; }
+-keep class * extends ru.solrudev.ackpine.session.parameters.NotificationString$Resource
+-keep class ru.solrudev.ackpine.session.parameters.DefaultNotificationString { *; }
 -keep class ru.solrudev.ackpine.session.parameters.Empty { *; }
 -keep class ru.solrudev.ackpine.session.parameters.Raw { *; }
--keep class ru.solrudev.ackpine.session.parameters.Resource { *; }
 -keep class ru.solrudev.ackpine.installer.InstallFailure { *; }
 -keep class ru.solrudev.ackpine.installer.InstallFailure$* { *; }
 -keep class ru.solrudev.ackpine.uninstaller.UninstallFailure { *; }

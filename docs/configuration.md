@@ -21,11 +21,14 @@ An example of creating a session with custom parameters:
         name = fileName
         requireUserAction = false
         notification {
-            title = NotificationString.resource(R.string.install_message_title)
-            contentText = NotificationString.resource(R.string.install_message, fileName)
+            title = InstallMessageTitle
+            contentText = InstallMessage(fileName)
             icon = R.drawable.ic_install
         }
     }
+    
+    object InstallMessageTitle : NotificationString.Resource(R.string.install_message_title)
+    class InstallMessage(fileName: String) : NotificationString.Resource(R.string.install_message, fileName)
     ```
 
 === "Java"
@@ -39,11 +42,39 @@ An example of creating a session with custom parameters:
             .setName(fileName)
             .setRequireUserAction(false)
             .setNotificationData(new NotificationData.Builder()
-                    .setTitle(NotificationString.resource(R.string.install_message_title))
-                    .setContentText(NotificationString.resource(R.string.install_message, fileName))
+                    .setTitle(Resources.INSTALL_MESSAGE_TITLE)
+                    .setContentText(new Resources.InstallMessage(fileName))
                     .setIcon(R.drawable.ic_install)
                     .build())
             .build());
+    
+    public class Resources {
+    
+        public static final NotificationString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
+    
+        private static class InstallMessageTitle extends NotificationString.Resource {
+        
+            @Serial
+            private static final long serialVersionUID = -1310602635578779088L;
+        
+            public InstallMessageTitle() {
+                super(R.string.install_message_title);
+            }
+        }
+    
+        public static class InstallMessage extends NotificationString.Resource {
+        
+            @Serial
+            private static final long serialVersionUID = 4749568844072243110L;
+        
+            public InstallMessage(String fileName) {
+                super(R.string.install_message, fileName);
+            }
+        }
+        
+        private Resources() {
+        }
+    }
     ```
 
 User's confirmation

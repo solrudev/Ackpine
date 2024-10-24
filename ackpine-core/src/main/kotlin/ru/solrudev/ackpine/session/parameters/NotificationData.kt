@@ -16,7 +16,9 @@
 
 package ru.solrudev.ackpine.session.parameters
 
+import android.content.Context
 import androidx.annotation.DrawableRes
+import androidx.annotation.RestrictTo
 
 /**
  * Data for a high-priority notification which launches confirmation activity.
@@ -73,8 +75,8 @@ public class NotificationData private constructor(
 		@JvmField
 		public val DEFAULT: NotificationData = NotificationData(
 			icon = android.R.drawable.ic_dialog_alert,
-			title = NotificationString.default(),
-			contentText = NotificationString.default()
+			title = DefaultNotificationString,
+			contentText = DefaultNotificationString
 		)
 	}
 
@@ -134,4 +136,10 @@ public class NotificationData private constructor(
 		 */
 		public fun build(): NotificationData = NotificationData(icon, title, contentText)
 	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal data object DefaultNotificationString : NotificationString {
+	private const val serialVersionUID = 809543744617543082L
+	override fun resolve(context: Context): String = ""
 }

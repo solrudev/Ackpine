@@ -23,15 +23,9 @@ import androidx.annotation.StringRes
 import java.io.Serializable
 
 /**
- * String for a session's [confirmation notification][NotificationData].
+ * String which can be resolved at use site.
  */
-public sealed interface NotificationString : Serializable {
-
-	/**
-	 * Returns whether this string represents a default string.
-	 */
-	public val isDefault: Boolean
-		get() = this is Default
+public interface NotificationString : Serializable {
 
 	/**
 	 * Returns whether this string is empty.
@@ -59,12 +53,6 @@ public sealed interface NotificationString : Serializable {
 	public companion object {
 
 		/**
-		 * Creates a default [NotificationString].
-		 */
-		@JvmStatic
-		public fun default(): NotificationString = Default
-
-		/**
 		 * Creates an empty [NotificationString].
 		 */
 		@JvmStatic
@@ -82,60 +70,77 @@ public sealed interface NotificationString : Serializable {
 		}
 
 		/**
-		 * Creates [NotificationString] represented by Android resource string with optional arguments. Arguments can be
-		 * [NotificationStrings][NotificationString] as well.
+		 * Creates an anonymous instance of [NotificationString.Resource], which is a [NotificationString] represented by
+		 * Android resource string with optional arguments. Arguments can be [NotificationStrings][NotificationString]
+		 * as well.
+		 *
+		 * This factory is meant to create **only** transient strings, i.e. not persisted in storage. For persisted
+		 * strings [NotificationString.Resource] should be explicitly subclassed. Example:
+		 * ```
+		 * object MessageString : NotificationString.Resource(R.string.message)
+		 * class ErrorString(error: String) : NotificationString.Resource(R.string.error, error)
+		 * ```
 		 */
 		@JvmStatic
 		public fun resource(@StringRes stringId: Int, vararg args: Serializable): NotificationString {
-			return Resource(stringId, args)
+			return object : Resource(stringId, args) {}
+		}
+	}
+
+	/**
+	 * [NotificationString] represented by Android resource string with optional arguments. Arguments can be
+	 * [NotificationStrings][NotificationString] as well.
+	 *
+	 * Should be explicitly subclassed to ensure stable persistence. Example:
+	 * ```
+	 * object MessageString : NotificationString.Resource(R.string.message)
+	 * class ErrorString(error: String) : NotificationString.Resource(R.string.error, error)
+	 * ```
+	 * For transient strings, i.e. not persisted in storage, you can use [NotificationString.resource] factory.
+	 */
+	public abstract class Resource(
+		@[StringRes Transient] private val stringId: Int,
+		private vararg val args: Serializable
+	) : NotificationString {
+
+		override fun resolve(context: Context): String = context.getString(stringId, *resolveArgs(context))
+
+		private fun resolveArgs(context: Context): Array<Serializable> = args.map { argument ->
+			if (argument is NotificationString) {
+				argument.resolve(context)
+			} else {
+				argument
+			}
+		}.toTypedArray()
+
+		override fun equals(other: Any?): Boolean {
+			if (this === other) return true
+			if (javaClass != other?.javaClass) return false
+			other as Resource
+			if (stringId != other.stringId) return false
+			return args.contentEquals(other.args)
+		}
+
+		override fun hashCode(): Int {
+			var result = stringId
+			result = 31 * result + args.contentHashCode()
+			return result
+		}
+
+		private companion object {
+			private const val serialVersionUID = -7766769726170724379L
 		}
 	}
 }
 
-private data object Default : NotificationString {
-	private const val serialVersionUID = 809543744617543082L
-	override fun resolve(context: Context): String = ""
-}
-
 private data object Empty : NotificationString {
-	private const val serialVersionUID: Long = 5194188194930148316L
+	private const val serialVersionUID = 5194188194930148316L
 	override fun resolve(context: Context): String = ""
 }
 
 private data class Raw(val value: String) : NotificationString {
 	override fun resolve(context: Context): String = value
 	private companion object {
-		private const val serialVersionUID: Long = -6824736411987160679L
-	}
-}
-
-private data class Resource(@StringRes val stringId: Int, val args: Array<out Serializable>) : NotificationString {
-
-	override fun resolve(context: Context): String = context.getString(stringId, *resolveArgs(context))
-
-	private fun resolveArgs(context: Context): Array<Serializable> = args.map { argument ->
-		if (argument is NotificationString) {
-			argument.resolve(context)
-		} else {
-			argument
-		}
-	}.toTypedArray()
-
-	override fun equals(other: Any?): Boolean {
-		if (this === other) return true
-		if (javaClass != other?.javaClass) return false
-		other as Resource
-		if (stringId != other.stringId) return false
-		return args.contentEquals(other.args)
-	}
-
-	override fun hashCode(): Int {
-		var result = stringId
-		result = 31 * result + args.contentHashCode()
-		return result
-	}
-
-	private companion object {
-		private const val serialVersionUID: Long = -7822872422889864805L
+		private const val serialVersionUID = -6824736411987160679L
 	}
 }

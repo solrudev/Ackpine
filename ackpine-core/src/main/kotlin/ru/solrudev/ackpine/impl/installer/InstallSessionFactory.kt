@@ -36,6 +36,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.parameters.DefaultNotificationString
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
@@ -108,18 +109,34 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun NotificationData.resolveDefault(name: String): NotificationData = NotificationData.Builder()
 		.setTitle(
-			title.takeUnless { it.isDefault } ?: NotificationString.resource(R.string.ackpine_prompt_install_title)
+			title.takeUnless { it is DefaultNotificationString } ?: AckpinePromptInstallTitle
 		)
 		.setContentText(
-			contentText.takeUnless { it.isDefault } ?: resolveDefaultContentText(name)
+			contentText.takeUnless { it is DefaultNotificationString } ?: resolveDefaultContentText(name)
 		)
 		.setIcon(icon)
 		.build()
 
 	private fun resolveDefaultContentText(name: String): NotificationString {
 		if (name.isNotEmpty()) {
-			return NotificationString.resource(R.string.ackpine_prompt_install_message_with_label, name)
+			return AckpinePromptInstallMessageWithLabel(name)
 		}
-		return NotificationString.resource(R.string.ackpine_prompt_install_message)
+		return AckpinePromptInstallMessage
+	}
+}
+
+private object AckpinePromptInstallTitle : NotificationString.Resource(R.string.ackpine_prompt_install_title) {
+	private const val serialVersionUID = 7815666924791958742L
+}
+
+private object AckpinePromptInstallMessage : NotificationString.Resource(R.string.ackpine_prompt_install_message) {
+	private const val serialVersionUID = 1224637050663404482L
+}
+
+private class AckpinePromptInstallMessageWithLabel(name: String) :
+	NotificationString.Resource(R.string.ackpine_prompt_install_message_with_label, name) {
+
+	private companion object {
+		private const val serialVersionUID = -6931607904159775056L
 	}
 }
