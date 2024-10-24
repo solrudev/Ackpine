@@ -137,14 +137,14 @@ public sealed interface ResolvableString : Serializable {
 			}
 		}.toTypedArray()
 
-		override fun equals(other: Any?): Boolean {
+		final override fun equals(other: Any?): Boolean {
 			if (this === other) return true
 			if (javaClass != other?.javaClass) return false
 			other as Resource
 			return args.contentEquals(other.args)
 		}
 
-		override fun hashCode(): Int {
+		final override fun hashCode(): Int {
 			return args.contentHashCode()
 		}
 
