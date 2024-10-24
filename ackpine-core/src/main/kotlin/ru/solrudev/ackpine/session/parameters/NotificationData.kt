@@ -19,6 +19,8 @@ package ru.solrudev.ackpine.session.parameters
 import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.resources.ResolvableString
+import java.io.Serializable
+import android.graphics.drawable.Drawable
 
 /**
  * Data for a high-priority notification which launches confirmation activity.
@@ -30,7 +32,7 @@ public class NotificationData private constructor(
 	 *
 	 * Default value is [android.R.drawable.ic_dialog_alert].
 	 */
-	@DrawableRes public val icon: Int,
+	public val icon: DrawableId,
 
 	/**
 	 * Notification title.
@@ -51,16 +53,16 @@ public class NotificationData private constructor(
 		if (this === other) return true
 		if (javaClass != other?.javaClass) return false
 		other as NotificationData
+		if (icon != other.icon) return false
 		if (title != other.title) return false
 		if (contentText != other.contentText) return false
-		if (icon != other.icon) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = title.hashCode()
+		var result = icon.hashCode()
+		result = 31 * result + title.hashCode()
 		result = 31 * result + contentText.hashCode()
-		result = 31 * result + icon
 		return result
 	}
 
@@ -74,7 +76,7 @@ public class NotificationData private constructor(
 		 */
 		@JvmField
 		public val DEFAULT: NotificationData = NotificationData(
-			icon = android.R.drawable.ic_dialog_alert,
+			icon = DefaultNotificationIcon,
 			title = DEFAULT_NOTIFICATION_STRING,
 			contentText = DEFAULT_NOTIFICATION_STRING
 		)
@@ -90,8 +92,7 @@ public class NotificationData private constructor(
 		 *
 		 * Default value is [android.R.drawable.ic_dialog_alert].
 		 */
-		@DrawableRes
-		public var icon: Int = DEFAULT.icon
+		public var icon: DrawableId = DEFAULT.icon
 			private set
 
 		/**
@@ -113,7 +114,7 @@ public class NotificationData private constructor(
 		/**
 		 * Sets [NotificationData.icon].
 		 */
-		public fun setIcon(@DrawableRes icon: Int): Builder = apply {
+		public fun setIcon(icon: DrawableId): Builder = apply {
 			this.icon = icon
 		}
 
@@ -136,6 +137,26 @@ public class NotificationData private constructor(
 		 */
 		public fun build(): NotificationData = NotificationData(icon, title, contentText)
 	}
+}
+
+/**
+ * [Drawable] represented by Android resource ID.
+ *
+ * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
+ * ```
+ * object InstallIcon : DrawableId(R.drawable.ic_install) {
+ *     private const val serialVersionUID = 3692803605642002954L
+ * }
+ * ```
+ */
+public abstract class DrawableId(@[DrawableRes Transient] public val drawableId: Int) : Serializable {
+	private companion object {
+		private const val serialVersionUID = 6564416758029834576L
+	}
+}
+
+private object DefaultNotificationIcon : DrawableId(android.R.drawable.ic_dialog_alert) {
+	private const val serialVersionUID = 6906923061913799903L
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)

@@ -99,7 +99,7 @@ public sealed interface ResolvableString : Serializable {
 	 * [ResolvableString] represented by Android resource string with optional arguments. Arguments can be
 	 * [ResolvableStrings][ResolvableString] as well.
 	 *
-	 * Should be explicitly subclassed to ensure stable persistence. Example:
+	 * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
 	 * ```
 	 * object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
 	 *     private const val serialVersionUID = -1310602635578779088L

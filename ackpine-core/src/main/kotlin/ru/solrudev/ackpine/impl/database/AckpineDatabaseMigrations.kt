@@ -44,7 +44,12 @@ internal object Migration_4_5 : Migration(4, 5) {
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal object Migration_7_8 : Migration(7, 8) {
 	override fun migrate(db: SupportSQLiteDatabase) = db.migrate {
-		execSQL("DELETE FROM sessions")
+		execSQL("DROP TABLE sessions")
+		execSQL("CREATE TABLE IF NOT EXISTS sessions (id TEXT NOT NULL, type TEXT NOT NULL, state TEXT NOT NULL, confirmation TEXT NOT NULL, notification_title BLOB NOT NULL, notification_text BLOB NOT NULL, notification_icon BLOB NOT NULL, require_user_action INTEGER NOT NULL DEFAULT true, last_launch_timestamp INTEGER NOT NULL DEFAULT 0, last_commit_timestamp INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(id))")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_type ON sessions (type)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_state ON sessions (state)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_last_launch_timestamp ON sessions (last_launch_timestamp)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_last_commit_timestamp ON sessions (last_commit_timestamp)")
 		execSQL("DELETE FROM sessions_installer_types")
 		execSQL("DELETE FROM sessions_install_failures")
 		execSQL("DELETE FROM sessions_uninstall_failures")

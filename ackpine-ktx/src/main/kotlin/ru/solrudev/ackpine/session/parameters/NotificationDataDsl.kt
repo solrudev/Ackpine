@@ -16,8 +16,6 @@
 
 package ru.solrudev.ackpine.session.parameters
 
-import android.annotation.SuppressLint
-import androidx.annotation.DrawableRes
 import ru.solrudev.ackpine.resources.ResolvableString
 
 /**
@@ -31,10 +29,7 @@ public interface NotificationDataDsl {
 	 *
 	 * Default value is [android.R.drawable.ic_dialog_alert].
 	 */
-	@set:SuppressLint("SupportAnnotationUsage")
-	@get:DrawableRes
-	@set:DrawableRes
-	public var icon: Int
+	public var icon: DrawableId
 
 	/**
 	 * Notification title.
@@ -56,7 +51,7 @@ internal class NotificationDataDslBuilder : NotificationDataDsl {
 
 	private val builder = NotificationData.Builder()
 
-	override var icon: Int
+	override var icon: DrawableId
 		get() = builder.icon
 		set(value) {
 			builder.setIcon(value)

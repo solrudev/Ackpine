@@ -19,9 +19,21 @@ package ru.solrudev.ackpine.impl.database.converters
 import androidx.room.TypeConverter
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
-internal object NotificationStringConverters {
+internal object DrawableIdConverters {
+
+	@TypeConverter
+	@JvmStatic
+	internal fun fromByteArray(byteArray: ByteArray): DrawableId = byteArray.deserialize()
+
+	@TypeConverter
+	@JvmStatic
+	internal fun toByteArray(drawableId: DrawableId): ByteArray = drawableId.serialize()
+}
+
+internal object ResolvableStringConverters {
 
 	@TypeConverter
 	@JvmStatic

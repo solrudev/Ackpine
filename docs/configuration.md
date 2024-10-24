@@ -23,7 +23,7 @@ An example of creating a session with custom parameters:
         notification {
             title = InstallMessageTitle
             contentText = InstallMessage(fileName)
-            icon = R.drawable.ic_install
+            icon = InstallIcon
         }
     }
     
@@ -35,6 +35,10 @@ An example of creating a session with custom parameters:
         private companion object {
             private const val serialVersionUID = 4749568844072243110L
         }
+    }
+    
+    object InstallIcon : DrawableId(R.drawable.ic_install) {
+        private const val serialVersionUID = 3692803605642002954L
     }
     ```
 
@@ -51,13 +55,14 @@ An example of creating a session with custom parameters:
             .setNotificationData(new NotificationData.Builder()
                     .setTitle(Resources.INSTALL_MESSAGE_TITLE)
                     .setContentText(new Resources.InstallMessage(fileName))
-                    .setIcon(R.drawable.ic_install)
+                    .setIcon(Resources.INSTALL_ICON)
                     .build())
             .build());
     
     public class Resources {
     
         public static final ResolvableString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
+        public static final DrawableId INSTALL_ICON = new InstallIcon();
     
         private static class InstallMessageTitle extends ResolvableString.Resource {
         
@@ -76,6 +81,16 @@ An example of creating a session with custom parameters:
         
             public InstallMessage(String fileName) {
                 super(R.string.install_message, fileName);
+            }
+        }
+    
+        private static class InstallIcon extends DrawableId {
+        
+            @Serial
+            private static final long serialVersionUID = 3692803605642002954L;
+        
+            public InstallIcon() {
+                super(R.drawable.ic_install);
             }
         }
         

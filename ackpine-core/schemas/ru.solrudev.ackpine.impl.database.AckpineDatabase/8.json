@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 8,
-    "identityHash": "70a447048443686563989e6b938d53cc",
+    "identityHash": "22d39a00bd2f00f0739bd5c264abfda9",
     "entities": [
       {
         "tableName": "sessions",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `state` TEXT NOT NULL, `confirmation` TEXT NOT NULL, `notification_title` BLOB NOT NULL, `notification_text` BLOB NOT NULL, `notification_icon` INTEGER NOT NULL, `require_user_action` INTEGER NOT NULL DEFAULT true, `last_launch_timestamp` INTEGER NOT NULL DEFAULT 0, `last_commit_timestamp` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `state` TEXT NOT NULL, `confirmation` TEXT NOT NULL, `notification_title` BLOB NOT NULL, `notification_text` BLOB NOT NULL, `notification_icon` BLOB NOT NULL, `require_user_action` INTEGER NOT NULL DEFAULT true, `last_launch_timestamp` INTEGER NOT NULL DEFAULT 0, `last_commit_timestamp` INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -47,7 +47,7 @@
           {
             "fieldPath": "notificationIcon",
             "columnName": "notification_icon",
-            "affinity": "INTEGER",
+            "affinity": "BLOB",
             "notNull": true
           },
           {
@@ -580,7 +580,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '70a447048443686563989e6b938d53cc')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '22d39a00bd2f00f0739bd5c264abfda9')"
     ]
   }
 }

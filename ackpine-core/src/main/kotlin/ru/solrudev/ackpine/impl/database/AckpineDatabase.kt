@@ -26,8 +26,9 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import ru.solrudev.ackpine.impl.database.converters.DrawableIdConverters
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
-import ru.solrudev.ackpine.impl.database.converters.NotificationStringConverters
+import ru.solrudev.ackpine.impl.database.converters.ResolvableStringConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
@@ -83,7 +84,12 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 	exportSchema = true
 )
 @TypeConverters(
-	value = [InstallFailureConverters::class, UninstallFailureConverters::class, NotificationStringConverters::class]
+	value = [
+		InstallFailureConverters::class,
+		UninstallFailureConverters::class,
+		ResolvableStringConverters::class,
+		DrawableIdConverters::class
+	]
 )
 internal abstract class AckpineDatabase : RoomDatabase() {
 
