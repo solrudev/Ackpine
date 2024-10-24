@@ -136,9 +136,9 @@ class InstallViewModel(
 
 	private fun handleSessionError(message: String?, sessionId: UUID) {
 		val error = if (message != null) {
-			ResolvableString.resource(R.string.session_error_with_reason, message)
+			ResolvableString.transientResource(R.string.session_error_with_reason, message)
 		} else {
-			ResolvableString.resource(R.string.session_error)
+			ResolvableString.transientResource(R.string.session_error)
 		}
 		sessionDataRepository.setError(sessionId, error)
 	}
@@ -148,19 +148,19 @@ class InstallViewModel(
 			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
 			val errorString = when (exception) {
-				is NoBaseApkException -> ResolvableString.resource(R.string.error_no_base_apk)
-				is ConflictingBaseApkException -> ResolvableString.resource(R.string.error_conflicting_base_apk)
-				is ConflictingSplitNameException -> ResolvableString.resource(
+				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
+				is ConflictingBaseApkException -> ResolvableString.transientResource(R.string.error_conflicting_base_apk)
+				is ConflictingSplitNameException -> ResolvableString.transientResource(
 					R.string.error_conflicting_split_name,
 					exception.name
 				)
 
-				is ConflictingPackageNameException -> ResolvableString.resource(
+				is ConflictingPackageNameException -> ResolvableString.transientResource(
 					R.string.error_conflicting_package_name,
 					exception.expected, exception.actual, exception.name
 				)
 
-				is ConflictingVersionCodeException -> ResolvableString.resource(
+				is ConflictingVersionCodeException -> ResolvableString.transientResource(
 					R.string.error_conflicting_version_code,
 					exception.expected, exception.actual, exception.name
 				)

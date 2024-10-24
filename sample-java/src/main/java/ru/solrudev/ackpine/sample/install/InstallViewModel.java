@@ -187,16 +187,16 @@ public final class InstallViewModel extends ViewModel {
 			return uris;
 		} catch (SplitPackageException exception) {
 			if (exception instanceof NoBaseApkException) {
-				error.postValue(ResolvableString.resource(R.string.error_no_base_apk));
+				error.postValue(ResolvableString.transientResource(R.string.error_no_base_apk));
 			} else if (exception instanceof ConflictingBaseApkException) {
-				error.postValue(ResolvableString.resource(R.string.error_conflicting_base_apk));
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_base_apk));
 			} else if (exception instanceof ConflictingSplitNameException e) {
-				error.postValue(ResolvableString.resource(R.string.error_conflicting_split_name, e.getName()));
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_split_name, e.getName()));
 			} else if (exception instanceof ConflictingPackageNameException e) {
-				error.postValue(ResolvableString.resource(R.string.error_conflicting_package_name,
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_package_name,
 						e.getExpected(), e.getActual(), e.getName()));
 			} else if (exception instanceof ConflictingVersionCodeException e) {
-				error.postValue(ResolvableString.resource(R.string.error_conflicting_version_code,
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_version_code,
 						e.getExpected(), e.getActual(), e.getName()));
 			}
 			return Collections.emptyList();
@@ -228,8 +228,8 @@ public final class InstallViewModel extends ViewModel {
 		public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
 			final var message = failure.getMessage();
 			final var error = message != null
-					? ResolvableString.resource(R.string.session_error_with_reason, message)
-					: ResolvableString.resource(R.string.session_error);
+					? ResolvableString.transientResource(R.string.session_error_with_reason, message)
+					: ResolvableString.transientResource(R.string.session_error);
 			sessionDataRepository.setError(sessionId, error);
 			if (failure instanceof Failure.Exceptional f) {
 				Log.e("InstallViewModel", null, f.getException());
