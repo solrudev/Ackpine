@@ -62,7 +62,7 @@ An example of creating a session with custom parameters:
                     .build())
             .build());
     
-    public class Resources {
+    public abstract class Resources {
     
         public static final ResolvableString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
         public static final DrawableId INSTALL_ICON = new InstallIcon();
@@ -102,9 +102,6 @@ An example of creating a session with custom parameters:
             public int drawableId() {
                 return R.drawable.ic_install;
             }
-        }
-    
-        private Resources() {
         }
     }
     ```
