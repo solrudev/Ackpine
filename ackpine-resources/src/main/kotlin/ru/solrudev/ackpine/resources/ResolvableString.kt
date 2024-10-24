@@ -71,8 +71,8 @@ public sealed interface ResolvableString : Serializable {
 
 		/**
 		 * Creates an anonymous instance of [ResolvableString.Resource], which is a [ResolvableString] backed by
-		 * Android resource string with optional arguments. Arguments can be [ResolvableStrings][ResolvableString]
-		 * as well.
+		 * Android resource string with optional [arguments][args]. Arguments can be
+		 * [ResolvableStrings][ResolvableString] as well.
 		 *
 		 * This factory is meant to create only **transient** strings, i.e. not persisted in storage. For persisted
 		 * strings [ResolvableString.Resource] should be explicitly subclassed. Example:
@@ -89,6 +89,9 @@ public sealed interface ResolvableString : Serializable {
 		 *     }
 		 * }
 		 * ```
+		 *
+		 * @param stringId Android string resource ID
+		 * @param args string format arguments
 		 */
 		@Suppress("serial")
 		@JvmStatic
@@ -100,7 +103,7 @@ public sealed interface ResolvableString : Serializable {
 	}
 
 	/**
-	 * [ResolvableString] backed by Android resource string with optional arguments. Arguments can be
+	 * [ResolvableString] backed by Android resource string with optional [arguments][args]. Arguments can be
 	 * [ResolvableStrings][ResolvableString] as well.
 	 *
 	 * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
@@ -118,6 +121,8 @@ public sealed interface ResolvableString : Serializable {
 	 * }
 	 * ```
 	 * For transient strings, i.e. not persisted in storage, you can use [ResolvableString.transientResource] factory.
+	 *
+	 * @param args string format arguments
 	 */
 	public abstract class Resource(private vararg val args: Serializable) : ResolvableString {
 
