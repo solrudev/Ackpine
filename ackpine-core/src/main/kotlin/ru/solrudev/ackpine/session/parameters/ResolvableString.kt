@@ -25,7 +25,7 @@ import java.io.Serializable
 /**
  * String which can be resolved at use site.
  */
-public interface ResolvableString : Serializable {
+public sealed interface ResolvableString : Serializable {
 
 	/**
 	 * Returns whether this string is empty.
