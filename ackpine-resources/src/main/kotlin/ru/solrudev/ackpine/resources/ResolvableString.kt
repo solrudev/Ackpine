@@ -91,7 +91,7 @@ public sealed interface ResolvableString : Serializable {
 		@Suppress("serial")
 		@JvmStatic
 		public fun resource(@StringRes stringId: Int, vararg args: Serializable): ResolvableString {
-			return object : Resource(stringId, args) {}
+			return object : Resource(stringId, *args) {}
 		}
 	}
 
