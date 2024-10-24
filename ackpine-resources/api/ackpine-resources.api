@@ -1,0 +1,25 @@
+public abstract interface class ru/solrudev/ackpine/resources/ResolvableString : java/io/Serializable {
+	public static final field Companion Lru/solrudev/ackpine/resources/ResolvableString$Companion;
+	public static fun empty ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public fun isEmpty ()Z
+	public fun isRaw ()Z
+	public fun isResource ()Z
+	public static fun raw (Ljava/lang/String;)Lru/solrudev/ackpine/resources/ResolvableString;
+	public abstract fun resolve (Landroid/content/Context;)Ljava/lang/String;
+	public static fun transientResource (I[Ljava/io/Serializable;)Lru/solrudev/ackpine/resources/ResolvableString;
+}
+
+public final class ru/solrudev/ackpine/resources/ResolvableString$Companion {
+	public final fun empty ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public final fun raw (Ljava/lang/String;)Lru/solrudev/ackpine/resources/ResolvableString;
+	public final fun transientResource (I[Ljava/io/Serializable;)Lru/solrudev/ackpine/resources/ResolvableString;
+}
+
+public abstract class ru/solrudev/ackpine/resources/ResolvableString$Resource : ru/solrudev/ackpine/resources/ResolvableString {
+	public fun <init> ([Ljava/io/Serializable;)V
+	public final fun equals (Ljava/lang/Object;)Z
+	public final fun hashCode ()I
+	public final fun resolve (Landroid/content/Context;)Ljava/lang/String;
+	protected abstract fun stringId ()I
+}
+
