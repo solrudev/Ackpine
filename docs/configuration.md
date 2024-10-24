@@ -39,7 +39,7 @@ An example of creating a session with custom parameters:
         }
     }
     
-    object InstallIcon : DrawableId() {
+    object InstallIcon : DrawableId {
         private const val serialVersionUID = 3692803605642002954L
         override fun drawableId() = R.drawable.ic_install
     }
@@ -93,7 +93,7 @@ An example of creating a session with custom parameters:
             }
         }
     
-        private static class InstallIcon extends DrawableId {
+        private static class InstallIcon implements DrawableId {
     
             @Serial
             private static final long serialVersionUID = 3692803605642002954L;
