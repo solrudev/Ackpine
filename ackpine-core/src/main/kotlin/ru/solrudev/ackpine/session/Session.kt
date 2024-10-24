@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -208,20 +208,20 @@ public interface Session<out F : Failure> {
 		 * Notifies that session was completed successfully.
 		 * @param sessionId ID of the session which had its state updated.
 		 */
-		public open fun onSuccess(sessionId: UUID) {}
+		public open fun onSuccess(sessionId: UUID) { /* to be overridden */ }
 
 		/**
 		 * Notifies that session was completed with an error.
 		 * @param sessionId ID of the session which had its state updated.
 		 * @param failure session's failure cause.
 		 */
-		public open fun onFailure(sessionId: UUID, failure: F) {}
+		public open fun onFailure(sessionId: UUID, failure: F) { /* to be overridden */ }
 
 		/**
 		 * Notifies that session was cancelled.
 		 * @param sessionId ID of the session which had its state updated.
 		 */
-		public open fun onCancelled(sessionId: UUID) {}
+		public open fun onCancelled(sessionId: UUID) { /* to be overridden */ }
 
 		final override fun onStateChanged(sessionId: UUID, state: State<F>) {
 			if (state.isTerminal) {

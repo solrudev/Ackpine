@@ -26,8 +26,9 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import ru.solrudev.ackpine.impl.database.converters.DrawableIdConverters
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
-import ru.solrudev.ackpine.impl.database.converters.NotificationStringConverters
+import ru.solrudev.ackpine.impl.database.converters.ResolvableStringConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
@@ -79,11 +80,16 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 5, to = 6),
 		AutoMigration(from = 6, to = 7)
 	],
-	version = 7,
+	version = 8,
 	exportSchema = true
 )
 @TypeConverters(
-	value = [InstallFailureConverters::class, UninstallFailureConverters::class, NotificationStringConverters::class]
+	value = [
+		InstallFailureConverters::class,
+		UninstallFailureConverters::class,
+		ResolvableStringConverters::class,
+		DrawableIdConverters::class
+	]
 )
 internal abstract class AckpineDatabase : RoomDatabase() {
 
@@ -132,7 +138,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 				}
 				.setQueryExecutor(executor)
 				.addCallback(PurgeCallback)
-				.addMigrations(Migration_4_5)
+				.addMigrations(Migration_4_5, Migration_7_8)
 				.fallbackToDestructiveMigration()
 				.build()
 		}

@@ -38,15 +38,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding;
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
 
 public final class InstallSessionsAdapter extends ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder> {
 
-	private final static SessionDiffCallback DIFF_CALLBACK = new SessionDiffCallback();
-	private final static ItemAnimator ITEM_ANIMATOR = new ItemAnimator();
+	private static final SessionDiffCallback DIFF_CALLBACK = new SessionDiffCallback();
+	private static final ItemAnimator ITEM_ANIMATOR = new ItemAnimator();
 	private final Consumer<UUID> onCancelClick;
 	private final Consumer<UUID> onItemSwipe;
 	private final Handler handler = new Handler(Looper.getMainLooper());
@@ -59,7 +59,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		this.onItemSwipe = onItemSwipe;
 	}
 
-	public final static class SessionViewHolder extends RecyclerView.ViewHolder {
+	public static final class SessionViewHolder extends RecyclerView.ViewHolder {
 
 		private final ItemInstallSessionBinding binding;
 		private final Consumer<UUID> onClick;
@@ -109,7 +109,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 					R.string.percentage, (int) (((double) progress) / max * 100)));
 		}
 
-		private void setError(@NonNull NotificationString error) {
+		private void setError(@NonNull ResolvableString error) {
 			final var fade = new Fade();
 			fade.setDuration(150);
 			TransitionManager.beginDelayedTransition(binding.getRoot(), fade);
@@ -162,7 +162,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		}
 		holder.bind(sessionData);
 		if (!payloads.isEmpty()) {
-			final var progressUpdate = (ProgressUpdate) payloads.get(0);
+			final var progressUpdate = (ProgressUpdate) payloads.get(payloads.size() - 1);
 			holder.setProgress(progressUpdate.progress(), progressUpdate.animate());
 		}
 	}
@@ -188,7 +188,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	private record ProgressUpdate(Progress progress, boolean animate) {
 	}
 
-	private final static class SessionDiffCallback extends DiffUtil.ItemCallback<SessionData> {
+	private static final class SessionDiffCallback extends DiffUtil.ItemCallback<SessionData> {
 
 		@Override
 		public boolean areItemsTheSame(@NonNull SessionData oldItem, @NonNull SessionData newItem) {
@@ -201,7 +201,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		}
 	}
 
-	private final static class ItemAnimator extends DefaultItemAnimator {
+	private static final class ItemAnimator extends DefaultItemAnimator {
 
 		@Override
 		public boolean canReuseUpdatedViewHolder(@NonNull RecyclerView.ViewHolder viewHolder) {

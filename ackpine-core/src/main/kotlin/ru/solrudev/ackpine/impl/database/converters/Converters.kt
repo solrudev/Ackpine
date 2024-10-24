@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,30 @@ package ru.solrudev.ackpine.impl.database.converters
 
 import androidx.room.TypeConverter
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
-internal object NotificationStringConverters {
+internal object DrawableIdConverters {
 
 	@TypeConverter
 	@JvmStatic
-	internal fun fromByteArray(byteArray: ByteArray): NotificationString = byteArray.deserialize()
+	internal fun fromByteArray(byteArray: ByteArray): DrawableId = byteArray.deserialize()
 
 	@TypeConverter
 	@JvmStatic
-	internal fun toByteArray(notificationString: NotificationString): ByteArray = notificationString.serialize()
+	internal fun toByteArray(drawableId: DrawableId): ByteArray = drawableId.serialize()
+}
+
+internal object ResolvableStringConverters {
+
+	@TypeConverter
+	@JvmStatic
+	internal fun fromByteArray(byteArray: ByteArray): ResolvableString = byteArray.deserialize()
+
+	@TypeConverter
+	@JvmStatic
+	internal fun toByteArray(resolvableString: ResolvableString): ByteArray = resolvableString.serialize()
 }
 
 internal object InstallFailureConverters {

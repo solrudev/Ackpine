@@ -202,7 +202,7 @@ internal class PackageInstallerImpl internal constructor(
 		parameters: InstallParameters,
 		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
-	) {
+	) = executor.executeWithSemaphore(dbWriteSemaphore) {
 		var packageName: String? = null
 		val installMode = when (parameters.installMode) {
 			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
@@ -211,27 +211,29 @@ internal class PackageInstallerImpl internal constructor(
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
-		executor.executeWithSemaphore(dbWriteSemaphore) {
-			installSessionDao.insertInstallSession(
-				SessionEntity.InstallSession(
-					session = SessionEntity(
-						id.toString(),
-						SessionEntity.Type.INSTALL,
-						SessionEntity.State.PENDING,
-						parameters.confirmation,
-						parameters.notificationData.title,
-						parameters.notificationData.contentText,
-						parameters.notificationData.icon,
-						parameters.requireUserAction
-					),
-					installerType = parameters.installerType,
-					uris = parameters.apks.toList().map { it.toString() },
-					name = parameters.name,
-					notificationId, installMode, packageName,
-					lastUpdateTimestamp = Long.MAX_VALUE
-				)
+		val notificationData = installSessionFactory.resolveNotificationData(
+			parameters.notificationData,
+			parameters.name
+		)
+		installSessionDao.insertInstallSession(
+			SessionEntity.InstallSession(
+				session = SessionEntity(
+					id.toString(),
+					SessionEntity.Type.INSTALL,
+					SessionEntity.State.PENDING,
+					parameters.confirmation,
+					notificationData.title,
+					notificationData.contentText,
+					notificationData.icon,
+					parameters.requireUserAction
+				),
+				installerType = parameters.installerType,
+				uris = parameters.apks.toList().map { it.toString() },
+				name = parameters.name,
+				notificationId, installMode, packageName,
+				lastUpdateTimestamp = Long.MAX_VALUE
 			)
-		}
+		)
 	}
 
 	@SuppressLint("NewApi")

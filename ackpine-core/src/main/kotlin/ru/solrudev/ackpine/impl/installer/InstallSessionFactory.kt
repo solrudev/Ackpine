@@ -33,11 +33,12 @@ import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -55,6 +56,8 @@ internal interface InstallSessionFactory {
 		lastUpdateTimestamp: Long = Long.MAX_VALUE,
 		needToCompleteIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure>
+
+	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -86,7 +89,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apk = parameters.apks.toList().singleOrNull() ?: throw SplitPackagesNotSupportedException(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.name),
+			resolveNotificationData(parameters.notificationData, parameters.name),
 			lastUpdateTimestampDao, sessionDao, sessionFailureDao, sessionProgressDao,
 			executor, handler,
 			notificationId, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded,
@@ -98,7 +101,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apks = parameters.apks.toList(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.name),
+			resolveNotificationData(parameters.notificationData, parameters.name),
 			parameters.requireUserAction,
 			parameters.installMode,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
@@ -106,20 +109,41 @@ internal class InstallSessionFactoryImpl internal constructor(
 		)
 	}
 
-	private fun NotificationData.resolveDefault(name: String): NotificationData = NotificationData.Builder()
-		.setTitle(
-			title.takeUnless { it.isDefault } ?: NotificationString.resource(R.string.ackpine_prompt_install_title)
-		)
-		.setContentText(
-			contentText.takeUnless { it.isDefault } ?: resolveDefaultContentText(name)
-		)
-		.setIcon(icon)
-		.build()
+	override fun resolveNotificationData(notificationData: NotificationData, name: String) = notificationData.run {
+		NotificationData.Builder()
+			.setTitle(
+				title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptInstallTitle
+			)
+			.setContentText(
+				contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(name)
+			)
+			.setIcon(icon)
+			.build()
+	}
 
-	private fun resolveDefaultContentText(name: String): NotificationString {
+	private fun resolveDefaultContentText(name: String): ResolvableString {
 		if (name.isNotEmpty()) {
-			return NotificationString.resource(R.string.ackpine_prompt_install_message_with_label, name)
+			return AckpinePromptInstallMessageWithLabel(name)
 		}
-		return NotificationString.resource(R.string.ackpine_prompt_install_message)
+		return AckpinePromptInstallMessage
+	}
+}
+
+private object AckpinePromptInstallTitle : ResolvableString.Resource() {
+	private const val serialVersionUID = 7815666924791958742L
+	override fun stringId() = R.string.ackpine_prompt_install_title
+}
+
+private object AckpinePromptInstallMessage : ResolvableString.Resource() {
+	private const val serialVersionUID = 1224637050663404482L
+	override fun stringId() = R.string.ackpine_prompt_install_message
+}
+
+private class AckpinePromptInstallMessageWithLabel(name: String) : ResolvableString.Resource(name) {
+
+	override fun stringId() = R.string.ackpine_prompt_install_message_with_label
+
+	private companion object {
+		private const val serialVersionUID = -6931607904159775056L
 	}
 }

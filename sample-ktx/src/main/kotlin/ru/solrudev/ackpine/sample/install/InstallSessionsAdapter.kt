@@ -28,10 +28,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 
 class InstallSessionsAdapter(
@@ -87,7 +87,7 @@ class InstallSessionsAdapter(
 			)
 		}
 
-		private fun setError(error: NotificationString) = with(itemBinding) {
+		private fun setError(error: ResolvableString) = with(itemBinding) {
 			TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 			val hasError = !error.isEmpty
 			textViewSessionName.isVisible = !hasError
@@ -133,7 +133,7 @@ class InstallSessionsAdapter(
 		}
 		holder.bind(sessionData)
 		if (payloads.isNotEmpty()) {
-			val progressUpdate = payloads.first() as ProgressUpdate
+			val progressUpdate = payloads.last() as ProgressUpdate
 			holder.setProgress(progressUpdate.progress, progressUpdate.animate)
 		}
 	}

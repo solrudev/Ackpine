@@ -98,23 +98,23 @@ public final class ru/solrudev/ackpine/session/parameters/ConfirmationDslKt {
 }
 
 public abstract interface class ru/solrudev/ackpine/session/parameters/NotificationDataDsl {
-	public abstract fun getContentText ()Lru/solrudev/ackpine/session/parameters/NotificationString;
-	public abstract fun getIcon ()I
-	public abstract fun getTitle ()Lru/solrudev/ackpine/session/parameters/NotificationString;
-	public abstract fun setContentText (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
-	public abstract fun setIcon (I)V
-	public abstract fun setTitle (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+	public abstract fun getContentText ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public abstract fun getIcon ()Lru/solrudev/ackpine/session/parameters/DrawableId;
+	public abstract fun getTitle ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public abstract fun setContentText (Lru/solrudev/ackpine/resources/ResolvableString;)V
+	public abstract fun setIcon (Lru/solrudev/ackpine/session/parameters/DrawableId;)V
+	public abstract fun setTitle (Lru/solrudev/ackpine/resources/ResolvableString;)V
 }
 
 public final class ru/solrudev/ackpine/session/parameters/NotificationDataDslBuilder : ru/solrudev/ackpine/session/parameters/NotificationDataDsl {
 	public fun <init> ()V
 	public final fun build ()Lru/solrudev/ackpine/session/parameters/NotificationData;
-	public fun getContentText ()Lru/solrudev/ackpine/session/parameters/NotificationString;
-	public fun getIcon ()I
-	public fun getTitle ()Lru/solrudev/ackpine/session/parameters/NotificationString;
-	public fun setContentText (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
-	public fun setIcon (I)V
-	public fun setTitle (Lru/solrudev/ackpine/session/parameters/NotificationString;)V
+	public fun getContentText ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public fun getIcon ()Lru/solrudev/ackpine/session/parameters/DrawableId;
+	public fun getTitle ()Lru/solrudev/ackpine/resources/ResolvableString;
+	public fun setContentText (Lru/solrudev/ackpine/resources/ResolvableString;)V
+	public fun setIcon (Lru/solrudev/ackpine/session/parameters/DrawableId;)V
+	public fun setTitle (Lru/solrudev/ackpine/resources/ResolvableString;)V
 }
 
 public final class ru/solrudev/ackpine/session/parameters/NotificationDataKt {

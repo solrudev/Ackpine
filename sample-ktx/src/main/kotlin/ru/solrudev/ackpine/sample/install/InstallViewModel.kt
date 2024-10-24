@@ -30,11 +30,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
@@ -48,12 +48,14 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.session.ProgressSession
+import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
-import ru.solrudev.ackpine.session.parameters.NotificationString
 import ru.solrudev.ackpine.session.progress
+import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.splits.Apk
 import java.util.UUID
 
@@ -62,30 +64,16 @@ class InstallViewModel(
 	private val sessionDataRepository: SessionDataRepository
 ) : ViewModel() {
 
-	private val awaitSessionsFromSavedState = channelFlow<Nothing> {
-		val sessions = sessionDataRepository.sessions.value
-		if (sessions.isNotEmpty()) {
-			sessions
-				.map { sessionData ->
-					async { packageInstaller.getSession(sessionData.id) }
-				}
-				.awaitAll()
-				.filterNotNull()
-				.forEach(::awaitSession)
-		}
-	}
+	private val error = MutableStateFlow(ResolvableString.empty())
 
-	private val error = MutableStateFlow(NotificationString.empty())
-
-	val uiState = merge(
-		awaitSessionsFromSavedState,
-		combine(
-			error,
-			sessionDataRepository.sessions,
-			sessionDataRepository.sessionsProgress,
-			::InstallUiState
-		)
-	).stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
+	val uiState = combine(
+		error,
+		sessionDataRepository.sessions,
+		sessionDataRepository.sessionsProgress,
+		::InstallUiState
+	)
+		.onStart { awaitSessionsFromSavedState() }
+		.stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
 
 	fun installPackage(apks: Sequence<Apk>, fileName: String) = viewModelScope.launch {
 		val uris = runInterruptible(Dispatchers.IO) { apks.toUrisList() }
@@ -108,12 +96,29 @@ class InstallViewModel(
 	fun removeSession(id: UUID) = sessionDataRepository.removeSessionData(id)
 
 	fun clearError() {
-		error.value = NotificationString.empty()
+		error.value = ResolvableString.empty()
+	}
+
+	private fun awaitSessionsFromSavedState() = viewModelScope.launch {
+		val sessions = this@InstallViewModel.sessionDataRepository.sessions.value
+		if (sessions.isNotEmpty()) {
+			sessions
+				.map { sessionData ->
+					async { this@InstallViewModel.packageInstaller.getSession(sessionData.id) }
+				}
+				.awaitAll()
+				.filterNotNull()
+				.forEach(::awaitSession)
+		}
 	}
 
 	private fun awaitSession(session: ProgressSession<InstallFailure>) = viewModelScope.launch {
 		session.progress
 			.onEach { progress -> sessionDataRepository.updateSessionProgress(session.id, progress) }
+			.launchIn(this)
+		session.state
+			.filterIsInstance<Session.State.Committed>()
+			.onEach { sessionDataRepository.updateSessionIsCancellable(session.id, isCancellable = false) }
 			.launchIn(this)
 		try {
 			when (val result = session.await()) {
@@ -131,9 +136,9 @@ class InstallViewModel(
 
 	private fun handleSessionError(message: String?, sessionId: UUID) {
 		val error = if (message != null) {
-			NotificationString.resource(R.string.session_error_with_reason, message)
+			ResolvableString.transientResource(R.string.session_error_with_reason, message)
 		} else {
-			NotificationString.resource(R.string.session_error)
+			ResolvableString.transientResource(R.string.session_error)
 		}
 		sessionDataRepository.setError(sessionId, error)
 	}
@@ -143,19 +148,19 @@ class InstallViewModel(
 			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
 			val errorString = when (exception) {
-				is NoBaseApkException -> NotificationString.resource(R.string.error_no_base_apk)
-				is ConflictingBaseApkException -> NotificationString.resource(R.string.error_conflicting_base_apk)
-				is ConflictingSplitNameException -> NotificationString.resource(
+				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
+				is ConflictingBaseApkException -> ResolvableString.transientResource(R.string.error_conflicting_base_apk)
+				is ConflictingSplitNameException -> ResolvableString.transientResource(
 					R.string.error_conflicting_split_name,
 					exception.name
 				)
 
-				is ConflictingPackageNameException -> NotificationString.resource(
+				is ConflictingPackageNameException -> ResolvableString.transientResource(
 					R.string.error_conflicting_package_name,
 					exception.expected, exception.actual, exception.name
 				)
 
-				is ConflictingVersionCodeException -> NotificationString.resource(
+				is ConflictingVersionCodeException -> ResolvableString.transientResource(
 					R.string.error_conflicting_version_code,
 					exception.expected, exception.actual, exception.name
 				)
@@ -163,7 +168,7 @@ class InstallViewModel(
 			error.value = errorString
 			return emptyList()
 		} catch (exception: Exception) {
-			error.value = NotificationString.raw(exception.message.orEmpty())
+			error.value = ResolvableString.raw(exception.message.orEmpty())
 			Log.e("InstallViewModel", null, exception)
 			return emptyList()
 		}

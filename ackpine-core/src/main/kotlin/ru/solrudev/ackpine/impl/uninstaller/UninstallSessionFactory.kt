@@ -25,9 +25,10 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
 import ru.solrudev.ackpine.impl.uninstaller.session.UninstallSession
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.NotificationString
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
@@ -43,6 +44,8 @@ internal interface UninstallSessionFactory {
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
 	): Session<UninstallFailure>
+
+	fun resolveNotificationData(notificationData: NotificationData, packageName: String): NotificationData
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -66,27 +69,51 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.packageName,
 			id, initialState,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.packageName),
+			resolveNotificationData(parameters.notificationData, parameters.packageName),
 			sessionDao, sessionFailureDao,
 			executor, handler, notificationId, dbWriteSemaphore
 		)
 	}
 
-	private fun NotificationData.resolveDefault(packageName: String): NotificationData = NotificationData.Builder()
-		.setTitle(
-			title.takeUnless { it.isDefault } ?: NotificationString.resource(R.string.ackpine_prompt_uninstall_title)
-		)
-		.setContentText(
-			contentText.takeUnless { it.isDefault } ?: resolveDefaultContentText(packageName)
-		)
-		.setIcon(icon)
-		.build()
+	override fun resolveNotificationData(
+		notificationData: NotificationData,
+		packageName: String
+	) = notificationData.run {
+		NotificationData.Builder()
+			.setTitle(
+				title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptUninstallTitle
+			)
+			.setContentText(
+				contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(packageName)
+			)
+			.setIcon(icon)
+			.build()
+	}
 
-	private fun resolveDefaultContentText(packageName: String): NotificationString {
+	private fun resolveDefaultContentText(packageName: String): ResolvableString {
 		val label = applicationContext.packageManager.getApplicationLabel(packageName)?.toString()
 		if (label != null) {
-			return NotificationString.resource(R.string.ackpine_prompt_uninstall_message_with_label, label)
+			return AckpinePromptUninstallMessageWithLabel(label)
 		}
-		return NotificationString.resource(R.string.ackpine_prompt_uninstall_message)
+		return AckpinePromptUninstallMessage
+	}
+}
+
+private object AckpinePromptUninstallTitle : ResolvableString.Resource() {
+	private const val serialVersionUID = -4086992997791586590L
+	override fun stringId() = R.string.ackpine_prompt_uninstall_title
+}
+
+private object AckpinePromptUninstallMessage : ResolvableString.Resource() {
+	private const val serialVersionUID = -3150252606151986307L
+	override fun stringId(): Int = R.string.ackpine_prompt_uninstall_message
+}
+
+private class AckpinePromptUninstallMessageWithLabel(label: String) : ResolvableString.Resource(label) {
+
+	override fun stringId() = R.string.ackpine_prompt_uninstall_message_with_label
+
+	private companion object {
+		private const val serialVersionUID = 5259262335605612228L
 	}
 }

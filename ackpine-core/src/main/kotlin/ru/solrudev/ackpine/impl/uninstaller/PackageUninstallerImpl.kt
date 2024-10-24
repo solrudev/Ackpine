@@ -139,6 +139,10 @@ internal class PackageUninstallerImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
+		val notificationData = uninstallSessionFactory.resolveNotificationData(
+			parameters.notificationData,
+			parameters.packageName
+		)
 		uninstallSessionDao.insertUninstallSession(
 			SessionEntity.UninstallSession(
 				session = SessionEntity(
@@ -146,9 +150,9 @@ internal class PackageUninstallerImpl internal constructor(
 					SessionEntity.Type.UNINSTALL,
 					SessionEntity.State.PENDING,
 					parameters.confirmation,
-					parameters.notificationData.title,
-					parameters.notificationData.contentText,
-					parameters.notificationData.icon,
+					notificationData.title,
+					notificationData.contentText,
+					notificationData.icon,
 					requireUserAction = true
 				),
 				packageName = parameters.packageName,

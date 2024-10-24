@@ -39,7 +39,7 @@ public object Ackpine {
 
 	private val configurationChangesCallback = object : ComponentCallbacks {
 		override fun onConfigurationChanged(newConfig: Configuration) = createNotificationChannel()
-		override fun onLowMemory() {}
+		override fun onLowMemory() { /* no-op */ }
 	}
 
 	/**
