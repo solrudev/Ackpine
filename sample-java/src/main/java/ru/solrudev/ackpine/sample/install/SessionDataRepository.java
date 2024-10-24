@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.UUID;
 
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
+import ru.solrudev.ackpine.session.parameters.ResolvableString;
 
 public interface SessionDataRepository {
 
@@ -41,5 +41,5 @@ public interface SessionDataRepository {
 
 	void updateSessionIsCancellable(@NonNull UUID id, boolean isCancellable);
 
-	void setError(@NonNull UUID id, @NonNull NotificationString error);
+	void setError(@NonNull UUID id, @NonNull ResolvableString error);
 }

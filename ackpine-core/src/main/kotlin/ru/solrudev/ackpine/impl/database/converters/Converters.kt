@@ -18,18 +18,18 @@ package ru.solrudev.ackpine.impl.database.converters
 
 import androidx.room.TypeConverter
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 internal object NotificationStringConverters {
 
 	@TypeConverter
 	@JvmStatic
-	internal fun fromByteArray(byteArray: ByteArray): NotificationString = byteArray.deserialize()
+	internal fun fromByteArray(byteArray: ByteArray): ResolvableString = byteArray.deserialize()
 
 	@TypeConverter
 	@JvmStatic
-	internal fun toByteArray(notificationString: NotificationString): ByteArray = notificationString.serialize()
+	internal fun toByteArray(resolvableString: ResolvableString): ByteArray = resolvableString.serialize()
 }
 
 internal object InstallFailureConverters {

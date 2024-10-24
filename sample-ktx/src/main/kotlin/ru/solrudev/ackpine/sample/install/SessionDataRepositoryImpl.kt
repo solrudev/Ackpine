@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.sample.install
 
 import androidx.lifecycle.SavedStateHandle
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 
 private const val SESSIONS_KEY = "SESSIONS"
@@ -83,7 +83,7 @@ class SessionDataRepositoryImpl(private val savedStateHandle: SavedStateHandle) 
 		_sessions = sessions
 	}
 
-	override fun setError(id: UUID, error: NotificationString) {
+	override fun setError(id: UUID, error: ResolvableString) {
 		val sessions = _sessions.toMutableList()
 		val sessionDataIndex = sessions.indexOfFirst { it.id == id }
 		if (sessionDataIndex != -1) {

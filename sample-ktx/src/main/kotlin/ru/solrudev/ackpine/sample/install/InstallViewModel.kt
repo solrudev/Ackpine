@@ -53,7 +53,7 @@ import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.splits.Apk
@@ -64,7 +64,7 @@ class InstallViewModel(
 	private val sessionDataRepository: SessionDataRepository
 ) : ViewModel() {
 
-	private val error = MutableStateFlow(NotificationString.empty())
+	private val error = MutableStateFlow(ResolvableString.empty())
 
 	val uiState = combine(
 		error,
@@ -96,7 +96,7 @@ class InstallViewModel(
 	fun removeSession(id: UUID) = sessionDataRepository.removeSessionData(id)
 
 	fun clearError() {
-		error.value = NotificationString.empty()
+		error.value = ResolvableString.empty()
 	}
 
 	private fun awaitSessionsFromSavedState() = viewModelScope.launch {
@@ -136,9 +136,9 @@ class InstallViewModel(
 
 	private fun handleSessionError(message: String?, sessionId: UUID) {
 		val error = if (message != null) {
-			NotificationString.resource(R.string.session_error_with_reason, message)
+			ResolvableString.resource(R.string.session_error_with_reason, message)
 		} else {
-			NotificationString.resource(R.string.session_error)
+			ResolvableString.resource(R.string.session_error)
 		}
 		sessionDataRepository.setError(sessionId, error)
 	}
@@ -148,19 +148,19 @@ class InstallViewModel(
 			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
 			val errorString = when (exception) {
-				is NoBaseApkException -> NotificationString.resource(R.string.error_no_base_apk)
-				is ConflictingBaseApkException -> NotificationString.resource(R.string.error_conflicting_base_apk)
-				is ConflictingSplitNameException -> NotificationString.resource(
+				is NoBaseApkException -> ResolvableString.resource(R.string.error_no_base_apk)
+				is ConflictingBaseApkException -> ResolvableString.resource(R.string.error_conflicting_base_apk)
+				is ConflictingSplitNameException -> ResolvableString.resource(
 					R.string.error_conflicting_split_name,
 					exception.name
 				)
 
-				is ConflictingPackageNameException -> NotificationString.resource(
+				is ConflictingPackageNameException -> ResolvableString.resource(
 					R.string.error_conflicting_package_name,
 					exception.expected, exception.actual, exception.name
 				)
 
-				is ConflictingVersionCodeException -> NotificationString.resource(
+				is ConflictingVersionCodeException -> ResolvableString.resource(
 					R.string.error_conflicting_version_code,
 					exception.expected, exception.actual, exception.name
 				)
@@ -168,7 +168,7 @@ class InstallViewModel(
 			error.value = errorString
 			return emptyList()
 		} catch (exception: Exception) {
-			error.value = NotificationString.raw(exception.message.orEmpty())
+			error.value = ResolvableString.raw(exception.message.orEmpty())
 			Log.e("InstallViewModel", null, exception)
 			return emptyList()
 		}

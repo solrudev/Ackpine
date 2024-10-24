@@ -40,14 +40,14 @@ public interface NotificationDataDsl {
 	 *
 	 * By default, a string from Ackpine library is used.
 	 */
-	public var title: NotificationString
+	public var title: ResolvableString
 
 	/**
 	 * Notification text.
 	 *
 	 * By default, a string from Ackpine library is used.
 	 */
-	public var contentText: NotificationString
+	public var contentText: ResolvableString
 }
 
 @PublishedApi
@@ -61,13 +61,13 @@ internal class NotificationDataDslBuilder : NotificationDataDsl {
 			builder.setIcon(value)
 		}
 
-	override var title: NotificationString
+	override var title: ResolvableString
 		get() = builder.title
 		set(value) {
 			builder.setTitle(value)
 		}
 
-	override var contentText: NotificationString
+	override var contentText: ResolvableString
 		get() = builder.contentText
 		set(value) {
 			builder.setContentText(value)

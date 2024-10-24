@@ -28,7 +28,7 @@ import ru.solrudev.ackpine.impl.uninstaller.session.UninstallSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.DefaultNotificationString
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
@@ -83,7 +83,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		.setIcon(icon)
 		.build()
 
-	private fun resolveDefaultContentText(packageName: String): NotificationString {
+	private fun resolveDefaultContentText(packageName: String): ResolvableString {
 		val label = applicationContext.packageManager.getApplicationLabel(packageName)?.toString()
 		if (label != null) {
 			return AckpinePromptUninstallMessageWithLabel(label)
@@ -92,16 +92,16 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	}
 }
 
-private object AckpinePromptUninstallTitle : NotificationString.Resource(R.string.ackpine_prompt_uninstall_title) {
+private object AckpinePromptUninstallTitle : ResolvableString.Resource(R.string.ackpine_prompt_uninstall_title) {
 	private const val serialVersionUID = -4086992997791586590L
 }
 
-private object AckpinePromptUninstallMessage : NotificationString.Resource(R.string.ackpine_prompt_uninstall_message) {
+private object AckpinePromptUninstallMessage : ResolvableString.Resource(R.string.ackpine_prompt_uninstall_message) {
 	private const val serialVersionUID = -3150252606151986307L
 }
 
 private class AckpinePromptUninstallMessageWithLabel(label: String) :
-	NotificationString.Resource(R.string.ackpine_prompt_uninstall_message_with_label, label) {
+	ResolvableString.Resource(R.string.ackpine_prompt_uninstall_message_with_label, label) {
 
 	private companion object {
 		private const val serialVersionUID = 5259262335605612228L

@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.sample.install
 
 import kotlinx.coroutines.flow.StateFlow
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 
 interface SessionDataRepository {
@@ -28,5 +28,5 @@ interface SessionDataRepository {
 	fun removeSessionData(id: UUID)
 	fun updateSessionProgress(id: UUID, progress: Progress)
 	fun updateSessionIsCancellable(id: UUID, isCancellable: Boolean)
-	fun setError(id: UUID, error: NotificationString)
+	fun setError(id: UUID, error: ResolvableString)
 }

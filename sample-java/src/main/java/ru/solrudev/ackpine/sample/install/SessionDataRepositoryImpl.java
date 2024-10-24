@@ -27,7 +27,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
+import ru.solrudev.ackpine.session.parameters.ResolvableString;
 
 public final class SessionDataRepositoryImpl implements SessionDataRepository {
 
@@ -106,7 +106,7 @@ public final class SessionDataRepositoryImpl implements SessionDataRepository {
 	}
 
 	@Override
-	public void setError(@NonNull UUID id, @NonNull NotificationString error) {
+	public void setError(@NonNull UUID id, @NonNull ResolvableString error) {
 		final var sessions = getCurrentSessionsCopy();
 		final var sessionDataIndex = getSessionDataIndexById(sessions, id);
 		if (sessionDataIndex != -1) {

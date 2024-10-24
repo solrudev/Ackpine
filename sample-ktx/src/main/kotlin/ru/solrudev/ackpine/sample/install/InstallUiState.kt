@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@
 
 package ru.solrudev.ackpine.sample.install
 
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 
 data class InstallUiState(
-	val error: NotificationString = NotificationString.empty(),
+	val error: ResolvableString = ResolvableString.empty(),
 	val sessions: List<SessionData> = emptyList(),
 	val sessionsProgress: List<SessionProgress> = emptyList()
 )

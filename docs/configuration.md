@@ -27,8 +27,15 @@ An example of creating a session with custom parameters:
         }
     }
     
-    object InstallMessageTitle : NotificationString.Resource(R.string.install_message_title)
-    class InstallMessage(fileName: String) : NotificationString.Resource(R.string.install_message, fileName)
+    object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+        private const val serialVersionUID = -1310602635578779088L
+    }
+    
+    class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+        private companion object {
+            private const val serialVersionUID = 4749568844072243110L
+        }
+    }
     ```
 
 === "Java"
@@ -50,9 +57,9 @@ An example of creating a session with custom parameters:
     
     public class Resources {
     
-        public static final NotificationString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
+        public static final ResolvableString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
     
-        private static class InstallMessageTitle extends NotificationString.Resource {
+        private static class InstallMessageTitle extends ResolvableString.Resource {
         
             @Serial
             private static final long serialVersionUID = -1310602635578779088L;
@@ -62,7 +69,7 @@ An example of creating a session with custom parameters:
             }
         }
     
-        public static class InstallMessage extends NotificationString.Resource {
+        public static class InstallMessage extends ResolvableString.Resource {
         
             @Serial
             private static final long serialVersionUID = 4749568844072243110L;
@@ -110,7 +117,7 @@ It is possible to provide notification title, text and icon.
 !!! Note
     Any configuration for notification will be ignored if `Confirmation` is set to `IMMEDIATE`, because the notification will not be shown.
 
-`NotificationString` is a type used for `NotificationData` text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library.
+`ResolvableString` is a type used for `NotificationData` text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
 
 `android.R.drawable.ic_dialog_alert` is used as a default icon.
 

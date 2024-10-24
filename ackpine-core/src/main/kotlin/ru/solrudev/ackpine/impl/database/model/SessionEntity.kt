@@ -25,7 +25,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.parameters.Confirmation
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
@@ -40,9 +40,9 @@ internal data class SessionEntity internal constructor(
 	@ColumnInfo(name = "confirmation")
 	val confirmation: Confirmation,
 	@ColumnInfo(name = "notification_title")
-	val notificationTitle: NotificationString,
+	val notificationTitle: ResolvableString,
 	@ColumnInfo(name = "notification_text")
-	val notificationText: NotificationString,
+	val notificationText: ResolvableString,
 	@DrawableRes
 	@ColumnInfo(name = "notification_icon")
 	val notificationIcon: Int,

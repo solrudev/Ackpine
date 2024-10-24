@@ -25,7 +25,7 @@ import java.io.Serializable
 /**
  * String which can be resolved at use site.
  */
-public interface NotificationString : Serializable {
+public interface ResolvableString : Serializable {
 
 	/**
 	 * Returns whether this string is empty.
@@ -53,16 +53,16 @@ public interface NotificationString : Serializable {
 	public companion object {
 
 		/**
-		 * Creates an empty [NotificationString].
+		 * Creates an empty [ResolvableString].
 		 */
 		@JvmStatic
-		public fun empty(): NotificationString = Empty
+		public fun empty(): ResolvableString = Empty
 
 		/**
-		 * Creates [NotificationString] with a hardcoded value.
+		 * Creates [ResolvableString] with a hardcoded value.
 		 */
 		@JvmStatic
-		public fun raw(value: String): NotificationString {
+		public fun raw(value: String): ResolvableString {
 			if (value.isEmpty()) {
 				return Empty
 			}
@@ -70,43 +70,43 @@ public interface NotificationString : Serializable {
 		}
 
 		/**
-		 * Creates an anonymous instance of [NotificationString.Resource], which is a [NotificationString] represented by
-		 * Android resource string with optional arguments. Arguments can be [NotificationStrings][NotificationString]
+		 * Creates an anonymous instance of [ResolvableString.Resource], which is a [ResolvableString] represented by
+		 * Android resource string with optional arguments. Arguments can be [ResolvableStrings][ResolvableString]
 		 * as well.
 		 *
 		 * This factory is meant to create **only** transient strings, i.e. not persisted in storage. For persisted
-		 * strings [NotificationString.Resource] should be explicitly subclassed. Example:
+		 * strings [ResolvableString.Resource] should be explicitly subclassed. Example:
 		 * ```
-		 * object MessageString : NotificationString.Resource(R.string.message)
-		 * class ErrorString(error: String) : NotificationString.Resource(R.string.error, error)
+		 * object MessageString : ResolvableString.Resource(R.string.message)
+		 * class ErrorString(error: String) : ResolvableString.Resource(R.string.error, error)
 		 * ```
 		 */
 		@JvmStatic
-		public fun resource(@StringRes stringId: Int, vararg args: Serializable): NotificationString {
+		public fun resource(@StringRes stringId: Int, vararg args: Serializable): ResolvableString {
 			return object : Resource(stringId, args) {}
 		}
 	}
 
 	/**
-	 * [NotificationString] represented by Android resource string with optional arguments. Arguments can be
-	 * [NotificationStrings][NotificationString] as well.
+	 * [ResolvableString] represented by Android resource string with optional arguments. Arguments can be
+	 * [ResolvableStrings][ResolvableString] as well.
 	 *
 	 * Should be explicitly subclassed to ensure stable persistence. Example:
 	 * ```
-	 * object MessageString : NotificationString.Resource(R.string.message)
-	 * class ErrorString(error: String) : NotificationString.Resource(R.string.error, error)
+	 * object MessageString : ResolvableString.Resource(R.string.message)
+	 * class ErrorString(error: String) : ResolvableString.Resource(R.string.error, error)
 	 * ```
-	 * For transient strings, i.e. not persisted in storage, you can use [NotificationString.resource] factory.
+	 * For transient strings, i.e. not persisted in storage, you can use [ResolvableString.resource] factory.
 	 */
 	public abstract class Resource(
 		@[StringRes Transient] private val stringId: Int,
 		private vararg val args: Serializable
-	) : NotificationString {
+	) : ResolvableString {
 
 		override fun resolve(context: Context): String = context.getString(stringId, *resolveArgs(context))
 
 		private fun resolveArgs(context: Context): Array<Serializable> = args.map { argument ->
-			if (argument is NotificationString) {
+			if (argument is ResolvableString) {
 				argument.resolve(context)
 			} else {
 				argument
@@ -133,12 +133,12 @@ public interface NotificationString : Serializable {
 	}
 }
 
-private data object Empty : NotificationString {
+private data object Empty : ResolvableString {
 	private const val serialVersionUID = 5194188194930148316L
 	override fun resolve(context: Context): String = ""
 }
 
-private data class Raw(val value: String) : NotificationString {
+private data class Raw(val value: String) : ResolvableString {
 	override fun resolve(context: Context): String = value
 	private companion object {
 		private const val serialVersionUID = -6824736411987160679L

@@ -38,7 +38,7 @@ import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.DefaultNotificationString
 import ru.solrudev.ackpine.session.parameters.NotificationData
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -117,7 +117,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		.setIcon(icon)
 		.build()
 
-	private fun resolveDefaultContentText(name: String): NotificationString {
+	private fun resolveDefaultContentText(name: String): ResolvableString {
 		if (name.isNotEmpty()) {
 			return AckpinePromptInstallMessageWithLabel(name)
 		}
@@ -125,16 +125,16 @@ internal class InstallSessionFactoryImpl internal constructor(
 	}
 }
 
-private object AckpinePromptInstallTitle : NotificationString.Resource(R.string.ackpine_prompt_install_title) {
+private object AckpinePromptInstallTitle : ResolvableString.Resource(R.string.ackpine_prompt_install_title) {
 	private const val serialVersionUID = 7815666924791958742L
 }
 
-private object AckpinePromptInstallMessage : NotificationString.Resource(R.string.ackpine_prompt_install_message) {
+private object AckpinePromptInstallMessage : ResolvableString.Resource(R.string.ackpine_prompt_install_message) {
 	private const val serialVersionUID = 1224637050663404482L
 }
 
 private class AckpinePromptInstallMessageWithLabel(name: String) :
-	NotificationString.Resource(R.string.ackpine_prompt_install_message_with_label, name) {
+	ResolvableString.Resource(R.string.ackpine_prompt_install_message_with_label, name) {
 
 	private companion object {
 		private const val serialVersionUID = -6931607904159775056L

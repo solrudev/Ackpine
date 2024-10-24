@@ -35,12 +35,12 @@ public class NotificationData private constructor(
 	/**
 	 * Notification title.
 	 */
-	public val title: NotificationString,
+	public val title: ResolvableString,
 
 	/**
 	 * Notification text.
 	 */
-	public val contentText: NotificationString
+	public val contentText: ResolvableString
 ) {
 
 	override fun toString(): String {
@@ -99,7 +99,7 @@ public class NotificationData private constructor(
 		 *
 		 * By default, a string from Ackpine library is used.
 		 */
-		public var title: NotificationString = DEFAULT.title
+		public var title: ResolvableString = DEFAULT.title
 			private set
 
 		/**
@@ -107,7 +107,7 @@ public class NotificationData private constructor(
 		 *
 		 * By default, a string from Ackpine library is used.
 		 */
-		public var contentText: NotificationString = DEFAULT.contentText
+		public var contentText: ResolvableString = DEFAULT.contentText
 			private set
 
 		/**
@@ -120,14 +120,14 @@ public class NotificationData private constructor(
 		/**
 		 * Sets [NotificationData.title].
 		 */
-		public fun setTitle(title: NotificationString): Builder = apply {
+		public fun setTitle(title: ResolvableString): Builder = apply {
 			this.title = title
 		}
 
 		/**
 		 * Sets [NotificationData.contentText].
 		 */
-		public fun setContentText(contentText: NotificationString): Builder = apply {
+		public fun setContentText(contentText: ResolvableString): Builder = apply {
 			this.contentText = contentText
 		}
 
@@ -139,7 +139,7 @@ public class NotificationData private constructor(
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal data object DefaultNotificationString : NotificationString {
+internal data object DefaultNotificationString : ResolvableString {
 	private const val serialVersionUID = 809543744617543082L
 	override fun resolve(context: Context): String = ""
 }

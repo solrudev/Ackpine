@@ -41,7 +41,7 @@ import java.util.UUID;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding;
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
+import ru.solrudev.ackpine.session.parameters.ResolvableString;
 
 public final class InstallSessionsAdapter extends ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder> {
 
@@ -109,7 +109,7 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 					R.string.percentage, (int) (((double) progress) / max * 100)));
 		}
 
-		private void setError(@NonNull NotificationString error) {
+		private void setError(@NonNull ResolvableString error) {
 			final var fade = new Fade();
 			fade.setDuration(150);
 			TransitionManager.beginDelayedTransition(binding.getRoot(), fade);

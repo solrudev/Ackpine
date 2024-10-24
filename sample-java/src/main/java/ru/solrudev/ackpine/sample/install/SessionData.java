@@ -22,17 +22,17 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
-import ru.solrudev.ackpine.session.parameters.NotificationString;
+import ru.solrudev.ackpine.session.parameters.ResolvableString;
 
 public record SessionData(@NonNull UUID id,
 						  @NonNull String name,
-						  @NonNull NotificationString error,
+						  @NonNull ResolvableString error,
 						  boolean isCancellable) implements Serializable {
 
 	@Serial
 	private static final long serialVersionUID = -7412725679599146483L;
 
 	public SessionData(@NonNull UUID id, @NonNull String name) {
-		this(id, name, NotificationString.empty(), true);
+		this(id, name, ResolvableString.empty(), true);
 	}
 }
