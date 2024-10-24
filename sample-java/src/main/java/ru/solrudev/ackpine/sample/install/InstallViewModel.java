@@ -51,11 +51,11 @@ import ru.solrudev.ackpine.exceptions.SplitPackageException;
 import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.installer.PackageInstaller;
 import ru.solrudev.ackpine.installer.parameters.InstallParameters;
+import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
-import ru.solrudev.ackpine.session.parameters.ResolvableString;
 import ru.solrudev.ackpine.splits.Apk;
 
 public final class InstallViewModel extends ViewModel {

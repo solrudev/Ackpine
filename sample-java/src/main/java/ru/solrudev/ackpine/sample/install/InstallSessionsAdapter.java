@@ -38,10 +38,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding;
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.ResolvableString;
 
 public final class InstallSessionsAdapter extends ListAdapter<SessionData, InstallSessionsAdapter.SessionViewHolder> {
 

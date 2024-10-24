@@ -17,8 +17,8 @@
 package ru.solrudev.ackpine.sample.install
 
 import androidx.lifecycle.SavedStateHandle
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 
 private const val SESSIONS_KEY = "SESSIONS"

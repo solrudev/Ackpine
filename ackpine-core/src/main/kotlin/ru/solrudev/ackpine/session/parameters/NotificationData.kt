@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.session.parameters
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.resources.ResolvableString
 
 /**
  * Data for a high-priority notification which launches confirmation activity.

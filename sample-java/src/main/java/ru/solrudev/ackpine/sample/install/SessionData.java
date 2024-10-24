@@ -22,7 +22,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.UUID;
 
-import ru.solrudev.ackpine.session.parameters.ResolvableString;
+import ru.solrudev.ackpine.resources.ResolvableString;
 
 public record SessionData(@NonNull UUID id,
 						  @NonNull String name,

@@ -48,12 +48,12 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
-import ru.solrudev.ackpine.session.parameters.ResolvableString
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.splits.Apk

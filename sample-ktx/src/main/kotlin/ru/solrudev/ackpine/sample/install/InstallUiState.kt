@@ -16,7 +16,7 @@
 
 package ru.solrudev.ackpine.sample.install
 
-import ru.solrudev.ackpine.session.parameters.ResolvableString
+import ru.solrudev.ackpine.resources.ResolvableString
 
 data class InstallUiState(
 	val error: ResolvableString = ResolvableString.empty(),

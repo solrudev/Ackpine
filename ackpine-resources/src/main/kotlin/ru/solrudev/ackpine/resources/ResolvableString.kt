@@ -16,7 +16,7 @@
 
 @file:Suppress("Unused")
 
-package ru.solrudev.ackpine.session.parameters
+package ru.solrudev.ackpine.resources
 
 import android.content.Context
 import androidx.annotation.StringRes

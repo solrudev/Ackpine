@@ -17,8 +17,8 @@
 package ru.solrudev.ackpine.sample.install
 
 import kotlinx.coroutines.flow.StateFlow
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 
 interface SessionDataRepository {

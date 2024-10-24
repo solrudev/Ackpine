@@ -28,10 +28,10 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.ItemInstallSessionBinding
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
 
 class InstallSessionsAdapter(

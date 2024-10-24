@@ -16,7 +16,7 @@
 
 package ru.solrudev.ackpine.sample.install
 
-import ru.solrudev.ackpine.session.parameters.ResolvableString
+import ru.solrudev.ackpine.resources.ResolvableString
 import java.io.Serializable
 import java.util.UUID
 

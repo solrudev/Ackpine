@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.impl.database.converters
 
 import androidx.room.TypeConverter
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.session.parameters.ResolvableString
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 internal object NotificationStringConverters {

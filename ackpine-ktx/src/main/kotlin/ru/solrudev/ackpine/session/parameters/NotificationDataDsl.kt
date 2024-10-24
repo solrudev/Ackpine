@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.session.parameters
 
 import android.annotation.SuppressLint
 import androidx.annotation.DrawableRes
+import ru.solrudev.ackpine.resources.ResolvableString
 
 /**
  * DSL allowing to configure [high-priority notification for Session confirmation][NotificationData].
