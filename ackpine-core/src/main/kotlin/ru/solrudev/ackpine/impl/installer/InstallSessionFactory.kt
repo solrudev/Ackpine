@@ -36,7 +36,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.DefaultNotificationString
+import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.ResolvableString
 import java.util.UUID
@@ -109,10 +109,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun NotificationData.resolveDefault(name: String): NotificationData = NotificationData.Builder()
 		.setTitle(
-			title.takeUnless { it is DefaultNotificationString } ?: AckpinePromptInstallTitle
+			title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptInstallTitle
 		)
 		.setContentText(
-			contentText.takeUnless { it is DefaultNotificationString } ?: resolveDefaultContentText(name)
+			contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(name)
 		)
 		.setIcon(icon)
 		.build()

@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.session.parameters
 
-import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
 
@@ -75,8 +74,8 @@ public class NotificationData private constructor(
 		@JvmField
 		public val DEFAULT: NotificationData = NotificationData(
 			icon = android.R.drawable.ic_dialog_alert,
-			title = DefaultNotificationString,
-			contentText = DefaultNotificationString
+			title = DEFAULT_NOTIFICATION_STRING,
+			contentText = DEFAULT_NOTIFICATION_STRING
 		)
 	}
 
@@ -139,7 +138,5 @@ public class NotificationData private constructor(
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal data object DefaultNotificationString : ResolvableString {
-	private const val serialVersionUID = 809543744617543082L
-	override fun resolve(context: Context): String = ""
-}
+@get:JvmSynthetic
+internal val DEFAULT_NOTIFICATION_STRING = ResolvableString.raw("ACKPINE_DEFAULT_NOTIFICATION_STRING")

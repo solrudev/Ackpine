@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,20 @@
  * limitations under the License.
  */
 
-description = "A library providing consistent APIs for installing and uninstalling apps on an Android device"
+description = "Abstractions for resolvable and persistable Android resources"
 
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
-	alias(libs.plugins.kotlin.ksp)
 }
 
 ackpine {
-	id = "core"
+	id = "resources"
 	artifact {
-		name = "Ackpine Core"
+		name = "Ackpine Resources"
 	}
 }
 
 dependencies {
-	ksp(androidx.room.compiler)
 	api(androidx.annotation)
-	api(androidx.startup)
-	api(libs.listenablefuture)
-	api(projects.ackpineResources)
-	implementation(projects.ackpineRuntime)
-	implementation(androidx.concurrent.futures.core)
-	implementation(androidx.core.ktx)
-	implementation(androidx.room.runtime)
-}
-
-ksp {
-	arg("room.schemaLocation", File(projectDir, "schemas").path)
 }

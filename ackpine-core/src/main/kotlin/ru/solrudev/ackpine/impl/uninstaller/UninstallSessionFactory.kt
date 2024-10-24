@@ -26,7 +26,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
 import ru.solrudev.ackpine.impl.uninstaller.session.UninstallSession
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.DefaultNotificationString
+import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.ResolvableString
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
@@ -75,10 +75,10 @@ internal class UninstallSessionFactoryImpl internal constructor(
 
 	private fun NotificationData.resolveDefault(packageName: String): NotificationData = NotificationData.Builder()
 		.setTitle(
-			title.takeUnless { it is DefaultNotificationString } ?: AckpinePromptUninstallTitle
+			title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptUninstallTitle
 		)
 		.setContentText(
-			contentText.takeUnless { it is DefaultNotificationString } ?: resolveDefaultContentText(packageName)
+			contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(packageName)
 		)
 		.setIcon(icon)
 		.build()
