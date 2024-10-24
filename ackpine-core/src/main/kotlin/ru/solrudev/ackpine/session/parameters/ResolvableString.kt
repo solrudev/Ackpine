@@ -77,10 +77,18 @@ public interface ResolvableString : Serializable {
 		 * This factory is meant to create **only** transient strings, i.e. not persisted in storage. For persisted
 		 * strings [ResolvableString.Resource] should be explicitly subclassed. Example:
 		 * ```
-		 * object MessageString : ResolvableString.Resource(R.string.message)
-		 * class ErrorString(error: String) : ResolvableString.Resource(R.string.error, error)
+		 * object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+		 *     private const val serialVersionUID = -1310602635578779088L
+		 * }
+		 *
+		 * class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+		 *     private companion object {
+		 *         private const val serialVersionUID = 4749568844072243110L
+		 *     }
+		 * }
 		 * ```
 		 */
+		@Suppress("serial")
 		@JvmStatic
 		public fun resource(@StringRes stringId: Int, vararg args: Serializable): ResolvableString {
 			return object : Resource(stringId, args) {}
@@ -93,8 +101,15 @@ public interface ResolvableString : Serializable {
 	 *
 	 * Should be explicitly subclassed to ensure stable persistence. Example:
 	 * ```
-	 * object MessageString : ResolvableString.Resource(R.string.message)
-	 * class ErrorString(error: String) : ResolvableString.Resource(R.string.error, error)
+	 * object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+	 *     private const val serialVersionUID = -1310602635578779088L
+	 * }
+	 *
+	 * class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+	 *     private companion object {
+	 *         private const val serialVersionUID = 4749568844072243110L
+	 *     }
+	 * }
 	 * ```
 	 * For transient strings, i.e. not persisted in storage, you can use [ResolvableString.resource] factory.
 	 */
