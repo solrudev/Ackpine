@@ -44,6 +44,8 @@ internal interface UninstallSessionFactory {
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
 	): Session<UninstallFailure>
+
+	fun resolveNotificationData(notificationData: NotificationData, packageName: String): NotificationData
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -67,21 +69,26 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			parameters.packageName,
 			id, initialState,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.packageName),
+			resolveNotificationData(parameters.notificationData, parameters.packageName),
 			sessionDao, sessionFailureDao,
 			executor, handler, notificationId, dbWriteSemaphore
 		)
 	}
 
-	private fun NotificationData.resolveDefault(packageName: String): NotificationData = NotificationData.Builder()
-		.setTitle(
-			title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptUninstallTitle
-		)
-		.setContentText(
-			contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(packageName)
-		)
-		.setIcon(icon)
-		.build()
+	override fun resolveNotificationData(
+		notificationData: NotificationData,
+		packageName: String
+	) = notificationData.run {
+		NotificationData.Builder()
+			.setTitle(
+				title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptUninstallTitle
+			)
+			.setContentText(
+				contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(packageName)
+			)
+			.setIcon(icon)
+			.build()
+	}
 
 	private fun resolveDefaultContentText(packageName: String): ResolvableString {
 		val label = applicationContext.packageManager.getApplicationLabel(packageName)?.toString()

@@ -56,6 +56,8 @@ internal interface InstallSessionFactory {
 		lastUpdateTimestamp: Long = Long.MAX_VALUE,
 		needToCompleteIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure>
+
+	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -87,7 +89,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apk = parameters.apks.toList().singleOrNull() ?: throw SplitPackagesNotSupportedException(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.name),
+			resolveNotificationData(parameters.notificationData, parameters.name),
 			lastUpdateTimestampDao, sessionDao, sessionFailureDao, sessionProgressDao,
 			executor, handler,
 			notificationId, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded,
@@ -99,7 +101,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			apks = parameters.apks.toList(),
 			id, initialState, initialProgress,
 			parameters.confirmation,
-			parameters.notificationData.resolveDefault(parameters.name),
+			resolveNotificationData(parameters.notificationData, parameters.name),
 			parameters.requireUserAction,
 			parameters.installMode,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
@@ -107,15 +109,17 @@ internal class InstallSessionFactoryImpl internal constructor(
 		)
 	}
 
-	private fun NotificationData.resolveDefault(name: String): NotificationData = NotificationData.Builder()
-		.setTitle(
-			title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptInstallTitle
-		)
-		.setContentText(
-			contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(name)
-		)
-		.setIcon(icon)
-		.build()
+	override fun resolveNotificationData(notificationData: NotificationData, name: String) = notificationData.run {
+		NotificationData.Builder()
+			.setTitle(
+				title.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: AckpinePromptInstallTitle
+			)
+			.setContentText(
+				contentText.takeUnless { it === DEFAULT_NOTIFICATION_STRING } ?: resolveDefaultContentText(name)
+			)
+			.setIcon(icon)
+			.build()
+	}
 
 	private fun resolveDefaultContentText(name: String): ResolvableString {
 		if (name.isNotEmpty()) {
