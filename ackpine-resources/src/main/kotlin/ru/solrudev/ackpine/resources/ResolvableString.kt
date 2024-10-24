@@ -53,7 +53,7 @@ public sealed interface ResolvableString : Serializable {
 	public companion object {
 
 		/**
-		 * Creates an empty [ResolvableString].
+		 * Returns an empty [ResolvableString].
 		 */
 		@JvmStatic
 		public fun empty(): ResolvableString = Empty
