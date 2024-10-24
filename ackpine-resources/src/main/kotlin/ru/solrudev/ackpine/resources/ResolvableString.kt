@@ -70,7 +70,7 @@ public sealed interface ResolvableString : Serializable {
 		}
 
 		/**
-		 * Creates an anonymous instance of [ResolvableString.Resource], which is a [ResolvableString] represented by
+		 * Creates an anonymous instance of [ResolvableString.Resource], which is a [ResolvableString] backed by
 		 * Android resource string with optional arguments. Arguments can be [ResolvableStrings][ResolvableString]
 		 * as well.
 		 *
@@ -100,7 +100,7 @@ public sealed interface ResolvableString : Serializable {
 	}
 
 	/**
-	 * [ResolvableString] represented by Android resource string with optional arguments. Arguments can be
+	 * [ResolvableString] backed by Android resource string with optional arguments. Arguments can be
 	 * [ResolvableStrings][ResolvableString] as well.
 	 *
 	 * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
