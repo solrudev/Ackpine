@@ -121,6 +121,9 @@ public sealed interface ResolvableString : Serializable {
 	 */
 	public abstract class Resource(private vararg val args: Serializable) : ResolvableString {
 
+		/**
+		 * Returns an Android string resource ID.
+		 */
 		@StringRes
 		protected abstract fun stringId(): Int
 

@@ -146,13 +146,17 @@ public class NotificationData private constructor(
  *
  * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
  * ```
- * object InstallIcon : DrawableId(R.drawable.ic_install) {
+ * object InstallIcon : DrawableId() {
  *     private const val serialVersionUID = 3692803605642002954L
+ *     override fun drawableId() = R.drawable.ic_install
  * }
  * ```
  */
 public abstract class DrawableId : Serializable {
 
+	/**
+	 * Returns an Android drawable resource ID.
+	 */
 	@DrawableRes
 	public abstract fun drawableId(): Int
 
