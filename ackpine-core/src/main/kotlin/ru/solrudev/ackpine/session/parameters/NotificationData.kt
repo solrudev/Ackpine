@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:JvmName("NotificationDataConstants")
+
 package ru.solrudev.ackpine.session.parameters
 
 import androidx.annotation.DrawableRes
