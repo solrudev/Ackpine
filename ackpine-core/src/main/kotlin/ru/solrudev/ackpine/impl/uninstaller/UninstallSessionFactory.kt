@@ -99,16 +99,19 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	}
 }
 
-private object AckpinePromptUninstallTitle : ResolvableString.Resource(R.string.ackpine_prompt_uninstall_title) {
+private object AckpinePromptUninstallTitle : ResolvableString.Resource() {
 	private const val serialVersionUID = -4086992997791586590L
+	override fun stringId() = R.string.ackpine_prompt_uninstall_title
 }
 
-private object AckpinePromptUninstallMessage : ResolvableString.Resource(R.string.ackpine_prompt_uninstall_message) {
+private object AckpinePromptUninstallMessage : ResolvableString.Resource() {
 	private const val serialVersionUID = -3150252606151986307L
+	override fun stringId(): Int = R.string.ackpine_prompt_uninstall_message
 }
 
-private class AckpinePromptUninstallMessageWithLabel(label: String) :
-	ResolvableString.Resource(R.string.ackpine_prompt_uninstall_message_with_label, label) {
+private class AckpinePromptUninstallMessageWithLabel(label: String) : ResolvableString.Resource(label) {
+
+	override fun stringId() = R.string.ackpine_prompt_uninstall_message_with_label
 
 	private companion object {
 		private const val serialVersionUID = 5259262335605612228L

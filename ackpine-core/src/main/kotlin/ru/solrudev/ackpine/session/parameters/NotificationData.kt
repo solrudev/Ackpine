@@ -18,11 +18,11 @@
 
 package ru.solrudev.ackpine.session.parameters
 
+import android.graphics.drawable.Drawable
 import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.resources.ResolvableString
 import java.io.Serializable
-import android.graphics.drawable.Drawable
 
 /**
  * Data for a high-priority notification which launches confirmation activity.
@@ -151,14 +151,19 @@ public class NotificationData private constructor(
  * }
  * ```
  */
-public abstract class DrawableId(@[DrawableRes Transient] public val drawableId: Int) : Serializable {
+public abstract class DrawableId : Serializable {
+
+	@DrawableRes
+	public abstract fun drawableId(): Int
+
 	private companion object {
 		private const val serialVersionUID = 6564416758029834576L
 	}
 }
 
-private object DefaultNotificationIcon : DrawableId(android.R.drawable.ic_dialog_alert) {
+private object DefaultNotificationIcon : DrawableId() {
 	private const val serialVersionUID = 6906923061913799903L
+	override fun drawableId() = android.R.drawable.ic_dialog_alert
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)

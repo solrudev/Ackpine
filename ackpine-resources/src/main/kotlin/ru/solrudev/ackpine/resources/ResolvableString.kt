@@ -77,11 +77,13 @@ public sealed interface ResolvableString : Serializable {
 		 * This factory is meant to create **only** transient strings, i.e. not persisted in storage. For persisted
 		 * strings [ResolvableString.Resource] should be explicitly subclassed. Example:
 		 * ```
-		 * object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+		 * object InstallMessageTitle : ResolvableString.Resource() {
+		 *     override fun stringId() = R.string.install_message_title
 		 *     private const val serialVersionUID = -1310602635578779088L
 		 * }
 		 *
-		 * class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+		 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
+		 *     override fun stringId() = R.string.install_message
 		 *     private companion object {
 		 *         private const val serialVersionUID = 4749568844072243110L
 		 *     }
@@ -91,7 +93,9 @@ public sealed interface ResolvableString : Serializable {
 		@Suppress("serial")
 		@JvmStatic
 		public fun resource(@StringRes stringId: Int, vararg args: Serializable): ResolvableString {
-			return object : Resource(stringId, *args) {}
+			return object : Resource(*args) {
+				override fun stringId() = stringId
+			}
 		}
 	}
 
@@ -101,11 +105,13 @@ public sealed interface ResolvableString : Serializable {
 	 *
 	 * Should be explicitly subclassed to ensure stable persistence, and `serialVersionUID` must be present. Example:
 	 * ```
-	 * object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+	 * object InstallMessageTitle : ResolvableString.Resource() {
+	 *     override fun stringId() = R.string.install_message_title
 	 *     private const val serialVersionUID = -1310602635578779088L
 	 * }
 	 *
-	 * class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+	 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
+	 *     override fun stringId() = R.string.install_message
 	 *     private companion object {
 	 *         private const val serialVersionUID = 4749568844072243110L
 	 *     }
@@ -113,12 +119,12 @@ public sealed interface ResolvableString : Serializable {
 	 * ```
 	 * For transient strings, i.e. not persisted in storage, you can use [ResolvableString.resource] factory.
 	 */
-	public abstract class Resource(
-		@[StringRes Transient] private val stringId: Int,
-		private vararg val args: Serializable
-	) : ResolvableString {
+	public abstract class Resource(private vararg val args: Serializable) : ResolvableString {
 
-		override fun resolve(context: Context): String = context.getString(stringId, *resolveArgs(context))
+		@StringRes
+		protected abstract fun stringId(): Int
+
+		final override fun resolve(context: Context): String = context.getString(stringId(), *resolveArgs(context))
 
 		private fun resolveArgs(context: Context): Array<Serializable> = args.map { argument ->
 			if (argument is ResolvableString) {
@@ -132,14 +138,11 @@ public sealed interface ResolvableString : Serializable {
 			if (this === other) return true
 			if (javaClass != other?.javaClass) return false
 			other as Resource
-			if (stringId != other.stringId) return false
 			return args.contentEquals(other.args)
 		}
 
 		override fun hashCode(): Int {
-			var result = stringId
-			result = 31 * result + args.contentHashCode()
-			return result
+			return args.contentHashCode()
 		}
 
 		private companion object {

@@ -126,7 +126,7 @@ private fun Context.showNotification(
 		setContentIntent(intent)
 		priority = NotificationCompat.PRIORITY_MAX
 		setDefaults(NotificationCompat.DEFAULT_ALL)
-		setSmallIcon(notificationData.icon.drawableId)
+		setSmallIcon(notificationData.icon.drawableId())
 		setOngoing(true)
 		setAutoCancel(true)
 	}.build()

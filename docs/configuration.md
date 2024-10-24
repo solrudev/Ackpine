@@ -27,18 +27,21 @@ An example of creating a session with custom parameters:
         }
     }
     
-    object InstallMessageTitle : ResolvableString.Resource(R.string.install_message_title) {
+    object InstallMessageTitle : ResolvableString.Resource() {
         private const val serialVersionUID = -1310602635578779088L
+        override fun stringId() = R.string.install_message_title
     }
     
-    class InstallMessage(fileName: String) : ResolvableString.Resource(R.string.install_message, fileName) {
+    class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
+        override fun stringId() = R.string.install_message
         private companion object {
             private const val serialVersionUID = 4749568844072243110L
         }
     }
     
-    object InstallIcon : DrawableId(R.drawable.ic_install) {
+    object InstallIcon : DrawableId() {
         private const val serialVersionUID = 3692803605642002954L
+        override fun drawableId() = R.drawable.ic_install
     }
     ```
 
@@ -65,35 +68,42 @@ An example of creating a session with custom parameters:
         public static final DrawableId INSTALL_ICON = new InstallIcon();
     
         private static class InstallMessageTitle extends ResolvableString.Resource {
-        
+    
             @Serial
             private static final long serialVersionUID = -1310602635578779088L;
-        
-            public InstallMessageTitle() {
-                super(R.string.install_message_title);
+    
+            @Override
+            protected int stringId() {
+                return R.string.install_message_title;
             }
         }
     
         public static class InstallMessage extends ResolvableString.Resource {
-        
+    
             @Serial
             private static final long serialVersionUID = 4749568844072243110L;
-        
+    
             public InstallMessage(String fileName) {
-                super(R.string.install_message, fileName);
+                super(fileName);
+            }
+    
+            @Override
+            protected int stringId() {
+                return R.string.install_message;
             }
         }
     
         private static class InstallIcon extends DrawableId {
-        
+    
             @Serial
             private static final long serialVersionUID = 3692803605642002954L;
-        
-            public InstallIcon() {
-                super(R.drawable.ic_install);
+    
+            @Override
+            public int drawableId() {
+                return R.drawable.ic_install;
             }
         }
-        
+    
         private Resources() {
         }
     }
