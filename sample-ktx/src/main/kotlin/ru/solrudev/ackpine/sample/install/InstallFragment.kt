@@ -109,7 +109,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	private fun chooseFile() {
 		try {
 			pickerLauncher.launch("*/*")
-		} catch (_: ActivityNotFoundException) {
+		} catch (_: ActivityNotFoundException) { // no-op
 		}
 	}
 

@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
@@ -64,7 +65,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	)
 
 	@Volatile
-	protected var progress = initialProgress
+	private var progress = initialProgress
 		set(value) {
 			if (field == value) {
 				return
@@ -96,6 +97,10 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 
 	final override fun removeProgressListener(listener: ProgressSession.ProgressListener) {
 		progressListeners -= listener
+	}
+
+	protected fun setProgress(value: Int) {
+		progress = Progress(value, PROGRESS_MAX)
 	}
 
 	private fun persistSessionProgress(value: Progress) = executor.execute {

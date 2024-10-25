@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,8 +22,8 @@ import androidx.lifecycle.LiveData;
 import java.util.List;
 import java.util.UUID;
 
+import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.session.Progress;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
 
 public interface SessionDataRepository {
 
@@ -39,5 +39,7 @@ public interface SessionDataRepository {
 
 	void updateSessionProgress(@NonNull UUID id, @NonNull Progress progress);
 
-	void setError(@NonNull UUID id, @NonNull NotificationString error);
+	void updateSessionIsCancellable(@NonNull UUID id, boolean isCancellable);
+
+	void setError(@NonNull UUID id, @NonNull ResolvableString error);
 }

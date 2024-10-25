@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import kotlin.math.roundToInt
 private const val BUFFER_LENGTH = 8192
 
 @get:JvmSynthetic
-internal const val STREAM_COPY_PROGRESS_MAX: Int = 100
+internal const val PROGRESS_MAX: Int = 100
 
 @JvmSynthetic
 internal inline fun InputStream.copyTo(
@@ -33,7 +33,7 @@ internal inline fun InputStream.copyTo(
 	signal: CancellationSignal,
 	onProgress: (Int) -> Unit = {}
 ) {
-	val progressRatio = (size.toDouble() / (BUFFER_LENGTH * STREAM_COPY_PROGRESS_MAX)).roundToInt().coerceAtLeast(1)
+	val progressRatio = (size.toDouble() / (BUFFER_LENGTH * PROGRESS_MAX)).roundToInt().coerceAtLeast(1)
 	val buffer = ByteArray(BUFFER_LENGTH)
 	var currentProgress = 0
 	var accumulatedBytesRead = 0
@@ -50,11 +50,11 @@ internal inline fun InputStream.copyTo(
 			accumulatedBytesRead = 0
 			val progress = ++currentProgress / progressRatio
 			val shouldEmitProgress = currentProgress - (progress * progressRatio) == 0
-			if (shouldEmitProgress && progress <= STREAM_COPY_PROGRESS_MAX) {
+			if (shouldEmitProgress && progress <= PROGRESS_MAX) {
 				progressEmitCounter++
 				onProgress(1)
 			}
 		}
 	}
-	onProgress(STREAM_COPY_PROGRESS_MAX - progressEmitCounter)
+	onProgress(PROGRESS_MAX - progressEmitCounter)
 }

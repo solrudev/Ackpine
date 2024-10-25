@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package ru.solrudev.ackpine.sample.install
 
 import kotlinx.coroutines.flow.StateFlow
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.parameters.NotificationString
 import java.util.UUID
 
 interface SessionDataRepository {
@@ -27,5 +27,6 @@ interface SessionDataRepository {
 	fun addSessionData(sessionData: SessionData)
 	fun removeSessionData(id: UUID)
 	fun updateSessionProgress(id: UUID, progress: Progress)
-	fun setError(id: UUID, error: NotificationString)
+	fun updateSessionIsCancellable(id: UUID, isCancellable: Boolean)
+	fun setError(id: UUID, error: ResolvableString)
 }

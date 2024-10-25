@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.sample.install
+description = "Abstractions for resolvable and persistable Android resources"
 
-import ru.solrudev.ackpine.resources.ResolvableString
+plugins {
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+}
 
-data class InstallUiState(
-	val error: ResolvableString = ResolvableString.empty(),
-	val sessions: List<SessionData> = emptyList(),
-	val sessionsProgress: List<SessionProgress> = emptyList()
-)
+ackpine {
+	id = "resources"
+	artifact {
+		name = "Ackpine Resources"
+	}
+}
+
+dependencies {
+	api(androidx.annotation)
+}

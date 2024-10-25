@@ -28,6 +28,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.session.helpers.commitSession
+import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
@@ -82,10 +83,10 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			return
 		}
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
-		// Hacky workaround: progress not going higher than 0.8 means session is dead. This is needed to complete
+		// Hacky workaround: progress not going higher after commit means session is dead. This is needed to complete
 		// the Ackpine session with failure on reasons which are not handled in PackageInstallerStatusReceiver.
 		// For example, "There was a problem parsing the package" error falls under that.
-		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= 0.81
+		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= getSessionBasedSessionCommitProgressValue()
 		if (!isSessionAlive) {
 			setLoading(isLoading = true, delayMillis = 100)
 			handler.postDelayed(deadSessionCompletionRunnable, 1000)

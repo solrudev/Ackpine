@@ -51,16 +51,16 @@ import ru.solrudev.ackpine.exceptions.SplitPackageException;
 import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.installer.PackageInstaller;
 import ru.solrudev.ackpine.installer.parameters.InstallParameters;
+import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
-import ru.solrudev.ackpine.session.parameters.NotificationString;
 import ru.solrudev.ackpine.splits.Apk;
 
 public final class InstallViewModel extends ViewModel {
 
-	private final MutableLiveData<NotificationString> error = new MutableLiveData<>();
+	private final MutableLiveData<ResolvableString> error = new MutableLiveData<>();
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
@@ -92,13 +92,12 @@ public final class InstallViewModel extends ViewModel {
 					.build());
 			final var sessionData = new SessionData(session.getId(), fileName);
 			sessionDataRepository.addSessionData(sessionData);
-			session.addStateListener(subscriptions, new SessionStateListener(session));
-			session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+			addSessionListeners(session);
 		});
 	}
 
 	@NonNull
-	public LiveData<NotificationString> getError() {
+	public LiveData<ResolvableString> getError() {
 		return error;
 	}
 
@@ -113,7 +112,7 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void clearError() {
-		error.setValue(NotificationString.empty());
+		error.setValue(ResolvableString.empty());
 	}
 
 	public void cancelSession(@NonNull UUID id) {
@@ -126,7 +125,7 @@ public final class InstallViewModel extends ViewModel {
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // no-op
 			}
 		}, MoreExecutors.directExecutor());
 	}
@@ -153,15 +152,24 @@ public final class InstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
-					session.addStateListener(subscriptions, new SessionStateListener(session));
-					session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+					addSessionListeners(session);
 				}
 			}
 
 			@Override
-			public void onFailure(@NonNull Throwable t) {
+			public void onFailure(@NonNull Throwable t) { // no-op
 			}
 		}, MoreExecutors.directExecutor());
+	}
+
+	private void addSessionListeners(@NonNull ProgressSession<InstallFailure> session) {
+		session.addStateListener(subscriptions, new SessionStateListener(session));
+		session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
+		session.addStateListener(subscriptions, (sessionId, state) -> {
+			if (state instanceof Session.State.Committed) {
+				sessionDataRepository.updateSessionIsCancellable(sessionId, false);
+			}
+		});
 	}
 
 	private List<SessionData> getSessionsSnapshot() {
@@ -179,22 +187,22 @@ public final class InstallViewModel extends ViewModel {
 			return uris;
 		} catch (SplitPackageException exception) {
 			if (exception instanceof NoBaseApkException) {
-				error.postValue(NotificationString.resource(R.string.error_no_base_apk));
+				error.postValue(ResolvableString.transientResource(R.string.error_no_base_apk));
 			} else if (exception instanceof ConflictingBaseApkException) {
-				error.postValue(NotificationString.resource(R.string.error_conflicting_base_apk));
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_base_apk));
 			} else if (exception instanceof ConflictingSplitNameException e) {
-				error.postValue(NotificationString.resource(R.string.error_conflicting_split_name, e.getName()));
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_split_name, e.getName()));
 			} else if (exception instanceof ConflictingPackageNameException e) {
-				error.postValue(NotificationString.resource(R.string.error_conflicting_package_name,
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_package_name,
 						e.getExpected(), e.getActual(), e.getName()));
 			} else if (exception instanceof ConflictingVersionCodeException e) {
-				error.postValue(NotificationString.resource(R.string.error_conflicting_version_code,
+				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_version_code,
 						e.getExpected(), e.getActual(), e.getName()));
 			}
 			return Collections.emptyList();
 		} catch (Exception exception) {
 			final var message = exception.getMessage() != null ? exception.getMessage() : "";
-			error.postValue(NotificationString.raw(message));
+			error.postValue(ResolvableString.raw(message));
 			Log.e("InstallViewModel", null, exception);
 			return Collections.emptyList();
 		}
@@ -220,8 +228,8 @@ public final class InstallViewModel extends ViewModel {
 		public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
 			final var message = failure.getMessage();
 			final var error = message != null
-					? NotificationString.resource(R.string.session_error_with_reason, message)
-					: NotificationString.resource(R.string.session_error);
+					? ResolvableString.transientResource(R.string.session_error_with_reason, message)
+					: ResolvableString.transientResource(R.string.session_error);
 			sessionDataRepository.setError(sessionId, error);
 			if (failure instanceof Failure.Exceptional f) {
 				Log.e("InstallViewModel", null, f.getException());

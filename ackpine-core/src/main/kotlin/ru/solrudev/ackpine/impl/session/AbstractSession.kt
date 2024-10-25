@@ -119,7 +119,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Release any held resources after session's completion or cancellation. Processing in this method should be
 	 * lightweight.
 	 */
-	protected open fun doCleanup() {}
+	protected open fun doCleanup() { /* optional */ }
 
 	/**
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
@@ -133,13 +133,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * This callback method is invoked when the session's been committed. Processing in this method should be
 	 * lightweight.
 	 */
-	protected open fun onCommitted() {}
+	protected open fun onCommitted() { /* optional */ }
 
 	/**
 	 * This callback method is invoked when the session's been [completed][Session.isCompleted]. Processing in
 	 * this method should be lightweight.
 	 */
-	protected open fun onCompleted(success: Boolean) {}
+	protected open fun onCompleted(success: Boolean) { /* optional */ }
 
 	final override fun launch(): Boolean {
 		if (isPreparing || isCancelling.get()) {

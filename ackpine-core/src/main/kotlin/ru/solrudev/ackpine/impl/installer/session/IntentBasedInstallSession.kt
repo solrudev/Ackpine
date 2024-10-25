@@ -27,14 +27,13 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
-import ru.solrudev.ackpine.impl.installer.session.helpers.STREAM_COPY_PROGRESS_MAX
+import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -98,17 +97,25 @@ internal class IntentBasedInstallSession internal constructor(
 		if (initialState.isTerminal) {
 			return
 		}
-		val isSuccessfulSelfUpdate = if (initialState is Committed && context.packageName == packageName) {
-			getLastSelfUpdateTimestamp() > lastUpdateTimestamp
-		} else {
-			false
-		}
+		// Though it somewhat helps with self-update sessions, it's still faulty:
+		// if app is force-stopped while the session is committed (not confirmed) and in the meantime
+		// another installer updates the app, this session will be viewed as completed successfully.
+		// We can check that initiating installer package is the same as ours, but then if this session
+		// was successful, and before launching the app again it was updated by another installer,
+		// the session will be stuck as committed. Sadly, without centralized system
+		// sessions repository, such as android.content.pm.PackageInstaller, we can't reliably determine
+		// whether the intent-based Ackpine session was really successful.
+		val isSelfUpdate = initialState is Committed && context.packageName == packageName
+		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
+		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
 		if (isSuccessfulSelfUpdate && needToCompleteIfSucceeded) {
 			complete(Succeeded)
 		}
 		if (isSuccessfulSelfUpdate) {
-			executor.executeWithSemaphore(dbWriteSemaphore) {
-				lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
+			executor.execute {
+				dbWriteSemaphore.withPermit {
+					lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
+				}
 			}
 		}
 	}
@@ -156,12 +163,12 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	override fun onCommitted() {
-		progress = Progress((STREAM_COPY_PROGRESS_MAX * 0.9).roundToInt(), STREAM_COPY_PROGRESS_MAX)
+		setProgress((PROGRESS_MAX * 0.9).roundToInt())
 	}
 
 	override fun onCompleted(success: Boolean) {
 		if (success) {
-			progress = Progress(STREAM_COPY_PROGRESS_MAX, STREAM_COPY_PROGRESS_MAX)
+			setProgress(PROGRESS_MAX)
 		}
 	}
 
@@ -187,7 +194,7 @@ internal class IntentBasedInstallSession internal constructor(
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
 					currentProgress += delta
-					progress = Progress((currentProgress * 0.8).roundToInt(), STREAM_COPY_PROGRESS_MAX)
+					setProgress((currentProgress * 0.8).roundToInt())
 				})
 				bufferedOutputStream.flush()
 				outputStream.fd.sync()

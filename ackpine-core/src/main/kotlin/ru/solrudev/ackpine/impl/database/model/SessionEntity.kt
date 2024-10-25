@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.database.model
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.RestrictTo
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
@@ -24,8 +23,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.session.parameters.DrawableId
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
@@ -40,12 +40,11 @@ internal data class SessionEntity internal constructor(
 	@ColumnInfo(name = "confirmation")
 	val confirmation: Confirmation,
 	@ColumnInfo(name = "notification_title")
-	val notificationTitle: NotificationString,
+	val notificationTitle: ResolvableString,
 	@ColumnInfo(name = "notification_text")
-	val notificationText: NotificationString,
-	@DrawableRes
+	val notificationText: ResolvableString,
 	@ColumnInfo(name = "notification_icon")
-	val notificationIcon: Int,
+	val notificationIcon: DrawableId,
 	@ColumnInfo(name = "require_user_action", defaultValue = "true")
 	val requireUserAction: Boolean,
 	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0", index = true)

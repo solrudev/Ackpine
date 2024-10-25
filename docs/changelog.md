@@ -1,6 +1,47 @@
 Change Log
 ==========
 
+Version 0.8.0 (2024-10-25)
+--------------------------
+
+### Dependencies
+
+- Extracted `ackpine-resources` artifact, which is now depended upon by `ackpine-core`.
+
+### Bug fixes and improvements
+
+- `NotificationString` is superseded by `ResolvableString` to accommodate stable string resources resolution. `ResolvableString` is now located in `ackpine-resources` artifact and can also be used separately for general app needs. `NotificationString` is deprecated and will be removed in next minor release.
+
+    To migrate `NotificationString.resource()` usages to `ResolvableString`, create classes inheriting from `ResolvableString.Resource` like this:
+    ```kotlin
+    // Old
+    NotificationString.resource(R.string.install_message, fileName)
+    
+    // New
+    class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
+        override fun stringId() = R.string.install_message
+        private companion object {
+            private const val serialVersionUID = 4749568844072243110L
+        }
+    }
+    
+    InstallMessage(fileName)
+    ```
+
+    Note that this requires to purge internal database because of incompatible changes, so all previous sessions will be cleared when Ackpine is updated to 0.8.0.
+
+- `NotificationData` now requires an instance of `DrawableId` class instead of integer drawable resource ID for icon to accommodate stable drawable resources resolution.
+- Don't hardcode a condition in implementation of `SESSION_BASED` sessions when Android's `PackageInstaller.Session` fails without report. It should possibly improve reliability on different devices.
+- Fix progress bars on install screen not using latest value in sample apps.
+- Disable cancel button when session's state is Committed in sample apps.
+
+### Public API changes
+
+- Breaking: `NotificationData`, `NotificationData.Builder` and `NotificationDataDsl` now require `ResolvableString` instead of `NotificationString` as `title` and `contentText` type. `NotificationString` is deprecated with an error deprecation level and will be removed in next minor release.
+- Breaking: `NotificationData`, `NotificationData.Builder` and `NotificationDataDsl` now require `DrawableId` instead of integer as `icon` type.
+- Added `ResolvableString` sealed interface in `ackpine-resources` module.
+- Added `DrawableId` interface in `ackpine-core` module.
+
 Version 0.7.6 (2024-10-12)
 --------------------------
 

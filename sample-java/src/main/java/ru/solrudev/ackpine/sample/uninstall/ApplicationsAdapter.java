@@ -29,7 +29,7 @@ import ru.solrudev.ackpine.sample.databinding.ItemApplicationBinding;
 
 public final class ApplicationsAdapter extends ListAdapter<ApplicationData, ApplicationsAdapter.ApplicationViewHolder> {
 
-	private final static ApplicationDiffCallback DIFF_CALLBACK = new ApplicationDiffCallback();
+	private static final ApplicationDiffCallback DIFF_CALLBACK = new ApplicationDiffCallback();
 	private final Consumer<String> onClick;
 
 	public ApplicationsAdapter(Consumer<String> onClick) {
@@ -37,7 +37,7 @@ public final class ApplicationsAdapter extends ListAdapter<ApplicationData, Appl
 		this.onClick = onClick;
 	}
 
-	public final static class ApplicationViewHolder extends RecyclerView.ViewHolder {
+	public static final class ApplicationViewHolder extends RecyclerView.ViewHolder {
 
 		private final ItemApplicationBinding binding;
 		private final Consumer<String> onClick;
@@ -73,7 +73,7 @@ public final class ApplicationsAdapter extends ListAdapter<ApplicationData, Appl
 		holder.bind(applicationData);
 	}
 
-	private final static class ApplicationDiffCallback extends DiffUtil.ItemCallback<ApplicationData> {
+	private static final class ApplicationDiffCallback extends DiffUtil.ItemCallback<ApplicationData> {
 		@Override
 		public boolean areItemsTheSame(@NonNull ApplicationData oldItem, @NonNull ApplicationData newItem) {
 			return oldItem.packageName().equals(newItem.packageName());

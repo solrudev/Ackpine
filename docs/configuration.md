@@ -21,10 +21,27 @@ An example of creating a session with custom parameters:
         name = fileName
         requireUserAction = false
         notification {
-            title = NotificationString.resource(R.string.install_message_title)
-            contentText = NotificationString.resource(R.string.install_message, fileName)
-            icon = R.drawable.ic_install
+            title = InstallMessageTitle
+            contentText = InstallMessage(fileName)
+            icon = InstallIcon
         }
+    }
+    
+    object InstallMessageTitle : ResolvableString.Resource() {
+        private const val serialVersionUID = -1310602635578779088L
+        override fun stringId() = R.string.install_message_title
+    }
+    
+    class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
+        override fun stringId() = R.string.install_message
+        private companion object {
+            private const val serialVersionUID = 4749568844072243110L
+        }
+    }
+    
+    object InstallIcon : DrawableId {
+        private const val serialVersionUID = 3692803605642002954L
+        override fun drawableId() = R.drawable.ic_install
     }
     ```
 
@@ -39,11 +56,54 @@ An example of creating a session with custom parameters:
             .setName(fileName)
             .setRequireUserAction(false)
             .setNotificationData(new NotificationData.Builder()
-                    .setTitle(NotificationString.resource(R.string.install_message_title))
-                    .setContentText(NotificationString.resource(R.string.install_message, fileName))
-                    .setIcon(R.drawable.ic_install)
+                    .setTitle(Resources.INSTALL_MESSAGE_TITLE)
+                    .setContentText(new Resources.InstallMessage(fileName))
+                    .setIcon(Resources.INSTALL_ICON)
                     .build())
             .build());
+    
+    public abstract class Resources {
+    
+        public static final ResolvableString INSTALL_MESSAGE_TITLE = new InstallMessageTitle();
+        public static final DrawableId INSTALL_ICON = new InstallIcon();
+    
+        private static class InstallMessageTitle extends ResolvableString.Resource {
+    
+            @Serial
+            private static final long serialVersionUID = -1310602635578779088L;
+    
+            @Override
+            protected int stringId() {
+                return R.string.install_message_title;
+            }
+        }
+    
+        public static class InstallMessage extends ResolvableString.Resource {
+    
+            @Serial
+            private static final long serialVersionUID = 4749568844072243110L;
+    
+            public InstallMessage(String fileName) {
+                super(fileName);
+            }
+    
+            @Override
+            protected int stringId() {
+                return R.string.install_message;
+            }
+        }
+    
+        private static class InstallIcon implements DrawableId {
+    
+            @Serial
+            private static final long serialVersionUID = 3692803605642002954L;
+    
+            @Override
+            public int drawableId() {
+                return R.drawable.ic_install;
+            }
+        }
+    }
     ```
 
 User's confirmation
@@ -79,7 +139,7 @@ It is possible to provide notification title, text and icon.
 !!! Note
     Any configuration for notification will be ignored if `Confirmation` is set to `IMMEDIATE`, because the notification will not be shown.
 
-`NotificationString` is a type used for `NotificationData` text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library.
+`ResolvableString` is a type used for `NotificationData` text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
 
 `android.R.drawable.ic_dialog_alert` is used as a default icon.
 

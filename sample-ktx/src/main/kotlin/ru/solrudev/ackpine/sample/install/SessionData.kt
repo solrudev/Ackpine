@@ -16,14 +16,14 @@
 
 package ru.solrudev.ackpine.sample.install
 
-import ru.solrudev.ackpine.session.parameters.NotificationString
+import ru.solrudev.ackpine.resources.ResolvableString
 import java.io.Serializable
 import java.util.UUID
 
 data class SessionData(
 	val id: UUID,
 	val name: String,
-	val error: NotificationString = NotificationString.empty(),
+	val error: ResolvableString = ResolvableString.empty(),
 	val isCancellable: Boolean = true
 ) : Serializable {
 	private companion object {

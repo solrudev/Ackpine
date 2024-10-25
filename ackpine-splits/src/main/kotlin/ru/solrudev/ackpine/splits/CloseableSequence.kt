@@ -88,8 +88,8 @@ private class CloseableSequenceImpl<T>(
 	)
 
 	override fun iterator(): Iterator<T> {
-		if (!isConsumed.compareAndSet(false, true)) {
-			throw IllegalStateException("This sequence can be consumed only once.")
+		check(isConsumed.compareAndSet(false, true)) {
+			"This sequence can be consumed only once."
 		}
 		return iterator {
 			scope = this

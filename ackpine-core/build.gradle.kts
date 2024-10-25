@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ dependencies {
 	api(androidx.annotation)
 	api(androidx.startup)
 	api(libs.listenablefuture)
+	api(projects.ackpineResources)
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.concurrent.futures.core)
 	implementation(androidx.core.ktx)

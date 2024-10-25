@@ -16,8 +16,7 @@
 
 package ru.solrudev.ackpine.session.parameters
 
-import android.annotation.SuppressLint
-import androidx.annotation.DrawableRes
+import ru.solrudev.ackpine.resources.ResolvableString
 
 /**
  * DSL allowing to configure [high-priority notification for Session confirmation][NotificationData].
@@ -30,24 +29,21 @@ public interface NotificationDataDsl {
 	 *
 	 * Default value is [android.R.drawable.ic_dialog_alert].
 	 */
-	@set:SuppressLint("SupportAnnotationUsage")
-	@get:DrawableRes
-	@set:DrawableRes
-	public var icon: Int
+	public var icon: DrawableId
 
 	/**
 	 * Notification title.
 	 *
 	 * By default, a string from Ackpine library is used.
 	 */
-	public var title: NotificationString
+	public var title: ResolvableString
 
 	/**
 	 * Notification text.
 	 *
 	 * By default, a string from Ackpine library is used.
 	 */
-	public var contentText: NotificationString
+	public var contentText: ResolvableString
 }
 
 @PublishedApi
@@ -55,19 +51,19 @@ internal class NotificationDataDslBuilder : NotificationDataDsl {
 
 	private val builder = NotificationData.Builder()
 
-	override var icon: Int
+	override var icon: DrawableId
 		get() = builder.icon
 		set(value) {
 			builder.setIcon(value)
 		}
 
-	override var title: NotificationString
+	override var title: ResolvableString
 		get() = builder.title
 		set(value) {
 			builder.setTitle(value)
 		}
 
-	override var contentText: NotificationString
+	override var contentText: ResolvableString
 		get() = builder.contentText
 		set(value) {
 			builder.setContentText(value)
