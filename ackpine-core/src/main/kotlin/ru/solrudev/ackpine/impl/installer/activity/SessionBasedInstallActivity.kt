@@ -83,7 +83,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			return
 		}
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
-		// Hacky workaround: progress not going higher than 0.8 means session is dead. This is needed to complete
+		// Hacky workaround: progress not going higher after commit means session is dead. This is needed to complete
 		// the Ackpine session with failure on reasons which are not handled in PackageInstallerStatusReceiver.
 		// For example, "There was a problem parsing the package" error falls under that.
 		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= getSessionBasedSessionCommitProgressValue()
