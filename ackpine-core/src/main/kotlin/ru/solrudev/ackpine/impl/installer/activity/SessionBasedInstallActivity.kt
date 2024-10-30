@@ -114,6 +114,10 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			// outside of confirmation dialog, so this may lead to repeated confirmation if permission status changes.
 			isSessionStuck && isInstallPermissionStatusChanged -> launchInstallActivity()
 			// Session proceeded normally.
+			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
+			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
+			// gets updated almost like the installation was confirmed even though it wasn't and no result is received
+			// from PackageInstallerStatusReceiver.
 			isSessionAlive && !isSessionStuck -> finish()
 			// User has dismissed confirmation activity.
 			isSessionAlive && isActivityCancelled -> abortSession()
