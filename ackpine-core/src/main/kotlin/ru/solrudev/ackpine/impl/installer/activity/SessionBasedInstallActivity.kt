@@ -18,14 +18,17 @@
 
 package ru.solrudev.ackpine.impl.installer.activity
 
+import android.Manifest.permission.INSTALL_PACKAGES
 import android.content.Intent
 import android.content.pm.PackageInstaller
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import androidx.core.content.ContextCompat
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.session.helpers.commitSession
 import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
@@ -34,6 +37,7 @@ import ru.solrudev.ackpine.session.Session
 
 private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
 private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
+private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG, startsActivity = false) {
@@ -54,6 +58,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(CONFIRMATION_TAG) }
 	private val handler = Handler(Looper.getMainLooper())
+	private var canInstallPackages = false
 
 	private val deadSessionCompletionRunnable = Runnable {
 		withCompletableSession { session ->
@@ -65,6 +70,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		canInstallPackages = savedInstanceState?.getBoolean(CAN_INSTALL_PACKAGES_KEY) ?: canInstallPackages()
 		if (savedInstanceState == null) {
 			launchInstallActivity()
 		}
@@ -77,30 +83,61 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		}
 	}
 
+	override fun onSaveInstanceState(outState: Bundle) {
+		super.onSaveInstanceState(outState)
+		if (isChangingConfigurations) {
+			outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
+		}
+	}
+
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
 		if (requestCode != this.requestCode) {
 			return
 		}
+		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
-		// Hacky workaround: progress not going higher after commit means session is dead. This is needed to complete
-		// the Ackpine session with failure on reasons which are not handled in PackageInstallerStatusReceiver.
-		// For example, "There was a problem parsing the package" error falls under that.
-		val isSessionAlive = sessionInfo != null && sessionInfo.progress >= getSessionBasedSessionCommitProgressValue()
-		if (!isSessionAlive) {
-			setLoading(isLoading = true, delayMillis = 100)
-			handler.postDelayed(deadSessionCompletionRunnable, 1000)
-		} else {
-			finish()
+		val isSessionAlive = sessionInfo != null
+		val isSessionStuck = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
+		val previousCanInstallPackagesValue = canInstallPackages
+		canInstallPackages = canInstallPackages()
+		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
+		// Order of checks is important.
+		when {
+			// User has cancelled install permission request or hasn't granted permission.
+			!canInstallPackages -> {
+				withCompletableSession { session ->
+					session?.complete(Session.State.Failed(InstallFailure.Generic("Install permission denied")))
+				}
+				finish()
+			}
+			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
+			isSessionStuck && isInstallPermissionStatusChanged -> launchInstallActivity()
+			// Session proceeded normally.
+			isSessionAlive && !isSessionStuck -> finish()
+			// User has dismissed confirmation activity.
+			isSessionAlive && isActivityCancelled -> abortSession()
+			// There was some error while installing which is not handled in PackageInstallerStatusReceiver,
+			// or session may have completed too quickly.
+			else -> {
+				// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
+				setLoading(isLoading = true, delayMillis = 100)
+				handler.postDelayed(deadSessionCompletionRunnable, 1000)
+			}
 		}
 	}
 
 	private fun launchInstallActivity() {
+		canInstallPackages = canInstallPackages()
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
 		notifySessionCommitted()
 	}
+
+	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+			|| packageManager.canRequestPackageInstalls()
+			|| ContextCompat.checkSelfPermission(this, INSTALL_PACKAGES) == PERMISSION_GRANTED
 }
 
 private val InstallActivity.packageInstaller: PackageInstaller
