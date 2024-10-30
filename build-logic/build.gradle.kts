@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ gradlePlugin {
 dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.kotlin.android)
-	implementation(libs.plugin.nexus.publish)
+	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
 	implementation(libs.plugin.binaryCompatibilityValidator)
 }

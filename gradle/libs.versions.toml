@@ -5,7 +5,7 @@ kotlin-ksp = "2.0.20-1.0.25"
 
 [libraries]
 materialcomponents = { module = "com.google.android.material:material", version = "1.12.0" }
-plugin-nexus-publish = { module = "io.github.gradle-nexus:publish-plugin", version = "1.3.0" }
+plugin-gradleMavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.30.0" }
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-gradleplugin" }
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
