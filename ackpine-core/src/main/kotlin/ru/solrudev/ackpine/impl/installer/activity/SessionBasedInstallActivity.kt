@@ -85,9 +85,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 
 	override fun onSaveInstanceState(outState: Bundle) {
 		super.onSaveInstanceState(outState)
-		if (isChangingConfigurations) {
-			outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
-		}
+		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
