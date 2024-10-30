@@ -110,6 +110,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 				finish()
 			}
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
+			// Unfortunately, on some OS versions session may stay stuck if confirmation was dismissed by clicking
+			// outside of confirmation dialog, so this may lead to repeated confirmation if permission status changes.
 			isSessionStuck && isInstallPermissionStatusChanged -> launchInstallActivity()
 			// Session proceeded normally.
 			isSessionAlive && !isSessionStuck -> finish()
