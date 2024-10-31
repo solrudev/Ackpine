@@ -10,7 +10,7 @@ annotation = { module = "androidx.annotation:annotation", version = "1.8.2" }
 appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 concurrent-futures-core = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
 concurrent-futures-ktx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent" }
-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.4" }
+constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.0" }
 coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version = "1.2.0" }
 core-ktx = { module = "androidx.core:core-ktx", version = "1.12.0" }
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "lifecycle" }
