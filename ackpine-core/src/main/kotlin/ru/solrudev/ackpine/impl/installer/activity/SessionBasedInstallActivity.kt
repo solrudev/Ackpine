@@ -19,6 +19,7 @@
 package ru.solrudev.ackpine.impl.installer.activity
 
 import android.Manifest.permission.INSTALL_PACKAGES
+import android.app.ActivityManager
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -29,6 +30,7 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
+import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.session.helpers.commitSession
 import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
@@ -38,6 +40,7 @@ import ru.solrudev.ackpine.session.Session
 private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
 private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
+private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG, startsActivity = false) {
@@ -59,6 +62,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(CONFIRMATION_TAG) }
 	private val handler = Handler(Looper.getMainLooper())
 	private var canInstallPackages = false
+	private var isFirstResume = true
+	private var isOnActivityResultCalled = false
 
 	private val deadSessionCompletionRunnable = Runnable {
 		withCompletableSession { session ->
@@ -71,9 +76,19 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		canInstallPackages = savedInstanceState?.getBoolean(CAN_INSTALL_PACKAGES_KEY) ?: canInstallPackages()
+		isFirstResume = savedInstanceState?.getBoolean(IS_FIRST_RESUME_KEY) ?: true
 		if (savedInstanceState == null) {
 			launchInstallActivity()
 		}
+	}
+
+	override fun onResume() {
+		super.onResume()
+		if (!isFirstResume && !isOnActivityResultCalled && getTopActivityClassName() == this::class.java.name) {
+			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
+			abortSession()
+		}
+		isFirstResume = false
 	}
 
 	override fun onDestroy() {
@@ -86,12 +101,14 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	override fun onSaveInstanceState(outState: Bundle) {
 		super.onSaveInstanceState(outState)
 		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
+		outState.putBoolean(IS_FIRST_RESUME_KEY, isFirstResume)
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		if (requestCode != this.requestCode) {
 			return
 		}
+		isOnActivityResultCalled = true
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
 		val isSessionAlive = sessionInfo != null
@@ -136,6 +153,18 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
 		notifySessionCommitted()
+	}
+
+	private fun getTopActivityClassName(): String? {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return null
+		}
+		return getSystemService<ActivityManager>()
+			?.appTasks
+			?.firstOrNull()
+			?.taskInfo
+			?.topActivity
+			?.className
 	}
 
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
