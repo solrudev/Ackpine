@@ -119,10 +119,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		// Order of checks is important.
 		when {
 			// User has cancelled install permission request or hasn't granted permission.
-			!canInstallPackages -> {
-				abortSession("Install permission denied")
-				finish()
-			}
+			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
 			// Unfortunately, on some OS versions session may stay stuck if confirmation was dismissed by clicking
 			// outside of confirmation dialog, so this may lead to repeated confirmation if permission status changes.
