@@ -121,7 +121,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> {
 				withCompletableSession { session ->
-					session?.complete(Session.State.Failed(InstallFailure.Generic("Install permission denied")))
+					session?.complete(Session.State.Failed(InstallFailure.Aborted("Install permission denied")))
 				}
 				finish()
 			}
