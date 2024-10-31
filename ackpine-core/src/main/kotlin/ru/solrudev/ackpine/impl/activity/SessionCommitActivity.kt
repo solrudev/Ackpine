@@ -127,10 +127,10 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		}
 	}
 
-	protected fun abortSession() = withCompletableSession { session ->
+	protected fun abortSession(message: String? = null) = withCompletableSession { session ->
 		session?.complete(
 			Session.State.Failed(
-				abortedStateFailureFactory("$tag was finished by user")
+				abortedStateFailureFactory(message ?: "$tag was finished by user")
 			)
 		)
 	}
