@@ -165,9 +165,10 @@ public interface DrawableId : Serializable {
 	}
 }
 
-private object DefaultNotificationIcon : DrawableId {
+private data object DefaultNotificationIcon : DrawableId {
 	private const val serialVersionUID = 6906923061913799903L
 	override fun drawableId() = android.R.drawable.ic_dialog_alert
+	private fun readResolve(): Any = DefaultNotificationIcon
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)

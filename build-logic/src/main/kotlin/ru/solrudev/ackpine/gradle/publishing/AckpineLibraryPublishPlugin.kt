@@ -16,47 +16,42 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import com.android.build.gradle.LibraryExtension
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import com.vanniktech.maven.publish.MavenPublishPlugin
+import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.publish.PublishingExtension
-import org.gradle.api.publish.maven.MavenPublication
-import org.gradle.api.publish.maven.plugins.MavenPublishPlugin
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.extra
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.withType
-import org.gradle.plugins.signing.SigningExtension
-import org.gradle.plugins.signing.SigningPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
-import ru.solrudev.ackpine.gradle.Constants
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
-			pluginManager.run {
-				apply(MavenPublishPlugin::class)
-				apply(SigningPlugin::class)
-				apply(DokkaPlugin::class)
-			}
-			val ackpineExtension = extensions.getByType<AckpineExtension>()
-			val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
-			configureDokka(artifact)
-			configurePublishing(ackpineExtension, artifact)
-			configureSigning()
+		check(rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
+			"Applying library-publish plugin requires the publishing plugin to be applied to the root project"
 		}
-		if (plugins.hasPlugin(AckpineLibraryPlugin::class)) {
-			configureSourcesJar()
+		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
+			"Applying library-publish plugin requires the library plugin to be applied"
 		}
+		pluginManager.run {
+			apply(MavenPublishPlugin::class)
+			apply(DokkaPlugin::class)
+		}
+		val ackpineExtension = extensions.getByType<AckpineExtension>()
+		val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
+		configureDokka(artifact)
+		configurePublishing(ackpineExtension, artifact)
 	}
 
 	private fun Project.configureDokka(artifact: AckpineArtifact) = afterEvaluate {
@@ -68,57 +63,45 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 	private fun Project.configurePublishing(
 		ackpineExtension: AckpineExtension,
 		artifact: AckpineArtifact
-	) = afterEvaluate {
-		extensions.configure<PublishingExtension> {
-			publications {
-				create<MavenPublication>("release") {
-					groupId = this@afterEvaluate.group.toString()
-					artifactId = "ackpine-${ackpineExtension.id}"
-					version = this@afterEvaluate.version.toString()
-					from(components.getByName("release"))
+	) = extensions.configure<MavenPublishBaseExtension> {
+		configure(
+			AndroidSingleVariantLibrary(
+				variant = "release",
+				sourcesJar = true,
+				publishJavadocJar = false
+			)
+		)
+		publishToMavenCentral(SonatypeHost.S01)
+		signAllPublications()
 
-					pom {
-						name = artifact.name
-						description = this@afterEvaluate.description
-						url = "https://ackpine.solrudev.ru"
+		afterEvaluate {
+			coordinates(group.toString(), artifactId = "ackpine-${ackpineExtension.id}", version.toString())
 
-						licenses {
-							license {
-								name = "The Apache Software License, Version 2.0"
-								url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-							}
-						}
+			pom {
+				name = artifact.name
+				description = this@afterEvaluate.description
+				inceptionYear = "2023"
+				url = "https://ackpine.solrudev.ru"
 
-						developers {
-							developer {
-								id = "solrudev"
-								name = "Ilya Fomichev"
-							}
-						}
-
-						scm {
-							connection = "scm:git:github.com/solrudev/Ackpine.git"
-							developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
-							url = "https://github.com/solrudev/Ackpine/tree/master"
-						}
+				licenses {
+					license {
+						name = "The Apache Software License, Version 2.0"
+						url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 					}
 				}
-			}
-		}
-	}
 
-	private fun Project.configureSigning() = extensions.configure<SigningExtension> {
-		val keyId = rootProject.extra[Constants.signingKeyId] as String
-		val key = rootProject.extra[Constants.signingKey] as String
-		val password = rootProject.extra[Constants.signingPassword] as String
-		useInMemoryPgpKeys(keyId, key, password)
-		sign(extensions.getByType<PublishingExtension>().publications)
-	}
+				developers {
+					developer {
+						id = "solrudev"
+						name = "Ilya Fomichev"
+					}
+				}
 
-	private fun Project.configureSourcesJar() = extensions.configure<LibraryExtension> {
-		publishing {
-			singleVariant("release") {
-				withSourcesJar()
+				scm {
+					connection = "scm:git:github.com/solrudev/Ackpine.git"
+					developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
+					url = "https://github.com/solrudev/Ackpine/tree/master"
+				}
 			}
 		}
 	}

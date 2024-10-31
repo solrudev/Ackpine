@@ -127,6 +127,14 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		}
 	}
 
+	protected fun abortSession(message: String? = null) = withCompletableSession { session ->
+		session?.complete(
+			Session.State.Failed(
+				abortedStateFailureFactory(message ?: "$tag was finished by user")
+			)
+		)
+	}
+
 	private fun initializeState(savedInstanceState: Bundle?) {
 		if (savedInstanceState != null) {
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
@@ -157,14 +165,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				abortSession()
 			}
 		}
-	}
-
-	private fun abortSession() = withCompletableSession { session ->
-		session?.complete(
-			Session.State.Failed(
-				abortedStateFailureFactory("$tag was finished by user")
-			)
-		)
 	}
 
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->

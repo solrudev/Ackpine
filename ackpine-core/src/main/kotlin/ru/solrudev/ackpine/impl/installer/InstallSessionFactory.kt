@@ -132,11 +132,13 @@ internal class InstallSessionFactoryImpl internal constructor(
 private object AckpinePromptInstallTitle : ResolvableString.Resource() {
 	private const val serialVersionUID = 7815666924791958742L
 	override fun stringId() = R.string.ackpine_prompt_install_title
+	private fun readResolve(): Any = AckpinePromptInstallTitle
 }
 
 private object AckpinePromptInstallMessage : ResolvableString.Resource() {
 	private const val serialVersionUID = 1224637050663404482L
 	override fun stringId() = R.string.ackpine_prompt_install_message
+	private fun readResolve(): Any = AckpinePromptInstallMessage
 }
 
 private class AckpinePromptInstallMessageWithLabel(name: String) : ResolvableString.Resource(name) {
