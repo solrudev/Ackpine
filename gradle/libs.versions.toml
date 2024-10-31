@@ -13,7 +13,7 @@ plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-c
 apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
 listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
-guava = { module = "com.google.guava:guava", version = "33.3.0-android" }
+guava = { module = "com.google.guava:guava", version = "33.3.1-android" }
 viewbindingpropertydelegate = { module = "com.github.kirich1409:viewbindingpropertydelegate-noreflection", version = "1.5.9" }
 
 [plugins]
