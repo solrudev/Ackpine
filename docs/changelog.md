@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+Version 0.8.1 (2024-10-31)
+--------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.0.21.
+- Updated `androidx.annotation` to 1.9.1.
+- Updated `androidx.activity` to 1.9.3 (sample apps dependency).
+- Updated `androidx.constraintlayout` to 2.2.0 (sample apps dependency).
+- Updated `androidx.lifecycle` to 2.8.7 (sample apps dependency).
+- Updated `androidx.navigation` to 2.8.3 (sample apps dependency).
+- Updated Guava to 33.3.1-android (sample apps dependency).
+- Migrated from `gradle-nexus/publish-plugin` to `vanniktech/gradle-maven-publish-plugin` for publishing artifacts to Maven Central.
+
+### Bug fixes and improvements
+
+- Fix install confirmation from OS not displaying after granting install permission on some devices (particularly Android TV) using `SESSION_BASED` installer. This is a fix for #84.
+- Fix various issues with dismissing install confirmation from OS via clicking outside of confirmation dialog using `SESSION_BASED` installer.
+
 Version 0.8.0 (2024-10-25)
 --------------------------
 
