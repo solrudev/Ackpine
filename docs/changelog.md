@@ -6,7 +6,7 @@ Version 0.8.2 (2024-11-01)
 
 ### Bug fixes and improvements
 
-- Fix repeated install confirmation after granting install permission if confirmation was dismissed by clicking outside of confirmation dialog on some OS versions introduced in 0.8.1.
+- Fix introduced in 0.8.1 repeated install confirmation after granting install permission if confirmation was dismissed by clicking outside of confirmation dialog on some OS versions.
 - Don't use `requireUserAction` option in samples as it's unstable with different vendors and OS versions.
 
 Version 0.8.1 (2024-10-31)
