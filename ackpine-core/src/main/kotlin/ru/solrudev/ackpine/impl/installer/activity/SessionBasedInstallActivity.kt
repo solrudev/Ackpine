@@ -41,6 +41,7 @@ private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
 private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
+private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG, startsActivity = false) {
@@ -64,6 +65,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
+	private var isConfirmationRelaunchNeeded = false
+	private var wasOnTopOnStart = false
 
 	private val deadSessionCompletionRunnable = Runnable {
 		withCompletableSession { session ->
@@ -77,18 +80,27 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		super.onCreate(savedInstanceState)
 		canInstallPackages = savedInstanceState?.getBoolean(CAN_INSTALL_PACKAGES_KEY) ?: canInstallPackages()
 		isFirstResume = savedInstanceState?.getBoolean(IS_FIRST_RESUME_KEY) ?: true
+		wasOnTopOnStart = savedInstanceState?.getBoolean(WAS_ON_TOP_ON_START_KEY) ?: false
 		if (savedInstanceState == null) {
 			launchInstallActivity()
 		}
 	}
 
+	override fun onStart() {
+		super.onStart()
+		wasOnTopOnStart = isOnTop()
+	}
+
 	override fun onResume() {
 		super.onResume()
-		if (!isFirstResume && !isOnActivityResultCalled && getTopActivityClassName() == this::class.java.name) {
+		when {
+			// Activity is freshly created, skip.
+			isFirstResume -> isFirstResume = false
+			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
+			isConfirmationRelaunchNeeded -> launchInstallActivity()
 			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			abortSession()
+			!isOnActivityResultCalled && isOnTop() -> abortSession()
 		}
-		isFirstResume = false
 	}
 
 	override fun onDestroy() {
@@ -102,6 +114,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		super.onSaveInstanceState(outState)
 		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
 		outState.putBoolean(IS_FIRST_RESUME_KEY, isFirstResume)
+		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -121,9 +134,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			// Unfortunately, on some OS versions session may stay stuck if confirmation was dismissed by clicking
-			// outside of confirmation dialog, so this may lead to repeated confirmation if permission status changes.
-			isSessionStuck && isInstallPermissionStatusChanged -> launchInstallActivity()
+			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> isConfirmationRelaunchNeeded = true
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
 			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
@@ -150,11 +161,11 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		notifySessionCommitted()
 	}
 
-	private fun getTopActivityClassName(): String? {
+	private fun isOnTop(): Boolean {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			return null
+			return false
 		}
-		return getSystemService<ActivityManager>()
+		return this::class.java.name == getSystemService<ActivityManager>()
 			?.appTasks
 			?.firstOrNull()
 			?.taskInfo
