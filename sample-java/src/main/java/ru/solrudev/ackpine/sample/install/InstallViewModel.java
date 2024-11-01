@@ -88,7 +88,6 @@ public final class InstallViewModel extends ViewModel {
 			}
 			final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
 					.setName(fileName)
-					.setRequireUserAction(false)
 					.build());
 			final var sessionData = new SessionData(session.getId(), fileName);
 			sessionDataRepository.addSessionData(sessionData);
