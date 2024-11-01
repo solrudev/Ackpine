@@ -82,7 +82,6 @@ class InstallViewModel(
 		}
 		val session = packageInstaller.createSession(uris) {
 			name = fileName
-			requireUserAction = false
 		}
 		val sessionData = SessionData(session.id, fileName)
 		sessionDataRepository.addSessionData(sessionData)
