@@ -65,7 +65,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
-	private var isConfirmationRelaunchNeeded = false
 	private var wasOnTopOnStart = false
 
 	private val deadSessionCompletionRunnable = Runnable {
@@ -96,10 +95,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		when {
 			// Activity is freshly created, skip.
 			isFirstResume -> isFirstResume = false
-			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isConfirmationRelaunchNeeded -> launchInstallActivity()
 			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			!isOnActivityResultCalled && isOnTop() -> abortSession()
+			!isOnActivityResultCalled && wasOnTopOnStart -> abortSession()
 		}
 	}
 
@@ -134,7 +131,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> isConfirmationRelaunchNeeded = true
+			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
 			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
