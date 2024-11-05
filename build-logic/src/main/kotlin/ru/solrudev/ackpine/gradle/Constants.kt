@@ -19,7 +19,4 @@ package ru.solrudev.ackpine.gradle
 public object Constants {
 	public const val SAMPLE_PACKAGE_NAME: String = "ru.solrudev.ackpine.sample"
 	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine"
-	internal const val signingKeyId = "signing.keyId"
-	internal const val signingPassword = "signing.password"
-	internal const val signingKey = "signing.key"
 }
