@@ -77,11 +77,12 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		canInstallPackages = savedInstanceState?.getBoolean(CAN_INSTALL_PACKAGES_KEY) ?: canInstallPackages()
-		isFirstResume = savedInstanceState?.getBoolean(IS_FIRST_RESUME_KEY) ?: true
-		wasOnTopOnStart = savedInstanceState?.getBoolean(WAS_ON_TOP_ON_START_KEY) ?: false
 		if (savedInstanceState == null) {
 			launchInstallActivity()
+		} else {
+			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
+			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
+			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 		}
 	}
 
