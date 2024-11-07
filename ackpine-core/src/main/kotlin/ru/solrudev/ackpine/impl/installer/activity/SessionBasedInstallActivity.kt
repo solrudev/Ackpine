@@ -65,24 +65,24 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
-	private var isConfirmationRelaunchNeeded = false
 	private var wasOnTopOnStart = false
 
 	private val deadSessionCompletionRunnable = Runnable {
-		withCompletableSession { session ->
-			session?.complete(
-				Session.State.Failed(InstallFailure.Generic(message = "Session $sessionId is dead."))
+		completeSession(
+			Session.State.Failed(
+				InstallFailure.Generic(message = "Session $sessionId is dead.")
 			)
-		}
+		)
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		canInstallPackages = savedInstanceState?.getBoolean(CAN_INSTALL_PACKAGES_KEY) ?: canInstallPackages()
-		isFirstResume = savedInstanceState?.getBoolean(IS_FIRST_RESUME_KEY) ?: true
-		wasOnTopOnStart = savedInstanceState?.getBoolean(WAS_ON_TOP_ON_START_KEY) ?: false
 		if (savedInstanceState == null) {
 			launchInstallActivity()
+		} else {
+			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
+			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
+			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 		}
 	}
 
@@ -96,10 +96,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 		when {
 			// Activity is freshly created, skip.
 			isFirstResume -> isFirstResume = false
-			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isConfirmationRelaunchNeeded -> launchInstallActivity()
 			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			!isOnActivityResultCalled && isOnTop() -> abortSession()
+			!isOnActivityResultCalled && wasOnTopOnStart -> abortSession()
 		}
 	}
 
@@ -134,7 +132,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> isConfirmationRelaunchNeeded = true
+			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
 			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
@@ -184,11 +182,7 @@ private val InstallActivity.packageInstaller: PackageInstaller
 private fun InstallActivity.getSessionId(tag: String): Int {
 	val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
 	if (sessionId == null) {
-		withCompletableSession { session ->
-			session?.completeExceptionally(
-				IllegalStateException("$tag: sessionId was null.")
-			)
-		}
+		completeSessionExceptionally(IllegalStateException("$tag: sessionId was null."))
 	}
 	return sessionId ?: -1
 }

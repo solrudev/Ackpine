@@ -34,6 +34,7 @@ import androidx.activity.result.contract.ActivityResultContracts.RequestMultiple
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.core.os.BundleCompat;
 import androidx.core.view.ViewKt;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -55,6 +56,7 @@ import ru.solrudev.ackpine.splits.ZippedApkSplits;
 
 public final class InstallFragment extends Fragment {
 
+	public static final String URI_KEY = "URI";
 	private FragmentInstallBinding binding;
 	private InstallViewModel viewModel;
 
@@ -71,6 +73,20 @@ public final class InstallFragment extends Fragment {
 					}
 				}
 				chooseFile();
+			});
+
+	@RequiresApi(Build.VERSION_CODES.M)
+	private final ActivityResultLauncher<String[]> requestPermissionsActionViewLauncher = registerForActivityResult(
+			new RequestMultiplePermissions(),
+			results -> {
+				for (final var isGranted : results.values()) {
+					if (!isGranted) {
+						resetUriToInstall();
+						return;
+					}
+				}
+				install(getUriToInstall());
+				resetUriToInstall();
 			});
 
 	private final ActivityResultLauncher<String> pickerLauncher =
@@ -95,6 +111,9 @@ public final class InstallFragment extends Fragment {
 		binding.fabInstall.setOnClickListener(v -> onInstallButtonClick());
 		binding.recyclerViewInstall.setAdapter(adapter);
 		observeViewModel();
+		if (getUriToInstall() != null) {
+			onActionView();
+		}
 	}
 
 	@Override
@@ -102,6 +121,24 @@ public final class InstallFragment extends Fragment {
 		binding.recyclerViewInstall.setAdapter(null);
 		binding = null;
 		super.onDestroyView();
+	}
+
+	@Nullable
+	private Uri getUriToInstall() {
+		final var arguments = getArguments();
+		if (arguments == null) {
+			return null;
+		}
+		return BundleCompat.getParcelable(arguments, URI_KEY, Uri.class);
+	}
+
+	private void resetUriToInstall() {
+		final var arguments = getArguments();
+		if (arguments == null) {
+			return;
+		}
+		arguments.remove(URI_KEY);
+		setArguments(arguments);
 	}
 
 	private void observeViewModel() {
@@ -121,11 +158,20 @@ public final class InstallFragment extends Fragment {
 	}
 
 	private void onInstallButtonClick() {
-		if (!allPermissionsGranted()) {
-			requestPermissions();
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || allPermissionsGranted()) {
+			chooseFile();
 			return;
 		}
-		chooseFile();
+		requestPermissionsLauncher.launch(getRequiredPermissions().toArray(new String[]{}));
+	}
+
+	private void onActionView() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || allPermissionsGranted()) {
+			install(getUriToInstall());
+			resetUriToInstall();
+			return;
+		}
+		requestPermissionsActionViewLauncher.launch(getRequiredPermissions().toArray(new String[]{}));
 	}
 
 	private void chooseFile() {
@@ -135,7 +181,7 @@ public final class InstallFragment extends Fragment {
 		}
 	}
 
-	public void install(@Nullable Uri uri) {
+	private void install(@Nullable Uri uri) {
 		if (uri == null) {
 			return;
 		}
@@ -169,10 +215,9 @@ public final class InstallFragment extends Fragment {
 		}
 	}
 
-	private void requestPermissions() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			return;
-		}
+	@RequiresApi(Build.VERSION_CODES.M)
+	@NonNull
+	private HashSet<String> getRequiredPermissions() {
 		final var permissions = new HashSet<String>();
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
 			permissions.add(READ_EXTERNAL_STORAGE);
@@ -180,7 +225,7 @@ public final class InstallFragment extends Fragment {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			permissions.add(POST_NOTIFICATIONS);
 		}
-		requestPermissionsLauncher.launch(permissions.toArray(new String[]{}));
+		return permissions;
 	}
 
 	private boolean allPermissionsGranted() {

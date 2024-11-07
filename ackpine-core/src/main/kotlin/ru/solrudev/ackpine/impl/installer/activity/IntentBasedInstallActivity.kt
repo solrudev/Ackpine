@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,24 +44,17 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 		if (requestCode != this.requestCode) {
 			return
 		}
-		val result = if (resultCode == RESULT_OK) {
-			Session.State.Succeeded
-		} else {
-			Session.State.Failed(InstallFailure.Generic())
-		}
-		withCompletableSession { session ->
-			session?.complete(result)
+		when (resultCode) {
+			RESULT_CANCELED -> abortSession("Session was cancelled")
+			RESULT_OK -> completeSession(Session.State.Succeeded)
+			else -> completeSession(Session.State.Failed(InstallFailure.Generic()))
 		}
 	}
 
 	@Suppress("DEPRECATION")
 	private fun launchInstallActivity() {
 		if (apkUri == null) {
-			withCompletableSession { session ->
-				session?.completeExceptionally(
-					IllegalStateException("$TAG: apkUri was null.")
-				)
-			}
+			completeSessionExceptionally(IllegalStateException("$TAG: apkUri was null."))
 			return
 		}
 		val intent = Intent().apply {

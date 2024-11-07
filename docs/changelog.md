@@ -1,6 +1,15 @@
 Change Log
 ==========
 
+Version 0.8.3 (2024-11-07)
+--------------------------
+
+### Bug fixes and improvements
+
+- Return `Aborted` failure when `INTENT_BASED` install session is cancelled.
+- Return `Aborted` failure when uninstall via `ACTION_UNINSTALL_PACKAGE` is cancelled.
+- Request permissions if they're not granted when sample apps are launched via `ACTION_VIEW` intent.
+
 Version 0.8.2 (2024-11-01)
 --------------------------
 

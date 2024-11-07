@@ -18,13 +18,13 @@ package ru.solrudev.ackpine.sample;
 
 import static android.content.Intent.ACTION_VIEW;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -58,25 +58,13 @@ public final class MainActivity extends AppCompatActivity {
 		maybeHandleInstallUri(intent);
 	}
 
-	@SuppressLint("RestrictedApi")
 	private void maybeHandleInstallUri(@NonNull Intent intent) {
 		final var uri = intent.getData();
 		if (ACTION_VIEW.equals(intent.getAction()) && uri != null) {
-			final var backStack = getNavController().getCurrentBackStack().getValue();
-			String fragmentTag = null;
-			for (final var entry : backStack) {
-				if (entry.getDestination().getId() == R.id.install_fragment) {
-					fragmentTag = entry.getId();
-					break;
-				}
-			}
-			final var fragment = binding.contentNavHost
-					.<NavHostFragment>getFragment()
-					.getChildFragmentManager()
-					.findFragmentByTag(fragmentTag);
-			if (fragment instanceof InstallFragment installFragment) {
-				installFragment.install(uri);
-			}
+			final var arguments = new Bundle();
+			arguments.putParcelable(InstallFragment.URI_KEY, uri);
+			final var navOptions = new NavOptions.Builder().setLaunchSingleTop(true).build();
+			getNavController().navigate(R.id.install_fragment, arguments, navOptions);
 		}
 	}
 
