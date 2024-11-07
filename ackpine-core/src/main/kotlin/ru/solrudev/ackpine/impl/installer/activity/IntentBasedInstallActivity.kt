@@ -44,12 +44,11 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 		if (requestCode != this.requestCode) {
 			return
 		}
-		val result = if (resultCode == RESULT_OK) {
-			Session.State.Succeeded
-		} else {
-			Session.State.Failed(InstallFailure.Generic())
+		when (resultCode) {
+			RESULT_CANCELED -> abortSession("Session was cancelled")
+			RESULT_OK -> completeSession(Session.State.Succeeded)
+			else -> completeSession(Session.State.Failed(InstallFailure.Generic()))
 		}
-		completeSession(result)
 	}
 
 	@Suppress("DEPRECATION")
