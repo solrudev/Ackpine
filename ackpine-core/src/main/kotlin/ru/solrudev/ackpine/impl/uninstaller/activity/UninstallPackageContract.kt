@@ -24,6 +24,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 /**
  * Returns package uninstall [UninstallContract] for current API level.
@@ -40,7 +42,7 @@ internal fun UninstallPackageContract(packageName: String): UninstallContract {
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface UninstallContract {
 	fun createIntent(context: Context): Intent
-	fun parseResult(context: Context, resultCode: Int): Boolean
+	fun parseResult(context: Context, resultCode: Int): Session.State.Completed<UninstallFailure>
 }
 
 private class ActionDeletePackageContract(private val packageName: String) : UninstallContract {
@@ -50,7 +52,12 @@ private class ActionDeletePackageContract(private val packageName: String) : Uni
 		return Intent(Intent.ACTION_DELETE, packageUri)
 	}
 
-	override fun parseResult(context: Context, resultCode: Int) = !context.isPackageInstalled(packageName)
+	override fun parseResult(context: Context, resultCode: Int): Session.State.Completed<UninstallFailure> {
+		if (!context.isPackageInstalled(packageName)) {
+			return Session.State.Succeeded
+		}
+		return Session.State.Failed(UninstallFailure.Generic)
+	}
 
 	private fun Context.isPackageInstalled(packageName: String) = try {
 		packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
@@ -60,11 +67,10 @@ private class ActionDeletePackageContract(private val packageName: String) : Uni
 	}
 
 	private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
-		} else {
-			getPackageInfo(packageName, flags)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			return getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
 		}
+		return getPackageInfo(packageName, flags)
 	}
 }
 
@@ -77,5 +83,11 @@ private class ActionUninstallPackageContract(private val packageName: String) : 
 		putExtra(Intent.EXTRA_RETURN_RESULT, true)
 	}
 
-	override fun parseResult(context: Context, resultCode: Int) = resultCode == Activity.RESULT_OK
+	override fun parseResult(context: Context, resultCode: Int): Session.State.Completed<UninstallFailure> {
+		return when (resultCode) {
+			Activity.RESULT_OK -> Session.State.Succeeded
+			Activity.RESULT_CANCELED -> Session.State.Failed(UninstallFailure.Aborted("Session was cancelled"))
+			else -> Session.State.Failed(UninstallFailure.Generic)
+		}
+	}
 }

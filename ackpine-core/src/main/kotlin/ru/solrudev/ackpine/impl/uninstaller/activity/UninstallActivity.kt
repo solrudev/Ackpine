@@ -63,8 +63,7 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		if (requestCode != this.requestCode) {
 			return
 		}
-		val success = uninstallPackageContract.parseResult(this, resultCode)
-		val result = if (success) Session.State.Succeeded else Session.State.Failed(UninstallFailure.Generic)
+		val result = uninstallPackageContract.parseResult(this, resultCode)
 		completeSession(result)
 	}
 
