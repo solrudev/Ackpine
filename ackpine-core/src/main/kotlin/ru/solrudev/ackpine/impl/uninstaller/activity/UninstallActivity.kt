@@ -48,11 +48,7 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		ackpinePackageUninstaller = PackageUninstaller.getInstance(this)
 		super.onCreate(savedInstanceState)
 		if (packageNameToUninstall == null) {
-			withCompletableSession { session ->
-				session?.completeExceptionally(
-					IllegalStateException("$TAG: packageNameToUninstall was null.")
-				)
-			}
+			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
 			finish()
 			return
 		}
@@ -69,9 +65,7 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		}
 		val success = uninstallPackageContract.parseResult(this, resultCode)
 		val result = if (success) Session.State.Succeeded else Session.State.Failed(UninstallFailure.Generic)
-		withCompletableSession { session ->
-			session?.complete(result)
-		}
+		completeSession(result)
 	}
 
 	@SuppressLint("RestrictedApi")

@@ -99,11 +99,13 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	}
 
 	@JvmSynthetic
-	internal inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult { session ->
-			val completableSession = session as? CompletableSession<F>
-			block(completableSession)
-		}
+	internal fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
+		session?.complete(state)
+	}
+
+	@JvmSynthetic
+	internal fun completeSessionExceptionally(exception: Exception) = withCompletableSession { session ->
+		session?.completeExceptionally(exception)
 	}
 
 	protected fun notifySessionCommitted() {
@@ -133,6 +135,13 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				abortedStateFailureFactory(message ?: "$tag was finished by user")
 			)
 		)
+	}
+
+	private inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
+		ackpineSessionFuture.handleResult { session ->
+			val completableSession = session as? CompletableSession<F>
+			block(completableSession)
+		}
 	}
 
 	private fun initializeState(savedInstanceState: Bundle?) {

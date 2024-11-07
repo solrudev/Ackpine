@@ -68,11 +68,11 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private var wasOnTopOnStart = false
 
 	private val deadSessionCompletionRunnable = Runnable {
-		withCompletableSession { session ->
-			session?.complete(
-				Session.State.Failed(InstallFailure.Generic(message = "Session $sessionId is dead."))
+		completeSession(
+			Session.State.Failed(
+				InstallFailure.Generic(message = "Session $sessionId is dead.")
 			)
-		}
+		)
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -181,11 +181,7 @@ private val InstallActivity.packageInstaller: PackageInstaller
 private fun InstallActivity.getSessionId(tag: String): Int {
 	val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
 	if (sessionId == null) {
-		withCompletableSession { session ->
-			session?.completeExceptionally(
-				IllegalStateException("$tag: sessionId was null.")
-			)
-		}
+		completeSessionExceptionally(IllegalStateException("$tag: sessionId was null."))
 	}
 	return sessionId ?: -1
 }

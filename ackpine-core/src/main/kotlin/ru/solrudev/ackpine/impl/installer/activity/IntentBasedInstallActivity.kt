@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,19 +49,13 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 		} else {
 			Session.State.Failed(InstallFailure.Generic())
 		}
-		withCompletableSession { session ->
-			session?.complete(result)
-		}
+		completeSession(result)
 	}
 
 	@Suppress("DEPRECATION")
 	private fun launchInstallActivity() {
 		if (apkUri == null) {
-			withCompletableSession { session ->
-				session?.completeExceptionally(
-					IllegalStateException("$TAG: apkUri was null.")
-				)
-			}
+			completeSessionExceptionally(IllegalStateException("$TAG: apkUri was null."))
 			return
 		}
 		val intent = Intent().apply {
