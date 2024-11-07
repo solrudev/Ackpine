@@ -27,6 +27,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts.GetContent
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.annotation.RequiresApi
+import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -50,6 +51,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	private val binding by viewBinding(FragmentInstallBinding::bind, R.id.container_install)
 	private val viewModel: InstallViewModel by viewModels { InstallViewModel.Factory }
 
+	private val uriToInstall: Uri?
+		get() = arguments?.let { BundleCompat.getParcelable(it, URI_KEY, Uri::class.java) }
+
 	private val adapter = InstallSessionsAdapter(
 		onCancelClick = { sessionId ->
 			viewModel.cancelSession(sessionId)
@@ -60,10 +64,22 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	)
 
 	@RequiresApi(Build.VERSION_CODES.M)
-	private val requestPermissionsLauncher = registerForActivityResult(RequestMultiplePermissions()) { results ->
+	private val requestPermissionsLauncher = registerForActivityResult(
+		RequestMultiplePermissions()
+	) { results ->
 		if (results.values.all { it }) {
 			chooseFile()
 		}
+	}
+
+	@RequiresApi(Build.VERSION_CODES.M)
+	private val requestPermissionsActionViewLauncher = registerForActivityResult(
+		RequestMultiplePermissions()
+	) { results ->
+		if (results.values.all { it }) {
+			install(uriToInstall)
+		}
+		resetUriToInstall()
 	}
 
 	private val pickerLauncher = registerForActivityResult(GetContent(), ::install)
@@ -75,6 +91,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		}
 		binding.recyclerViewInstall.adapter = adapter
 		observeViewModel()
+		if (uriToInstall != null) {
+			onActionView()
+		}
 	}
 
 	override fun onDestroyView() {
@@ -98,12 +117,27 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		}
 	}
 
+	private fun resetUriToInstall() {
+		val bundle = arguments ?: return
+		bundle.remove(URI_KEY)
+		arguments = bundle
+	}
+
 	private fun onInstallButtonClick() {
-		if (!allPermissionsGranted()) {
-			requestPermissions()
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || allPermissionsGranted()) {
+			chooseFile()
 			return
 		}
-		chooseFile()
+		requestPermissionsLauncher.launch(getRequiredPermissions().toTypedArray())
+	}
+
+	private fun onActionView() {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || allPermissionsGranted()) {
+			install(uriToInstall)
+			resetUriToInstall()
+			return
+		}
+		requestPermissionsActionViewLauncher.launch(getRequiredPermissions().toTypedArray())
 	}
 
 	private fun chooseFile() {
@@ -113,7 +147,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		}
 	}
 
-	fun install(uri: Uri?) {
+	private fun install(uri: Uri?) {
 		if (uri == null) {
 			return
 		}
@@ -135,18 +169,14 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		}
 	}
 
-	private fun requestPermissions() {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			return
-		}
-		val permissions = mutableSetOf<String>()
+	@RequiresApi(Build.VERSION_CODES.M)
+	private fun getRequiredPermissions() = buildSet {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-			permissions += READ_EXTERNAL_STORAGE
+			add(READ_EXTERNAL_STORAGE)
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			permissions += POST_NOTIFICATIONS
+			add(POST_NOTIFICATIONS)
 		}
-		requestPermissionsLauncher.launch(permissions.toTypedArray())
 	}
 
 	private fun allPermissionsGranted(): Boolean {
@@ -158,5 +188,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
 		return readStorage && notifications
+	}
+
+	companion object {
+		const val URI_KEY = "URI"
 	}
 }

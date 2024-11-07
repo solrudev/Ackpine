@@ -16,13 +16,14 @@
 
 package ru.solrudev.ackpine.sample
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import by.kirich1409.viewbindingdelegate.viewBinding
@@ -53,18 +54,16 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 		maybeHandleInstallUri(intent)
 	}
 
-	@SuppressLint("RestrictedApi")
 	private fun maybeHandleInstallUri(intent: Intent) {
 		val uri = intent.data
 		if (intent.action == ACTION_VIEW && uri != null) {
-			val fragmentTag = navController.currentBackStack.value
-				.firstOrNull { it.destination.id == R.id.install_fragment }
-				?.id
-			val installFragment = binding.contentNavHost
-				.getFragment<NavHostFragment>()
-				.childFragmentManager
-				.findFragmentByTag(fragmentTag) as? InstallFragment
-			installFragment?.install(uri)
+			navController.navigate(
+				R.id.install_fragment,
+				bundleOf(InstallFragment.URI_KEY to uri),
+				navOptions {
+					launchSingleTop = true
+				}
+			)
 		}
 	}
 }
