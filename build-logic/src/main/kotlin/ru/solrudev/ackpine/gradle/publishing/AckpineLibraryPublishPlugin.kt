@@ -75,11 +75,13 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		signAllPublications()
 
 		afterEvaluate {
+			val projectDescription = description
+
 			coordinates(group.toString(), artifactId = "ackpine-${ackpineExtension.id}", version.toString())
 
 			pom {
 				name = artifact.name
-				description = this@afterEvaluate.description
+				description = projectDescription
 				inceptionYear = "2023"
 				url = "https://ackpine.solrudev.ru"
 
