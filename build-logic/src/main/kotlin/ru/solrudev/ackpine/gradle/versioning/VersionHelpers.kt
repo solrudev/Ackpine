@@ -17,28 +17,21 @@
 package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.helpers.withProperties
 
-public fun Project.getVersionFromPropertiesFile(): Version = rootProject.file("version.properties").withProperties {
-	val majorVersion = (get("MAJOR_VERSION") as String).toInt()
-	val minorVersion = (get("MINOR_VERSION") as String).toInt()
-	val patchVersion = (get("PATCH_VERSION") as String).toInt()
-	val suffix = (get("SUFFIX") as String).lowercase()
-	val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
-	return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot)
-}
-
-public val Version.versionCode: Int
-	get() {
-		val majorInt = majorVersion * 100000000
-		val minorInt = minorVersion * 1000000
-		val patchInt = patchVersion * 10000
-		val suffixChar = suffix.firstOrNull()
-		val suffixNumberIndex = suffix.firstOrNull { it.isDigit() } ?: ' '
-		val suffixNumber = suffix.substringAfter(suffixNumberIndex, missingDelimiterValue = "0").toInt() * 10
-		val suffixInt = suffixNumber + if (suffixChar != null) {
-			(suffixChar.code - 'a'.code + 1).coerceAtMost(8) * 1000
-		} else 9000
-		val snapshotInt = if (isSnapshot) 0 else 1
-		return majorInt + minorInt + patchInt + suffixInt + snapshotInt
+public fun Project.getVersionFromPropertiesFile(): Version {
+	if (rootProject.hasProperty("parsedVersion")) {
+		return rootProject.extra["parsedVersion"] as Version
 	}
+	rootProject.file("version.properties").withProperties {
+		val majorVersion = (get("MAJOR_VERSION") as String).toInt()
+		val minorVersion = (get("MINOR_VERSION") as String).toInt()
+		val patchVersion = (get("PATCH_VERSION") as String).toInt()
+		val suffix = (get("SUFFIX") as String).lowercase()
+		val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
+		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot).also {
+			rootProject.extra["parsedVersion"] = it
+		}
+	}
+}

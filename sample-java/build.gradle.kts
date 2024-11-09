@@ -16,7 +16,6 @@
 
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
-import ru.solrudev.ackpine.gradle.versioning.versionCode
 
 description = "Sample application in Java showcasing Ackpine usage"
 

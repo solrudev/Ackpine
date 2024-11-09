@@ -17,7 +17,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
-import ru.solrudev.ackpine.gradle.versioning.versionCode
 
 description = "Sample application in Kotlin showcasing Ackpine usage and leveraging ackpine-ktx extensions"
 
