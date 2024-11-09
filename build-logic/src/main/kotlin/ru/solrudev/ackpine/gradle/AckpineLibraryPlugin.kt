@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -45,6 +46,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		val libraryExtension = extensions.getByType<LibraryExtension>()
 		extensions.create<AckpineExtension>("ackpine", libraryExtension)
 		configureAndroid()
+		addToBuildAckpineTask()
 	}
 
 	private fun Project.configureKotlin() {
@@ -78,6 +80,12 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
+		}
+	}
+
+	private fun Project.addToBuildAckpineTask() = extensions.configure<LibraryExtension> {
+		libraryVariants.matching { it.name == "release" }.configureEach {
+			rootProject.tasks.named("buildAckpine").dependsOn(assembleProvider)
 		}
 	}
 }

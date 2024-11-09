@@ -16,17 +16,13 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
-import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
 
@@ -46,14 +42,5 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.registerBuildAckpineTask() = tasks.register("buildAckpine") {
 		group = "build"
 		description = "Assembles all Ackpine library projects."
-		subprojects.forEach { project ->
-			if (project.plugins.hasPlugin(AckpineLibraryPlugin::class)) {
-				project.extensions.configure<LibraryExtension> {
-					libraryVariants.matching { it.name == "release" }.configureEach {
-						dependsOn(assembleProvider)
-					}
-				}
-			}
-		}
 	}
 }
