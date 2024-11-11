@@ -23,6 +23,9 @@ import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
+/**
+ * Extension for Ackpine `library` plugin.
+ */
 public abstract class AckpineExtension @Inject constructor(
 	private val libraryExtension: LibraryExtension
 ) : ExtensionAware {
@@ -45,6 +48,9 @@ public abstract class AckpineExtension @Inject constructor(
 	public var minSdk: Int? by libraryExtension.defaultConfig::minSdk
 }
 
+/**
+ * Extension for Ackpine `library-publish` plugin.
+ */
 public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFactory) {
 
 	/**

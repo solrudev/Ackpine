@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine.gradle.versioning
 
+/**
+ * Version of the project, adhering to semantic versioning.
+ */
 public data class Version(
 	public val majorVersion: Int,
 	public val minorVersion: Int,
@@ -24,6 +27,9 @@ public data class Version(
 	public val isSnapshot: Boolean
 ) {
 
+	/**
+	 * Version code computed from semantic version number.
+	 */
 	public val versionCode: Int = computeVersionCode()
 
 	override fun toString(): String {

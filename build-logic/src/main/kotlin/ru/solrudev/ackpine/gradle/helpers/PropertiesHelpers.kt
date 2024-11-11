@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@ package ru.solrudev.ackpine.gradle.helpers
 import java.io.File
 import java.util.Properties
 
-public inline fun <R> File.withProperties(action: Properties.() -> R): R = Properties().run {
-	inputStream().use(::load)
-	return action()
+/**
+ * Executes [action] on a [Properties] object read from a file.
+ */
+public inline fun <R> File.withProperties(action: (Properties) -> R): R {
+	val properties = Properties()
+	inputStream().use(properties::load)
+	return action(properties)
 }
