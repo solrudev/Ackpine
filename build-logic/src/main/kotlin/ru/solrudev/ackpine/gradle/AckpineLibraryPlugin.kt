@@ -51,7 +51,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
-			jvmToolchain(17)
+			jvmToolchain(Constants.JDK_VERSION)
 			explicitApi()
 
 			compilerOptions {
@@ -62,11 +62,11 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
-		compileSdk = 34
-		buildToolsVersion = "34.0.0"
+		compileSdk = Constants.COMPILE_SDK
+		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 
 		defaultConfig {
-			minSdk = 16
+			minSdk = Constants.MIN_SDK
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
