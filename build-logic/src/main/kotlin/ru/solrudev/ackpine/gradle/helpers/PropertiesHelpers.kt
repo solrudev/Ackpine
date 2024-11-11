@@ -20,10 +20,10 @@ import java.io.File
 import java.util.Properties
 
 /**
- * Executes [action] on a [Properties] object read from a file.
+ * Returns a [Properties] object read from a file.
  */
-public inline fun <R> File.withProperties(action: (Properties) -> R): R {
+public fun File.toProperties(): Properties {
 	val properties = Properties()
 	inputStream().use(properties::load)
-	return action(properties)
+	return properties
 }

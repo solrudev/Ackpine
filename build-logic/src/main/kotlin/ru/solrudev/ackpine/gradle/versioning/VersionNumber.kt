@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
-import ru.solrudev.ackpine.gradle.helpers.withProperties
+import ru.solrudev.ackpine.gradle.helpers.toProperties
 
 private const val PARSED_VERSION = "parsedVersion"
 
@@ -30,14 +30,13 @@ public val Project.versionNumber: Version
 		if (rootProject.hasProperty(PARSED_VERSION)) {
 			return rootProject.extra[PARSED_VERSION] as Version
 		}
-		rootProject.file("version.properties").withProperties { properties ->
-			val majorVersion = (properties["MAJOR_VERSION"] as String).toInt()
-			val minorVersion = (properties["MINOR_VERSION"] as String).toInt()
-			val patchVersion = (properties["PATCH_VERSION"] as String).toInt()
-			val suffix = (properties["SUFFIX"] as String).lowercase()
-			val isSnapshot = (properties["SNAPSHOT"] as String).toBooleanStrict()
-			return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot).also { version ->
-				rootProject.extra[PARSED_VERSION] = version
-			}
+		val versionProperties = rootProject.file("version.properties").toProperties()
+		val majorVersion = (versionProperties["MAJOR_VERSION"] as String).toInt()
+		val minorVersion = (versionProperties["MINOR_VERSION"] as String).toInt()
+		val patchVersion = (versionProperties["PATCH_VERSION"] as String).toInt()
+		val suffix = (versionProperties["SUFFIX"] as String).lowercase()
+		val isSnapshot = (versionProperties["SNAPSHOT"] as String).toBooleanStrict()
+		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot).also { version ->
+			rootProject.extra[PARSED_VERSION] = version
 		}
 	}
