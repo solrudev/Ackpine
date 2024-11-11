@@ -20,9 +20,11 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.helpers.withProperties
 
+private const val PARSED_VERSION = "parsedVersion"
+
 public fun Project.getVersionFromPropertiesFile(): Version {
-	if (rootProject.hasProperty("parsedVersion")) {
-		return rootProject.extra["parsedVersion"] as Version
+	if (rootProject.hasProperty(PARSED_VERSION)) {
+		return rootProject.extra[PARSED_VERSION] as Version
 	}
 	rootProject.file("version.properties").withProperties {
 		val majorVersion = (get("MAJOR_VERSION") as String).toInt()
@@ -31,7 +33,7 @@ public fun Project.getVersionFromPropertiesFile(): Version {
 		val suffix = (get("SUFFIX") as String).lowercase()
 		val isSnapshot = (get("SNAPSHOT") as String).toBooleanStrict()
 		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot).also {
-			rootProject.extra["parsedVersion"] = it
+			rootProject.extra[PARSED_VERSION] = it
 		}
 	}
 }
