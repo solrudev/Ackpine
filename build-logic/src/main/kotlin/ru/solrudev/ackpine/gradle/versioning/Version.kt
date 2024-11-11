@@ -57,6 +57,9 @@ public data class Version(
 			else -> error("Unknown version suffix")
 		}
 		val suffixVersionIndex = suffix.indexOfFirst { it.isDigit() }
+		if (suffix.isNotEmpty() && suffixVersionIndex == -1) {
+			error("No suffix version found")
+		}
 		val suffixVersionInt = if (suffixVersionIndex != -1) suffix.substring(suffixVersionIndex).toInt() * 10 else 0
 		val suffixInt = suffixBaseInt + suffixVersionInt
 		val snapshotInt = if (isSnapshot) 0 else 1
