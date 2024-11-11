@@ -24,14 +24,14 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
-		version = getVersionFromPropertiesFile().toString()
+		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
 		tasks.withType<DokkaMultiModuleTask>().configureEach {
 			outputDirectory = layout.projectDirectory.dir("docs/api")

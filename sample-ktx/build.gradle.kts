@@ -16,7 +16,7 @@
 
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 description = "Sample application in Kotlin showcasing Ackpine usage and leveraging ackpine-ktx extensions"
 
@@ -38,8 +38,8 @@ android {
 		applicationId = Constants.SAMPLE_PACKAGE_NAME
 		minSdk = 21
 		targetSdk = 34
-		versionCode = getVersionFromPropertiesFile().versionCode
-		versionName = rootProject.version.toString()
+		versionCode = versionNumber.versionCode
+		versionName = versionNumber.toString()
 	}
 
 	buildTypes {
