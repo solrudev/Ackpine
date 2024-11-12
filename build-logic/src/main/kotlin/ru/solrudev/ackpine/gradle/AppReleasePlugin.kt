@@ -27,11 +27,11 @@ import org.gradle.kotlin.dsl.hasPlugin
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
 
-public class AppReleaseSigningPlugin : Plugin<Project> {
+public class AppReleasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		check(plugins.hasPlugin(AppPlugin::class)) {
-			"Applying app-release-signing plugin requires the Android application plugin to be applied"
+			"Applying app-release plugin requires the Android application plugin to be applied"
 		}
 		configureSigning()
 	}
