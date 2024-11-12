@@ -22,7 +22,7 @@ import java.util.Properties
 /**
  * Returns a [Properties] object read from a file.
  */
-public fun File.toProperties(): Properties {
+internal fun File.toProperties(): Properties {
 	val properties = Properties()
 	inputStream().use(properties::load)
 	return properties
