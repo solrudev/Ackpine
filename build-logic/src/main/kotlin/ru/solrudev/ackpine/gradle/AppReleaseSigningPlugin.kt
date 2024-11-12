@@ -27,7 +27,6 @@ import org.gradle.kotlin.dsl.hasPlugin
 import ru.solrudev.ackpine.gradle.helpers.selectReleaseVariants
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
-import java.util.Properties
 
 public class AppReleaseSigningPlugin : Plugin<Project> {
 
@@ -53,30 +52,40 @@ public class AppReleaseSigningPlugin : Plugin<Project> {
 		initWith(signingConfigs["debug"])
 		val keystorePropertiesFile = rootProject.file("keystore.properties")
 		if (keystorePropertiesFile.exists()) {
-			readSigningConfig(keystorePropertiesFile.toProperties()::getOrThrow)
+			val properties = keystorePropertiesFile.toProperties()
+			readSigningConfig { key -> properties[key] as? String }
 		} else {
-			readSigningConfig(::getEnvOrThrow)
+			readSigningConfig { key -> System.getenv(key) }
 		}
 		enableV3Signing = true
 	}
 
-	private inline fun SigningConfig.readSigningConfig(valueProvider: (key: String, name: String) -> String) {
-		keyAlias = valueProvider("APP_SIGNING_KEY_ALIAS", "Signing key alias")
-		keyPassword = valueProvider("APP_SIGNING_KEY_PASSWORD", "Signing key password")
-		storeFile = valueProvider("APP_SIGNING_KEY_STORE_PATH", "Signing key store path").let(::File)
-		storePassword = valueProvider("APP_SIGNING_KEY_STORE_PASSWORD", "Signing key store password")
+	private inline fun SigningConfig.readSigningConfig(valueProvider: (key: String) -> String?) {
+		keyAlias = getOrThrow(
+			key = "APP_SIGNING_KEY_ALIAS",
+			name = "Signing key alias",
+			valueProvider
+		)
+		keyPassword = getOrThrow(
+			key = "APP_SIGNING_KEY_PASSWORD",
+			name = "Signing key password",
+			valueProvider
+		)
+		storePassword = getOrThrow(
+			key = "APP_SIGNING_KEY_STORE_PASSWORD",
+			name = "Signing key store password",
+			valueProvider
+		)
+		storeFile = getOrThrow(
+			key = "APP_SIGNING_KEY_STORE_PATH",
+			name = "Signing key store path",
+			valueProvider
+		).let(::File)
 	}
 
-}
-
-private fun Properties.getOrThrow(key: String, name: String): String {
-	val value = get(key) as? String
-	check(!value.isNullOrEmpty()) { "$name was not provided" }
-	return value
-}
-
-private fun getEnvOrThrow(key: String, name: String): String {
-	val value = System.getenv(key)
-	check(!value.isNullOrEmpty()) { "$name was not provided" }
-	return value
+	private inline fun getOrThrow(key: String, name: String, valueProvider: (key: String) -> String?): String {
+		val value = valueProvider(key)
+		check(!value.isNullOrEmpty()) { "$name was not provided" }
+		return value
+	}
 }
