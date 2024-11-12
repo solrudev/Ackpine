@@ -26,11 +26,11 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.withType
 import ru.solrudev.ackpine.gradle.helpers.assembleReleaseTasks
-import ru.solrudev.ackpine.gradle.helpers.div
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.rootTaskDependsOn
 import ru.solrudev.ackpine.gradle.helpers.toProperties
+import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
 import java.io.File
 
 public class AppReleasePlugin : Plugin<Project> {
@@ -72,14 +72,19 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerCopyPackagesReleaseTask() {
+		val buildSamplesRelease = rootProject.tasks.withType<BuildSamplesReleaseTask>()
 		val copyPackagesRelease = tasks.register<Copy>("copyPackagesRelease") {
 			val packagesRelease = layout.buildDirectory.asFileTree
 				.matching { include("outputs/apk/**/release/*.apk") }
 				.filter { it.isFile }
 			from(packagesRelease)
-			into(rootDir / "samples-release")
+			buildSamplesRelease.configureEach {
+				into(outputDir)
+			}
 			dependsOn(assembleReleaseTasks())
 		}
-		rootTaskDependsOn(rootTask = "buildSamplesRelease", copyPackagesRelease)
+		buildSamplesRelease.configureEach {
+			dependsOn(copyPackagesRelease)
+		}
 	}
 }

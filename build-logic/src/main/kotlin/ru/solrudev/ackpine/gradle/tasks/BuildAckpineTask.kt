@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.helpers
+package ru.solrudev.ackpine.gradle.tasks
 
-import org.gradle.api.Project
+import org.gradle.api.DefaultTask
 
-private val assembleReleaseRegex = "assemble.*Release".toRegex()
-
-/**
- * Returns all `assemble*Release` tasks in this project.
- */
-internal fun Project.assembleReleaseTasks() = tasks.named { it.matches(assembleReleaseRegex) }
+internal abstract class BuildAckpineTask : DefaultTask() {
+	override fun getGroup(): String = "build"
+	override fun getDescription(): String = "Assembles all Ackpine library projects."
+}

@@ -27,11 +27,12 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import ru.solrudev.ackpine.gradle.helpers.assembleReleaseTasks
-import ru.solrudev.ackpine.gradle.helpers.rootTaskDependsOn
+import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -47,7 +48,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		val libraryExtension = extensions.getByType<LibraryExtension>()
 		extensions.create<AckpineExtension>("ackpine", libraryExtension)
 		configureAndroid()
-		rootTaskDependsOn(rootTask = "buildAckpine", assembleReleaseTasks())
+		addAssembleReleaseTasksToBuildAckpineTask()
 	}
 
 	private fun Project.configureKotlin() {
@@ -81,6 +82,12 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
+		}
+	}
+
+	private fun Project.addAssembleReleaseTasksToBuildAckpineTask() {
+		rootProject.tasks.withType<BuildAckpineTask>().configureEach {
+			dependsOn(assembleReleaseTasks())
 		}
 	}
 }

@@ -20,10 +20,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
+import ru.solrudev.ackpine.gradle.helpers.div
+import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
+import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
@@ -40,13 +44,13 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 		registerBuildSamplesReleaseTask()
 	}
 
-	private fun Project.registerBuildAckpineTask() = tasks.register("buildAckpine") {
-		group = "build"
-		description = "Assembles all Ackpine library projects."
+	private fun Project.registerBuildAckpineTask() {
+		tasks.register<BuildAckpineTask>("buildAckpine")
 	}
 
-	private fun Project.registerBuildSamplesReleaseTask() = tasks.register("buildSamplesRelease") {
-		group = "build"
-		description = "Builds and gathers all Ackpine sample app APKs."
+	private fun Project.registerBuildSamplesReleaseTask() {
+		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease") {
+			outputDir = rootDir / "samples-release"
+		}
 	}
 }
