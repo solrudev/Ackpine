@@ -28,6 +28,7 @@ import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.helpers.assembleReleaseTasks
 import ru.solrudev.ackpine.gradle.helpers.div
+import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.rootTaskDependsOn
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
@@ -63,33 +64,11 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private inline fun ApkSigningConfig.readSigningConfig(valueProvider: (key: String) -> String?) {
-		keyAlias = getOrThrow(
-			key = "APP_SIGNING_KEY_ALIAS",
-			name = "Signing key alias",
-			valueProvider
-		)
-		keyPassword = getOrThrow(
-			key = "APP_SIGNING_KEY_PASSWORD",
-			name = "Signing key password",
-			valueProvider
-		)
-		storePassword = getOrThrow(
-			key = "APP_SIGNING_KEY_STORE_PASSWORD",
-			name = "Signing key store password",
-			valueProvider
-		)
-		storeFile = getOrThrow(
-			key = "APP_SIGNING_KEY_STORE_PATH",
-			name = "Signing key store path",
-			valueProvider
-		).let(::File)
-	}
-
-	private inline fun getOrThrow(key: String, name: String, valueProvider: (key: String) -> String?): String {
-		val value = valueProvider(key)
-		check(!value.isNullOrEmpty()) { "$name was not provided" }
-		return value
+	private inline fun ApkSigningConfig.readSigningConfig(valueSelector: (key: String) -> String?) {
+		keyAlias = getOrThrow(key = "APP_SIGNING_KEY_ALIAS", valueSelector)
+		keyPassword = getOrThrow(key = "APP_SIGNING_KEY_PASSWORD", valueSelector)
+		storePassword = getOrThrow(key = "APP_SIGNING_KEY_STORE_PASSWORD", valueSelector)
+		storeFile = getOrThrow(key = "APP_SIGNING_KEY_STORE_PATH", valueSelector).let(::File)
 	}
 
 	private fun Project.registerCopyPackagesReleaseTask() {
