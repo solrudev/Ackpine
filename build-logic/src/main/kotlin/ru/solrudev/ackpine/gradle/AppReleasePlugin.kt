@@ -21,9 +21,14 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Copy
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
+import org.gradle.kotlin.dsl.register
+import ru.solrudev.ackpine.gradle.helpers.assembleReleaseTasks
+import ru.solrudev.ackpine.gradle.helpers.div
+import ru.solrudev.ackpine.gradle.helpers.rootTaskDependsOn
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
 
@@ -34,6 +39,7 @@ public class AppReleasePlugin : Plugin<Project> {
 			"Applying app-release plugin requires the Android application plugin to be applied"
 		}
 		configureSigning()
+		registerCopyPackagesReleaseTask()
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
@@ -84,5 +90,17 @@ public class AppReleasePlugin : Plugin<Project> {
 		val value = valueProvider(key)
 		check(!value.isNullOrEmpty()) { "$name was not provided" }
 		return value
+	}
+
+	private fun Project.registerCopyPackagesReleaseTask() {
+		val copyPackagesRelease = tasks.register<Copy>("copyPackagesRelease") {
+			val packagesRelease = layout.buildDirectory.asFileTree
+				.matching { include("outputs/apk/**/release/*.apk") }
+				.filter { it.isFile }
+			from(packagesRelease)
+			into(rootDir / "samples-release")
+			dependsOn(assembleReleaseTasks())
+		}
+		rootTaskDependsOn(rootTask = "buildSamplesRelease", copyPackagesRelease)
 	}
 }

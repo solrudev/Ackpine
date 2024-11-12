@@ -37,10 +37,16 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 			outputDirectory = layout.projectDirectory.dir("docs/api")
 		}
 		registerBuildAckpineTask()
+		registerBuildSamplesReleaseTask()
 	}
 
 	private fun Project.registerBuildAckpineTask() = tasks.register("buildAckpine") {
 		group = "build"
 		description = "Assembles all Ackpine library projects."
+	}
+
+	private fun Project.registerBuildSamplesReleaseTask() = tasks.register("buildSamplesRelease") {
+		group = "build"
+		description = "Builds and gathers all Ackpine sample app APKs."
 	}
 }

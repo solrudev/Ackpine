@@ -16,20 +16,9 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
-import org.gradle.api.Project
-
-private val assembleReleaseRegex = "assemble.*Release".toRegex()
+import java.io.File
 
 /**
- * Returns all `assemble*Release` tasks in this project.
+ * @see [resolve]
  */
-internal fun Project.assembleReleaseTasks() = tasks.named { it.matches(assembleReleaseRegex) }
-
-/**
- * Adds a [dependency] to the root task with the name of [rootTask].
- */
-internal fun Project.rootTaskDependsOn(rootTask: String, dependency: Any) {
-	rootProject.tasks.named(rootTask).configure {
-		dependsOn(dependency)
-	}
-}
+internal operator fun File.div(relative: String) = resolve(relative)
