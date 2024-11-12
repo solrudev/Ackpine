@@ -16,9 +16,8 @@
 
 package ru.solrudev.ackpine.gradle
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.android.build.gradle.LibraryPlugin
-import com.android.build.gradle.internal.tasks.factory.dependsOn
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -31,7 +30,6 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
-import ru.solrudev.ackpine.gradle.helpers.selectReleaseVariants
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -84,11 +82,11 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.addToBuildAckpineTask() = extensions.configure<LibraryExtension> {
-		libraryVariants
-			.selectReleaseVariants { it.name }
-			.configureEach {
-				rootProject.tasks.named("buildAckpine").dependsOn(assembleProvider)
-			}
+	private fun Project.addToBuildAckpineTask() = afterEvaluate {
+		val assembleReleaseRegex = "assemble.*Release".toRegex()
+		val assembleRelease = tasks.named { it.matches(assembleReleaseRegex) }
+		rootProject.tasks.named("buildAckpine").configure {
+			dependsOn(assembleRelease)
+		}
 	}
 }

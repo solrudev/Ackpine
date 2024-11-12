@@ -16,15 +16,14 @@
 
 package ru.solrudev.ackpine.gradle
 
-import com.android.build.gradle.AppExtension
+import com.android.build.api.dsl.ApkSigningConfig
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.gradle.AppPlugin
-import com.android.build.gradle.internal.dsl.SigningConfig
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
-import ru.solrudev.ackpine.gradle.helpers.selectReleaseVariants
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
 
@@ -37,16 +36,14 @@ public class AppReleaseSigningPlugin : Plugin<Project> {
 		configureSigning()
 	}
 
-	private fun Project.configureSigning() = extensions.configure<AppExtension> {
+	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
 		val releaseSigningConfig = releaseSigningConfigProvider(rootProject)
-		buildTypes
-			.selectReleaseVariants { it.name }
-			.configureEach {
-				signingConfig = releaseSigningConfig.get()
-			}
+		buildTypes.named("release") {
+			signingConfig = releaseSigningConfig.get()
+		}
 	}
 
-	private fun AppExtension.releaseSigningConfigProvider(
+	private fun ApplicationExtension.releaseSigningConfigProvider(
 		rootProject: Project
 	) = signingConfigs.register("releaseSigningConfig") {
 		initWith(signingConfigs["debug"])
@@ -60,7 +57,7 @@ public class AppReleaseSigningPlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private inline fun SigningConfig.readSigningConfig(valueProvider: (key: String) -> String?) {
+	private inline fun ApkSigningConfig.readSigningConfig(valueProvider: (key: String) -> String?) {
 		keyAlias = getOrThrow(
 			key = "APP_SIGNING_KEY_ALIAS",
 			name = "Signing key alias",
