@@ -37,6 +37,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.publishing"
 			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin"
 		}
+		register("ackpine-app-release-signing") {
+			id = "ru.solrudev.ackpine.app-release-signing"
+			implementationClass = "ru.solrudev.ackpine.gradle.AppReleaseSigningPlugin"
+		}
 	}
 }
 

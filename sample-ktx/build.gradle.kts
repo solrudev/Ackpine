@@ -24,6 +24,7 @@ description = "Sample application in Kotlin showcasing Ackpine usage and leverag
 plugins {
 	id(libs.plugins.android.application.get().pluginId)
 	id(libs.plugins.kotlin.android.get().pluginId)
+	id("ru.solrudev.ackpine.app-release-signing")
 }
 
 kotlin {
