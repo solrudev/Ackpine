@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle.publishing
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.register
@@ -33,6 +34,12 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 
+	private val Project.samplesReleaseDir
+		get() = project.rootDir / "samples-release"
+
+	private val Project.releaseChangelog
+		get() = project.rootDir / "changelog.txt"
+
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
@@ -44,6 +51,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 		registerBuildAckpineTask()
 		registerBuildSamplesReleaseTask()
 		registerReleaseChangelogTask()
+		registerCleanTask()
 	}
 
 	private fun Project.registerBuildAckpineTask() {
@@ -52,14 +60,22 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private fun Project.registerBuildSamplesReleaseTask() {
 		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease") {
-			outputDir = rootDir / "samples-release"
+			outputDir = samplesReleaseDir
 		}
 	}
 
 	private fun Project.registerReleaseChangelogTask() {
 		tasks.register<ReleaseChangelogTask>("releaseChangelog") {
 			changelogFile = project.rootDir / "docs/changelog.md"
-			releaseChangelogFile = project.rootDir / "changelog.txt"
+			releaseChangelogFile = releaseChangelog
+		}
+	}
+
+	private fun Project.registerCleanTask() {
+		tasks.register<Delete>("clean") {
+			delete(rootProject.layout.buildDirectory)
+			delete(samplesReleaseDir)
+			delete(releaseChangelog)
 		}
 	}
 }
