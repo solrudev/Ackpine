@@ -26,7 +26,6 @@ import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.helpers.div
 import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
 import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
@@ -35,10 +34,10 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private val Project.samplesReleaseDir
-		get() = project.rootDir / "samples-release"
+		get() = layout.projectDirectory.dir("samples-release")
 
 	private val Project.releaseChangelog
-		get() = project.rootDir / "changelog.txt"
+		get() = file("changelog.txt")
 
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
@@ -66,7 +65,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private fun Project.registerReleaseChangelogTask() {
 		tasks.register<ReleaseChangelogTask>("releaseChangelog") {
-			changelogFile = project.rootDir / "docs/changelog.md"
+			changelogFile = file("docs/changelog.md")
 			releaseChangelogFile = releaseChangelog
 		}
 	}
