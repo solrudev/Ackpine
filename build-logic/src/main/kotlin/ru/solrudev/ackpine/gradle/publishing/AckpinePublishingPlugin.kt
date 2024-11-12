@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.div
 import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
 import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
+import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
@@ -42,6 +43,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 		}
 		registerBuildAckpineTask()
 		registerBuildSamplesReleaseTask()
+		registerReleaseChangelogTask()
 	}
 
 	private fun Project.registerBuildAckpineTask() {
@@ -51,6 +53,13 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.registerBuildSamplesReleaseTask() {
 		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease") {
 			outputDir = rootDir / "samples-release"
+		}
+	}
+
+	private fun Project.registerReleaseChangelogTask() {
+		tasks.register<ReleaseChangelogTask>("releaseChangelog") {
+			changelogFile = project.rootDir / "docs/changelog.md"
+			releaseChangelogFile = project.rootDir / "changelog.txt"
 		}
 	}
 }
