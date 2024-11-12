@@ -31,6 +31,7 @@ import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import ru.solrudev.ackpine.gradle.helpers.selectReleaseVariants
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -84,8 +85,10 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.addToBuildAckpineTask() = extensions.configure<LibraryExtension> {
-		libraryVariants.matching { it.name == "release" }.configureEach {
-			rootProject.tasks.named("buildAckpine").dependsOn(assembleProvider)
-		}
+		libraryVariants
+			.selectReleaseVariants { it.name }
+			.configureEach {
+				rootProject.tasks.named("buildAckpine").dependsOn(assembleProvider)
+			}
 	}
 }

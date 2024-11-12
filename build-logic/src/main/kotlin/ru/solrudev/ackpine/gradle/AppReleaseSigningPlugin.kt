@@ -24,6 +24,7 @@ import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
+import ru.solrudev.ackpine.gradle.helpers.selectReleaseVariants
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import java.io.File
 import java.util.Properties
@@ -40,7 +41,7 @@ public class AppReleaseSigningPlugin : Plugin<Project> {
 	private fun Project.configureSigning() = extensions.configure<AppExtension> {
 		val releaseSigningConfig = releaseSigningConfigProvider(rootProject)
 		buildTypes
-			.matching { it.name.lowercase().endsWith("release") }
+			.selectReleaseVariants { it.name }
 			.configureEach {
 				signingConfig = releaseSigningConfig.get()
 			}
