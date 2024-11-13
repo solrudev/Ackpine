@@ -55,6 +55,7 @@ nav:
   - 'Samples': samples.md
   - 'Permissions': permissions.md
   - 'Architecture': architecture.md
+  - 'Building': building.md
   - 'API reference ⏏': api/index.html
   - 'Change Log': changelog.md
   
