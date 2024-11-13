@@ -3,10 +3,15 @@ name: ci
 on:
   pull_request: {}
   push:
-    tags:
-      - "*.*.*"
     branches:
       - master
+
+env:
+  APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
+  APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
+  APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
+  APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
+  APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
 permissions:
   contents: write

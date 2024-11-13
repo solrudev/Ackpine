@@ -4,11 +4,16 @@ on:
   push:
     tags:
       - "*.*.*"
-    branches:
-      - master
 
 permissions:
   contents: write
+
+env:
+  APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
+  APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
+  APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
+  APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
+  APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
 jobs:
   build:
@@ -31,14 +36,14 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew --no-daemon --stacktrace apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
           ./gradlew buildAckpine --stacktrace --no-daemon
 
-  release-packages:
-    name: Build and release sample packages
+  release-samples:
+    name: Release samples
     runs-on: ubuntu-latest
     needs: [ build ]
 
@@ -55,20 +60,12 @@ jobs:
 
       - name: Decode key store
         run: |
-          echo APP_SIGNING_KEY_STORE > encoded-keystore.txt
-          base64 -d encoded-keystore.txt > APP_SIGNING_KEY_STORE_PATH
-        env:
-          APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
-          APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
+          echo ${{ env.APP_SIGNING_KEY_STORE }} > encoded-keystore.txt
+          base64 -d encoded-keystore.txt > ${{ env.APP_SIGNING_KEY_STORE_PATH }}
 
-      - name: Build packages
+      - name: Build samples
         run: |
           ./gradlew buildSamplesRelease --stacktrace --no-daemon
-        env:
-          APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
-          APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
-          APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
-          APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
       - name: Extract release changelog
         run: |
