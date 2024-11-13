@@ -2,8 +2,6 @@ name: github-release
 
 on:
   push:
-    tags:
-      - "*.*.*"
     branches:
       - master
 
@@ -14,6 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build Ackpine
+    if: startsWith(github.ref, 'refs/tags/')
 
     steps:
       - name: Checkout
@@ -31,7 +30,7 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew --no-daemon --stacktrace apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
