@@ -29,7 +29,7 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew -Pexclude-apps --no-daemon --stacktrace apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew -Pexclude-apps apiCheck --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
@@ -53,8 +53,11 @@ jobs:
 
       - name: Decode key store
         run: |
-          echo ${{ env.APP_SIGNING_KEY_STORE }} > encoded-keystore.txt
-          base64 -d encoded-keystore.txt > ${{ env.APP_SIGNING_KEY_STORE_PATH }}
+          echo $APP_SIGNING_KEY_STORE > encoded-keystore.txt
+          base64 -d encoded-keystore.txt > $APP_SIGNING_KEY_STORE_PATH
+        env:
+          APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
+          APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
       - name: Build samples
         run: |
@@ -63,7 +66,6 @@ jobs:
           APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
           APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
           APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
-          APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
           APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
       - name: Extract release changelog

@@ -30,7 +30,7 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew -Pexclude-apps --no-daemon apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew -Pexclude-apps apiCheck --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
