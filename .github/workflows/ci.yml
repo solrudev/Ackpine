@@ -6,13 +6,6 @@ on:
     branches:
       - master
 
-env:
-  APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
-  APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
-  APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
-  APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
-  APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
-
 permissions:
   contents: write
 
@@ -37,11 +30,11 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew --no-daemon apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew -Pexclude-apps --no-daemon apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
-          ./gradlew buildAckpine --stacktrace --no-daemon
+          ./gradlew -Pexclude-apps buildAckpine --stacktrace --no-daemon
 
   publish:
     name: Upload artifacts
@@ -62,7 +55,7 @@ jobs:
 
       - name: Publish
         run: |
-          ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache --max-workers 1 --no-daemon
+          ./gradlew -Pexclude-apps publishAndReleaseToMavenCentral --no-configuration-cache --max-workers 1 --no-daemon
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
@@ -96,7 +89,7 @@ jobs:
 
       - name: Prepare API docs
         run: |
-          ./gradlew dokkaHtmlMultiModule --no-daemon
+          ./gradlew -Pexclude-apps dokkaHtmlMultiModule --no-daemon
 
       - name: Build MkDocs
         run: |

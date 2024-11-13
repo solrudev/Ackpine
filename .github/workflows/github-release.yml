@@ -8,13 +8,6 @@ on:
 permissions:
   contents: write
 
-env:
-  APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
-  APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
-  APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
-  APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
-  APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -36,11 +29,11 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew --no-daemon --stacktrace apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew -Pexclude-apps --no-daemon --stacktrace apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
-          ./gradlew buildAckpine --stacktrace --no-daemon
+          ./gradlew -Pexclude-apps buildAckpine --stacktrace --no-daemon
 
   release-samples:
     name: Release samples
@@ -66,10 +59,16 @@ jobs:
       - name: Build samples
         run: |
           ./gradlew buildSamplesRelease --stacktrace --no-daemon
+        env:
+          APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
+          APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
+          APP_SIGNING_KEY_STORE_PASSWORD: ${{ secrets.APP_SIGNING_KEY_STORE_PASSWORD }}
+          APP_SIGNING_KEY_STORE: ${{ secrets.APP_SIGNING_KEY_STORE }}
+          APP_SIGNING_KEY_STORE_PATH: ${{ secrets.APP_SIGNING_KEY_STORE_PATH }}
 
       - name: Extract release changelog
         run: |
-          ./gradlew releaseChangelog --no-daemon
+          ./gradlew -Pexclude-apps releaseChangelog --no-daemon
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
