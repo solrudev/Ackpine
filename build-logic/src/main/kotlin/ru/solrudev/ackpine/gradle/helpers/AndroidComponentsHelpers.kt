@@ -16,10 +16,9 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
-import org.gradle.api.Project
-import org.gradle.internal.extensions.stdlib.capitalized
+import com.android.build.api.variant.AndroidComponentsExtension
 
 /**
- * Returns `assemble{VariantName}` task in this project.
+ * Returns a selector for variants with `release` build type.
  */
-internal fun Project.assembleTask(variantName: String) = tasks.named("assemble${variantName.capitalized()}")
+internal fun AndroidComponentsExtension<*, *, *>.withReleaseBuildType() = selector().withBuildType("release")

@@ -18,18 +18,23 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.Variant
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+import org.gradle.internal.extensions.stdlib.capitalized
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import ru.solrudev.ackpine.gradle.helpers.assembleReleaseTasks
+import ru.solrudev.ackpine.gradle.helpers.assembleTask
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toProperties
+import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin
 import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
 import java.io.File
 
@@ -40,13 +45,23 @@ public class AppReleasePlugin : Plugin<Project> {
 			"Applying app-release plugin requires the Android application plugin to be applied"
 		}
 		configureSigning()
-		registerCopyPackagesReleaseTask()
+		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
+			registerCopyPackagesReleaseTasks()
+		}
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
 		val releaseSigningConfig = releaseSigningConfigProvider(rootProject)
 		buildTypes.named("release") {
 			signingConfig = releaseSigningConfig.get()
+		}
+	}
+
+	private fun Project.registerCopyPackagesReleaseTasks() {
+		extensions.configure<ApplicationAndroidComponentsExtension> {
+			onVariants(withReleaseBuildType()) { variant ->
+				registerCopyPackagesReleaseTaskForVariant(variant)
+			}
 		}
 	}
 
@@ -71,17 +86,25 @@ public class AppReleasePlugin : Plugin<Project> {
 		storeFile = getOrThrow(key = "APP_SIGNING_KEY_STORE_PATH", valueSelector).let(::File)
 	}
 
-	private fun Project.registerCopyPackagesReleaseTask() {
+	private fun Project.registerCopyPackagesReleaseTaskForVariant(variant: Variant) {
 		val buildSamplesRelease = rootProject.tasks.withType<BuildSamplesReleaseTask>()
-		val copyPackagesRelease = tasks.register<Copy>("copyPackagesRelease") {
+		val copyPackagesRelease = tasks.register<Copy>("copyPackages${variant.name.capitalized()}") {
 			val packagesRelease = layout.buildDirectory.asFileTree
-				.matching { include("outputs/apk/**/release/*.apk") }
+				.matching {
+					if (variant.flavorName != null) {
+						include("outputs/apk/${variant.flavorName}/${variant.buildType}/*.apk")
+					}
+					include("outputs/apk/${variant.buildType}/*.apk")
+					include("outputs/mapping/${variant.name}/mapping.txt")
+				}
 				.filter { it.isFile }
-			from(packagesRelease)
-			buildSamplesRelease.configureEach {
-				into(outputDir)
+			from(packagesRelease) {
+				rename { path ->
+					path.replace("mapping.txt", "mapping-${project.name}-${variant.name}.txt")
+				}
 			}
-			dependsOn(assembleReleaseTasks())
+			into(buildSamplesRelease.first().outputDir)
+			dependsOn(assembleTask(variant.name))
 		}
 		buildSamplesRelease.configureEach {
 			dependsOn(copyPackagesRelease)
