@@ -16,44 +16,65 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import com.android.build.gradle.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.Delete
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.hasPlugin
+import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
-import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
+import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
+import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
+import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
+
+	private val Project.samplesReleaseDir
+		get() = layout.projectDirectory.dir("samples-release")
+
+	private val Project.releaseChangelog
+		get() = file("changelog.txt")
 
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
-		version = getVersionFromPropertiesFile().toString()
+		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
 		tasks.withType<DokkaMultiModuleTask>().configureEach {
 			outputDirectory = layout.projectDirectory.dir("docs/api")
 		}
 		registerBuildAckpineTask()
+		registerBuildSamplesReleaseTask()
+		registerReleaseChangelogTask()
+		registerCleanTask()
 	}
 
-	private fun Project.registerBuildAckpineTask() = tasks.register("buildAckpine") {
-		group = "build"
-		description = "Assembles all Ackpine library projects."
-		subprojects.forEach { project ->
-			if (project.plugins.hasPlugin(AckpineLibraryPlugin::class)) {
-				project.extensions.configure<LibraryExtension> {
-					libraryVariants.matching { it.name == "release" }.configureEach {
-						dependsOn(assembleProvider)
-					}
-				}
-			}
+	private fun Project.registerBuildAckpineTask() {
+		tasks.register<BuildAckpineTask>("buildAckpine")
+	}
+
+	private fun Project.registerBuildSamplesReleaseTask() {
+		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease") {
+			outputDir = samplesReleaseDir
+		}
+	}
+
+	private fun Project.registerReleaseChangelogTask() {
+		tasks.register<ReleaseChangelogTask>("releaseChangelog") {
+			changelogFile = file("docs/changelog.md")
+			releaseChangelogFile = releaseChangelog
+		}
+	}
+
+	private fun Project.registerCleanTask() {
+		tasks.register<Delete>("clean") {
+			delete(rootProject.layout.buildDirectory)
+			delete(samplesReleaseDir)
+			delete(releaseChangelog)
 		}
 	}
 }

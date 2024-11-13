@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine.gradle.versioning
 
+/**
+ * Version of the project, adhering to semantic versioning.
+ */
 public data class Version(
 	public val majorVersion: Int,
 	public val minorVersion: Int,
@@ -23,6 +26,12 @@ public data class Version(
 	public val suffix: String,
 	public val isSnapshot: Boolean
 ) {
+
+	/**
+	 * Version code computed from semantic version number.
+	 */
+	public val versionCode: Int = computeVersionCode()
+
 	override fun toString(): String {
 		return buildString {
 			append("$majorVersion.$minorVersion.$patchVersion")
@@ -33,5 +42,27 @@ public data class Version(
 				append("-SNAPSHOT")
 			}
 		}
+	}
+
+	private fun computeVersionCode(): Int {
+		val majorInt = majorVersion * 100000000
+		val minorInt = minorVersion * 1000000
+		val patchInt = patchVersion * 10000
+		val suffixBaseInt = when {
+			suffix.startsWith("dev") -> 0
+			suffix.startsWith("alpha") -> 1000
+			suffix.startsWith("beta") -> 2000
+			suffix.startsWith("rc") -> 8000
+			suffix.isEmpty() -> 9000
+			else -> error("Unknown version suffix")
+		}
+		val suffixVersionIndex = suffix.indexOfFirst { it.isDigit() }
+		if (suffix.isNotEmpty() && suffixVersionIndex == -1) {
+			error("No suffix version found")
+		}
+		val suffixVersionInt = if (suffixVersionIndex != -1) suffix.substring(suffixVersionIndex).toInt() * 10 else 0
+		val suffixInt = suffixBaseInt + suffixVersionInt
+		val snapshotInt = if (isSnapshot) 0 else 1
+		return majorInt + minorInt + patchInt + suffixInt + snapshotInt
 	}
 }

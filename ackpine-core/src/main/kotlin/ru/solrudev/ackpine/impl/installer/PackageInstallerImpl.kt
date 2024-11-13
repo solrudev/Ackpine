@@ -247,6 +247,7 @@ internal class PackageInstallerImpl internal constructor(
 				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" }
 			)
 		}
+		val sessionName = name
 		val parameters = InstallParameters.Builder(uris.map(String::toUri))
 			.setInstallerType(installerType)
 			.setConfirmation(session.confirmation)
@@ -258,9 +259,8 @@ internal class PackageInstallerImpl internal constructor(
 					.build()
 			)
 			.apply {
-				val name = this@toInstallSession.name
-				if (!name.isNullOrEmpty()) {
-					setName(name)
+				if (!sessionName.isNullOrEmpty()) {
+					setName(sessionName)
 				}
 			}
 			.setRequireUserAction(session.requireUserAction)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.helpers
+package ru.solrudev.ackpine.gradle.tasks
 
-import java.io.File
-import java.util.Properties
+import org.gradle.api.DefaultTask
 
-/**
- * Returns a [Properties] object read from a file.
- */
-internal fun File.toProperties(): Properties {
-	val properties = Properties()
-	inputStream().use(properties::load)
-	return properties
+internal abstract class BuildAckpineTask : DefaultTask() {
+	override fun getGroup(): String = "build"
+	override fun getDescription(): String = "Assembles all Ackpine library projects."
 }
-
-/**
- * Returns a value assigned to the [key] in a [Properties] object, and throws if key is not found or is empty.
- */
-internal fun Properties.getOrThrow(key: String) = getOrThrow(key) { get(it) as? String }

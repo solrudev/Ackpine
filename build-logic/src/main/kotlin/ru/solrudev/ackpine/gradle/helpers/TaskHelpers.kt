@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,19 +16,10 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
-import java.io.File
-import java.util.Properties
+import org.gradle.api.Project
+import org.gradle.internal.extensions.stdlib.capitalized
 
 /**
- * Returns a [Properties] object read from a file.
+ * Returns `assemble{VariantName}` task in this project.
  */
-internal fun File.toProperties(): Properties {
-	val properties = Properties()
-	inputStream().use(properties::load)
-	return properties
-}
-
-/**
- * Returns a value assigned to the [key] in a [Properties] object, and throws if key is not found or is empty.
- */
-internal fun Properties.getOrThrow(key: String) = getOrThrow(key) { get(it) as? String }
+internal fun Project.assembleTask(variantName: String) = tasks.named("assemble${variantName.capitalized()}")

@@ -115,15 +115,6 @@ public final class UninstallViewModel extends ViewModel {
 		session.addStateListener(subscriptions, new SessionStateListener(session));
 	}
 
-	private void removeApplication(@NonNull String packageName) {
-		final var applications = getCurrentApplications();
-		final var applicationDataIndex = getApplicationIndexByPackageName(applications, packageName);
-		if (applicationDataIndex != -1) {
-			applications.remove(applicationDataIndex);
-		}
-		this.applications.setValue(applications);
-	}
-
 	private UUID getSessionId() {
 		return savedStateHandle.get(SESSION_ID_KEY);
 	}
@@ -205,6 +196,15 @@ public final class UninstallViewModel extends ViewModel {
 		@Override
 		public void onCancelled(@NonNull UUID sessionId) {
 			clearSavedState();
+		}
+
+		private void removeApplication(@NonNull String packageName) {
+			final var currentApplications = getCurrentApplications();
+			final var applicationDataIndex = getApplicationIndexByPackageName(currentApplications, packageName);
+			if (applicationDataIndex != -1) {
+				currentApplications.remove(applicationDataIndex);
+			}
+			applications.setValue(currentApplications);
 		}
 	}
 

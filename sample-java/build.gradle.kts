@@ -15,32 +15,33 @@
  */
 
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
-import ru.solrudev.ackpine.gradle.versioning.versionCode
+import ru.solrudev.ackpine.gradle.SampleConstants
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 description = "Sample application in Java showcasing Ackpine usage"
 
 plugins {
 	id(libs.plugins.android.application.get().pluginId)
+	id("ru.solrudev.ackpine.app-release")
 }
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(Constants.JDK_VERSION)
 	}
 }
 
 android {
-	compileSdk = 34
-	buildToolsVersion = "34.0.0"
-	namespace = Constants.SAMPLE_PACKAGE_NAME
+	compileSdk = Constants.COMPILE_SDK
+	buildToolsVersion = Constants.BUILD_TOOLS_VERSION
+	namespace = SampleConstants.PACKAGE_NAME
 
 	defaultConfig {
-		applicationId = Constants.SAMPLE_PACKAGE_NAME
-		minSdk = 21
-		targetSdk = 34
-		versionCode = getVersionFromPropertiesFile().versionCode
-		versionName = rootProject.version.toString()
+		applicationId = SampleConstants.PACKAGE_NAME
+		minSdk = SampleConstants.MIN_SDK
+		targetSdk = SampleConstants.TARGET_SDK
+		versionCode = versionNumber.versionCode
+		versionName = versionNumber.toString()
 	}
 
 	buildTypes {

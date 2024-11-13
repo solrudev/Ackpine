@@ -61,15 +61,11 @@ public object ZippedApkSplits {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
 			val file = uri.toFile(applicationContext)
-			if (file.canRead()) {
-				yieldAllUsingFile(file)
-				return@closeableSequence
+			when {
+				file.canRead() -> yieldAllUsingFile(file)
+				Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> yieldAllApi26(applicationContext, uri)
+				else -> yieldAllUsingZipInputStream(applicationContext, uri)
 			}
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				yieldAllApi26(applicationContext, uri)
-				return@closeableSequence
-			}
-			yieldAllUsingZipInputStream(applicationContext, uri)
 		}
 	}
 

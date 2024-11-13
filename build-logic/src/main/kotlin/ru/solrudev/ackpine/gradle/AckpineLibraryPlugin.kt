@@ -16,7 +16,8 @@
 
 package ru.solrudev.ackpine.gradle
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
@@ -27,9 +28,13 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import ru.solrudev.ackpine.gradle.helpers.assembleTask
+import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -45,11 +50,12 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		val libraryExtension = extensions.getByType<LibraryExtension>()
 		extensions.create<AckpineExtension>("ackpine", libraryExtension)
 		configureAndroid()
+		addAssembleReleaseTasksToBuildAckpineTask()
 	}
 
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
-			jvmToolchain(17)
+			jvmToolchain(Constants.JDK_VERSION)
 			explicitApi()
 
 			compilerOptions {
@@ -60,11 +66,11 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
-		compileSdk = 34
-		buildToolsVersion = "34.0.0"
+		compileSdk = Constants.COMPILE_SDK
+		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 
 		defaultConfig {
-			minSdk = 16
+			minSdk = Constants.MIN_SDK
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
@@ -78,6 +84,16 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
+		}
+	}
+
+	private fun Project.addAssembleReleaseTasksToBuildAckpineTask() {
+		extensions.configure<LibraryAndroidComponentsExtension> {
+			onVariants(withReleaseBuildType()) { variant ->
+				rootProject.tasks.withType<BuildAckpineTask>().configureEach {
+					dependsOn(assembleTask(variant.name))
+				}
+			}
 		}
 	}
 }
