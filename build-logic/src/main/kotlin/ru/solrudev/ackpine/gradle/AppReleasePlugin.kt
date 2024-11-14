@@ -25,7 +25,6 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
-import org.gradle.internal.extensions.stdlib.capitalized
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
@@ -46,7 +45,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 		configureSigning()
 		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
-			registerCopyPackagesReleaseTasks()
+			registerCopyReleaseArtifactsTasks()
 		}
 	}
 
@@ -57,10 +56,10 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerCopyPackagesReleaseTasks() {
+	private fun Project.registerCopyReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
-				registerCopyPackagesReleaseTaskForVariant(variant)
+				registerCopyArtifactsTaskForVariant(variant)
 			}
 		}
 	}
@@ -86,14 +85,15 @@ public class AppReleasePlugin : Plugin<Project> {
 		storeFile = getOrThrow(key = "APP_SIGNING_KEY_STORE_PATH", valueSelector).let(::File)
 	}
 
-	private fun Project.registerCopyPackagesReleaseTaskForVariant(variant: Variant) {
+	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant) {
 		val releaseDir = rootProject.layout.projectDirectory.dir("release")
 		val apks = variant.artifacts.get(SingleArtifact.APK).map { directory ->
 			directory.asFileTree.matching { include("*.apk") }
 		}
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
 		val variantName = variant.name
-		val copyPackagesRelease = tasks.register<Copy>("copyPackages${variantName.capitalized()}") {
+		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
+		val copyArtifacts = tasks.register<Copy>(taskName) {
 			from(apks, mapping)
 			rename { path ->
 				path.replace("mapping.txt", "mapping-${project.name}-$variantName.txt")
@@ -102,7 +102,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 		rootProject.tasks.withType<BuildSamplesReleaseTask>().configureEach {
 			outputDir = releaseDir
-			dependsOn(copyPackagesRelease)
+			dependsOn(copyArtifacts)
 		}
 	}
 }
