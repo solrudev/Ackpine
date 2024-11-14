@@ -20,16 +20,11 @@ mkdocs serve
 ```
 Documentation website styling is optimized for Material for MkDocs v9.3.2 and lower.
 
-To build sample apps you'll need to provide a keystore. For this, create a `keystore.properties` file in the root directory with the following contents:
+To build release versions of sample apps you'll need to provide a keystore. For this, create a `keystore.properties` file in the root directory with the following contents:
 ```properties
-APP_SIGNING_KEY_ALIAS=YOUR_ALIAS
-APP_SIGNING_KEY_PASSWORD=YOUR_PASSWORD
-APP_SIGNING_KEY_STORE_PASSWORD=YOUR_PASSWORD
-APP_SIGNING_KEY_STORE_PATH=YOUR_PATH
+APP_SIGNING_KEY_ALIAS=YOUR_KEY_ALIAS
+APP_SIGNING_KEY_PASSWORD=YOUR_KEY_PASSWORD
+APP_SIGNING_KEY_STORE_PASSWORD=YOUR_KEYSTORE_PASSWORD
+APP_SIGNING_KEY_STORE_PATH=PATH_TO_YOUR_KEYSTORE_FILE
 ```
 The other way to provide these values is through environment variables.
-
-It's possible to exclude sample app projects from project configuration phase. This may be useful to skip APK signing configuration if it's not provided to avoid build failure (for example, in CI context). For this, provide an `exclude-apps` property when invoking Gradle command:
-```
-gradlew :buildAckpine -Pexclude-apps
-```

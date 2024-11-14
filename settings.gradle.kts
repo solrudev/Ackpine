@@ -58,8 +58,5 @@ include(":ackpine-splits")
 include(":ackpine-assets")
 include(":ackpine-runtime")
 include(":ackpine-resources")
-
-if ("exclude-apps" !in startParameter.projectProperties.keys) {
-	include(":sample-java")
-	include(":sample-ktx")
-}
+include(":sample-java")
+include(":sample-ktx")
