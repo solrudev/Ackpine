@@ -33,7 +33,6 @@ import org.gradle.kotlin.dsl.withType
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
-import ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin
 import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
 import java.io.File
 
@@ -56,9 +55,7 @@ public class AppReleasePlugin : Plugin<Project> {
 			"Applying app-release plugin requires the Android application plugin to be applied"
 		}
 		configureSigning()
-		if (rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
-			registerCopyReleaseArtifactsTasks()
-		}
+		registerCopyReleaseArtifactsTasks()
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
