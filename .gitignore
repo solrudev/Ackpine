@@ -82,4 +82,5 @@ lint/tmp/
 # Android Profiling
 *.hprof
 
+docs/api/
 changelog.txt
