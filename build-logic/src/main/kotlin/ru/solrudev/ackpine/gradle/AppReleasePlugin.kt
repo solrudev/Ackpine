@@ -92,11 +92,12 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
 		val variantName = variant.name
+		val projectName = project.name
 		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
 		val copyArtifacts = tasks.register<Copy>(taskName) {
 			from(apks, mapping)
 			rename { path ->
-				path.replace("mapping.txt", "mapping-${project.name}-$variantName.txt")
+				path.replace("mapping.txt", "mapping-$projectName-$variantName.txt")
 			}
 			into(releaseDir)
 		}
