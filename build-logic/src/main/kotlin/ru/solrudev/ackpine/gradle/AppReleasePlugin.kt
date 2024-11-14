@@ -103,7 +103,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		val copyArtifacts = tasks.register<Copy>(taskName) {
 			from(apks, mapping)
 			rename { path ->
-				path.replace("mapping.txt", "mapping-$projectName-$variantName.txt")
+				path.replace(mapping.get().asFile.name, "mapping-$projectName-$variantName.txt")
 			}
 			into(releaseDir)
 		}
