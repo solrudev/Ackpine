@@ -62,7 +62,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
-		val releaseSigningConfig = releaseSigningConfigProvider(rootProject)
+		val releaseSigningConfig = releaseSigningConfigProvider(rootProject.file("keystore.properties"))
 		buildTypes.named("release") {
 			signingConfig = releaseSigningConfig.get()
 		}
@@ -77,10 +77,9 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun ApplicationExtension.releaseSigningConfigProvider(
-		rootProject: Project
+		keystorePropertiesFile: File
 	) = signingConfigs.register("releaseSigningConfig") {
 		initWith(signingConfigs["debug"])
-		val keystorePropertiesFile = rootProject.file("keystore.properties")
 		val config = if (keystorePropertiesFile.exists()) {
 			keystorePropertiesFile.toPropertiesMap()
 		} else {
