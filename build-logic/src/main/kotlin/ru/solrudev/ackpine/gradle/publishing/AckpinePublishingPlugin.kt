@@ -36,7 +36,7 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private val Project.releaseChangelog
-		get() = file("changelog.txt")
+		get() = layout.projectDirectory.file("changelog.txt")
 
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
@@ -66,7 +66,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
 		return tasks.register<ReleaseChangelogTask>("releaseChangelog") {
-			changelogFile = file("docs/changelog.md")
+			changelogFile = layout.projectDirectory.file("docs/changelog.md")
 			releaseChangelogFile = releaseChangelog
 		}
 	}
