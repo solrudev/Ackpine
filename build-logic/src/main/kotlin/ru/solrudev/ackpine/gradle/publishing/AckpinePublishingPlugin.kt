@@ -19,11 +19,13 @@ package ru.solrudev.ackpine.gradle.publishing
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
+import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
@@ -41,35 +43,38 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 		group = Constants.PACKAGE_NAME
 		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
-		tasks.withType<DokkaMultiModuleTask>().configureEach {
+		configureDokka()
+		registerBuildAckpineTask()
+		val buildReleaseSamplesTask = registerBuildSamplesReleaseTask()
+		val releaseChangelogTask = registerReleaseChangelogTask()
+		configureCleanTask(buildReleaseSamplesTask, releaseChangelogTask)
+	}
+
+	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
+		dokkaPublications.named("html") {
 			outputDirectory = layout.projectDirectory.dir("docs/api")
 		}
-		registerBuildAckpineTask()
-		registerBuildSamplesReleaseTask()
-		registerReleaseChangelogTask()
-		registerCleanTask()
 	}
 
 	private fun Project.registerBuildAckpineTask() {
 		tasks.register<BuildAckpineTask>("buildAckpine")
 	}
 
-	private fun Project.registerBuildSamplesReleaseTask() {
-		tasks.register<BuildReleaseSamplesTask>("buildReleaseSamples")
+	private fun Project.registerBuildSamplesReleaseTask(): TaskProvider<*> {
+		return tasks.register<BuildReleaseSamplesTask>("buildReleaseSamples")
 	}
 
-	private fun Project.registerReleaseChangelogTask() {
-		tasks.register<ReleaseChangelogTask>("releaseChangelog") {
+	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
+		return tasks.register<ReleaseChangelogTask>("releaseChangelog") {
 			changelogFile = file("docs/changelog.md")
 			releaseChangelogFile = releaseChangelog
 		}
 	}
 
-	private fun Project.registerCleanTask() {
-		tasks.register<Delete>("clean") {
-			delete(rootProject.layout.buildDirectory)
-			delete(tasks.withType<BuildReleaseSamplesTask>())
-			delete(releaseChangelog)
+	private fun Project.configureCleanTask(vararg producingTasks: TaskProvider<*>) {
+		tasks.named<Delete>("clean") {
+			delete(project.rootProject.layout.buildDirectory)
+			delete(*producingTasks)
 		}
 	}
 }

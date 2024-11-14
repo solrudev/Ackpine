@@ -89,7 +89,7 @@ jobs:
 
       - name: Prepare API docs
         run: |
-          ./gradlew -Pexclude-apps dokkaHtmlMultiModule --no-daemon
+          ./gradlew -Pexclude-apps :dokkaGenerate --no-daemon
 
       - name: Build MkDocs
         run: |

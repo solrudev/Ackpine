@@ -57,9 +57,4 @@ public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFacto
 	 * Name of the published artifact.
 	 */
 	public val name: Property<String> = objectFactory.property<String>().convention("")
-
-	/**
-	 * Enable or disable API documentation generation with Dokka for this module.
-	 */
-	public val dokka: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
 }

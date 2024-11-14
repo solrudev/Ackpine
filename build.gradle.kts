@@ -17,3 +17,11 @@
 plugins {
 	id("ru.solrudev.ackpine.publishing")
 }
+
+dependencies {
+	dokka(projects.ackpineCore)
+	dokka(projects.ackpineKtx)
+	dokka(projects.ackpineSplits)
+	dokka(projects.ackpineAssets)
+	dokka(projects.ackpineResources)
+}

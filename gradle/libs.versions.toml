@@ -8,7 +8,7 @@ materialcomponents = { module = "com.google.android.material:material", version 
 plugin-gradleMavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.30.0" }
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-gradleplugin" }
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "1.9.20" }
+plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version = "2.0.0-Beta" }
 plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.16.3" }
 apache-commons-compress = { module = "org.apache.commons:commons-compress", version = "1.27.1" }
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
