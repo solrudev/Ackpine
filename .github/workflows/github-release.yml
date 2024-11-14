@@ -77,4 +77,4 @@ jobs:
         with:
           body_path: changelog.txt
           files: |
-            samples-release/*
+            release/*

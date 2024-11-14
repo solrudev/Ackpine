@@ -4,7 +4,7 @@ Building
 Root `Ackpine` project has the following Gradle tasks:
 
 - `buildAckpine`: builds release versions of all Ackpine library projects;
-- `buildSamplesRelease`: builds and gathers release versions of all Ackpine sample app APKs and R8 mappings into `/samples-release` directory;
+- `buildSamplesRelease`: builds and gathers release versions of all Ackpine sample app APKs and R8 mappings into `/release` directory;
 - `releaseChangelog`: extracts changelog for the last release from `/docs/changelog.md` file to `changelog.txt`.
 
 Other useful tasks provided by third-party Gradle plugins:

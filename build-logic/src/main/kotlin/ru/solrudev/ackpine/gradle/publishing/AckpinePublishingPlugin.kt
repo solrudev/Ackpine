@@ -34,7 +34,7 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private val Project.samplesReleaseDir
-		get() = layout.projectDirectory.dir("samples-release")
+		get() = layout.projectDirectory.dir("release")
 
 	private val Project.releaseChangelog
 		get() = file("changelog.txt")
