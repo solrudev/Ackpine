@@ -33,9 +33,6 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 
-	private val Project.samplesReleaseDir
-		get() = layout.projectDirectory.dir("release")
-
 	private val Project.releaseChangelog
 		get() = file("changelog.txt")
 
@@ -58,9 +55,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildSamplesReleaseTask() {
-		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease") {
-			outputDir = samplesReleaseDir
-		}
+		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease")
 	}
 
 	private fun Project.registerReleaseChangelogTask() {
@@ -73,7 +68,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.registerCleanTask() {
 		tasks.register<Delete>("clean") {
 			delete(rootProject.layout.buildDirectory)
-			delete(samplesReleaseDir)
+			delete(tasks.withType<BuildSamplesReleaseTask>())
 			delete(releaseChangelog)
 		}
 	}

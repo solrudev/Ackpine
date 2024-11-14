@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.gradle
 
+import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
@@ -30,7 +31,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
-import ru.solrudev.ackpine.gradle.helpers.assembleTask
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
@@ -87,26 +87,21 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerCopyPackagesReleaseTaskForVariant(variant: Variant) {
-		val buildSamplesRelease = rootProject.tasks.withType<BuildSamplesReleaseTask>()
-		val copyPackagesRelease = tasks.register<Copy>("copyPackages${variant.name.capitalized()}") {
-			val packagesRelease = layout.buildDirectory.asFileTree
-				.matching {
-					if (variant.flavorName != null) {
-						include("outputs/apk/${variant.flavorName}/${variant.buildType}/*.apk")
-					}
-					include("outputs/apk/${variant.buildType}/*.apk")
-					include("outputs/mapping/${variant.name}/mapping.txt")
-				}
-				.filter { it.isFile }
-			from(packagesRelease) {
-				rename { path ->
-					path.replace("mapping.txt", "mapping-${project.name}-${variant.name}.txt")
-				}
-			}
-			into(buildSamplesRelease.first().outputDir)
-			dependsOn(assembleTask(variant.name))
+		val releaseDir = rootProject.layout.projectDirectory.dir("release")
+		val apks = variant.artifacts.get(SingleArtifact.APK).map { directory ->
+			directory.asFileTree.matching { include("*.apk") }
 		}
-		buildSamplesRelease.configureEach {
+		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+		val variantName = variant.name
+		val copyPackagesRelease = tasks.register<Copy>("copyPackages${variantName.capitalized()}") {
+			from(apks, mapping)
+			rename { path ->
+				path.replace("mapping.txt", "mapping-${project.name}-$variantName.txt")
+			}
+			into(releaseDir)
+		}
+		rootProject.tasks.withType<BuildSamplesReleaseTask>().configureEach {
+			outputDir = releaseDir
 			dependsOn(copyPackagesRelease)
 		}
 	}
