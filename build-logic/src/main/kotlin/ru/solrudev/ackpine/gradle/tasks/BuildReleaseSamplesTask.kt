@@ -17,13 +17,13 @@
 package ru.solrudev.ackpine.gradle.tasks
 
 import org.gradle.api.DefaultTask
-import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.tasks.OutputDirectory
 
 internal abstract class BuildReleaseSamplesTask : DefaultTask() {
 
 	@get:OutputDirectory
-	internal abstract var outputDir: Directory
+	internal abstract val outputDir: DirectoryProperty
 
 	override fun getGroup(): String = "build"
 	override fun getDescription(): String = "Builds and gathers all Ackpine sample app APKs."
