@@ -30,11 +30,11 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew -Pexclude-apps apiCheck --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew apiCheck -Pexclude-apps --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
-          ./gradlew -Pexclude-apps buildAckpine --stacktrace --no-daemon
+          ./gradlew :buildAckpine -Pexclude-apps --stacktrace --no-daemon
 
   publish:
     name: Upload artifacts
@@ -55,7 +55,7 @@ jobs:
 
       - name: Publish
         run: |
-          ./gradlew -Pexclude-apps publishAndReleaseToMavenCentral --no-configuration-cache --max-workers 1 --no-daemon
+          ./gradlew publishAndReleaseToMavenCentral -Pexclude-apps --max-workers 1 --no-configuration-cache --no-daemon
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
@@ -89,7 +89,7 @@ jobs:
 
       - name: Prepare API docs
         run: |
-          ./gradlew -Pexclude-apps :dokkaGenerate --no-daemon
+          ./gradlew :dokkaGenerate -Pexclude-apps --no-daemon
 
       - name: Build MkDocs
         run: |

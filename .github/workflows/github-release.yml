@@ -29,11 +29,11 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew -Pexclude-apps apiCheck --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew apiCheck -Pexclude-apps --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
-          ./gradlew -Pexclude-apps buildAckpine --stacktrace --no-daemon
+          ./gradlew :buildAckpine -Pexclude-apps --stacktrace --no-daemon
 
   release-samples:
     name: Release samples
@@ -61,7 +61,7 @@ jobs:
 
       - name: Build samples
         run: |
-          ./gradlew buildReleaseSamples --stacktrace --no-daemon
+          ./gradlew :buildReleaseSamples --stacktrace --no-daemon
         env:
           APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
           APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
@@ -70,7 +70,7 @@ jobs:
 
       - name: Extract release changelog
         run: |
-          ./gradlew -Pexclude-apps releaseChangelog --no-daemon
+          ./gradlew :releaseChangelog -Pexclude-apps --no-daemon
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
