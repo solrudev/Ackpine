@@ -38,6 +38,9 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private val Project.releaseChangelog
 		get() = layout.projectDirectory.file("changelog.txt")
 
+	private val Project.docsDir
+		get() = layout.projectDirectory.dir("docs/api")
+
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
@@ -52,7 +55,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
 		dokkaPublications.named("html") {
-			outputDirectory = layout.projectDirectory.dir("docs/api")
+			outputDirectory = docsDir
 		}
 	}
 
@@ -74,6 +77,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.configureCleanTask(vararg producingTasks: TaskProvider<*>) {
 		tasks.named<Delete>("clean") {
 			delete(project.rootProject.layout.buildDirectory)
+			delete(docsDir)
 			delete(*producingTasks)
 		}
 	}
