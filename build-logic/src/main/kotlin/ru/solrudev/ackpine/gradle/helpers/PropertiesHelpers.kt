@@ -22,13 +22,18 @@ import java.util.Properties
 /**
  * Returns a [Properties] object read from a file.
  */
-internal fun File.toProperties(): Properties {
+@Suppress("UNCHECKED_CAST")
+internal fun File.toPropertiesMap(): Map<String, String> {
 	val properties = Properties()
 	inputStream().use(properties::load)
-	return properties
+	return properties as Map<String, String>
 }
 
 /**
- * Returns a value assigned to the [key] in a [Properties] object, and throws if key is not found or is empty.
+ * Returns a value assigned to the [key] and throws if key is not found or if value is empty.
  */
-internal fun Properties.getOrThrow(key: String) = getOrThrow(key) { get(it) as? String }
+internal fun Map<String, String>.getOrThrow(key: String): String {
+	val value = get(key)
+	check(!value.isNullOrEmpty()) { "$key was not provided" }
+	return value
+}

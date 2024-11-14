@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.gradle.versioning
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.toProperties
+import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
 
 private const val PARSED_VERSION = "parsedVersion"
 
@@ -31,7 +31,7 @@ public val Project.versionNumber: Version
 		if (rootProject.hasProperty(PARSED_VERSION)) {
 			return rootProject.extra[PARSED_VERSION] as Version
 		}
-		val versionProperties = rootProject.file("version.properties").toProperties()
+		val versionProperties = rootProject.file("version.properties").toPropertiesMap()
 		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
 		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
 		val patchVersion = versionProperties.getOrThrow("PATCH_VERSION").toInt()

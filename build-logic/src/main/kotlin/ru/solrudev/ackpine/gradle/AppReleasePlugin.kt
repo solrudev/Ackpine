@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.artifact.SingleArtifact
-import com.android.build.api.dsl.ApkSigningConfig
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
@@ -32,11 +31,23 @@ import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.toProperties
+import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin
 import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
 import java.io.File
+
+private const val APP_SIGNING_KEY_ALIAS = "APP_SIGNING_KEY_ALIAS"
+private const val APP_SIGNING_KEY_PASSWORD = "APP_SIGNING_KEY_PASSWORD"
+private const val APP_SIGNING_KEY_STORE_PASSWORD = "APP_SIGNING_KEY_STORE_PASSWORD"
+private const val APP_SIGNING_KEY_STORE_PATH = "APP_SIGNING_KEY_STORE_PATH"
+
+private val signingConfigKeys = setOf(
+	APP_SIGNING_KEY_ALIAS,
+	APP_SIGNING_KEY_PASSWORD,
+	APP_SIGNING_KEY_STORE_PASSWORD,
+	APP_SIGNING_KEY_STORE_PATH
+)
 
 public class AppReleasePlugin : Plugin<Project> {
 
@@ -70,20 +81,18 @@ public class AppReleasePlugin : Plugin<Project> {
 	) = signingConfigs.register("releaseSigningConfig") {
 		initWith(signingConfigs["debug"])
 		val keystorePropertiesFile = rootProject.file("keystore.properties")
-		if (keystorePropertiesFile.exists()) {
-			val properties = keystorePropertiesFile.toProperties()
-			readSigningConfig { key -> properties[key] as? String }
+		val config = if (keystorePropertiesFile.exists()) {
+			keystorePropertiesFile.toPropertiesMap()
 		} else {
-			readSigningConfig { key -> System.getenv(key) }
+			System.getenv()
+		}
+		if (signingConfigKeys.any { it in config.keys }) {
+			keyAlias = config.getOrThrow(APP_SIGNING_KEY_ALIAS)
+			keyPassword = config.getOrThrow(APP_SIGNING_KEY_PASSWORD)
+			storePassword = config.getOrThrow(APP_SIGNING_KEY_STORE_PASSWORD)
+			storeFile = config.getOrThrow(APP_SIGNING_KEY_STORE_PATH).let(::File)
 		}
 		enableV3Signing = true
-	}
-
-	private inline fun ApkSigningConfig.readSigningConfig(valueSelector: (key: String) -> String?) {
-		keyAlias = getOrThrow(key = "APP_SIGNING_KEY_ALIAS", valueSelector)
-		keyPassword = getOrThrow(key = "APP_SIGNING_KEY_PASSWORD", valueSelector)
-		storePassword = getOrThrow(key = "APP_SIGNING_KEY_STORE_PASSWORD", valueSelector)
-		storeFile = getOrThrow(key = "APP_SIGNING_KEY_STORE_PATH", valueSelector).let(::File)
 	}
 
 	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant) {
