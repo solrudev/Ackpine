@@ -27,7 +27,7 @@ import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
-import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
+import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
@@ -55,7 +55,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildSamplesReleaseTask() {
-		tasks.register<BuildSamplesReleaseTask>("buildSamplesRelease")
+		tasks.register<BuildReleaseSamplesTask>("buildReleaseSamples")
 	}
 
 	private fun Project.registerReleaseChangelogTask() {
@@ -68,7 +68,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.registerCleanTask() {
 		tasks.register<Delete>("clean") {
 			delete(rootProject.layout.buildDirectory)
-			delete(tasks.withType<BuildSamplesReleaseTask>())
+			delete(tasks.withType<BuildReleaseSamplesTask>())
 			delete(releaseChangelog)
 		}
 	}

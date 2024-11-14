@@ -20,7 +20,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.Directory
 import org.gradle.api.tasks.OutputDirectory
 
-internal abstract class BuildSamplesReleaseTask : DefaultTask() {
+internal abstract class BuildReleaseSamplesTask : DefaultTask() {
 
 	@get:OutputDirectory
 	internal abstract var outputDir: Directory

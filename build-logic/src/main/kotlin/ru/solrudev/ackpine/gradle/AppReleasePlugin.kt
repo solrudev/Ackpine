@@ -34,7 +34,7 @@ import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toProperties
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin
-import ru.solrudev.ackpine.gradle.tasks.BuildSamplesReleaseTask
+import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
 import java.io.File
 
 public class AppReleasePlugin : Plugin<Project> {
@@ -100,7 +100,7 @@ public class AppReleasePlugin : Plugin<Project> {
 			}
 			into(releaseDir)
 		}
-		rootProject.tasks.withType<BuildSamplesReleaseTask>().configureEach {
+		rootProject.tasks.withType<BuildReleaseSamplesTask>().configureEach {
 			outputDir = releaseDir
 			dependsOn(copyArtifacts)
 		}
