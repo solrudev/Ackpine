@@ -30,22 +30,34 @@ public abstract class AckpineExtension @Inject constructor(
 	private val libraryExtension: LibraryExtension
 ) : ExtensionAware {
 
+	private val idListeners = mutableSetOf<(String) -> Unit>()
 	private var _id = ""
 
 	/**
 	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes and in artifact ID.
 	 */
+	@Suppress("MemberVisibilityCanBePrivate")
 	public var id: String
 		get() = _id
 		set(value) {
 			_id = value
 			libraryExtension.namespace = "${Constants.PACKAGE_NAME}.$value"
+			for (listener in idListeners) {
+				listener(value)
+			}
 		}
 
 	/**
 	 * Minimum SDK version.
 	 */
 	public var minSdk: Int? by libraryExtension.defaultConfig::minSdk
+
+	/**
+	 * Adds a [listener] which will be called when [id] is set.
+	 */
+	internal fun addIdListener(listener: (id: String) -> Unit) {
+		idListeners += listener
+	}
 }
 
 /**

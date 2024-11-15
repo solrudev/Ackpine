@@ -22,6 +22,7 @@ import com.vanniktech.maven.publish.MavenPublishPlugin
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
@@ -46,14 +47,22 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 			apply(MavenPublishPlugin::class)
 			apply(DokkaPlugin::class)
 		}
-		val ackpineExtension = extensions.getByType<AckpineExtension>()
+		val ackpineExtension = extensions.getByType<AckpineExtension>().apply {
+			addIdListener { id ->
+				configureArtifactCoordinates(id)
+			}
+		}
 		val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
-		configurePublishing(ackpineExtension, artifact)
+		configurePublishing(artifact.name, provider { description })
+	}
+
+	private fun Project.configureArtifactCoordinates(id: String) = extensions.configure<MavenPublishBaseExtension> {
+		coordinates(group.toString(), artifactId = "ackpine-$id", version.toString())
 	}
 
 	private fun Project.configurePublishing(
-		ackpineExtension: AckpineExtension,
-		artifact: AckpineArtifact
+		artifactName: Provider<String>,
+		artifactDescription: Provider<String>
 	) = extensions.configure<MavenPublishBaseExtension> {
 		configure(
 			AndroidMultiVariantLibrary(
@@ -65,36 +74,30 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		publishToMavenCentral(SonatypeHost.S01)
 		signAllPublications()
 
-		afterEvaluate {
-			val projectDescription = description
+		pom {
+			name = artifactName
+			description = artifactDescription
+			inceptionYear = "2023"
+			url = "https://ackpine.solrudev.ru"
 
-			coordinates(group.toString(), artifactId = "ackpine-${ackpineExtension.id}", version.toString())
-
-			pom {
-				name = artifact.name
-				description = projectDescription
-				inceptionYear = "2023"
-				url = "https://ackpine.solrudev.ru"
-
-				licenses {
-					license {
-						name = "The Apache Software License, Version 2.0"
-						url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-					}
+			licenses {
+				license {
+					name = "The Apache Software License, Version 2.0"
+					url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 				}
+			}
 
-				developers {
-					developer {
-						id = "solrudev"
-						name = "Ilya Fomichev"
-					}
+			developers {
+				developer {
+					id = "solrudev"
+					name = "Ilya Fomichev"
 				}
+			}
 
-				scm {
-					connection = "scm:git:github.com/solrudev/Ackpine.git"
-					developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
-					url = "https://github.com/solrudev/Ackpine/tree/master"
-				}
+			scm {
+				connection = "scm:git:github.com/solrudev/Ackpine.git"
+				developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
+				url = "https://github.com/solrudev/Ackpine/tree/master"
 			}
 		}
 	}
