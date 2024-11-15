@@ -46,10 +46,10 @@ public class AckpinePlugin : Plugin<Project> {
 		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
 		configureDokka()
-		registerBuildAckpineTask()
+		val buildAckpine = registerBuildAckpineTask()
 		val buildSamplesTask = registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
-		configureCleanTask(buildSamplesTask, releaseChangelogTask)
+		configureCleanTask(buildAckpine, buildSamplesTask, releaseChangelogTask)
 	}
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
@@ -58,16 +58,17 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerBuildAckpineTask() {
+	private fun Project.registerBuildAckpineTask(): TaskProvider<*> {
 		val library = configurations.create("library") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
 			}
 		}
-		tasks.register("buildAckpine") {
+		return tasks.register("buildAckpine") {
 			group = "build"
 			description = "Assembles all Ackpine library projects."
+			outputs.files(library)
 			dependsOn(library)
 		}
 	}
