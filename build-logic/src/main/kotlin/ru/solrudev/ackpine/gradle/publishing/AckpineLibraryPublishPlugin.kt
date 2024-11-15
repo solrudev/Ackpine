@@ -37,9 +37,6 @@ import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		check(rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
-			"Applying library-publish plugin requires the publishing plugin to be applied to the root project"
-		}
 		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 			"Applying library-publish plugin requires the library plugin to be applied"
 		}
