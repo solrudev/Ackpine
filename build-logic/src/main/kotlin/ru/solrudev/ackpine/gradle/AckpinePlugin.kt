@@ -47,9 +47,9 @@ public class AckpinePlugin : Plugin<Project> {
 		pluginManager.apply(DokkaPlugin::class)
 		configureDokka()
 		registerBuildAckpineTask()
-		val buildReleaseSamplesTask = registerBuildSamplesReleaseTask()
+		val buildSamplesTask = registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
-		configureCleanTask(buildReleaseSamplesTask, releaseChangelogTask)
+		configureCleanTask(buildSamplesTask, releaseChangelogTask)
 	}
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
@@ -72,14 +72,14 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerBuildSamplesReleaseTask(): TaskProvider<*> {
+	private fun Project.registerBuildSamplesTask(): TaskProvider<*> {
 		val sample = configurations.create("sample") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
 			}
 		}
-		return tasks.register("buildReleaseSamples") {
+		return tasks.register("buildSamples") {
 			group = "build"
 			description = "Builds and gathers all Ackpine sample app APKs."
 			outputs.files(sample)

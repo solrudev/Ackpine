@@ -34,7 +34,7 @@ dependencies {
 	library(projects.ackpineRuntime)
 	library(projects.ackpineResources)
 
-	// task :buildReleaseSamples
+	// task :buildSamples
 	sample(projects.sampleJava)
 	sample(projects.sampleKtx)
 }

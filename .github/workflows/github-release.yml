@@ -61,7 +61,7 @@ jobs:
 
       - name: Build samples
         run: |
-          ./gradlew :buildReleaseSamples --stacktrace --no-daemon
+          ./gradlew :buildSamples --stacktrace --no-daemon
         env:
           APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
           APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
