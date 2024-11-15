@@ -35,7 +35,7 @@ import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePublishingPlugin : Plugin<Project> {
 
-	private val Project.releaseChangelog
+	private val Project.releaseChangelogFile
 		get() = layout.projectDirectory.file("changelog.txt")
 
 	private val Project.docsDir
@@ -70,7 +70,7 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
 		return tasks.register<ReleaseChangelogTask>("releaseChangelog") {
 			changelogFile = layout.projectDirectory.file("docs/changelog.md")
-			releaseChangelogFile = releaseChangelog
+			outputFile = releaseChangelogFile
 		}
 	}
 

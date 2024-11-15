@@ -18,11 +18,9 @@ package ru.solrudev.ackpine.gradle.tasks
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.RegularFileProperty
-import org.gradle.api.provider.Property
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import java.io.File
 
 internal abstract class ReleaseChangelogTask : DefaultTask() {
 
@@ -30,7 +28,7 @@ internal abstract class ReleaseChangelogTask : DefaultTask() {
 	internal abstract val changelogFile: RegularFileProperty
 
 	@get:OutputFile
-	internal abstract val releaseChangelogFile: RegularFileProperty
+	internal abstract val outputFile: RegularFileProperty
 
 	override fun getGroup(): String = "documentation"
 	override fun getDescription(): String = "Extracts changelog for the last release."
@@ -52,6 +50,6 @@ internal abstract class ReleaseChangelogTask : DefaultTask() {
 				}
 			}
 		}
-		releaseChangelogFile.get().asFile.writeText(changelog)
+		outputFile.get().asFile.writeText(changelog)
 	}
 }
