@@ -23,17 +23,17 @@ import com.android.build.api.variant.Variant
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Copy
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
+import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.withType
+import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
-import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
 import java.io.File
 
 private const val APP_SIGNING_KEY_ALIAS = "APP_SIGNING_KEY_ALIAS"
@@ -107,9 +107,16 @@ public class AppReleasePlugin : Plugin<Project> {
 			}
 			into(releaseDir)
 		}
-		rootProject.tasks.withType<BuildReleaseSamplesTask>().configureEach {
-			outputDir = releaseDir
-			dependsOn(copyArtifacts)
+		configurations.create("app") {
+			consumable()
+			attributes {
+				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
+			}
+			outgoing.artifact(copyArtifacts)
 		}
+	}
+
+	internal companion object {
+		internal const val LIBRARY_ELEMENTS = "appArtifacts"
 	}
 }

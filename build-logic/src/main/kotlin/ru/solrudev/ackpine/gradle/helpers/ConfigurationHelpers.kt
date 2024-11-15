@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.tasks
+package ru.solrudev.ackpine.gradle.helpers
 
-import org.gradle.api.DefaultTask
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.artifacts.Configuration
 
-internal abstract class BuildReleaseSamplesTask : DefaultTask() {
+/**
+ * Mark this [Configuration] as one that will be consumed by other subprojects.
+ */
+internal fun Configuration.consumable() {
+	isCanBeResolved = false
+	isCanBeConsumed = true
+	isCanBeDeclared = false
+	isVisible = false
+}
 
-	@get:OutputDirectory
-	internal abstract val outputDir: DirectoryProperty
-
-	override fun getGroup(): String = "build"
-	override fun getDescription(): String = "Builds and gathers all Ackpine sample app APKs."
+/**
+ * Mark this [Configuration] as one that will consume artifacts from other subprojects.
+ */
+internal fun Configuration.resolvable() {
+	isCanBeResolved = true
+	isCanBeConsumed = false
+	isCanBeDeclared = true
+	isVisible = false
 }

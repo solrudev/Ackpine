@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle.publishing
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.apply
@@ -27,9 +28,10 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
+import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
+import ru.solrudev.ackpine.gradle.AppReleasePlugin
 import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
-import ru.solrudev.ackpine.gradle.tasks.BuildReleaseSamplesTask
+import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
@@ -60,11 +62,32 @@ public class AckpinePublishingPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildAckpineTask() {
-		tasks.register<BuildAckpineTask>("buildAckpine")
+		val library = configurations.create("library") {
+			resolvable()
+			attributes {
+				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
+			}
+		}
+		tasks.register("buildAckpine") {
+			group = "build"
+			description = "Assembles all Ackpine library projects."
+			dependsOn(library)
+		}
 	}
 
 	private fun Project.registerBuildSamplesReleaseTask(): TaskProvider<*> {
-		return tasks.register<BuildReleaseSamplesTask>("buildReleaseSamples")
+		val sample = configurations.create("sample") {
+			resolvable()
+			attributes {
+				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
+			}
+		}
+		return tasks.register("buildReleaseSamples") {
+			group = "build"
+			description = "Builds and gathers all Ackpine sample app APKs."
+			outputs.files(sample)
+			dependsOn(sample)
+		}
 	}
 
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {

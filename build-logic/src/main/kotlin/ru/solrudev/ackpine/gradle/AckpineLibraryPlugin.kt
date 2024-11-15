@@ -24,17 +24,18 @@ import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.withType
+import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
-import ru.solrudev.ackpine.gradle.tasks.BuildAckpineTask
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -88,12 +89,21 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.addAssembleReleaseTasksToBuildAckpineTask() {
-		extensions.configure<LibraryAndroidComponentsExtension> {
-			onVariants(withReleaseBuildType()) { variant ->
-				rootProject.tasks.withType<BuildAckpineTask>().configureEach {
-					dependsOn(variant.artifacts.get(SingleArtifact.AAR))
-				}
+		val library = configurations.create("library") {
+			consumable()
+			attributes {
+				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
 			}
 		}
+		extensions.configure<LibraryAndroidComponentsExtension> {
+			onVariants(withReleaseBuildType()) { variant ->
+				val aar = variant.artifacts.get(SingleArtifact.AAR)
+				library.outgoing.artifact(aar)
+			}
+		}
+	}
+
+	internal companion object {
+		internal const val LIBRARY_ELEMENTS = "aar"
 	}
 }

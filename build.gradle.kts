@@ -19,9 +19,22 @@ plugins {
 }
 
 dependencies {
+	// task :dokkaGenerate
 	dokka(projects.ackpineCore)
 	dokka(projects.ackpineKtx)
 	dokka(projects.ackpineSplits)
 	dokka(projects.ackpineAssets)
 	dokka(projects.ackpineResources)
+
+	// task :buildAckpine
+	library(projects.ackpineCore)
+	library(projects.ackpineKtx)
+	library(projects.ackpineSplits)
+	library(projects.ackpineAssets)
+	library(projects.ackpineRuntime)
+	library(projects.ackpineResources)
+
+	// task :buildReleaseSamples
+	sample(projects.sampleJava)
+	sample(projects.sampleKtx)
 }
