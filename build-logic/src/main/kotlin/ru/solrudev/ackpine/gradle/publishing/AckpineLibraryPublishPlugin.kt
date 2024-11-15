@@ -16,7 +16,7 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishPlugin
 import com.vanniktech.maven.publish.SonatypeHost
@@ -56,8 +56,8 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		artifact: AckpineArtifact
 	) = extensions.configure<MavenPublishBaseExtension> {
 		configure(
-			AndroidSingleVariantLibrary(
-				variant = "release",
+			AndroidMultiVariantLibrary(
+				includedBuildTypeValues = setOf("release"),
 				sourcesJar = true,
 				publishJavadocJar = false
 			)
