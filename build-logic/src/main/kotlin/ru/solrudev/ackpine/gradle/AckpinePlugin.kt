@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.publishing
+package ru.solrudev.ackpine.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -28,14 +28,11 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
-import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
-import ru.solrudev.ackpine.gradle.AppReleasePlugin
-import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
-public class AckpinePublishingPlugin : Plugin<Project> {
+public class AckpinePlugin : Plugin<Project> {
 
 	private val Project.releaseChangelogFile
 		get() = layout.projectDirectory.file("changelog.txt")

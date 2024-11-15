@@ -15,7 +15,7 @@
  */
 
 plugins {
-	id("ru.solrudev.ackpine.publishing")
+	id("ru.solrudev.ackpine.project")
 }
 
 dependencies {

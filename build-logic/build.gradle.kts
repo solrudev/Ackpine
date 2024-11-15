@@ -26,16 +26,16 @@ kotlin {
 gradlePlugin {
 	plugins {
 		register("ackpine") {
+			id = "ru.solrudev.ackpine.project"
+			implementationClass = "ru.solrudev.ackpine.gradle.AckpinePlugin"
+		}
+		register("ackpine-library") {
 			id = "ru.solrudev.ackpine.library"
 			implementationClass = "ru.solrudev.ackpine.gradle.AckpineLibraryPlugin"
 		}
 		register("ackpine-library-publish") {
 			id = "ru.solrudev.ackpine.library-publish"
 			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpineLibraryPublishPlugin"
-		}
-		register("ackpine-publishing") {
-			id = "ru.solrudev.ackpine.publishing"
-			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin"
 		}
 		register("ackpine-app-release") {
 			id = "ru.solrudev.ackpine.app-release"
