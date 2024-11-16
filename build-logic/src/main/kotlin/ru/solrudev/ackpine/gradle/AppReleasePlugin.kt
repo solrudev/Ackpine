@@ -25,6 +25,8 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
@@ -68,7 +70,8 @@ public class AppReleasePlugin : Plugin<Project> {
 	private fun Project.registerCopyReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
-				registerCopyArtifactsTaskForVariant(variant)
+				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
+				configureCleanTask(copyArtifactsTask)
 			}
 		}
 	}
@@ -91,7 +94,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant) {
+	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
 		val releaseDir = rootProject.layout.projectDirectory.dir("release")
 		val apks = variant.artifacts.get(SingleArtifact.APK).map { directory ->
 			directory.asFileTree.matching { include("*.apk") }
@@ -114,6 +117,11 @@ public class AppReleasePlugin : Plugin<Project> {
 			}
 			outgoing.artifact(copyArtifacts)
 		}
+		return copyArtifacts
+	}
+
+	private fun Project.configureCleanTask(copyArtifactsTask: TaskProvider<*>) = tasks.named<Delete>("clean") {
+		delete(copyArtifactsTask)
 	}
 
 	internal companion object {

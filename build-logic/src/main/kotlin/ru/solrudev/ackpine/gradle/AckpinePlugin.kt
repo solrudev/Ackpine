@@ -47,14 +47,10 @@ public class AckpinePlugin : Plugin<Project> {
 		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
 		configureDokka()
-		val libraryConfiguration = registerBuildAckpineTask()
-		val sampleConfiguration = registerBuildSamplesTask()
+		registerBuildAckpineTask()
+		registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
-		configureCleanTask(
-			libraryConfiguration.artifacts,
-			sampleConfiguration.artifacts,
-			releaseChangelogTask
-		)
+		configureCleanTask(releaseChangelogTask)
 	}
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
