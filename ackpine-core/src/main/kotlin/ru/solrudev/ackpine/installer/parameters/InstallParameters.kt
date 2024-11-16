@@ -275,7 +275,13 @@ public class InstallParameters private constructor(
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
 			return InstallParameters(
-				apks, installerType, confirmation, notificationData, name, requireUserAction, installMode
+				ReadOnlyApkList(apks),
+				installerType,
+				confirmation,
+				notificationData,
+				name,
+				requireUserAction,
+				installMode
 			)
 		}
 
@@ -340,4 +346,16 @@ private class RealMutableApkList : MutableApkList {
 			throw SplitPackagesNotSupportedException()
 		}
 	}
+}
+
+private class ReadOnlyApkList(private val apkList: ApkList) : ApkList by apkList {
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is ReadOnlyApkList) return false
+		return apkList == other.apkList
+	}
+
+	override fun hashCode() = apkList.hashCode()
+	override fun toString() = apkList.toString()
 }
