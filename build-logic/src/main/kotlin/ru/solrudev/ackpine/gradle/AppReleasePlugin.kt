@@ -71,6 +71,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
 				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
+				createConsumableAppConfiguration(copyArtifactsTask)
 				configureCleanTask(copyArtifactsTask)
 			}
 		}
@@ -103,13 +104,16 @@ public class AppReleasePlugin : Plugin<Project> {
 		val variantName = variant.name
 		val projectName = project.name
 		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
-		val copyArtifacts = tasks.register<Copy>(taskName) {
+		return tasks.register<Copy>(taskName) {
 			from(apks, mapping)
 			rename { path ->
 				path.replace(mapping.get().asFile.name, "mapping-$projectName-$variantName.txt")
 			}
 			into(releaseDir)
 		}
+	}
+
+	private fun Project.createConsumableAppConfiguration(copyArtifacts: TaskProvider<*>) {
 		configurations.create("app") {
 			consumable()
 			attributes {
@@ -117,11 +121,12 @@ public class AppReleasePlugin : Plugin<Project> {
 			}
 			outgoing.artifact(copyArtifacts)
 		}
-		return copyArtifacts
 	}
 
-	private fun Project.configureCleanTask(copyArtifactsTask: TaskProvider<*>) = tasks.named<Delete>("clean") {
-		delete(copyArtifactsTask)
+	private fun Project.configureCleanTask(copyArtifactsTask: TaskProvider<*>) {
+		tasks.named<Delete>("clean") {
+			delete(copyArtifactsTask)
+		}
 	}
 
 	internal companion object {
