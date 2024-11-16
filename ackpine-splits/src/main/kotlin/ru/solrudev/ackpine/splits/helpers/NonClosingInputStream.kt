@@ -35,10 +35,9 @@ internal class NonClosingInputStream private constructor(private val inputStream
 	}
 
 	override fun equals(other: Any?): Boolean {
-		if (other !is NonClosingInputStream) {
-			return false
-		}
-		return inputStream == other
+		if (this === other) return true
+		if (other !is NonClosingInputStream) return false
+		return inputStream == other.inputStream
 	}
 
 	override fun hashCode(): Int = inputStream.hashCode()
