@@ -123,8 +123,12 @@ internal class PackageUninstallerImpl internal constructor(
 		if (isSessionsMapInitialized) {
 			return
 		}
-		for (session in uninstallSessionDao.getUninstallSessions()) {
-			if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+		uninstallSessionDao.getUninstallSessions()
+			.asSequence()
+			.filterNot { session ->
+				sessions.containsKey(UUID.fromString(session.session.id))
+			}
+			.forEach { session ->
 				val uninstallSession = session.toUninstallSession()
 				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
 			}

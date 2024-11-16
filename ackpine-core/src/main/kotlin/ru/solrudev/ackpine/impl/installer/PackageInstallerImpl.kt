@@ -187,8 +187,12 @@ internal class PackageInstallerImpl internal constructor(
 		if (isSessionsMapInitialized) {
 			return
 		}
-		for (session in installSessionDao.getInstallSessions()) {
-			if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+		installSessionDao.getInstallSessions()
+			.asSequence()
+			.filterNot { session ->
+				sessions.containsKey(UUID.fromString(session.session.id))
+			}
+			.forEach { session ->
 				val installSession = session.toInstallSession()
 				sessions.putIfAbsent(installSession.id, installSession)
 			}
