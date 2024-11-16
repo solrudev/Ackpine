@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
@@ -46,10 +47,14 @@ public class AckpinePlugin : Plugin<Project> {
 		version = versionNumber.toString()
 		pluginManager.apply(DokkaPlugin::class)
 		configureDokka()
-		val buildAckpine = registerBuildAckpineTask()
-		val buildSamplesTask = registerBuildSamplesTask()
+		val libraryConfiguration = registerBuildAckpineTask()
+		val sampleConfiguration = registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
-		configureCleanTask(buildAckpine, buildSamplesTask, releaseChangelogTask)
+		configureCleanTask(
+			libraryConfiguration.artifacts,
+			sampleConfiguration.artifacts,
+			releaseChangelogTask
+		)
 	}
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
@@ -58,34 +63,34 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerBuildAckpineTask(): TaskProvider<*> {
+	private fun Project.registerBuildAckpineTask(): Configuration {
 		val library = configurations.create("library") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
 			}
 		}
-		return tasks.register("buildAckpine") {
+		tasks.register("buildAckpine") {
 			group = "build"
 			description = "Assembles all Ackpine library projects."
-			outputs.files(library)
 			dependsOn(library)
 		}
+		return library
 	}
 
-	private fun Project.registerBuildSamplesTask(): TaskProvider<*> {
+	private fun Project.registerBuildSamplesTask(): Configuration {
 		val sample = configurations.create("sample") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
 			}
 		}
-		return tasks.register("buildSamples") {
+		tasks.register("buildSamples") {
 			group = "build"
 			description = "Builds and gathers all Ackpine sample app APKs."
-			outputs.files(sample)
 			dependsOn(sample)
 		}
+		return sample
 	}
 
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
@@ -95,11 +100,11 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureCleanTask(vararg producingTasks: TaskProvider<*>) {
+	private fun Project.configureCleanTask(vararg deleteTargets: Any) {
 		tasks.named<Delete>("clean") {
 			delete(project.rootProject.layout.buildDirectory)
 			delete(docsDir)
-			delete(*producingTasks)
+			delete(*deleteTargets)
 		}
 	}
 }
