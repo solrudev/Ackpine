@@ -43,6 +43,9 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
+private typealias SessionsCollectionTransformer =
+			(Collection<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
@@ -156,7 +159,10 @@ internal class PackageInstallerImpl internal constructor(
 	}
 
 	@SuppressLint("RestrictedApi")
-	private fun getSessionFromDb(sessionId: UUID, future: ResolvableFuture<ProgressSession<InstallFailure>>) {
+	private fun getSessionFromDb(
+		sessionId: UUID,
+		future: ResolvableFuture<ProgressSession<InstallFailure>>
+	) {
 		sessions[sessionId]?.let { session ->
 			future.set(session)
 			return
@@ -168,24 +174,22 @@ internal class PackageInstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	private inline fun initializeSessions(
-		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
+		crossinline transform: SessionsCollectionTransformer
 	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
 		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
 		executor.executeWithFuture(future) {
 			committedSessionsInitSemaphore.withPermit {
-				initializeSessions(future, transform)
+				val sessions = initializeSessions()
+				future.set(transform(sessions))
 			}
 		}
 		return future
 	}
 
 	@SuppressLint("RestrictedApi")
-	private inline fun initializeSessions(
-		future: ResolvableFuture<List<ProgressSession<InstallFailure>>>,
-		transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
-	) {
+	private fun initializeSessions(): Collection<ProgressSession<InstallFailure>> {
 		if (isSessionsMapInitialized) {
-			return
+			return sessions.values
 		}
 		installSessionDao.getInstallSessions()
 			.asSequence()
@@ -196,9 +200,8 @@ internal class PackageInstallerImpl internal constructor(
 				val installSession = session.toInstallSession()
 				sessions.putIfAbsent(installSession.id, installSession)
 			}
-		}
 		isSessionsMapInitialized = true
-		future.set(transform(sessions.values))
+		return sessions.values
 	}
 
 	private fun persistSession(

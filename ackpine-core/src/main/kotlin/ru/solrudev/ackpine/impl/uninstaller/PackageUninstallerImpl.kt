@@ -35,6 +35,9 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
+private typealias SessionsCollectionTransformer =
+			(Collection<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionDao: UninstallSessionDao,
@@ -84,13 +87,12 @@ internal class PackageUninstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	override fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
-		return if (isSessionsMapInitialized) {
-			ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
+		if (isSessionsMapInitialized) {
+			return ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
 				set(sessions.values.filter { it.isActive })
 			}
-		} else {
-			initializeSessions { sessions -> sessions.filter { it.isActive } }
 		}
+		return initializeSessions { sessions -> sessions.filter { it.isActive } }
 	}
 
 	@SuppressLint("RestrictedApi")
@@ -106,22 +108,20 @@ internal class PackageUninstallerImpl internal constructor(
 
 	@SuppressLint("RestrictedApi")
 	private inline fun initializeSessions(
-		crossinline transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
+		crossinline transform: SessionsCollectionTransformer
 	): ListenableFuture<List<Session<UninstallFailure>>> {
 		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
 		executor.executeWithFuture(future) {
-			initializeSessions(future, transform)
+			val sessions = initializeSessions()
+			future.set(transform(sessions))
 		}
 		return future
 	}
 
 	@SuppressLint("RestrictedApi")
-	private inline fun initializeSessions(
-		future: ResolvableFuture<List<Session<UninstallFailure>>>,
-		transform: (Iterable<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
-	) {
+	private fun initializeSessions(): Collection<Session<UninstallFailure>> {
 		if (isSessionsMapInitialized) {
-			return
+			return sessions.values
 		}
 		uninstallSessionDao.getUninstallSessions()
 			.asSequence()
@@ -132,9 +132,8 @@ internal class PackageUninstallerImpl internal constructor(
 				val uninstallSession = session.toUninstallSession()
 				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
 			}
-		}
 		isSessionsMapInitialized = true
-		future.set(transform(sessions.values))
+		return sessions.values
 	}
 
 	private fun persistSession(
