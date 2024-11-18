@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
@@ -59,8 +58,8 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerBuildAckpineTask(): Configuration {
-		val library = configurations.create("library") {
+	private fun Project.registerBuildAckpineTask() {
+		val library = configurations.register("library") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
@@ -71,11 +70,10 @@ public class AckpinePlugin : Plugin<Project> {
 			description = "Assembles all Ackpine library projects."
 			dependsOn(library)
 		}
-		return library
 	}
 
-	private fun Project.registerBuildSamplesTask(): Configuration {
-		val sample = configurations.create("sample") {
+	private fun Project.registerBuildSamplesTask() {
+		val sample = configurations.register("sample") {
 			resolvable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
@@ -86,7 +84,6 @@ public class AckpinePlugin : Plugin<Project> {
 			description = "Builds and gathers all Ackpine sample app APKs."
 			dependsOn(sample)
 		}
-		return sample
 	}
 
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {

@@ -89,7 +89,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.addAssembleReleaseTasksToBuildAckpineTask() {
-		val library = configurations.create("library") {
+		val library = configurations.register("library") {
 			consumable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
@@ -98,7 +98,9 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		extensions.configure<LibraryAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
 				val aar = variant.artifacts.get(SingleArtifact.AAR)
-				library.outgoing.artifact(aar)
+				library.configure {
+					outgoing.artifact(aar)
+				}
 			}
 		}
 	}

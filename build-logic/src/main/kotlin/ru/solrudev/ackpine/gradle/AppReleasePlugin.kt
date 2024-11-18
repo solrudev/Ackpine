@@ -114,7 +114,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.createConsumableAppConfiguration(copyArtifacts: TaskProvider<*>) {
-		configurations.create("app") {
+		configurations.register("app") {
 			consumable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
