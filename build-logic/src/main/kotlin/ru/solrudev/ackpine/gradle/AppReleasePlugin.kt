@@ -24,6 +24,7 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
+import org.gradle.api.file.RegularFile
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
@@ -61,7 +62,8 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
-		val releaseSigningConfig = releaseSigningConfigProvider(rootProject.file("keystore.properties"))
+		val keystoreConfigFile = isolated.rootProject.projectDirectory.file("keystore.properties")
+		val releaseSigningConfig = releaseSigningConfigProvider(keystoreConfigFile)
 		buildTypes.named("release") {
 			signingConfig = releaseSigningConfig.get()
 		}
@@ -78,11 +80,12 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun ApplicationExtension.releaseSigningConfigProvider(
-		keystorePropertiesFile: File
+		keystoreConfigFile: RegularFile
 	) = signingConfigs.register("releaseSigningConfig") {
 		initWith(signingConfigs["debug"])
-		val config = if (keystorePropertiesFile.exists()) {
-			keystorePropertiesFile.toPropertiesMap()
+		val configFile = keystoreConfigFile.asFile
+		val config = if (configFile.exists()) {
+			configFile.toPropertiesMap()
 		} else {
 			System.getenv()
 		}
@@ -96,7 +99,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
-		val releaseDir = rootProject.layout.projectDirectory.dir("release")
+		val releaseDir = isolated.rootProject.projectDirectory.dir("release")
 		val apks = variant.artifacts.get(SingleArtifact.APK).map { directory ->
 			directory.asFileTree.matching { include("*.apk") }
 		}

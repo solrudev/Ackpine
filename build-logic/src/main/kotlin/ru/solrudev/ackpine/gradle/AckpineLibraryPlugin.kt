@@ -36,12 +36,13 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		group = rootProject.group
-		version = rootProject.version
+		group = Constants.PACKAGE_NAME
+		version = versionNumber.toString()
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)

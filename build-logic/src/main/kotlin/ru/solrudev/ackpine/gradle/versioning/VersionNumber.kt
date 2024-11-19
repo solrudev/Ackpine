@@ -17,28 +17,21 @@
 package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
-import org.gradle.kotlin.dsl.extra
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
-
-private const val PARSED_VERSION = "parsedVersion"
 
 /**
  * Returns a [Version] object parsed from `version.properties` file in root project directory.
  */
 public val Project.versionNumber: Version
 	get() {
-		if (rootProject.hasProperty(PARSED_VERSION)) {
-			return rootProject.extra[PARSED_VERSION] as Version
-		}
-		val versionProperties = rootProject.file("version.properties").toPropertiesMap()
+		val versionFile = isolated.rootProject.projectDirectory.file("version.properties").asFile
+		val versionProperties = versionFile.toPropertiesMap()
 		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
 		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
 		val patchVersion = versionProperties.getOrThrow("PATCH_VERSION").toInt()
 		check("SUFFIX" in versionProperties.keys) { "SUFFIX was not provided" }
 		val suffix = (versionProperties["SUFFIX"] as String).lowercase()
 		val isSnapshot = versionProperties.getOrThrow("SNAPSHOT").toBooleanStrict()
-		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot).also { version ->
-			rootProject.extra[PARSED_VERSION] = version
-		}
+		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot)
 	}

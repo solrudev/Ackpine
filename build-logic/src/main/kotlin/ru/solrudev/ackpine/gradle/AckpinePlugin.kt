@@ -95,7 +95,7 @@ public class AckpinePlugin : Plugin<Project> {
 
 	private fun Project.configureCleanTask(vararg deleteTargets: Any) {
 		tasks.named<Delete>("clean") {
-			delete(project.rootProject.layout.buildDirectory)
+			delete(layout.buildDirectory)
 			delete(docsDir)
 			delete(*deleteTargets)
 		}
