@@ -49,7 +49,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 		configureKotlin()
 		val libraryExtension = extensions.getByType<LibraryExtension>()
-		extensions.create<AckpineExtension>("ackpine", libraryExtension)
+		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension)
 		configureAndroid()
 		addAssembleReleaseTasksToBuildAckpineTask()
 	}

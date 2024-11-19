@@ -31,7 +31,7 @@ import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.hasPlugin
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineArtifact
-import ru.solrudev.ackpine.gradle.AckpineExtension
+import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
@@ -44,12 +44,12 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 			apply(MavenPublishPlugin::class)
 			apply(DokkaPlugin::class)
 		}
-		val ackpineExtension = extensions.getByType<AckpineExtension>().apply {
+		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
 			addIdListener { id ->
 				configureArtifactCoordinates(id)
 			}
 		}
-		val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
+		val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
 		configurePublishing(artifact.name, provider { description })
 	}
 

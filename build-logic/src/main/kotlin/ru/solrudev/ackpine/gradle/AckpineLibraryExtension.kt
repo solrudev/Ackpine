@@ -26,7 +26,7 @@ import javax.inject.Inject
 /**
  * Extension for Ackpine `library` plugin.
  */
-public abstract class AckpineExtension @Inject constructor(
+public abstract class AckpineLibraryExtension @Inject constructor(
 	private val libraryExtension: LibraryExtension
 ) : ExtensionAware {
 
