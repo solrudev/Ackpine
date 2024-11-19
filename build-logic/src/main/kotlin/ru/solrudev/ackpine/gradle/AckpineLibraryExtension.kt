@@ -23,6 +23,8 @@ import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
+internal typealias IdListener = (id: String) -> Unit
+
 /**
  * Extension for Ackpine `library` plugin.
  */
@@ -30,7 +32,7 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 	private val libraryExtension: LibraryExtension
 ) : ExtensionAware {
 
-	private val idListeners = mutableSetOf<(String) -> Unit>()
+	private val idListeners = mutableSetOf<IdListener>()
 	private var _id = ""
 
 	/**
@@ -55,7 +57,7 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 	/**
 	 * Adds a [listener] which will be called when [id] is set.
 	 */
-	internal fun addIdListener(listener: (id: String) -> Unit) {
+	internal fun addIdListener(listener: IdListener) {
 		idListeners += listener
 	}
 }
