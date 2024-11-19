@@ -18,15 +18,15 @@ package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
+import ru.solrudev.ackpine.gradle.helpers.properties
 
 /**
  * Returns a [Version] object parsed from `version.properties` file in root project directory.
  */
 public val Project.versionNumber: Version
 	get() {
-		val versionFile = isolated.rootProject.projectDirectory.file("version.properties").asFile
-		val versionProperties = versionFile.toPropertiesMap()
+		val versionFile = isolated.rootProject.projectDirectory.file("version.properties")
+		val versionProperties = providers.properties(versionFile).get()
 		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
 		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
 		val patchVersion = versionProperties.getOrThrow("PATCH_VERSION").toInt()

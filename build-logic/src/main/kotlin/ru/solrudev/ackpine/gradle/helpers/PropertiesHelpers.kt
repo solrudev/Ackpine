@@ -16,17 +16,16 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
-import java.io.File
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import java.util.Properties
 
 /**
- * Returns a [Properties] object read from a file.
+ * Creates a [Provider] whose value is a [Properties] map loaded from the [file].
  */
-@Suppress("UNCHECKED_CAST")
-internal fun File.toPropertiesMap(): Map<String, String> {
-	val properties = Properties()
-	inputStream().use(properties::load)
-	return properties as Map<String, String>
+internal fun ProviderFactory.properties(file: RegularFile): Provider<Map<String, String>> {
+	return fileContents(file).asText.map(String::readProperties)
 }
 
 /**
@@ -36,4 +35,11 @@ internal fun Map<String, String>.getOrThrow(key: String): String {
 	val value = get(key)
 	check(!value.isNullOrEmpty()) { "$key was not provided" }
 	return value
+}
+
+@Suppress("UNCHECKED_CAST")
+private fun String.readProperties(): Map<String, String> {
+	val properties = Properties()
+	properties.load(reader())
+	return properties as Map<String, String>
 }

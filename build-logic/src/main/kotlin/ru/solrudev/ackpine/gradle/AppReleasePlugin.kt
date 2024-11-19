@@ -24,7 +24,7 @@ import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
-import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
@@ -35,7 +35,7 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.toPropertiesMap
+import ru.solrudev.ackpine.gradle.helpers.properties
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import java.io.File
 
@@ -43,13 +43,7 @@ private const val APP_SIGNING_KEY_ALIAS = "APP_SIGNING_KEY_ALIAS"
 private const val APP_SIGNING_KEY_PASSWORD = "APP_SIGNING_KEY_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PASSWORD = "APP_SIGNING_KEY_STORE_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PATH = "APP_SIGNING_KEY_STORE_PATH"
-
-private val signingConfigKeys = setOf(
-	APP_SIGNING_KEY_ALIAS,
-	APP_SIGNING_KEY_PASSWORD,
-	APP_SIGNING_KEY_STORE_PASSWORD,
-	APP_SIGNING_KEY_STORE_PATH
-)
+private const val APP_SIGNING_PREFIX = "APP_SIGNING_"
 
 public class AppReleasePlugin : Plugin<Project> {
 
@@ -63,7 +57,11 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
 		val keystoreConfigFile = isolated.rootProject.projectDirectory.file("keystore.properties")
-		val releaseSigningConfig = releaseSigningConfigProvider(keystoreConfigFile)
+		val fileConfigProvider = providers.properties(keystoreConfigFile).map { properties ->
+			properties.filterKeys { it.startsWith(APP_SIGNING_PREFIX) }
+		}
+		val environmentConfigProvider = providers.environmentVariablesPrefixedBy(APP_SIGNING_PREFIX)
+		val releaseSigningConfig = releaseSigningConfigProvider(fileConfigProvider, environmentConfigProvider)
 		buildTypes.named("release") {
 			signingConfig = releaseSigningConfig.get()
 		}
@@ -80,16 +78,12 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun ApplicationExtension.releaseSigningConfigProvider(
-		keystoreConfigFile: RegularFile
+		fileConfigProvider: Provider<Map<String, String>>,
+		environmentConfigProvider: Provider<Map<String, String>>
 	) = signingConfigs.register("releaseSigningConfig") {
 		initWith(signingConfigs["debug"])
-		val configFile = keystoreConfigFile.asFile
-		val config = if (configFile.exists()) {
-			configFile.toPropertiesMap()
-		} else {
-			System.getenv()
-		}
-		if (signingConfigKeys.any { it in config.keys }) {
+		val config = fileConfigProvider.get().ifEmpty { environmentConfigProvider.get() }
+		if (config.isNotEmpty()) {
 			keyAlias = config.getOrThrow(APP_SIGNING_KEY_ALIAS)
 			keyPassword = config.getOrThrow(APP_SIGNING_KEY_PASSWORD)
 			storePassword = config.getOrThrow(APP_SIGNING_KEY_STORE_PASSWORD)
