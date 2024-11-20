@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,28 @@
  * limitations under the License.
  */
 
-description = "Provides support of asset files inside of application's package for Ackpine"
+description = "Aggregates and generates API documentation for library projects"
+
+val docsDir = isolated.rootProject.projectDirectory.dir("docs/api")
 
 plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
 	alias(libs.plugins.dokka)
 }
 
-ackpine {
-	id = "assets"
-	artifact {
-		name = "Ackpine Assets"
+dokka {
+	dokkaPublications.html {
+		outputDirectory = docsDir
 	}
+}
+
+dependencies {
+	dokka(projects.ackpineCore)
+	dokka(projects.ackpineKtx)
+	dokka(projects.ackpineSplits)
+	dokka(projects.ackpineAssets)
+	dokka(projects.ackpineResources)
+}
+
+tasks.named<Delete>("clean") {
+	delete(docsDir)
 }

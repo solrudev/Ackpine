@@ -29,7 +29,6 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.hasPlugin
-import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
@@ -40,10 +39,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 			"Applying library-publish plugin requires the library plugin to be applied"
 		}
-		pluginManager.run {
-			apply(MavenPublishPlugin::class)
-			apply(DokkaPlugin::class)
-		}
+		pluginManager.apply(MavenPublishPlugin::class)
 		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
 			addIdListener { id ->
 				configureArtifactCoordinates(id)

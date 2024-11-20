@@ -21,13 +21,9 @@ import org.gradle.api.Project
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.jetbrains.dokka.gradle.DokkaExtension
-import org.jetbrains.dokka.gradle.DokkaPlugin
 import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
@@ -37,25 +33,14 @@ public class AckpinePlugin : Plugin<Project> {
 	private val Project.releaseChangelogFile
 		get() = layout.projectDirectory.file("changelog.txt")
 
-	private val Project.docsDir
-		get() = layout.projectDirectory.dir("docs/api")
-
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
 		version = versionNumber.toString()
-		pluginManager.apply(DokkaPlugin::class)
-		configureDokka()
 		registerBuildAckpineTask()
 		registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
 		configureCleanTask(releaseChangelogTask)
-	}
-
-	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
-		dokkaPublications.named("html") {
-			outputDirectory = docsDir
-		}
 	}
 
 	private fun Project.registerBuildAckpineTask() {
@@ -94,9 +79,8 @@ public class AckpinePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureCleanTask(deleteTarget: Any) {
-		tasks.named<Delete>("clean") {
+		tasks.register<Delete>("clean") {
 			delete(layout.buildDirectory)
-			delete(docsDir)
 			delete(deleteTarget)
 		}
 	}
