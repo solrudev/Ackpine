@@ -10,6 +10,7 @@ permissions:
   contents: write
 
 env:
+  GRADLE_ENCRYPTION_KEY: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 jobs:
