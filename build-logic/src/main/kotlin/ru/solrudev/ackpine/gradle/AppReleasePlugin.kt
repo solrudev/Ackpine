@@ -21,8 +21,10 @@ import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
 import com.android.build.gradle.AppPlugin
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Copy
@@ -69,9 +71,10 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerCopyReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
+			val appConfiguration = createConsumableAppConfiguration()
 			onVariants(withReleaseBuildType()) { variant ->
 				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
-				createConsumableAppConfiguration(copyArtifactsTask)
+				appConfiguration.addOutgoingArtifact(copyArtifactsTask)
 				configureCleanTask(copyArtifactsTask)
 			}
 		}
@@ -110,19 +113,24 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.createConsumableAppConfiguration(copyArtifacts: TaskProvider<*>) {
-		configurations.register("app") {
+	private fun Project.createConsumableAppConfiguration(): NamedDomainObjectProvider<Configuration> {
+		return configurations.register("app") {
 			consumable()
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
 			}
-			outgoing.artifact(copyArtifacts)
 		}
 	}
 
-	private fun Project.configureCleanTask(copyArtifactsTask: TaskProvider<*>) {
+	private fun NamedDomainObjectProvider<Configuration>.addOutgoingArtifact(artifact: Any) {
+		configure {
+			outgoing.artifact(artifact)
+		}
+	}
+
+	private fun Project.configureCleanTask(deleteTarget: Any) {
 		tasks.named<Delete>("clean") {
-			delete(copyArtifactsTask)
+			delete(deleteTarget)
 		}
 	}
 
