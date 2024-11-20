@@ -25,12 +25,16 @@ public data class Version(
 	public val patchVersion: Int,
 	public val suffix: String,
 	public val isSnapshot: Boolean
-) {
+) : Comparable<Version> {
 
 	/**
 	 * Version code computed from semantic version number.
 	 */
 	public val versionCode: Int = computeVersionCode()
+
+	override fun compareTo(other: Version): Int {
+		return versionCode.compareTo(other.versionCode)
+	}
 
 	override fun toString(): String {
 		return buildString {
