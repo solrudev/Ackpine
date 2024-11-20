@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,11 +32,11 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew apiCheck --no-daemon || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |
-          ./gradlew :buildAckpine --stacktrace --no-daemon
+          ./gradlew :buildAckpine --stacktrace
 
   release-samples:
     name: Release samples
@@ -61,7 +64,7 @@ jobs:
 
       - name: Build samples
         run: |
-          ./gradlew :buildSamples --stacktrace --no-daemon
+          ./gradlew :buildSamples --stacktrace
         env:
           APP_SIGNING_KEY_ALIAS: ${{ secrets.APP_SIGNING_KEY_ALIAS }}
           APP_SIGNING_KEY_PASSWORD: ${{ secrets.APP_SIGNING_KEY_PASSWORD }}
@@ -70,7 +73,7 @@ jobs:
 
       - name: Extract release changelog
         run: |
-          ./gradlew :releaseChangelog --no-daemon
+          ./gradlew :releaseChangelog
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
