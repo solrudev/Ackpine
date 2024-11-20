@@ -53,7 +53,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		val libraryExtension = extensions.getByType<LibraryExtension>()
 		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension)
 		configureAndroid()
-		addAssembleReleaseTasksToBuildAckpineTask()
+		registerConsumableLibraryConfiguration()
 	}
 
 	private fun Project.configureKotlin() {
@@ -90,7 +90,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.addAssembleReleaseTasksToBuildAckpineTask() {
+	private fun Project.registerConsumableLibraryConfiguration() {
 		val library = configurations.register("library") {
 			consumable()
 			attributes {
