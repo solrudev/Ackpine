@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.gradle.helpers
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
+import java.io.File
 import java.util.Properties
 
 /**
@@ -26,6 +27,13 @@ import java.util.Properties
  */
 internal fun ProviderFactory.properties(file: RegularFile): Provider<Map<String, String>> {
 	return fileContents(file).asText.map(String::readProperties)
+}
+
+/**
+ * Returns [Properties] map loaded from the file.
+ */
+internal fun File.readProperties(): Map<String, String> {
+	return readText().readProperties()
 }
 
 /**

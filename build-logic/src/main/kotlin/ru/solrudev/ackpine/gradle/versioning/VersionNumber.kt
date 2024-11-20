@@ -17,21 +17,17 @@
 package ru.solrudev.ackpine.gradle.versioning
 
 import org.gradle.api.Project
-import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.properties
+import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.registerIfAbsent
 
 /**
- * Returns a [Version] object parsed from `version.properties` file in root project directory.
+ * Returns a provider of a [Version] object parsed from `version.properties` file in root project directory.
  */
-public val Project.versionNumber: Version
+public val Project.versionNumber: Provider<Version>
 	get() {
-		val versionFile = isolated.rootProject.projectDirectory.file("version.properties")
-		val versionProperties = providers.properties(versionFile).get()
-		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
-		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
-		val patchVersion = versionProperties.getOrThrow("PATCH_VERSION").toInt()
-		check("SUFFIX" in versionProperties.keys) { "SUFFIX was not provided" }
-		val suffix = (versionProperties["SUFFIX"] as String).lowercase()
-		val isSnapshot = versionProperties.getOrThrow("SNAPSHOT").toBooleanStrict()
-		return Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot)
+		val versioningService = gradle.sharedServices.registerIfAbsent("versioning", VersioningService::class) {
+			parameters.versionFile = isolated.rootProject.projectDirectory.file("version.properties")
+		}
+		return versioningService.map { it.version }
 	}

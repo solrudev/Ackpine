@@ -43,7 +43,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		group = Constants.PACKAGE_NAME
-		version = versionNumber.toString()
+		version = versionNumber.get().toString()
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)

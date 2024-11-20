@@ -40,8 +40,8 @@ android {
 		applicationId = SampleConstants.PACKAGE_NAME
 		minSdk = SampleConstants.MIN_SDK
 		targetSdk = SampleConstants.TARGET_SDK
-		versionCode = versionNumber.versionCode
-		versionName = versionNumber.toString()
+		versionCode = versionNumber.get().versionCode
+		versionName = versionNumber.get().toString()
 	}
 
 	buildTypes {

@@ -36,7 +36,7 @@ public class AckpinePlugin : Plugin<Project> {
 	override fun apply(target: Project): Unit = target.run {
 		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
 		group = Constants.PACKAGE_NAME
-		version = versionNumber.toString()
+		version = versionNumber.get().toString()
 		registerBuildAckpineTask()
 		registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
