@@ -18,7 +18,7 @@ package ru.solrudev.ackpine.gradle.publishing
 
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import com.vanniktech.maven.publish.MavenPublishPlugin
+import com.vanniktech.maven.publish.MavenPublishBasePlugin
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -39,7 +39,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
 			"Applying library-publish plugin requires the library plugin to be applied"
 		}
-		pluginManager.apply(MavenPublishPlugin::class)
+		pluginManager.apply(MavenPublishBasePlugin::class)
 		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
 			addIdListener { id ->
 				configureArtifactCoordinates(id)
