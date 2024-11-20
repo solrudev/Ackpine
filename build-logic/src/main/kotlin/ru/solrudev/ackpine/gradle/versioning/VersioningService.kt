@@ -25,7 +25,7 @@ import java.io.File
 
 internal abstract class VersioningService : BuildService<VersioningService.Parameters> {
 
-	internal val version: Version by lazy {
+	internal val version by lazy {
 		val versionProperties = parameters.versionFile.get().asFile.readProperties()
 		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
 		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
