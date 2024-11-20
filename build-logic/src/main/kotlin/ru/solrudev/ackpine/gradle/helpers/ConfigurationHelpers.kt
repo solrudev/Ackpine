@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.artifacts.Configuration
 
 /**
@@ -36,4 +37,13 @@ internal fun Configuration.resolvable() {
 	isCanBeConsumed = false
 	isCanBeDeclared = true
 	isVisible = false
+}
+
+/**
+ * Adds an outgoing [artifact] to the configuration returned by this provider.
+ */
+internal fun NamedDomainObjectProvider<Configuration>.addOutgoingArtifact(artifact: Any) {
+	configure {
+		outgoing.artifact(artifact)
+	}
 }

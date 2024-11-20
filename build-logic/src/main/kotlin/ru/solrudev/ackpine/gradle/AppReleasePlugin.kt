@@ -35,6 +35,7 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
+import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.properties
@@ -119,12 +120,6 @@ public class AppReleasePlugin : Plugin<Project> {
 			attributes {
 				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
 			}
-		}
-	}
-
-	private fun NamedDomainObjectProvider<Configuration>.addOutgoingArtifact(artifact: Any) {
-		configure {
-			outgoing.artifact(artifact)
 		}
 	}
 
