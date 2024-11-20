@@ -93,11 +93,11 @@ public class AckpinePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureCleanTask(vararg deleteTargets: Any) {
+	private fun Project.configureCleanTask(deleteTarget: Any) {
 		tasks.named<Delete>("clean") {
 			delete(layout.buildDirectory)
 			delete(docsDir)
-			delete(*deleteTargets)
+			delete(deleteTarget)
 		}
 	}
 }
