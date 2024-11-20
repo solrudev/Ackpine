@@ -77,7 +77,7 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerCopyReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
-			val appConfiguration = createConsumableAppConfiguration()
+			val appConfiguration = registerConsumableAppConfiguration()
 			onVariants(withReleaseBuildType()) { variant ->
 				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
 				appConfiguration.addOutgoingArtifact(copyArtifactsTask)
@@ -119,7 +119,7 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.createConsumableAppConfiguration(): NamedDomainObjectProvider<Configuration> {
+	private fun Project.registerConsumableAppConfiguration(): NamedDomainObjectProvider<Configuration> {
 		return configurations.register("app") {
 			consumable()
 			attributes {
