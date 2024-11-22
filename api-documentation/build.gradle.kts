@@ -36,6 +36,6 @@ dependencies {
 	dokka(projects.ackpineResources)
 }
 
-tasks.named<Delete>("clean") {
+tasks.clean {
 	delete(docsDir)
 }
