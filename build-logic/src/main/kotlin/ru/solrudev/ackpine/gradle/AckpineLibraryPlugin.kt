@@ -77,11 +77,9 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
-		buildTypes {
-			named("release") {
-				isMinifyEnabled = false
-				proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-			}
+		buildTypes.named("release") {
+			isMinifyEnabled = false
+			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 
 		compileOptions {
