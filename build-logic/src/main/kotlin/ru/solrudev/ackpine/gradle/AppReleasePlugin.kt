@@ -20,7 +20,6 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
-import com.android.build.gradle.AppPlugin
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -33,7 +32,6 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.hasPlugin
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registerIfAbsent
@@ -52,8 +50,8 @@ private const val APP_SIGNING_PREFIX = "APP_SIGNING_"
 public class AppReleasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		check(plugins.hasPlugin(AppPlugin::class)) {
-			"Applying app-release plugin requires the Android application plugin to be applied"
+		if (!pluginManager.hasPlugin("com.android.application")) {
+			error("Applying app-release plugin requires the Android application plugin to be applied")
 		}
 		configureSigning()
 		registerCopyReleaseArtifactsTasks()

@@ -107,5 +107,6 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 	internal companion object {
 		internal const val LIBRARY_ELEMENTS = "aar"
+		internal const val PLUGIN_ID = "ru.solrudev.ackpine.library"
 	}
 }

@@ -28,7 +28,6 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.hasPlugin
 import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
@@ -36,9 +35,9 @@ import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
+		pluginManager.findPlugin(AckpineLibraryPlugin.PLUGIN_ID) ?: error(
 			"Applying library-publish plugin requires the library plugin to be applied"
-		}
+		)
 		pluginManager.apply(MavenPublishBasePlugin::class)
 		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
 			addIdListener { id ->
