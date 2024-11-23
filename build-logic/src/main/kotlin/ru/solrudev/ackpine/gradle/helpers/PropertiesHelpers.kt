@@ -16,6 +16,12 @@
 
 package ru.solrudev.ackpine.gradle.helpers
 
+import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.registerIfAbsent
+import ru.solrudev.ackpine.gradle.PropertiesFileService
 import java.io.File
 import java.util.Properties
 
@@ -36,4 +42,20 @@ internal fun Map<String, String>.getOrThrow(key: String): String {
 	val value = get(key)
 	check(!value.isNullOrEmpty()) { "$key was not provided" }
 	return value
+}
+
+/**
+ * Creates a [Provider] of [Properties] map loaded and cached from the [file].
+ * @param name unique name to identify shared service created underneath.
+ * @param file properties file.
+ */
+internal fun Project.propertiesProvider(name: String, file: RegularFile): Provider<Map<String, String>> {
+	return gradle
+		.sharedServices
+		.registerIfAbsent(name, PropertiesFileService::class) {
+			parameters.propertiesFile = file
+		}
+		.map { service ->
+			service.properties
+		}
 }

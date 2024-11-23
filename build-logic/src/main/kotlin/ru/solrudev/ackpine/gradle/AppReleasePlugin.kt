@@ -29,15 +29,14 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.registerIfAbsent
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
+import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import java.io.File
 
@@ -58,13 +57,10 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
-		val fileConfigProvider = gradle
-			.sharedServices
-			.registerIfAbsent("signing", PropertiesFileService::class) {
-				parameters.propertiesFile = isolated.rootProject.projectDirectory.file("keystore.properties")
-			}
-			.map { service ->
-				service.properties.filterKeys { it.startsWith(APP_SIGNING_PREFIX) }
+		val keystorePropertiesFile = isolated.rootProject.projectDirectory.file("keystore.properties")
+		val fileConfigProvider = propertiesProvider(name = "app_signing", keystorePropertiesFile)
+			.map { properties ->
+				properties.filterKeys { it.startsWith(APP_SIGNING_PREFIX) }
 			}
 		val environmentConfigProvider = providers.environmentVariablesPrefixedBy(APP_SIGNING_PREFIX)
 		val releaseSigningConfig = releaseSigningConfigProvider(fileConfigProvider, environmentConfigProvider)
