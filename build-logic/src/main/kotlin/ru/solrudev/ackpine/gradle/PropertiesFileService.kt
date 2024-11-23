@@ -24,7 +24,12 @@ import ru.solrudev.ackpine.gradle.helpers.readProperties
 internal abstract class PropertiesFileService : BuildService<PropertiesFileService.Parameters> {
 
 	internal val properties by lazy {
-		parameters.propertiesFile.get().asFile.readProperties()
+		val file = parameters.propertiesFile.get().asFile
+		if (file.exists()) {
+			file.readProperties()
+		} else {
+			emptyMap()
+		}
 	}
 
 	internal interface Parameters : BuildServiceParameters {
