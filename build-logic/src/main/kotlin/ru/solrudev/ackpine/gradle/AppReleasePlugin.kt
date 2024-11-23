@@ -97,17 +97,16 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
 		val releaseDir = isolated.rootProject.projectDirectory.dir("release")
-		val apks = variant.artifacts.get(SingleArtifact.APK).map { directory ->
-			directory.asFileTree.matching { include("*.apk") }
-		}
+		val apks = variant.artifacts.get(SingleArtifact.APK)
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
-		val variantName = variant.name
-		val projectName = project.name
+		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
 		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
 		return tasks.register<Copy>(taskName) {
-			from(apks, mapping)
-			rename { path ->
-				path.replace(mapping.get().asFile.name, "mapping-$projectName-$variantName.txt")
+			from(apks) {
+				include("*.apk")
+			}
+			from(mapping) {
+				rename { mappingDestinationName }
 			}
 			into(releaseDir)
 		}
