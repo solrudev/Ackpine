@@ -39,7 +39,15 @@ gradlePlugin {
 		}
 		register("ackpine-app-release") {
 			id = "ru.solrudev.ackpine.app-release"
-			implementationClass = "ru.solrudev.ackpine.gradle.AppReleasePlugin"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AppReleasePlugin"
+		}
+		register("ackpine-sample") {
+			id = "ru.solrudev.ackpine.sample.base"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AckpineSampleBasePlugin"
+		}
+		register("ackpine-kotlin-sample") {
+			id = "ru.solrudev.ackpine.sample.kotlin"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AckpineKotlinSamplePlugin"
 		}
 	}
 }

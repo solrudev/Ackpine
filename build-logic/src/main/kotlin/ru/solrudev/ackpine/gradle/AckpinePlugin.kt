@@ -24,6 +24,7 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
+import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
 import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
