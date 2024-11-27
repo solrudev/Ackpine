@@ -171,7 +171,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 
 	@RequiresApi(Build.VERSION_CODES.M)
 	private fun getRequiredPermissions() = buildSet {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
 			add(READ_EXTERNAL_STORAGE)
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -183,7 +183,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true
 		}
-		val readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+		val readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
