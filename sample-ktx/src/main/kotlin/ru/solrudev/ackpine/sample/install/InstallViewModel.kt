@@ -99,11 +99,11 @@ class InstallViewModel(
 	}
 
 	private fun awaitSessionsFromSavedState() = viewModelScope.launch {
-		val sessions = this@InstallViewModel.sessionDataRepository.sessions.value
+		val sessions = sessionDataRepository.sessions.value
 		if (sessions.isNotEmpty()) {
 			sessions
 				.map { sessionData ->
-					async { this@InstallViewModel.packageInstaller.getSession(sessionData.id) }
+					async { packageInstaller.getSession(sessionData.id) }
 				}
 				.awaitAll()
 				.filterNotNull()
@@ -146,7 +146,7 @@ class InstallViewModel(
 		try {
 			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
-			val errorString = when (exception) {
+			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
 				is ConflictingBaseApkException -> ResolvableString.transientResource(R.string.error_conflicting_base_apk)
 				is ConflictingSplitNameException -> ResolvableString.transientResource(
@@ -164,7 +164,6 @@ class InstallViewModel(
 					exception.expected, exception.actual, exception.name
 				)
 			}
-			error.value = errorString
 			return emptyList()
 		} catch (exception: Exception) {
 			error.value = ResolvableString.raw(exception.message.orEmpty())
