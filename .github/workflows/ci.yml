@@ -1,13 +1,11 @@
 name: ci
 
 on:
-  pull_request: {}
-  push:
-    branches:
-      - master
-
-permissions:
-  contents: write
+  pull_request:
+    types:
+      - opened
+      - edited
+      - closed
 
 env:
   GRADLE_ENCRYPTION_KEY: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
@@ -43,7 +41,7 @@ jobs:
   publish:
     name: Upload artifacts
     runs-on: ubuntu-latest
-    if: github.repository == 'solrudev/Ackpine' && github.ref == 'refs/heads/master' && !contains(github.event.head_commit.message, '[docs]')
+    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.base.ref == 'master' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release')
     needs: [ build ]
 
     steps:
@@ -70,8 +68,11 @@ jobs:
   publish-docs:
     name: Publish documentation
     runs-on: ubuntu-latest
-    if: github.repository == 'solrudev/Ackpine' && github.ref == 'refs/heads/master'
+    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.base.ref == 'master' && github.event.pull_request.merged == true
     needs: [ build ]
+
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
