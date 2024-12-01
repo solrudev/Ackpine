@@ -18,11 +18,12 @@ package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
-import androidx.concurrent.futures.ResolvableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
+import ru.solrudev.ackpine.helpers.concurrent.executeWithCompleter
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
@@ -88,39 +89,39 @@ internal class PackageInstallerImpl internal constructor(
 		return session
 	}
 
-	@SuppressLint("RestrictedApi")
-	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
-		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
+	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
+		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
 			if (areCommittedSessionsInitialized) {
-				getSessionFromDb(sessionId, future)
+				getSessionFromDb(sessionId, completer)
 			} else {
 				committedSessionsInitSemaphore.withPermit {
-					getSessionFromDb(sessionId, future)
+					getSessionFromDb(sessionId, completer)
 				}
 			}
 		}
-		return future
+		"PackageInstallerImpl.getSessionAsync($sessionId)"
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		val tag = "PackageInstallerImpl.getSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
-				set(sessions.values.toList())
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.toList())
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.toList() }
+		return initializeSessions(tag) { sessions -> sessions.toList() }
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		val tag = "PackageInstallerImpl.getActiveSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
-				set(sessions.values.filter { it.isActive })
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.filter { it.isActive })
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.filter { it.isActive } }
+		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
 	}
 
 	@SuppressLint("NewApi")
@@ -158,10 +159,9 @@ internal class PackageInstallerImpl internal constructor(
 		areCommittedSessionsInitialized = true
 	}
 
-	@SuppressLint("RestrictedApi")
 	private fun getSessionFromDb(
 		sessionId: UUID,
-		future: ResolvableFuture<ProgressSession<InstallFailure>>
+		future: Completer<ProgressSession<InstallFailure>?>
 	) {
 		sessions[sessionId]?.let { session ->
 			future.set(session)
@@ -172,21 +172,19 @@ internal class PackageInstallerImpl internal constructor(
 		future.set(installSession)
 	}
 
-	@SuppressLint("RestrictedApi")
 	private inline fun initializeSessions(
+		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		executor.executeWithFuture(future) {
+	) = CallbackToFutureAdapter.getFuture { completer ->
+		executor.executeWithCompleter(completer) {
 			committedSessionsInitSemaphore.withPermit {
 				val sessions = initializeSessions()
-				future.set(transform(sessions))
+				completer.set(transform(sessions))
 			}
 		}
-		return future
+		"$caller -> PackageInstallerImpl.initializeSessions"
 	}
 
-	@SuppressLint("RestrictedApi")
 	private fun initializeSessions(): Collection<ProgressSession<InstallFailure>> {
 		if (isSessionsMapInitialized) {
 			return sessions.values

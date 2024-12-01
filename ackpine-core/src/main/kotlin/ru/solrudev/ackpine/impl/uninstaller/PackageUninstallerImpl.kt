@@ -16,12 +16,12 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
-import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
-import androidx.concurrent.futures.ResolvableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
+import ru.solrudev.ackpine.helpers.concurrent.executeWithCompleter
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -66,37 +66,36 @@ internal class PackageUninstallerImpl internal constructor(
 		return session
 	}
 
-	@SuppressLint("RestrictedApi")
-	override fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?> {
-		val future = ResolvableFuture.create<Session<UninstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
-			getSessionFromDb(sessionId, future)
+	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
+		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
+			getSessionFromDb(sessionId, completer)
 		}
-		return future
+		"PackageUninstallerImpl.getSessionAsync($sessionId)"
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
+		val tag = "PackageUninstallerImpl.getSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
-				set(sessions.values.toList())
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.toList())
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.toList() }
+		return initializeSessions(tag) { sessions -> sessions.toList() }
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
+		val tag = "PackageUninstallerImpl.getActiveSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<Session<UninstallFailure>>>().apply {
-				set(sessions.values.filter { it.isActive })
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.filter { it.isActive })
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.filter { it.isActive } }
+		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
 	}
 
-	@SuppressLint("RestrictedApi")
-	private fun getSessionFromDb(sessionId: UUID, future: ResolvableFuture<Session<UninstallFailure>>) {
+	private fun getSessionFromDb(sessionId: UUID, future: Completer<Session<UninstallFailure>?>) {
 		sessions[sessionId]?.let { session ->
 			future.set(session)
 			return
@@ -106,19 +105,17 @@ internal class PackageUninstallerImpl internal constructor(
 		future.set(uninstallSession)
 	}
 
-	@SuppressLint("RestrictedApi")
 	private inline fun initializeSessions(
+		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	): ListenableFuture<List<Session<UninstallFailure>>> {
-		val future = ResolvableFuture.create<List<Session<UninstallFailure>>>()
-		executor.executeWithFuture(future) {
+	) = CallbackToFutureAdapter.getFuture { completer ->
+		executor.executeWithCompleter(completer) {
 			val sessions = initializeSessions()
-			future.set(transform(sessions))
+			completer.set(transform(sessions))
 		}
-		return future
+		"$caller -> PackageUninstallerImpl.initializeSessions"
 	}
 
-	@SuppressLint("RestrictedApi")
 	private fun initializeSessions(): Collection<Session<UninstallFailure>> {
 		if (isSessionsMapInitialized) {
 			return sessions.values

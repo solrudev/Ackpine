@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
@@ -31,8 +30,7 @@ import android.os.OperationCanceledException
 import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import androidx.concurrent.futures.ResolvableFuture
-import com.google.common.util.concurrent.ListenableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -206,9 +204,9 @@ internal class SessionBasedInstallSession internal constructor(
 		return sessionParams
 	}
 
-	@SuppressLint("RestrictedApi")
-	private fun PackageInstaller.Session.writeApks(cancellationSignal: CancellationSignal): ListenableFuture<Unit> {
-		val future = ResolvableFuture.create<Unit>()
+	private fun PackageInstaller.Session.writeApks(
+		cancellationSignal: CancellationSignal
+	) = CallbackToFutureAdapter.getFuture { completer ->
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
@@ -220,20 +218,20 @@ internal class SessionBasedInstallSession internal constructor(
 					try {
 						writeApk(afd, index, currentProgress, progressMax, cancellationSignal)
 						if (countdown.decrementAndGet() == 0) {
-							future.set(Unit)
+							completer.set(Unit)
 						}
 					} catch (t: Throwable) {
-						future.setException(t)
+						completer.setException(t)
 					} finally {
 						afd.close()
 					}
 				}
 			} catch (t: Throwable) {
-				future.setException(t)
+				completer.setException(t)
 				afd.close()
 			}
 		}
-		return future
+		"SessionBasedInstallSession.writeApks"
 	}
 
 	private fun PackageInstaller.Session.writeApk(
