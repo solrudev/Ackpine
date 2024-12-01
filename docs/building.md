@@ -3,7 +3,7 @@ Building
 
 Root `Ackpine` project has the following Gradle tasks:
 
-- `:buildAckpine`: a lifecycle task which builds release versions of all Ackpine library projects;
+- `:buildAckpine`: a lifecycle task which builds release AARs of all Ackpine library projects;
 - `:buildSamples`: a lifecycle task which builds and gathers release versions of all Ackpine sample app APKs and R8 mappings into `release` directory;
 - `:releaseChangelog`: an actionable task which extracts changelog for the last release from `docs/changelog.md` file to `changelog.txt`.
 
@@ -31,4 +31,4 @@ APP_SIGNING_KEY_PASSWORD=YOUR_KEY_PASSWORD
 APP_SIGNING_KEY_STORE_PASSWORD=YOUR_KEYSTORE_PASSWORD
 APP_SIGNING_KEY_STORE_PATH=PATH_TO_YOUR_KEYSTORE_FILE
 ```
-The other way to provide these values is through environment variables.
+The other way to provide these values is through environment variables. `keystore.properties` file takes precedence over environment variables.
