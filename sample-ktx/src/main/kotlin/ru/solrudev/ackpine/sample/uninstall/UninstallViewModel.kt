@@ -34,7 +34,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
@@ -98,12 +97,12 @@ class UninstallViewModel(
 	private fun awaitSession(session: Session<UninstallFailure>) = viewModelScope.launch {
 		try {
 			when (session.await()) {
-				is SessionResult.Success -> {
+				Session.State.Succeeded -> {
 					savedStateHandle.get<String>(PACKAGE_NAME_KEY)?.let(::removeApplication)
 					clearSavedState()
 				}
 
-				is SessionResult.Error -> clearSavedState()
+				is Session.State.Failed -> clearSavedState()
 			}
 		} catch (exception: CancellationException) {
 			throw exception

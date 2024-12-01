@@ -52,7 +52,6 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
@@ -121,8 +120,8 @@ class InstallViewModel(
 			.launchIn(this)
 		try {
 			when (val result = session.await()) {
-				is SessionResult.Success -> sessionDataRepository.removeSessionData(session.id)
-				is SessionResult.Error -> handleSessionError(result.cause.message, session.id)
+				Session.State.Succeeded -> sessionDataRepository.removeSessionData(session.id)
+				is Session.State.Failed -> handleSessionError(result.failure.message, session.id)
 			}
 		} catch (exception: CancellationException) {
 			sessionDataRepository.removeSessionData(session.id)
