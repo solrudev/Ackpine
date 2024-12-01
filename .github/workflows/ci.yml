@@ -9,7 +9,6 @@ on:
 
 env:
   GRADLE_ENCRYPTION_KEY: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 jobs:
   build:
@@ -19,6 +18,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Copy gradle.properties
+        run: |
+          mkdir -p ~/.gradle
+          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
 
       - name: Validate Gradle wrapper
         uses: gradle/actions/wrapper-validation@v3
