@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RestrictTo
@@ -66,7 +65,6 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		completeSession(result)
 	}
 
-	@SuppressLint("RestrictedApi")
 	private fun launchUninstallActivity() {
 		val intent = uninstallPackageContract.createIntent(this)
 		startActivityForResult(intent, requestCode)
