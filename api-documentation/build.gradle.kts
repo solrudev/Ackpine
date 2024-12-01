@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-import ru.solrudev.ackpine.gradle.versioning.versionNumber
-
 description = "Aggregates and generates API documentation for library projects"
-version = versionNumber.get().toString()
 
 val docsDir = isolated.rootProject.projectDirectory.dir("docs/api")
 
 plugins {
-	alias(libs.plugins.dokka)
+	id("ru.solrudev.ackpine.dokka")
 }
 
 dokka {

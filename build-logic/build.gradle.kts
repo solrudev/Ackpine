@@ -49,6 +49,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.sample.kotlin"
 			implementationClass = "ru.solrudev.ackpine.gradle.app.AckpineKotlinSamplePlugin"
 		}
+		register("ackpine-dokka") {
+			id = "ru.solrudev.ackpine.dokka"
+			implementationClass = "ru.solrudev.ackpine.gradle.documentation.DokkaConventionPlugin"
+		}
 	}
 }
 
@@ -56,5 +60,6 @@ dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.kotlin.android)
 	implementation(libs.plugin.gradleMavenPublish)
+	implementation(libs.plugin.dokka)
 	implementation(libs.plugin.binaryCompatibilityValidator)
 }

@@ -19,7 +19,7 @@ description = "Provides support of asset files inside of application's package f
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
-	alias(libs.plugins.dokka)
+	id("ru.solrudev.ackpine.dokka")
 }
 
 ackpine {

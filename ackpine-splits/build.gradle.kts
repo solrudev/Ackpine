@@ -19,7 +19,7 @@ description = "Utilities for working with split APKs"
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
-	alias(libs.plugins.dokka)
+	id("ru.solrudev.ackpine.dokka")
 }
 
 ackpine {
