@@ -16,7 +16,11 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
 import android.content.pm.PackageInstaller.SessionParams.MODE_INHERIT_EXISTING
@@ -31,23 +35,22 @@ import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.core.content.edit
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity
+import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
-import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
-import ru.solrudev.ackpine.impl.session.helpers.commitSession
-import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
-import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
+import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.session.Progress
@@ -61,6 +64,9 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
+
+private const val ACKPINE_SESSION_BASED_INSTALLER = "ackpine_session_based_installer"
+private const val SESSION_COMMIT_PROGRESS_VALUE = "session_commit_progress_value"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -158,20 +164,47 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation(notificationId: Int) {
-		when (confirmation) {
-			Confirmation.IMMEDIATE -> {
-				packageInstaller.commitSession(
-					context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
+		commitPackageInstallerSession(notificationId)
+		notifyCommitted()
+	}
+
+	private fun commitPackageInstallerSession(notificationId: Int) {
+		val statusReceiver = getPackageInstallerStatusIntentSender(notificationId)
+		val sessionId = nativeSessionId
+		if (packageInstaller.getSessionInfo(sessionId) != null) {
+			packageInstaller.openSession(sessionId).commit(statusReceiver)
+			writeCommitProgressIfAbsent()
+		}
+	}
+
+	private fun getPackageInstallerStatusIntentSender(notificationId: Int): IntentSender {
+		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
+			action = PackageInstallerStatusReceiver.getAction(context)
+			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE, notificationData.title)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE, notificationData.contentText)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON, notificationData.icon)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+		}
+		val receiverPendingIntent = PendingIntent.getBroadcast(
+			context,
+			generateRequestCode(),
+			receiverIntent,
+			UPDATE_CURRENT_FLAGS
+		)
+		return receiverPendingIntent.intentSender
+	}
+
+	private fun writeCommitProgressIfAbsent() {
+		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		if (!preferences.contains(SESSION_COMMIT_PROGRESS_VALUE)) {
+			preferences.edit {
+				putFloat(
+					SESSION_COMMIT_PROGRESS_VALUE,
+					packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
 				)
-				notifyCommitted()
 			}
-			Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
-				confirmation, notificationData,
-				sessionId = id,
-				notificationId,
-				generateRequestCode(),
-				CANCEL_CURRENT_FLAGS
-			) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
 		}
 	}
 
@@ -297,4 +330,10 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
+}
+
+@JvmSynthetic
+internal fun Context.getSessionBasedSessionCommitProgressValue(): Float {
+	return getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		.getFloat(SESSION_COMMIT_PROGRESS_VALUE, 1f)
 }

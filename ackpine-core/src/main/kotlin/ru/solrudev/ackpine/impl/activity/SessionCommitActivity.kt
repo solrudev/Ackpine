@@ -53,7 +53,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	protected abstract val ackpineSessionFuture: ListenableFuture<out Session<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
-		intent.extras?.getSerializableCompat<UUID>(SESSION_ID_KEY) ?: error("ackpineSessionId was null")
+		intent.extras?.getSerializableCompat<UUID>(EXTRA_ACKPINE_SESSION_ID) ?: error("ackpineSessionId was null")
 	}
 
 	protected var requestCode = -1
@@ -194,6 +194,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	internal companion object {
 
 		@get:JvmSynthetic
-		internal const val SESSION_ID_KEY = "ACKPINE_SESSION_ID"
+		internal const val EXTRA_ACKPINE_SESSION_ID = "ACKPINE_SESSION_ID"
 	}
 }

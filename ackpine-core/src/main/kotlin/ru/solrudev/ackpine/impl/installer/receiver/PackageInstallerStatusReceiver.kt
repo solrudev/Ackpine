@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,20 @@ import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmati
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
+import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.session.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.parameters.Confirmation
+import ru.solrudev.ackpine.session.parameters.DrawableId
+import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
+import kotlin.random.Random
+import kotlin.random.nextInt
 import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
+
+private const val TAG = "PackageInstallerStatusReceiver"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -48,7 +58,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		}
 		pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
-		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.SESSION_ID_KEY)!!
+		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
 		try {
 			packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
 				onException = { exception ->
@@ -78,16 +88,25 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
 			if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
 				val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
-				if (confirmationIntent != null) {
-					val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
-						.putExtra(SessionCommitActivity.SESSION_ID_KEY, ackpineSessionId)
-						.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
-						.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
-						.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-					context.startActivity(wrapperIntent)
-				} else {
+				if (confirmationIntent == null) {
 					session?.completeExceptionally(
-						IllegalArgumentException("PackageInstallerStatusReceiver: confirmationIntent was null.")
+						IllegalArgumentException("$TAG: confirmationIntent was null.")
+					)
+					return
+				}
+				val confirmation = Confirmation.entries[
+					intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
+				]
+				val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+					.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, ackpineSessionId)
+					.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
+					.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+				when (confirmation) {
+					Confirmation.IMMEDIATE -> startConfirmationActivity(
+						context, wrapperIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					)
+					Confirmation.DEFERRED -> showConfirmationNotification(
+						intent, wrapperIntent, context, ackpineSessionId
 					)
 				}
 				return
@@ -106,9 +125,64 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		}
 	}
 
+	private fun showConfirmationNotification(
+		intent: Intent,
+		confirmationIntent: Intent,
+		context: Context,
+		ackpineSessionId: UUID
+	) {
+		val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0)
+		val notificationData = getNotificationData(intent)
+		context.showConfirmationNotification(
+			confirmationIntent,
+			notificationData,
+			ackpineSessionId, notificationId,
+			generateRequestCode(),
+			CANCEL_CURRENT_FLAGS
+		)
+	}
+
+	private fun getNotificationData(intent: Intent): NotificationData {
+		val notificationTitle = requireNotNull(
+			intent.getSerializableExtraCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
+		) { "$TAG: notificationTitle was null." }
+		val notificationMessage = requireNotNull(
+			intent.getSerializableExtraCompat<ResolvableString>(EXTRA_NOTIFICATION_MESSAGE)
+		) { "$TAG: notificationMessage was null." }
+		val notificationIcon = requireNotNull(
+			intent.getSerializableExtraCompat<DrawableId>(EXTRA_NOTIFICATION_ICON)
+		) { "$TAG: notificationIcon was null." }
+		return NotificationData.Builder()
+			.setTitle(notificationTitle)
+			.setContentText(notificationMessage)
+			.setIcon(notificationIcon)
+			.build()
+	}
+
+	private fun startConfirmationActivity(context: Context, wrapperIntent: Intent) {
+		context.startActivity(wrapperIntent)
+	}
+
+	private fun generateRequestCode() = Random.nextInt(10000..1000000)
+
 	internal companion object {
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_NOTIFICATION_ID = "ru.solrudev.ackpine.extra.NOTIFICATION_ID"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_NOTIFICATION_TITLE = "ru.solrudev.ackpine.extra.NOTIFICATION_TITLE"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_NOTIFICATION_MESSAGE = "ru.solrudev.ackpine.extra.NOTIFICATION_MESSAGE"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_NOTIFICATION_ICON = "ru.solrudev.ackpine.extra.NOTIFICATION_ICON"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_CONFIRMATION = "ru.solrudev.ackpine.extra.CONFIRMATION"
 	}
 }

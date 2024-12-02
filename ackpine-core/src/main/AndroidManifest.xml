@@ -31,10 +31,6 @@
 			android:exported="false"
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
 		<activity
-			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity"
-			android:exported="false"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
-		<activity
 			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity"
 			android:exported="false"
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />

@@ -32,40 +32,34 @@ import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
-import ru.solrudev.ackpine.impl.session.helpers.commitSession
-import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
+import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
-private const val CONFIRMATION_TAG = "SessionBasedInstallConfirmationActivity"
-private const val LAUNCHER_TAG = "SessionBasedInstallCommitActivity"
+private const val TAG = "SessionBasedInstallConfirmationActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
 private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallCommitActivity : InstallActivity(LAUNCHER_TAG, startsActivity = false) {
+internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, startsActivity = true) {
 
-	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(LAUNCHER_TAG) }
-
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-		if (savedInstanceState == null) {
-			packageInstaller.commitSession(applicationContext, sessionId, ackpineSessionId, requestCode)
-			finish()
+	private val sessionId by lazy(LazyThreadSafetyMode.NONE) {
+		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
+		if (sessionId == null) {
+			completeSessionExceptionally(IllegalStateException("$TAG: sessionId was null."))
 		}
+		sessionId ?: -1
 	}
-}
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRMATION_TAG, startsActivity = true) {
-
-	private val sessionId by lazy(LazyThreadSafetyMode.NONE) { getSessionId(CONFIRMATION_TAG) }
 	private val handler = Handler(Looper.getMainLooper())
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
 	private var wasOnTopOnStart = false
+
+	private val packageInstaller: PackageInstaller
+		get() = packageManager.packageInstaller
 
 	private val deadSessionCompletionRunnable = Runnable {
 		completeSession(
@@ -174,15 +168,4 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(CONFIRM
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
 			|| packageManager.canRequestPackageInstalls()
 			|| ContextCompat.checkSelfPermission(this, INSTALL_PACKAGES) == PERMISSION_GRANTED
-}
-
-private val InstallActivity.packageInstaller: PackageInstaller
-	get() = packageManager.packageInstaller
-
-private fun InstallActivity.getSessionId(tag: String): Int {
-	val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
-	if (sessionId == null) {
-		completeSessionExceptionally(IllegalStateException("$tag: sessionId was null."))
-	}
-	return sessionId ?: -1
 }
