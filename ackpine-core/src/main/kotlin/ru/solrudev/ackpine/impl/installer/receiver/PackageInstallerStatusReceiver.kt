@@ -102,8 +102,8 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 					.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 					.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
 				when (confirmation) {
-					Confirmation.IMMEDIATE -> startConfirmationActivity(
-						context, wrapperIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+					Confirmation.IMMEDIATE -> context.startActivity(
+						wrapperIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 					)
 					Confirmation.DEFERRED -> showConfirmationNotification(
 						intent, wrapperIntent, context, ackpineSessionId
@@ -157,10 +157,6 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			.setContentText(notificationMessage)
 			.setIcon(notificationIcon)
 			.build()
-	}
-
-	private fun startConfirmationActivity(context: Context, wrapperIntent: Intent) {
-		context.startActivity(wrapperIntent)
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
