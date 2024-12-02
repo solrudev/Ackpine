@@ -80,7 +80,9 @@ public class InstallParameters private constructor(
 	 *
 	 * Default value is [InstallMode.Full].
 	 */
-	public val installMode: InstallMode
+	public val installMode: InstallMode,
+
+	public val constraints: InstallConstraints
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -94,6 +96,7 @@ public class InstallParameters private constructor(
 		if (name != other.name) return false
 		if (requireUserAction != other.requireUserAction) return false
 		if (installMode != other.installMode) return false
+		if (constraints != other.constraints) return false
 		return true
 	}
 
@@ -105,17 +108,21 @@ public class InstallParameters private constructor(
 		result = 31 * result + name.hashCode()
 		result = 31 * result + requireUserAction.hashCode()
 		result = 31 * result + installMode.hashCode()
+		result = 31 * result + constraints.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "InstallParameters(apks=$apks, " +
+		return "InstallParameters(" +
+				"apks=$apks, " +
 				"installerType=$installerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
 				"name='$name', " +
 				"requireUserAction=$requireUserAction, " +
-				"installMode=$installMode)"
+				"installMode=$installMode, " +
+				"constraints=$constraints" +
+				")"
 	}
 
 	/**
@@ -208,6 +215,9 @@ public class InstallParameters private constructor(
 		public var installMode: InstallMode = InstallMode.Full
 			private set
 
+		public var constraints: InstallConstraints = InstallConstraints.NONE
+			private set
+
 		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
@@ -270,6 +280,13 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.constraints].
+		 */
+		public fun setConstraints(constraints: InstallConstraints): Builder = apply {
+			this.constraints = constraints
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
@@ -281,7 +298,8 @@ public class InstallParameters private constructor(
 				notificationData,
 				name,
 				requireUserAction,
-				installMode
+				installMode,
+				constraints
 			)
 		}
 

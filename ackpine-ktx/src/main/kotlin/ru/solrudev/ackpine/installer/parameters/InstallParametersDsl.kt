@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import kotlin.time.Duration
 
 /**
  * DSL allowing to configure [parameters for creating install session][InstallParameters].
@@ -71,6 +72,10 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Default value is [InstallMode.Full].
 	 */
 	public var installMode: InstallMode
+
+	public var constraints: InstallConstraints
+
+	public fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit)
 }
 
 @PublishedApi
@@ -125,6 +130,16 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		set(value) {
 			builder.setInstallMode(value)
 		}
+
+	override var constraints: InstallConstraints
+		get() = builder.constraints
+		set(value) {
+			builder.setConstraints(value)
+		}
+
+	override fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit) {
+		constraints = InstallConstraints(timeout, configure)
+	}
 
 	fun build() = builder.build()
 }

@@ -52,6 +52,8 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescripto
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.Companion.NONE
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -80,6 +82,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val notificationData: NotificationData,
 	private val requireUserAction: Boolean,
 	private val installMode: InstallMode,
+	private val installConstraints: InstallConstraints,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
@@ -164,7 +167,15 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation(notificationId: Int) {
-		commitPackageInstallerSession(notificationId)
+		if (installConstraints != NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			try {
+				commitPackageInstallerSessionWithConstraints(notificationId)
+			} catch (_: SecurityException) {
+				commitPackageInstallerSession(notificationId)
+			}
+		} else {
+			commitPackageInstallerSession(notificationId)
+		}
 		notifyCommitted()
 	}
 
@@ -177,15 +188,28 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	private fun commitPackageInstallerSessionWithConstraints(notificationId: Int) {
+		val statusReceiver = getPackageInstallerStatusIntentSender(notificationId)
+		val sessionId = nativeSessionId
+		if (packageInstaller.getSessionInfo(sessionId) != null) {
+			val constraints = installConstraints.toPackageInstallerInstallConstraints()
+			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
+				sessionId, statusReceiver, constraints, installConstraints.timeout.inWholeMilliseconds
+			)
+			writeCommitProgressIfAbsent()
+		}
+	}
+
 	private fun getPackageInstallerStatusIntentSender(notificationId: Int): IntentSender {
 		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
 			action = PackageInstallerStatusReceiver.getAction(context)
 			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE, notificationData.title)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE, notificationData.contentText)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON, notificationData.icon)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
 		}
 		val receiverPendingIntent = PendingIntent.getBroadcast(
 			context,
@@ -194,6 +218,28 @@ internal class SessionBasedInstallSession internal constructor(
 			UPDATE_CURRENT_FLAGS
 		)
 		return receiverPendingIntent.intentSender
+	}
+
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	private fun InstallConstraints.toPackageInstallerInstallConstraints(): PackageInstaller.InstallConstraints {
+		val constraints = this
+		return PackageInstaller.InstallConstraints.Builder().apply {
+			if (constraints.isAppNotForegroundRequired) {
+				setAppNotForegroundRequired()
+			}
+			if (constraints.isAppNotInteractingRequired) {
+				setAppNotForegroundRequired()
+			}
+			if (constraints.isAppNotTopVisibleRequired) {
+				setAppNotTopVisibleRequired()
+			}
+			if (constraints.isDeviceIdleRequired) {
+				setDeviceIdleRequired()
+			}
+			if (constraints.isNotInCallRequired) {
+				setNotInCallRequired()
+			}
+		}.build()
 	}
 
 	private fun writeCommitProgressIfAbsent() {

@@ -103,7 +103,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			resolveNotificationData(parameters.notificationData, parameters.name),
 			parameters.requireUserAction,
-			parameters.installMode,
+			parameters.installMode, parameters.constraints,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
 			executor, handler, notificationId, dbWriteSemaphore
 		)
