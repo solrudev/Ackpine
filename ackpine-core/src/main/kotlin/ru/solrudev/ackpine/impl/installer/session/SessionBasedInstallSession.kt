@@ -167,13 +167,11 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation(notificationId: Int) {
-		if (constraints != NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			try {
-				commitPackageInstallerSessionWithConstraints(notificationId)
-			} catch (_: SecurityException) {
-				commitPackageInstallerSession(notificationId)
-			}
-		} else {
+		if (isInstallConstraintsIgnored()) {
+			commitPackageInstallerSession(notificationId)
+		} else try {
+			commitPackageInstallerSessionWithConstraints(notificationId)
+		} catch (_: SecurityException) {
 			commitPackageInstallerSession(notificationId)
 		}
 		notifyCommitted()
@@ -238,6 +236,10 @@ internal class SessionBasedInstallSession internal constructor(
 			setNotInCallRequired()
 		}
 	}.build()
+
+	private fun isInstallConstraintsIgnored(): Boolean {
+		return constraints == NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	}
 
 	private fun writeCommitProgressIfAbsent() {
 		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
