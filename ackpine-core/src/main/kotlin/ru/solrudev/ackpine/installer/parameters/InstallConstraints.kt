@@ -71,13 +71,12 @@ public class InstallConstraints private constructor(
 		public data object Fail : TimeoutStrategy
 		public data class Retry(public val retries: Int) : TimeoutStrategy
 
+		@Suppress("RedundantVisibilityModifier")
 		private companion object {
 
-			@Suppress("RedundantVisibilityModifier")
 			@JvmField
 			public val COMMIT_EAGERLY: TimeoutStrategy = CommitEagerly
 
-			@Suppress("RedundantVisibilityModifier")
 			@JvmField
 			public val FAIL: TimeoutStrategy = Fail
 		}
