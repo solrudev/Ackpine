@@ -98,16 +98,16 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	abstract fun insertPackageName(id: String, packageName: String)
 
 	@Insert
-	abstract fun insertInstallConstraints(installConstraints: InstallConstraintsEntity)
+	protected abstract fun insertInstallConstraints(installConstraints: InstallConstraintsEntity)
 
 	@Query(
 		"INSERT OR IGNORE INTO sessions_update_ownership(session_id, request_update_ownership) " +
 				"VALUES (:id, :requestUpdateOwnership)"
 	)
-	abstract fun insertRequestUpdateOwnership(id: String, requestUpdateOwnership: Boolean)
+	protected abstract fun insertRequestUpdateOwnership(id: String, requestUpdateOwnership: Boolean)
 
 	@Query("INSERT OR IGNORE INTO sessions_package_sources(session_id, package_source) VALUES (:id, :packageSource)")
-	abstract fun insertPackageSource(id: String, packageSource: PackageSource)
+	protected abstract fun insertPackageSource(id: String, packageSource: PackageSource)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)
