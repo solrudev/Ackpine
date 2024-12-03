@@ -82,7 +82,11 @@ public class InstallParameters private constructor(
 	 */
 	public val installMode: InstallMode,
 
-	public val constraints: InstallConstraints
+	public val constraints: InstallConstraints,
+
+	public val requestUpdateOwnership: Boolean,
+
+	public val packageSource: PackageSource
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -97,6 +101,8 @@ public class InstallParameters private constructor(
 		if (requireUserAction != other.requireUserAction) return false
 		if (installMode != other.installMode) return false
 		if (constraints != other.constraints) return false
+		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
+		if (packageSource != other.packageSource) return false
 		return true
 	}
 
@@ -109,6 +115,8 @@ public class InstallParameters private constructor(
 		result = 31 * result + requireUserAction.hashCode()
 		result = 31 * result + installMode.hashCode()
 		result = 31 * result + constraints.hashCode()
+		result = 31 * result + requestUpdateOwnership.hashCode()
+		result = 31 * result + packageSource.hashCode()
 		return result
 	}
 
@@ -121,7 +129,9 @@ public class InstallParameters private constructor(
 				"name='$name', " +
 				"requireUserAction=$requireUserAction, " +
 				"installMode=$installMode, " +
-				"constraints=$constraints" +
+				"constraints=$constraints, " +
+				"requestUpdateOwnership=$requestUpdateOwnership, " +
+				"packageSource=$packageSource" +
 				")"
 	}
 
@@ -218,6 +228,12 @@ public class InstallParameters private constructor(
 		public var constraints: InstallConstraints = InstallConstraints.NONE
 			private set
 
+		public var requestUpdateOwnership: Boolean = false
+			private set
+
+		public var packageSource: PackageSource = PackageSource.Unspecified
+			private set
+
 		/**
 		 * Adds [apk] to [InstallParameters.apks].
 		 */
@@ -287,6 +303,20 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.requestUpdateOwnership].
+		 */
+		public fun setRequestUpdateOwnership(requestUpdateOwnership: Boolean): Builder = apply {
+			this.requestUpdateOwnership = requestUpdateOwnership
+		}
+
+		/**
+		 * Sets [InstallParameters.packageSource].
+		 */
+		public fun setPackageSource(packageSource: PackageSource): Builder = apply {
+			this.packageSource = packageSource
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
@@ -299,7 +329,9 @@ public class InstallParameters private constructor(
 				name,
 				requireUserAction,
 				installMode,
-				constraints
+				constraints,
+				requestUpdateOwnership,
+				packageSource
 			)
 		}
 

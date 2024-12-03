@@ -75,6 +75,10 @@ public interface InstallParametersDsl : ConfirmationDsl {
 
 	public var constraints: InstallConstraints
 
+	public var requestUpdateOwnership: Boolean
+
+	public var packageSource: PackageSource
+
 	public fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit)
 }
 
@@ -135,6 +139,17 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		get() = builder.constraints
 		set(value) {
 			builder.setConstraints(value)
+		}
+	override var requestUpdateOwnership: Boolean
+		get() = builder.requestUpdateOwnership
+		set(value) {
+			builder.setRequestUpdateOwnership(value)
+		}
+
+	override var packageSource: PackageSource
+		get() = builder.packageSource
+		set(value) {
+			builder.setPackageSource(value)
 		}
 
 	override fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit) {

@@ -58,6 +58,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.Companion.NONE
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import ru.solrudev.ackpine.installer.parameters.InstallMode
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
@@ -88,6 +89,8 @@ internal class SessionBasedInstallSession internal constructor(
 	private val requireUserAction: Boolean,
 	private val installMode: InstallMode,
 	private val constraints: InstallConstraints,
+	private val requestUpdateOwnership: Boolean,
+	private val packageSource: PackageSource,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
@@ -298,6 +301,9 @@ internal class SessionBasedInstallSession internal constructor(
 			is InstallMode.Full -> PackageInstaller.SessionParams(MODE_FULL_INSTALL)
 			is InstallMode.InheritExisting -> PackageInstaller.SessionParams(MODE_INHERIT_EXISTING).apply {
 				setAppPackageName(installMode.packageName)
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+					setDontKillApp(installMode.dontKillApp)
+				}
 			}
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -313,6 +319,12 @@ internal class SessionBasedInstallSession internal constructor(
 				PackageInstaller.SessionParams.USER_ACTION_NOT_REQUIRED
 			}
 			sessionParams.setRequireUserAction(requireUserAction)
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			sessionParams.setPackageSource(packageSource.toPackageInstallerPackageSource())
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			sessionParams.setRequestUpdateOwnership(requestUpdateOwnership)
 		}
 		return sessionParams
 	}
@@ -416,4 +428,14 @@ internal class SessionBasedInstallSession internal constructor(
 internal fun Context.getSessionBasedSessionCommitProgressValue(): Float {
 	return getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
 		.getFloat(SESSION_COMMIT_PROGRESS_VALUE, 1f)
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private fun PackageSource.toPackageInstallerPackageSource() = when (this) {
+	PackageSource.Unspecified -> PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED
+	PackageSource.Store -> PackageInstaller.PACKAGE_SOURCE_STORE
+	PackageSource.LocalFile -> PackageInstaller.PACKAGE_SOURCE_LOCAL_FILE
+	PackageSource.DownloadedFile -> PackageInstaller.PACKAGE_SOURCE_DOWNLOADED_FILE
+	PackageSource.Other -> PackageInstaller.PACKAGE_SOURCE_OTHER
+	else -> PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED
 }
