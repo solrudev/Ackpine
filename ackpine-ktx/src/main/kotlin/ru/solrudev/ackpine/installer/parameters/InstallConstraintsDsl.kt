@@ -37,7 +37,7 @@ public interface InstallConstraintsDsl {
 	public var isDeviceIdleRequired: Boolean
 	public var isNotInCallRequired: Boolean
 	public var timeout: Duration
-	public var retries: Int
+	public var timeoutStrategy: InstallConstraints.TimeoutStrategy
 }
 
 @PublishedApi
@@ -80,10 +80,11 @@ internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstrai
 		set(value) {
 			builder.setTimeout(value)
 		}
-	override var retries: Int
-		get() = builder.retries
+
+	override var timeoutStrategy: InstallConstraints.TimeoutStrategy
+		get() = builder.timeoutStrategy
 		set(value) {
-			builder.setRetries(value)
+			builder.setTimeoutStrategy(value)
 		}
 
 	fun build() = builder.build()

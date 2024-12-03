@@ -25,7 +25,7 @@ public class InstallConstraints private constructor(
 	public val isDeviceIdleRequired: Boolean,
 	public val isNotInCallRequired: Boolean,
 	public val timeout: Duration,
-	public val retries: Int
+	public val timeoutStrategy: TimeoutStrategy
 ) {
 
 	override fun equals(other: Any?): Boolean {
@@ -38,7 +38,7 @@ public class InstallConstraints private constructor(
 		if (isDeviceIdleRequired != other.isDeviceIdleRequired) return false
 		if (isNotInCallRequired != other.isNotInCallRequired) return false
 		if (timeout != other.timeout) return false
-		if (retries != other.retries) return false
+		if (timeoutStrategy != other.timeoutStrategy) return false
 		return true
 	}
 
@@ -49,7 +49,7 @@ public class InstallConstraints private constructor(
 		result = 31 * result + isDeviceIdleRequired.hashCode()
 		result = 31 * result + isNotInCallRequired.hashCode()
 		result = 31 * result + timeout.hashCode()
-		result = 31 * result + retries.hashCode()
+		result = 31 * result + timeoutStrategy.hashCode()
 		return result
 	}
 
@@ -61,8 +61,26 @@ public class InstallConstraints private constructor(
 				"isDeviceIdleRequired=$isDeviceIdleRequired, " +
 				"isNotInCallRequired=$isNotInCallRequired, " +
 				"timeout=$timeout, " +
-				"retries=$retries" +
+				"timeoutStrategy=$timeoutStrategy" +
 				")"
+	}
+
+	public interface TimeoutStrategy {
+
+		public data object CommitEagerly : TimeoutStrategy
+		public data object Fail : TimeoutStrategy
+		public data class Retry(public val retries: Int) : TimeoutStrategy
+
+		private companion object {
+
+			@Suppress("RedundantVisibilityModifier")
+			@JvmField
+			public val COMMIT_EAGERLY: TimeoutStrategy = CommitEagerly
+
+			@Suppress("RedundantVisibilityModifier")
+			@JvmField
+			public val FAIL: TimeoutStrategy = Fail
+		}
 	}
 
 	public class Builder(timeout: Duration) {
@@ -85,7 +103,7 @@ public class InstallConstraints private constructor(
 		public var timeout: Duration = timeout
 			private set
 
-		public var retries: Int = 0
+		public var timeoutStrategy: TimeoutStrategy = TimeoutStrategy.Fail
 			private set
 
 		public fun setAppNotForegroundRequired(value: Boolean): Builder = apply {
@@ -112,8 +130,8 @@ public class InstallConstraints private constructor(
 			this.timeout = timeout
 		}
 
-		public fun setRetries(retries: Int): Builder = apply {
-			this.retries = retries
+		public fun setTimeoutStrategy(strategy: TimeoutStrategy): Builder = apply {
+			timeoutStrategy = strategy
 		}
 
 		public fun build(): InstallConstraints = InstallConstraints(
@@ -123,7 +141,7 @@ public class InstallConstraints private constructor(
 			isDeviceIdleRequired,
 			isNotInCallRequired,
 			timeout,
-			retries
+			timeoutStrategy
 		)
 	}
 
@@ -133,10 +151,10 @@ public class InstallConstraints private constructor(
 		public val NONE: InstallConstraints = Builder(timeout = Duration.ZERO).build()
 
 		@JvmStatic
-		public fun gentleUpdate(timeout: Duration, retries: Int): InstallConstraints {
+		public fun gentleUpdate(timeout: Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
 			return Builder(timeout)
 				.setAppNotInteractingRequired(true)
-				.setRetries(retries)
+				.setTimeoutStrategy(timeoutStrategy)
 				.build()
 		}
 

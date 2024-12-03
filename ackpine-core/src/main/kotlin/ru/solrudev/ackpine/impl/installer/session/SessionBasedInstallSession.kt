@@ -56,6 +56,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.Companion.NONE
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -172,28 +173,46 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation(notificationId: Int) {
-		if (isInstallConstraintsIgnored()) {
+		if (isInstallConstraintsIgnored() || shouldCommitNormallyAfterTimeout()) {
 			commitPackageInstallerSession(notificationId)
 		} else try {
 			commitPackageInstallerSessionWithConstraints(notificationId)
-			attempts.incrementAndGet()
 		} catch (_: SecurityException) {
 			commitPackageInstallerSession(notificationId)
 		}
+		attempts.incrementAndGet()
 		notifyCommitted()
 	}
 
 	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
-		if (isInstallConstraintsIgnored()) {
+		if (isInstallConstraintsIgnored() || constraints.timeoutStrategy == TimeoutStrategy.Fail) {
 			return true
 		}
-		val currentAttempt = attempts.get()
-		val shouldRetry = state is Failed && state.failure is Timeout && currentAttempt <= constraints.retries
-		if (shouldRetry) {
-			Log.i("AckpineSessionInstaller", "Retrying $id: attempt #$currentAttempt")
-			notifyAwaiting()
+		if (state !is Failed || state.failure !is Timeout) {
+			return true
 		}
-		return !shouldRetry
+		if (shouldCommitNormallyAfterTimeout()) {
+			notifyAwaiting()
+			return false
+		}
+		if (constraints.timeoutStrategy is TimeoutStrategy.Retry) {
+			val currentAttempt = attempts.get()
+			val shouldRetry = currentAttempt <= constraints.timeoutStrategy.retries
+			if (shouldRetry) {
+				Log.i("AckpineSessionInstaller", "Retrying $id: attempt #$currentAttempt")
+				notifyAwaiting()
+			}
+			return !shouldRetry
+		}
+		return true
+	}
+
+	private fun isInstallConstraintsIgnored(): Boolean {
+		return constraints == NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	}
+
+	private fun shouldCommitNormallyAfterTimeout(): Boolean {
+		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly && attempts.get() == 1
 	}
 
 	private fun commitPackageInstallerSession(notificationId: Int) {
@@ -227,6 +246,7 @@ internal class SessionBasedInstallSession internal constructor(
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE, notificationData.title)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE, notificationData.contentText)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON, notificationData.icon)
+			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 		}
 		val receiverPendingIntent = PendingIntent.getBroadcast(
 			context,
@@ -255,10 +275,6 @@ internal class SessionBasedInstallSession internal constructor(
 			setNotInCallRequired()
 		}
 	}.build()
-
-	private fun isInstallConstraintsIgnored(): Boolean {
-		return constraints == NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
-	}
 
 	private fun writeCommitProgressIfAbsent() {
 		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
