@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import java.io.Serializable
 import kotlin.time.Duration
 
 public class InstallConstraints private constructor(
@@ -65,11 +66,23 @@ public class InstallConstraints private constructor(
 				")"
 	}
 
-	public interface TimeoutStrategy {
+	public interface TimeoutStrategy : Serializable {
 
-		public data object CommitEagerly : TimeoutStrategy
-		public data object Fail : TimeoutStrategy
-		public data class Retry(public val retries: Int) : TimeoutStrategy
+		public data object CommitEagerly : TimeoutStrategy {
+			private const val serialVersionUID = 6543830064438769365L
+			private fun readResolve(): Any = CommitEagerly
+		}
+
+		public data object Fail : TimeoutStrategy {
+			private const val serialVersionUID = 7548970614475805450L
+			private fun readResolve(): Any = Fail
+		}
+
+		public data class Retry(public val retries: Int) : TimeoutStrategy {
+			private companion object {
+				private const val serialVersionUID = -8122854334695670099L
+			}
+		}
 
 		@Suppress("RedundantVisibilityModifier")
 		private companion object {
