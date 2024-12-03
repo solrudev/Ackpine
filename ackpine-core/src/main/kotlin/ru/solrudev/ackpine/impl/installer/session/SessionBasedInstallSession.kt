@@ -231,7 +231,7 @@ internal class SessionBasedInstallSession internal constructor(
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			val installConstraints = getPackageInstallerInstallConstraints()
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
-				sessionId, statusReceiver, installConstraints, constraints.timeout.inWholeMilliseconds
+				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 			)
 			writeCommitProgressIfAbsent()
 		}

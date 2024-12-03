@@ -24,7 +24,7 @@ public class InstallConstraints private constructor(
 	public val isAppNotTopVisibleRequired: Boolean,
 	public val isDeviceIdleRequired: Boolean,
 	public val isNotInCallRequired: Boolean,
-	public val timeout: Duration,
+	public val timeoutMillis: Long,
 	public val timeoutStrategy: TimeoutStrategy
 ) {
 
@@ -37,7 +37,7 @@ public class InstallConstraints private constructor(
 		if (isAppNotTopVisibleRequired != other.isAppNotTopVisibleRequired) return false
 		if (isDeviceIdleRequired != other.isDeviceIdleRequired) return false
 		if (isNotInCallRequired != other.isNotInCallRequired) return false
-		if (timeout != other.timeout) return false
+		if (timeoutMillis != other.timeoutMillis) return false
 		if (timeoutStrategy != other.timeoutStrategy) return false
 		return true
 	}
@@ -48,7 +48,7 @@ public class InstallConstraints private constructor(
 		result = 31 * result + isAppNotTopVisibleRequired.hashCode()
 		result = 31 * result + isDeviceIdleRequired.hashCode()
 		result = 31 * result + isNotInCallRequired.hashCode()
-		result = 31 * result + timeout.hashCode()
+		result = 31 * result + timeoutMillis.hashCode()
 		result = 31 * result + timeoutStrategy.hashCode()
 		return result
 	}
@@ -60,7 +60,7 @@ public class InstallConstraints private constructor(
 				"isAppNotTopVisibleRequired=$isAppNotTopVisibleRequired, " +
 				"isDeviceIdleRequired=$isDeviceIdleRequired, " +
 				"isNotInCallRequired=$isNotInCallRequired, " +
-				"timeout=$timeout, " +
+				"timeoutMillis=$timeoutMillis, " +
 				"timeoutStrategy=$timeoutStrategy" +
 				")"
 	}
@@ -83,7 +83,7 @@ public class InstallConstraints private constructor(
 		}
 	}
 
-	public class Builder(timeout: Duration) {
+	public class Builder(timeoutMillis: Long) {
 
 		public var isAppNotForegroundRequired: Boolean = false
 			private set
@@ -100,7 +100,7 @@ public class InstallConstraints private constructor(
 		public var isNotInCallRequired: Boolean = false
 			private set
 
-		public var timeout: Duration = timeout
+		public var timeoutMillis: Long = timeoutMillis
 			private set
 
 		public var timeoutStrategy: TimeoutStrategy = TimeoutStrategy.Fail
@@ -126,8 +126,8 @@ public class InstallConstraints private constructor(
 			isNotInCallRequired = value
 		}
 
-		public fun setTimeout(timeout: Duration): Builder = apply {
-			this.timeout = timeout
+		public fun setTimeoutMillis(timeoutMillis: Long): Builder = apply {
+			this.timeoutMillis = timeoutMillis
 		}
 
 		public fun setTimeoutStrategy(strategy: TimeoutStrategy): Builder = apply {
@@ -140,7 +140,7 @@ public class InstallConstraints private constructor(
 			isAppNotTopVisibleRequired,
 			isDeviceIdleRequired,
 			isNotInCallRequired,
-			timeout,
+			timeoutMillis,
 			timeoutStrategy
 		)
 	}
@@ -148,19 +148,34 @@ public class InstallConstraints private constructor(
 	public companion object {
 
 		@JvmField
-		public val NONE: InstallConstraints = Builder(timeout = Duration.ZERO).build()
+		public val NONE: InstallConstraints = Builder(timeoutMillis = 0L).build()
 
 		@JvmStatic
-		public fun gentleUpdate(timeout: Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
-			return Builder(timeout)
+		public fun gentleUpdate(timeoutMillis: Long, timeoutStrategy: TimeoutStrategy): InstallConstraints {
+			return Builder(timeoutMillis)
 				.setAppNotInteractingRequired(true)
 				.setTimeoutStrategy(timeoutStrategy)
 				.build()
 		}
 
 		@JvmStatic
+		public fun gentleUpdate(timeoutMillis: Long): InstallConstraints {
+			return Builder(timeoutMillis)
+				.setAppNotInteractingRequired(true)
+				.build()
+		}
+
+		@JvmSynthetic
+		public fun gentleUpdate(timeout: Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
+			return Builder(timeout.inWholeMilliseconds)
+				.setAppNotInteractingRequired(true)
+				.setTimeoutStrategy(timeoutStrategy)
+				.build()
+		}
+
+		@JvmSynthetic
 		public fun gentleUpdate(timeout: Duration): InstallConstraints {
-			return Builder(timeout)
+			return Builder(timeout.inWholeMilliseconds)
 				.setAppNotInteractingRequired(true)
 				.build()
 		}

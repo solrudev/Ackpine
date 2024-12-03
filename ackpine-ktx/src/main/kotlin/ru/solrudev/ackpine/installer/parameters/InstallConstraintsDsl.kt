@@ -43,7 +43,8 @@ public interface InstallConstraintsDsl {
 @PublishedApi
 internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstraintsDsl {
 
-	private val builder = InstallConstraints.Builder(timeout)
+	private val builder = InstallConstraints.Builder(timeout.inWholeMilliseconds)
+	private var _timeout = timeout
 
 	override var isAppNotForegroundRequired: Boolean
 		get() = builder.isAppNotForegroundRequired
@@ -76,9 +77,10 @@ internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstrai
 		}
 
 	override var timeout: Duration
-		get() = builder.timeout
+		get() = _timeout
 		set(value) {
-			builder.setTimeout(value)
+			_timeout = value
+			builder.setTimeoutMillis(value.inWholeMilliseconds)
 		}
 
 	override var timeoutStrategy: InstallConstraints.TimeoutStrategy
