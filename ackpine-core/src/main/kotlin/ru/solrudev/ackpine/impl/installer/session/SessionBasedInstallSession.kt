@@ -82,7 +82,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val notificationData: NotificationData,
 	private val requireUserAction: Boolean,
 	private val installMode: InstallMode,
-	private val installConstraints: InstallConstraints,
+	private val constraints: InstallConstraints,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
@@ -167,7 +167,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation(notificationId: Int) {
-		if (installConstraints != NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		if (constraints != NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			try {
 				commitPackageInstallerSessionWithConstraints(notificationId)
 			} catch (_: SecurityException) {
@@ -193,9 +193,9 @@ internal class SessionBasedInstallSession internal constructor(
 		val statusReceiver = getPackageInstallerStatusIntentSender(notificationId)
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			val constraints = installConstraints.toPackageInstallerInstallConstraints()
+			val installConstraints = getPackageInstallerInstallConstraints()
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
-				sessionId, statusReceiver, constraints, installConstraints.timeout.inWholeMilliseconds
+				sessionId, statusReceiver, installConstraints, constraints.timeout.inWholeMilliseconds
 			)
 			writeCommitProgressIfAbsent()
 		}
@@ -221,26 +221,23 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	private fun InstallConstraints.toPackageInstallerInstallConstraints(): PackageInstaller.InstallConstraints {
-		val constraints = this
-		return PackageInstaller.InstallConstraints.Builder().apply {
-			if (constraints.isAppNotForegroundRequired) {
-				setAppNotForegroundRequired()
-			}
-			if (constraints.isAppNotInteractingRequired) {
-				setAppNotForegroundRequired()
-			}
-			if (constraints.isAppNotTopVisibleRequired) {
-				setAppNotTopVisibleRequired()
-			}
-			if (constraints.isDeviceIdleRequired) {
-				setDeviceIdleRequired()
-			}
-			if (constraints.isNotInCallRequired) {
-				setNotInCallRequired()
-			}
-		}.build()
-	}
+	private fun getPackageInstallerInstallConstraints() = PackageInstaller.InstallConstraints.Builder().apply {
+		if (constraints.isAppNotForegroundRequired) {
+			setAppNotForegroundRequired()
+		}
+		if (constraints.isAppNotInteractingRequired) {
+			setAppNotForegroundRequired()
+		}
+		if (constraints.isAppNotTopVisibleRequired) {
+			setAppNotTopVisibleRequired()
+		}
+		if (constraints.isDeviceIdleRequired) {
+			setDeviceIdleRequired()
+		}
+		if (constraints.isNotInCallRequired) {
+			setNotInCallRequired()
+		}
+	}.build()
 
 	private fun writeCommitProgressIfAbsent() {
 		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
