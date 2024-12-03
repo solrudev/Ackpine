@@ -38,7 +38,6 @@ import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-private const val IS_SESSION_COMMITTED_KEY = "SESSION_COMMIT_ACTIVITY_IS_SESSION_COMMITTED"
 private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
@@ -62,7 +61,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private val subscriptions = DisposableSubscriptionContainer()
 	private val handler = Handler(Looper.getMainLooper())
 	private val handlerCallbacks = mutableListOf<Runnable>()
-	private var isSessionCommitted = false
 	private var isLoading = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -93,7 +91,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	override fun onSaveInstanceState(outState: Bundle) {
 		super.onSaveInstanceState(outState)
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
-		outState.putBoolean(IS_SESSION_COMMITTED_KEY, isSessionCommitted)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
 	}
@@ -108,11 +105,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		session?.completeExceptionally(exception)
 	}
 
-	protected fun notifySessionCommitted() {
-		isSessionCommitted = true
-		withCompletableSession { session ->
-			session?.notifyCommitted()
-		}
+	private fun notifySessionCommitted() = withCompletableSession { session ->
+		session?.notifyCommitted()
 	}
 
 	protected fun setLoading(isLoading: Boolean, delayMillis: Long = 0L) {
@@ -149,12 +143,12 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
 			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
 			setLoading(isLoading)
-			isSessionCommitted = savedInstanceState.getBoolean(IS_SESSION_COMMITTED_KEY)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
-			if (isSessionCommitted && !isConfigChangeRecreation) {
+			if (!isConfigChangeRecreation) {
 				notifySessionCommitted()
 			}
 		} else {
+			notifySessionCommitted()
 			requestCode = Random.nextInt(1000..1000000)
 		}
 	}

@@ -150,7 +150,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
-		notifySessionCommitted()
 	}
 
 	private fun isOnTop(): Boolean {

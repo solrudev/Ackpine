@@ -68,7 +68,6 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 	private fun launchUninstallActivity() {
 		val intent = uninstallPackageContract.createIntent(this)
 		startActivityForResult(intent, requestCode)
-		notifySessionCommitted()
 	}
 
 	internal companion object {
