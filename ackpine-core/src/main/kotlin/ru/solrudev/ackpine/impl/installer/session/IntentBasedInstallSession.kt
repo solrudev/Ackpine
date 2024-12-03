@@ -43,6 +43,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -166,10 +167,11 @@ internal class IntentBasedInstallSession internal constructor(
 		setProgress((PROGRESS_MAX * 0.9).roundToInt())
 	}
 
-	override fun onCompleted(success: Boolean) {
-		if (success) {
+	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
+		if (state is Succeeded) {
 			setProgress(PROGRESS_MAX)
 		}
+		return true
 	}
 
 	private fun getApkUri(): Uri {

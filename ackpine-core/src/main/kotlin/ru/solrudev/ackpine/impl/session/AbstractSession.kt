@@ -138,8 +138,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	/**
 	 * This callback method is invoked when the session's been [completed][Session.isCompleted]. Processing in
 	 * this method should be lightweight.
+	 * @return `true` if completion was handled.
 	 */
-	protected open fun onCompleted(success: Boolean) { /* optional */ }
+	protected open fun onCompleted(state: Completed<F>): Boolean = true
 
 	final override fun launch(): Boolean {
 		if (isPreparing || isCancelling.get()) {
@@ -238,9 +239,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun complete(state: Completed<F>) {
-		onCompleted(state is Succeeded)
-		this.state = state
-		cleanup()
+		if (onCompleted(state)) {
+			this.state = state
+			cleanup()
+		}
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
