@@ -1,10 +1,25 @@
 Change Log
 ==========
 
-Version 0.9.0 (2024-??-??)
+Version 0.9.0 (2024-12-??)
 --------------------------
 
-Unreleased
+### Dependencies
+
+TODO
+
+### Bug fixes and improvements
+
+- Introduce `InstallConstraints` API. TODO: detailed changelog
+- Source-incompatible: deprecate `SessionResult` and return `Session.State.Completed` from `Session.await()`. TODO: detailed changelog
+- Don't show notification for `SESSION_BASED` install sessions when `DEFERRED` confirmation is set and user action is not required.
+- Fix possible races when `ListenableFutures` returned from `getSessionsAsync()` and `getActiveSessionsAsync()` might not get completed.
+- Lower API level required for `READ_EXTERNAL_STORAGE` permission in sample apps.
+- Add "Building" section to documentation.
+
+### Public API changes
+
+TODO
 
 Version 0.8.3 (2024-11-07)
 --------------------------
