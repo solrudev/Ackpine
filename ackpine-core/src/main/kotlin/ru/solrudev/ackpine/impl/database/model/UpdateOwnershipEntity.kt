@@ -24,7 +24,7 @@ import androidx.room.PrimaryKey
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
-	tableName = "sessions_install_modes",
+	tableName = "sessions_update_ownership",
 	foreignKeys = [ForeignKey(
 		entity = SessionEntity::class,
 		parentColumns = ["id"],
@@ -33,18 +33,10 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallModeEntity internal constructor(
+internal data class UpdateOwnershipEntity(
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
-	@ColumnInfo(name = "install_mode")
-	val installMode: InstallMode,
-	@ColumnInfo(name = "dont_kill_app", defaultValue = "false")
-	val dontKillApp: Boolean
-) {
-
-	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal enum class InstallMode {
-		FULL, INHERIT_EXISTING
-	}
-}
+	@ColumnInfo(name = "request_update_ownership")
+	val requestUpdateOwnership: Boolean
+)

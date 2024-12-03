@@ -28,8 +28,11 @@ import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import ru.solrudev.ackpine.impl.database.converters.DrawableIdConverters
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
+import ru.solrudev.ackpine.impl.database.converters.PackageSourceConverters
 import ru.solrudev.ackpine.impl.database.converters.ResolvableStringConverters
+import ru.solrudev.ackpine.impl.database.converters.TimeoutStrategyConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
+import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
@@ -38,6 +41,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionNameDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
+import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
@@ -45,12 +49,14 @@ import ru.solrudev.ackpine.impl.database.model.LastUpdateTimestampEntity
 import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
 import ru.solrudev.ackpine.impl.database.model.NotificationIdEntity
 import ru.solrudev.ackpine.impl.database.model.PackageNameEntity
+import ru.solrudev.ackpine.impl.database.model.PackageSourceEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TERMINAL_STATES
 import ru.solrudev.ackpine.impl.database.model.SessionInstallerTypeEntity
 import ru.solrudev.ackpine.impl.database.model.SessionNameEntity
 import ru.solrudev.ackpine.impl.database.model.SessionProgressEntity
 import ru.solrudev.ackpine.impl.database.model.UninstallFailureEntity
+import ru.solrudev.ackpine.impl.database.model.UpdateOwnershipEntity
 import java.util.concurrent.Executor
 import kotlin.time.Duration.Companion.days
 
@@ -71,16 +77,20 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		NotificationIdEntity::class,
 		SessionNameEntity::class,
 		InstallModeEntity::class,
-		LastUpdateTimestampEntity::class
+		LastUpdateTimestampEntity::class,
+		InstallConstraintsEntity::class,
+		UpdateOwnershipEntity::class,
+		PackageSourceEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
 		AutoMigration(from = 2, to = 3),
 		AutoMigration(from = 3, to = 4),
 		AutoMigration(from = 5, to = 6),
-		AutoMigration(from = 6, to = 7)
+		AutoMigration(from = 6, to = 7),
+		AutoMigration(from = 7, to = 8)
 	],
-	version = 8,
+	version = 9,
 	exportSchema = true
 )
 @TypeConverters(
@@ -88,7 +98,9 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		InstallFailureConverters::class,
 		UninstallFailureConverters::class,
 		ResolvableStringConverters::class,
-		DrawableIdConverters::class
+		DrawableIdConverters::class,
+		TimeoutStrategyConverters::class,
+		PackageSourceConverters::class
 	]
 )
 internal abstract class AckpineDatabase : RoomDatabase() {
@@ -101,6 +113,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun notificationIdDao(): NotificationIdDao
 	abstract fun sessionNameDao(): SessionNameDao
 	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
+	abstract fun installConstraintsDao(): InstallConstraintsDao
 
 	internal companion object {
 

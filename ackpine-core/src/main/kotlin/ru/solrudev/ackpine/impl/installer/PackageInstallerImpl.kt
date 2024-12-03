@@ -28,14 +28,17 @@ import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
@@ -209,21 +212,35 @@ internal class PackageInstallerImpl internal constructor(
 		notificationId: Int
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
 		var packageName: String? = null
+		var dontKillApp = false
 		val installMode = when (parameters.installMode) {
 			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
 			is InstallMode.InheritExisting -> {
 				packageName = parameters.installMode.packageName
+				dontKillApp = parameters.installMode.dontKillApp
 				InstallModeEntity.InstallMode.INHERIT_EXISTING
 			}
 		}
+		val sessionId = id.toString()
+		val installModeEntity = InstallModeEntity(sessionId, installMode, dontKillApp)
 		val notificationData = installSessionFactory.resolveNotificationData(
 			parameters.notificationData,
 			parameters.name
 		)
+		val constraintsEntity = InstallConstraintsEntity(
+			sessionId,
+			parameters.constraints.isAppNotForegroundRequired,
+			parameters.constraints.isAppNotInteractingRequired,
+			parameters.constraints.isAppNotTopVisibleRequired,
+			parameters.constraints.isDeviceIdleRequired,
+			parameters.constraints.isNotInCallRequired,
+			parameters.constraints.timeoutMillis,
+			parameters.constraints.timeoutStrategy
+		)
 		installSessionDao.insertInstallSession(
 			SessionEntity.InstallSession(
 				session = SessionEntity(
-					id.toString(),
+					sessionId,
 					SessionEntity.Type.INSTALL,
 					SessionEntity.State.PENDING,
 					parameters.confirmation,
@@ -235,8 +252,9 @@ internal class PackageInstallerImpl internal constructor(
 				installerType = parameters.installerType,
 				uris = parameters.apks.toList().map { it.toString() },
 				name = parameters.name,
-				notificationId, installMode, packageName,
-				lastUpdateTimestamp = Long.MAX_VALUE
+				notificationId, installModeEntity, packageName,
+				lastUpdateTimestamp = Long.MAX_VALUE,
+				constraintsEntity, parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
 	}
@@ -245,12 +263,25 @@ internal class PackageInstallerImpl internal constructor(
 	private fun SessionEntity.InstallSession.toInstallSession(
 		needToCompleteIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure> {
-		val installMode = when (installMode) {
+		val installMode = when (installMode?.installMode) {
 			null -> InstallMode.Full
 			InstallModeEntity.InstallMode.FULL -> InstallMode.Full
 			InstallModeEntity.InstallMode.INHERIT_EXISTING -> InstallMode.InheritExisting(
-				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" }
+				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" },
+				installMode.dontKillApp
 			)
+		}
+		val installConstraints = if (constraints == null) {
+			InstallConstraints.NONE
+		} else {
+			InstallConstraints.Builder(constraints.timeoutMillis)
+				.setAppNotForegroundRequired(constraints.isAppNotForegroundRequired)
+				.setAppNotInteractingRequired(constraints.isAppNotInteractingRequired)
+				.setAppNotTopVisibleRequired(constraints.isAppNotTopVisibleRequired)
+				.setDeviceIdleRequired(constraints.isDeviceIdleRequired)
+				.setNotInCallRequired(constraints.isNotInCallRequired)
+				.setTimeoutStrategy(constraints.timeoutStrategy)
+				.build()
 		}
 		val sessionName = name
 		val parameters = InstallParameters.Builder(uris.map(String::toUri))
@@ -270,6 +301,9 @@ internal class PackageInstallerImpl internal constructor(
 			}
 			.setRequireUserAction(session.requireUserAction)
 			.setInstallMode(installMode)
+			.setConstraints(installConstraints)
+			.setRequestUpdateOwnership(requestUpdateOwnership ?: false)
+			.setPackageSource(packageSource ?: PackageSource.Unspecified)
 			.build()
 		return installSessionFactory.create(
 			parameters,
@@ -277,9 +311,12 @@ internal class PackageInstallerImpl internal constructor(
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
 			notificationId!!, BinarySemaphore(),
-			packageName = packageName.orEmpty(),
-			lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
-			needToCompleteIfSucceeded
+			InstallSessionFactory.AdditionalParameters(
+				packageName = packageName.orEmpty(),
+				lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
+				needToCompleteIfSucceeded,
+				commitAttemptsCount = constraints?.commitAttemptsCount ?: 0
+			)
 		)
 	}
 }

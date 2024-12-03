@@ -23,11 +23,13 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
+import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
@@ -47,7 +49,8 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	open fun insertInstallSession(session: SessionEntity.InstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertInstallerType(session.session.id, session.installerType)
-		insertInstallMode(session.session.id, session.installMode ?: InstallModeEntity.InstallMode.FULL)
+		val installMode = session.installMode?.installMode ?: InstallModeEntity.InstallMode.FULL
+		insertInstallMode(session.session.id, installMode)
 		insertUris(session.uris.map { uri ->
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
@@ -58,6 +61,15 @@ internal abstract class InstallSessionDao protected constructor(private val data
 		}
 		if (session.packageName != null) {
 			insertPackageName(session.session.id, session.packageName)
+		}
+		if (session.constraints != null) {
+			insertInstallConstraints(session.constraints)
+		}
+		if (session.requestUpdateOwnership != null) {
+			insertRequestUpdateOwnership(session.session.id, session.requestUpdateOwnership)
+		}
+		if (session.packageSource != null) {
+			insertPackageSource(session.session.id, session.packageSource)
 		}
 	}
 
@@ -84,6 +96,18 @@ internal abstract class InstallSessionDao protected constructor(private val data
 
 	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
 	abstract fun insertPackageName(id: String, packageName: String)
+
+	@Insert
+	abstract fun insertInstallConstraints(installConstraints: InstallConstraintsEntity)
+
+	@Query(
+		"INSERT OR IGNORE INTO sessions_update_ownership(session_id, request_update_ownership) " +
+				"VALUES (:id, :requestUpdateOwnership)"
+	)
+	abstract fun insertRequestUpdateOwnership(id: String, requestUpdateOwnership: Boolean)
+
+	@Query("INSERT OR IGNORE INTO sessions_package_sources(session_id, package_source) VALUES (:id, :packageSource)")
+	abstract fun insertPackageSource(id: String, packageSource: PackageSource)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)

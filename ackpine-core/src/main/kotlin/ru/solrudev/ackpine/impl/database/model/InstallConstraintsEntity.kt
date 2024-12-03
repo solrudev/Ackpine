@@ -21,10 +21,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
-	tableName = "sessions_install_modes",
+	tableName = "sessions_install_constraints",
 	foreignKeys = [ForeignKey(
 		entity = SessionEntity::class,
 		parentColumns = ["id"],
@@ -33,18 +34,24 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallModeEntity internal constructor(
+internal data class InstallConstraintsEntity(
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
-	@ColumnInfo(name = "install_mode")
-	val installMode: InstallMode,
-	@ColumnInfo(name = "dont_kill_app", defaultValue = "false")
-	val dontKillApp: Boolean
-) {
-
-	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal enum class InstallMode {
-		FULL, INHERIT_EXISTING
-	}
-}
+	@ColumnInfo(name = "is_app_not_foreground_required")
+	val isAppNotForegroundRequired: Boolean,
+	@ColumnInfo(name = "is_app_not_interacting_required")
+	val isAppNotInteractingRequired: Boolean,
+	@ColumnInfo(name = "is_app_not_top_visible_required")
+	val isAppNotTopVisibleRequired: Boolean,
+	@ColumnInfo(name = "is_device_idle_required")
+	val isDeviceIdleRequired: Boolean,
+	@ColumnInfo(name = "is_not_in_call_required")
+	val isNotInCallRequired: Boolean,
+	@ColumnInfo(name = "timeout_millis")
+	val timeoutMillis: Long,
+	@ColumnInfo(name = "timeout_strategy")
+	val timeoutStrategy: TimeoutStrategy,
+	@ColumnInfo(name = "commit_attempts_count")
+	val commitAttemptsCount: Int = 0
+)

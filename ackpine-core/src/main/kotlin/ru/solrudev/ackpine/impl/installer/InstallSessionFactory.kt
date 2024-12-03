@@ -23,11 +23,13 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.installer.InstallSessionFactory.AdditionalParameters
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -52,12 +54,18 @@ internal interface InstallSessionFactory {
 		initialProgress: Progress,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore,
-		packageName: String = "",
-		lastUpdateTimestamp: Long = Long.MAX_VALUE,
-		needToCompleteIfSucceeded: Boolean = false
+		additionalParameters: AdditionalParameters = AdditionalParameters()
 	): ProgressSession<InstallFailure>
 
 	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
+
+	@RestrictTo(RestrictTo.Scope.LIBRARY)
+	data class AdditionalParameters(
+		val packageName: String = "",
+		val lastUpdateTimestamp: Long = Long.MAX_VALUE,
+		val needToCompleteIfSucceeded: Boolean = false,
+		val commitAttemptsCount: Int = 0
+	)
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -68,6 +76,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val sessionFailureDao: SessionFailureDao<InstallFailure>,
 	private val sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler
 ) : InstallSessionFactory {
@@ -80,9 +89,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		initialProgress: Progress,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore,
-		packageName: String,
-		lastUpdateTimestamp: Long,
-		needToCompleteIfSucceeded: Boolean
+		additionalParameters: AdditionalParameters
 	): ProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
@@ -92,7 +99,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 			resolveNotificationData(parameters.notificationData, parameters.name),
 			lastUpdateTimestampDao, sessionDao, sessionFailureDao, sessionProgressDao,
 			executor, handler,
-			notificationId, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded,
+			notificationId,
+			additionalParameters.packageName,
+			additionalParameters.lastUpdateTimestamp,
+			additionalParameters.needToCompleteIfSucceeded,
 			dbWriteSemaphore
 		)
 
@@ -105,8 +115,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.requireUserAction,
 			parameters.installMode, parameters.constraints,
 			parameters.requestUpdateOwnership, parameters.packageSource,
-			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao,
-			executor, handler, notificationId, dbWriteSemaphore
+			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, installConstraintsDao,
+			executor, handler, notificationId, additionalParameters.commitAttemptsCount, dbWriteSemaphore
 		)
 	}
 

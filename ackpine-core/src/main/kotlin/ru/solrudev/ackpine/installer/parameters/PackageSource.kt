@@ -16,6 +16,15 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import ru.solrudev.ackpine.installer.parameters.PackageSource.DownloadedFile
+import ru.solrudev.ackpine.installer.parameters.PackageSource.LocalFile
+import ru.solrudev.ackpine.installer.parameters.PackageSource.Other
+import ru.solrudev.ackpine.installer.parameters.PackageSource.Store
+import ru.solrudev.ackpine.installer.parameters.PackageSource.Unspecified
+
+@get:JvmSynthetic
+internal val packageSources = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)
+
 public sealed class PackageSource(
 	@get:JvmSynthetic
 	internal val ordinal: Int
@@ -25,14 +34,12 @@ public sealed class PackageSource(
 	public data object LocalFile : PackageSource(2)
 	public data object DownloadedFile : PackageSource(3)
 	public data object Other : PackageSource(4)
-	
+
 	@Suppress("unused")
 	private data object NonExhaustiveWhenGuard : PackageSource(-1)
 
 	@Suppress("RedundantVisibilityModifier")
 	private companion object {
-
-		private val values = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)
 
 		@JvmField
 		public val UNSPECIFIED: PackageSource = Unspecified
@@ -48,8 +55,5 @@ public sealed class PackageSource(
 
 		@JvmField
 		public val OTHER: PackageSource = Other
-
-		@JvmSynthetic
-		internal fun fromOrdinal(ordinal: Int) = values.getOrNull(ordinal) ?: Unspecified
 	}
 }

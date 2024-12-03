@@ -21,10 +21,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
-	tableName = "sessions_install_modes",
+	tableName = "sessions_package_sources",
 	foreignKeys = [ForeignKey(
 		entity = SessionEntity::class,
 		parentColumns = ["id"],
@@ -33,18 +34,10 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallModeEntity internal constructor(
+internal data class PackageSourceEntity internal constructor(
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
-	@ColumnInfo(name = "install_mode")
-	val installMode: InstallMode,
-	@ColumnInfo(name = "dont_kill_app", defaultValue = "false")
-	val dontKillApp: Boolean
-) {
-
-	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal enum class InstallMode {
-		FULL, INHERIT_EXISTING
-	}
-}
+	@ColumnInfo(name = "package_source")
+	val packageSource: PackageSource
+)

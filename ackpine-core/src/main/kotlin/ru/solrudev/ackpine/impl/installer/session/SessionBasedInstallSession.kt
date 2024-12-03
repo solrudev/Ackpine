@@ -42,6 +42,7 @@ import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -95,9 +96,11 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler,
 	notificationId: Int,
+	commitAttemptsCount: Int,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
@@ -114,7 +117,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
 	private val nativeSessionIdSemaphore = BinarySemaphore()
-	private val attempts = AtomicInteger(0)
+	private val attempts = AtomicInteger(commitAttemptsCount)
 
 	init {
 		completeIfSucceeded(initialState, initialProgress)
@@ -183,8 +186,11 @@ internal class SessionBasedInstallSession internal constructor(
 		} catch (_: SecurityException) {
 			commitPackageInstallerSession(notificationId)
 		}
-		attempts.incrementAndGet()
+		val currentAttempt = attempts.incrementAndGet()
 		notifyCommitted()
+		dbWriteSemaphore.withPermit {
+			installConstraintsDao.setCommitAttemptsCount(id.toString(), currentAttempt)
+		}
 	}
 
 	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
