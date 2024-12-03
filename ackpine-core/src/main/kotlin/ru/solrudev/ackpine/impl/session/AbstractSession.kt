@@ -125,6 +125,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
 	 */
 	protected fun notifyAwaiting() {
+		isCommitCalled.set(false)
 		state = Awaiting
 		isPreparing = false
 	}

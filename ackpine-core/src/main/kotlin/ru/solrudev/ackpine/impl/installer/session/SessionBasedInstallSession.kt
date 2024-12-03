@@ -32,6 +32,7 @@ import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import android.os.Process
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
@@ -52,12 +53,15 @@ import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescripto
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.Companion.NONE
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Completed
+import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -106,6 +110,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
 	private val nativeSessionIdSemaphore = BinarySemaphore()
+	private val attempts = AtomicInteger(0)
 
 	init {
 		completeIfSucceeded(initialState, initialProgress)
@@ -171,10 +176,24 @@ internal class SessionBasedInstallSession internal constructor(
 			commitPackageInstallerSession(notificationId)
 		} else try {
 			commitPackageInstallerSessionWithConstraints(notificationId)
+			attempts.incrementAndGet()
 		} catch (_: SecurityException) {
 			commitPackageInstallerSession(notificationId)
 		}
 		notifyCommitted()
+	}
+
+	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
+		if (isInstallConstraintsIgnored()) {
+			return true
+		}
+		val currentAttempt = attempts.get()
+		val shouldRetry = state is Failed && state.failure is Timeout && currentAttempt <= constraints.retries
+		if (shouldRetry) {
+			Log.i("AckpineSessionInstaller", "Retrying $id: attempt #$currentAttempt")
+			notifyAwaiting()
+		}
+		return !shouldRetry
 	}
 
 	private fun commitPackageInstallerSession(notificationId: Int) {

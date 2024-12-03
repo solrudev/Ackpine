@@ -24,7 +24,8 @@ public class InstallConstraints private constructor(
 	public val isAppNotTopVisibleRequired: Boolean,
 	public val isDeviceIdleRequired: Boolean,
 	public val isNotInCallRequired: Boolean,
-	public val timeout: Duration
+	public val timeout: Duration,
+	public val retries: Int
 ) {
 
 	override fun equals(other: Any?): Boolean {
@@ -37,6 +38,7 @@ public class InstallConstraints private constructor(
 		if (isDeviceIdleRequired != other.isDeviceIdleRequired) return false
 		if (isNotInCallRequired != other.isNotInCallRequired) return false
 		if (timeout != other.timeout) return false
+		if (retries != other.retries) return false
 		return true
 	}
 
@@ -47,6 +49,7 @@ public class InstallConstraints private constructor(
 		result = 31 * result + isDeviceIdleRequired.hashCode()
 		result = 31 * result + isNotInCallRequired.hashCode()
 		result = 31 * result + timeout.hashCode()
+		result = 31 * result + retries.hashCode()
 		return result
 	}
 
@@ -57,7 +60,8 @@ public class InstallConstraints private constructor(
 				"isAppNotTopVisibleRequired=$isAppNotTopVisibleRequired, " +
 				"isDeviceIdleRequired=$isDeviceIdleRequired, " +
 				"isNotInCallRequired=$isNotInCallRequired, " +
-				"timeout=$timeout" +
+				"timeout=$timeout, " +
+				"retries=$retries" +
 				")"
 	}
 
@@ -79,6 +83,9 @@ public class InstallConstraints private constructor(
 			private set
 
 		public var timeout: Duration = timeout
+			private set
+
+		public var retries: Int = 0
 			private set
 
 		public fun setAppNotForegroundRequired(value: Boolean): Builder = apply {
@@ -105,13 +112,18 @@ public class InstallConstraints private constructor(
 			this.timeout = timeout
 		}
 
+		public fun setRetries(retries: Int): Builder = apply {
+			this.retries = retries
+		}
+
 		public fun build(): InstallConstraints = InstallConstraints(
 			isAppNotForegroundRequired,
 			isAppNotInteractingRequired,
 			isAppNotTopVisibleRequired,
 			isDeviceIdleRequired,
 			isNotInCallRequired,
-			timeout
+			timeout,
+			retries
 		)
 	}
 
@@ -121,8 +133,18 @@ public class InstallConstraints private constructor(
 		public val NONE: InstallConstraints = Builder(timeout = Duration.ZERO).build()
 
 		@JvmStatic
+		public fun gentleUpdate(timeout: Duration, retries: Int): InstallConstraints {
+			return Builder(timeout)
+				.setAppNotInteractingRequired(true)
+				.setRetries(retries)
+				.build()
+		}
+
+		@JvmStatic
 		public fun gentleUpdate(timeout: Duration): InstallConstraints {
-			return Builder(timeout).setAppNotInteractingRequired(true).build()
+			return Builder(timeout)
+				.setAppNotInteractingRequired(true)
+				.build()
 		}
 	}
 }
