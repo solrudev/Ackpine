@@ -14,6 +14,7 @@ TODO
 - Introduce `InstallConstraints` API. TODO: detailed changelog
 - Add `requestUpdateOwnership` option for install sessions. TODO: detailed changelog
 - Add `packageSource` option for install sessions. TODO: detailed changelog
+- Add `dontKillApp` option for install sessions with `InheritExisting` install mode. TODO: detailed changelog
 - Source-incompatible: deprecate `SessionResult` and return `Session.State.Completed` from `Session.await()`. TODO: detailed changelog
 - Fix session not launching after process restart if it was in the midst of preparations.
 - Don't show notification for `SESSION_BASED` install sessions when `DEFERRED` confirmation is set and user action is not required.
