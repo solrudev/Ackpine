@@ -190,12 +190,14 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun onPreapproved() {
 		isPreapproved = true
-		try {
-			writeApksToSession(nativeSessionId)
-		} catch (_: OperationCanceledException) {
-			cancel()
-		} catch (exception: Exception) {
-			completeExceptionally(exception)
+		executor.execute {
+			try {
+				writeApksToSession(nativeSessionId)
+			} catch (_: OperationCanceledException) {
+				cancel()
+			} catch (exception: Exception) {
+				completeExceptionally(exception)
+			}
 		}
 	}
 
