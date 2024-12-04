@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.impl.installer.session
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
@@ -131,8 +130,8 @@ internal class IntentBasedInstallSession internal constructor(
 			}
 		}
 
-	override fun prepare(cancellationSignal: CancellationSignal) {
-		createApkCopy(cancellationSignal)
+	override fun prepare() {
+		createApkCopy()
 		val apkPackageName = context.packageManager
 			.getPackageArchiveInfo(apkFile.absolutePath, 0)
 			?.packageName
@@ -149,7 +148,7 @@ internal class IntentBasedInstallSession internal constructor(
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(notificationId: Int) {
+	override fun launchConfirmation() {
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
@@ -182,7 +181,7 @@ internal class IntentBasedInstallSession internal constructor(
 
 	}
 
-	private fun createApkCopy(cancellationSignal: CancellationSignal) {
+	private fun createApkCopy() {
 		if (apkFile.exists()) {
 			apkFile.delete()
 		}

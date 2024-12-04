@@ -64,15 +64,16 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	private val notificationId: Int,
+	protected val notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : CompletableSession<F> {
+
+	protected val cancellationSignal = CancellationSignal()
 
 	private val stateListeners = Collections.newSetFromMap(
 		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
 	)
 
-	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
 	private val isCancelling = AtomicBoolean(false)
 	private val isCommitCalled = AtomicBoolean(false)
@@ -107,13 +108,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * be called.
 	 */
 	@WorkerThread
-	protected abstract fun prepare(cancellationSignal: CancellationSignal)
+	protected abstract fun prepare()
 
 	/**
 	 * Launch session's confirmation with [Context.launchConfirmation]. This method is called on a worker thread.
 	 */
 	@WorkerThread
-	protected abstract fun launchConfirmation(notificationId: Int)
+	protected abstract fun launchConfirmation()
 
 	/**
 	 * Release any held resources after session's completion or cancellation. Processing in this method should be
@@ -158,7 +159,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
-				prepare(cancellationSignal)
+				prepare()
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
@@ -181,7 +182,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		executor.execute {
 			try {
-				launchConfirmation(notificationId)
+				launchConfirmation()
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {

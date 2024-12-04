@@ -31,7 +31,6 @@ import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
 import android.net.Uri
 import android.os.Build
-import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import android.os.Process
@@ -155,7 +154,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
 
-	override fun prepare(cancellationSignal: CancellationSignal) {
+	override fun prepare() {
 		nativeSessionIdSemaphore.withPermit {
 			if (nativeSessionId != -1) {
 				abandonSession()
@@ -167,7 +166,7 @@ internal class SessionBasedInstallSession internal constructor(
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
 		val session = packageInstaller.openSession(sessionId)
-		session.writeApks(cancellationSignal).handleResult(
+		session.writeApks().handleResult(
 			onException = { exception ->
 				session.close()
 				if (exception is OperationCanceledException) {
@@ -182,7 +181,7 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	override fun launchConfirmation(notificationId: Int) {
+	override fun launchConfirmation() {
 		if (isInstallConstraintsIgnored() || shouldCommitNormallyAfterTimeout()) {
 			commitPackageInstallerSession(notificationId)
 		} else try {
@@ -340,9 +339,7 @@ internal class SessionBasedInstallSession internal constructor(
 		return sessionParams
 	}
 
-	private fun PackageInstaller.Session.writeApks(
-		cancellationSignal: CancellationSignal
-	) = CallbackToFutureAdapter.getFuture { completer ->
+	private fun PackageInstaller.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
@@ -352,7 +349,7 @@ internal class SessionBasedInstallSession internal constructor(
 			try {
 				executor.execute {
 					try {
-						writeApk(afd, index, currentProgress, progressMax, cancellationSignal)
+						writeApk(afd, index, currentProgress, progressMax)
 						if (countdown.decrementAndGet() == 0) {
 							completer.set(Unit)
 						}
@@ -374,8 +371,7 @@ internal class SessionBasedInstallSession internal constructor(
 		afd: AssetFileDescriptor,
 		index: Int,
 		currentProgress: AtomicInteger,
-		progressMax: Int,
-		cancellationSignal: CancellationSignal
+		progressMax: Int
 	) = afd.createInputStream().use { apkStream ->
 		requireNotNull(apkStream) { "APK $index InputStream was null." }
 		val length = afd.declaredLength
