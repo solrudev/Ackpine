@@ -10,8 +10,12 @@ TODO
 
 ### Bug fixes and improvements
 
+- Introduce `InstallPreapproval` API. TODO: detailed changelog
 - Introduce `InstallConstraints` API. TODO: detailed changelog
+- Add `requestUpdateOwnership` option for install sessions. TODO: detailed changelog
+- Add `packageSource` option for install sessions. TODO: detailed changelog
 - Source-incompatible: deprecate `SessionResult` and return `Session.State.Completed` from `Session.await()`. TODO: detailed changelog
+- Fix session not launching after process restart if it was in the midst of preparations.
 - Don't show notification for `SESSION_BASED` install sessions when `DEFERRED` confirmation is set and user action is not required.
 - Fix possible races when `ListenableFutures` returned from `getSessionsAsync()` and `getActiveSessionsAsync()` might not get completed.
 - Lower API level required for `READ_EXTERNAL_STORAGE` permission in sample apps.
