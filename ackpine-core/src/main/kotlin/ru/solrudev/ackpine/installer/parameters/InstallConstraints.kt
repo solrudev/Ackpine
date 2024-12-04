@@ -101,7 +101,7 @@ public class InstallConstraints private constructor(
 		}
 	}
 
-	public class Builder(timeoutMillis: Long) {
+	public class Builder(private val timeoutMillis: Long) {
 
 		public var isAppNotForegroundRequired: Boolean = false
 			private set
@@ -116,9 +116,6 @@ public class InstallConstraints private constructor(
 			private set
 
 		public var isNotInCallRequired: Boolean = false
-			private set
-
-		public var timeoutMillis: Long = timeoutMillis
 			private set
 
 		public var timeoutStrategy: TimeoutStrategy = TimeoutStrategy.Fail
@@ -142,10 +139,6 @@ public class InstallConstraints private constructor(
 
 		public fun setNotInCallRequired(value: Boolean): Builder = apply {
 			isNotInCallRequired = value
-		}
-
-		public fun setTimeoutMillis(timeoutMillis: Long): Builder = apply {
-			this.timeoutMillis = timeoutMillis
 		}
 
 		public fun setTimeoutStrategy(strategy: TimeoutStrategy): Builder = apply {
