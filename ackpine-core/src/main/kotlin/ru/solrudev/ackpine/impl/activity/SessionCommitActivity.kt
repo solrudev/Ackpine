@@ -105,9 +105,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		session?.completeExceptionally(exception)
 	}
 
-	private fun notifySessionCommitted() = withCompletableSession { session ->
-		session?.notifyCommitted()
-	}
+	protected open fun shouldNotifyWhenCommitted(): Boolean = true
 
 	protected fun setLoading(isLoading: Boolean, delayMillis: Long = 0L) {
 		if (isFinishing) {
@@ -129,6 +127,15 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				abortedStateFailureFactory(message ?: "$tag was finished by user")
 			)
 		)
+	}
+
+	private fun notifySessionCommitted() {
+		if (!shouldNotifyWhenCommitted()) {
+			return
+		}
+		withCompletableSession { session ->
+			session?.notifyCommitted()
+		}
 	}
 
 	private inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {

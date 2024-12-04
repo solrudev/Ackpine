@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
+import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -24,6 +25,7 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import java.util.Locale
 import kotlin.time.Duration
 
 /**
@@ -73,13 +75,59 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 */
 	public var installMode: InstallMode
 
+	public var preapproval: InstallPreapproval
+
 	public var constraints: InstallConstraints
 
 	public var requestUpdateOwnership: Boolean
 
 	public var packageSource: PackageSource
 
+	public fun constraints(timeout: Duration)
 	public fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit)
+
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		languageTag: String
+	)
+
+	@RequiresApi(Build.VERSION_CODES.N)
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		locale: ULocale
+	)
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		locale: Locale
+	)
+
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		languageTag: String,
+		configure: InstallPreapprovalDsl.() -> Unit
+	)
+
+	@RequiresApi(Build.VERSION_CODES.N)
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		locale: ULocale,
+		configure: InstallPreapprovalDsl.() -> Unit
+	)
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	public fun preapproval(
+		packageName: String,
+		label: String,
+		locale: Locale,
+		configure: InstallPreapprovalDsl.() -> Unit
+	)
 }
 
 @PublishedApi
@@ -135,11 +183,18 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setInstallMode(value)
 		}
 
+	override var preapproval: InstallPreapproval
+		get() = builder.preapproval
+		set(value) {
+			builder.setPreapproval(value)
+		}
+
 	override var constraints: InstallConstraints
 		get() = builder.constraints
 		set(value) {
 			builder.setConstraints(value)
 		}
+
 	override var requestUpdateOwnership: Boolean
 		get() = builder.requestUpdateOwnership
 		set(value) {
@@ -152,8 +207,55 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
+	override fun constraints(timeout: Duration) {
+		constraints = InstallConstraints(timeout)
+	}
+
 	override fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit) {
 		constraints = InstallConstraints(timeout, configure)
+	}
+
+	override fun preapproval(packageName: String, label: String, languageTag: String) {
+		preapproval = InstallPreapproval(packageName, label, languageTag)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.N)
+	override fun preapproval(packageName: String, label: String, locale: ULocale) {
+		preapproval = InstallPreapproval(packageName, label, locale)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	override fun preapproval(packageName: String, label: String, locale: Locale) {
+		preapproval = InstallPreapproval(packageName, label, locale)
+	}
+
+	override fun preapproval(
+		packageName: String,
+		label: String,
+		languageTag: String,
+		configure: InstallPreapprovalDsl.() -> Unit
+	) {
+		preapproval = InstallPreapproval(packageName, label, languageTag, configure)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.N)
+	override fun preapproval(
+		packageName: String,
+		label: String,
+		locale: ULocale,
+		configure: InstallPreapprovalDsl.() -> Unit
+	) {
+		preapproval = InstallPreapproval(packageName, label, locale, configure)
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	override fun preapproval(
+		packageName: String,
+		label: String,
+		locale: Locale,
+		configure: InstallPreapprovalDsl.() -> Unit
+	) {
+		preapproval = InstallPreapproval(packageName, label, locale, configure)
 	}
 
 	fun build() = builder.build()

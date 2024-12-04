@@ -52,6 +52,13 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 		sessionId ?: -1
 	}
 
+	private val isPreapproval
+		get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
+		} else {
+			false
+		}
+
 	private val handler = Handler(Looper.getMainLooper())
 	private var canInstallPackages = false
 	private var isFirstResume = true
@@ -123,6 +130,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
 		// Order of checks is important.
 		when {
+			// Confirmation is a preapproval on API >= 34.
+			isPreapproval -> finish()
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
@@ -144,6 +153,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 			}
 		}
 	}
+
+	override fun shouldNotifyWhenCommitted() = !isPreapproval
 
 	private fun launchInstallActivity() {
 		canInstallPackages = canInstallPackages()

@@ -29,6 +29,7 @@ import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
+import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.session.helpers.showConfirmationNotification
@@ -49,14 +50,12 @@ private const val TAG = "PackageInstallerStatusReceiver"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
-	private lateinit var pendingResult: PendingResult
-
 	@Suppress("UNCHECKED_CAST")
 	override fun onReceive(context: Context, intent: Intent) {
 		if (intent.action != getAction(context)) {
 			return
 		}
-		pendingResult = goAsync()
+		val pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
 		try {
@@ -68,7 +67,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 				block = { session ->
 					handlePackageInstallerStatus(
 						session as? CompletableSession<InstallFailure>,
-						ackpineSessionId, intent, context
+						ackpineSessionId, intent, context, pendingResult
 					)
 				})
 		} catch (t: Throwable) {
@@ -81,47 +80,91 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		session: CompletableSession<InstallFailure>?,
 		ackpineSessionId: UUID,
 		intent: Intent,
-		context: Context
+		context: Context,
+		pendingResult: PendingResult
 	) {
 		try {
 			val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
 			val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
-			if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-				val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
-				if (confirmationIntent == null) {
-					session?.completeExceptionally(
-						IllegalArgumentException("$TAG: confirmationIntent was null.")
+			val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
+			val isPreapproval = isPreapproval(intent)
+			when {
+				status == PackageInstaller.STATUS_PENDING_USER_ACTION -> {
+					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
+					if (confirmationIntent == null) {
+						session?.completeExceptionally(
+							IllegalArgumentException("$TAG: confirmationIntent was null.")
+						)
+						return
+					}
+					handleConfirmation(
+						context, intent, confirmationIntent, ackpineSessionId, sessionId, isPreapproval
 					)
 					return
 				}
-				val confirmation = Confirmation.entries[
-					intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
-				]
-				val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
-					.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, ackpineSessionId)
-					.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
-					.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
-				when (confirmation) {
-					Confirmation.IMMEDIATE -> context.startActivity(
-						wrapperIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-					)
-					Confirmation.DEFERRED -> showConfirmationNotification(
-						intent, wrapperIntent, context, ackpineSessionId
-					)
-				}
-				return
+
+				isPreapproval -> handlePreapprovalResult(session, status, message, intent)
+				else -> handleSessionResult(session, status, message, intent)
 			}
-			val result = if (status == PackageInstaller.STATUS_SUCCESS) {
-				Session.State.Succeeded
-			} else {
-				val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-				val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
-				val storagePath = intent.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH)
-				Session.State.Failed(InstallFailure.fromStatusCode(status, message, otherPackageName, storagePath))
-			}
-			session?.complete(result)
 		} finally {
 			pendingResult.finish()
+		}
+	}
+
+	private fun handleConfirmation(
+		context: Context,
+		intent: Intent,
+		confirmationIntent: Intent,
+		ackpineSessionId: UUID,
+		sessionId: Int,
+		isPreapproval: Boolean
+	) {
+		val confirmation = Confirmation.entries[
+			intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
+		]
+		val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, ackpineSessionId)
+			.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			wrapperIntent.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, isPreapproval)
+		}
+		when (confirmation) {
+			Confirmation.IMMEDIATE -> context.startActivity(
+				wrapperIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+			)
+
+			Confirmation.DEFERRED -> showConfirmationNotification(
+				intent, wrapperIntent, context, ackpineSessionId
+			)
+		}
+	}
+
+	private fun handleSessionResult(
+		session: CompletableSession<InstallFailure>?,
+		status: Int,
+		message: String?,
+		intent: Intent
+	) {
+		val result = when (status) {
+			PackageInstaller.STATUS_SUCCESS -> Session.State.Succeeded
+			else -> Session.State.Failed(InstallFailure.fromIntent(intent, status, message))
+		}
+		session?.complete(result)
+	}
+
+	private fun handlePreapprovalResult(
+		session: CompletableSession<InstallFailure>?,
+		status: Int,
+		message: String?,
+		intent: Intent
+	) {
+		session as PreapprovalListener
+		when (status) {
+			PackageInstaller.STATUS_SUCCESS -> session.onPreapproved()
+			else -> session.complete(
+				Session.State.Failed(InstallFailure.fromIntent(intent, status, message))
+			)
 		}
 	}
 
@@ -157,6 +200,18 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			.setContentText(notificationMessage)
 			.setIcon(notificationIcon)
 			.build()
+	}
+
+	private fun isPreapproval(intent: Intent) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+		intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
+	} else {
+		false
+	}
+
+	private fun InstallFailure.Companion.fromIntent(intent: Intent, status: Int, message: String?): InstallFailure {
+		val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
+		val storagePath = intent.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH)
+		return fromStatusCode(status, message, otherPackageName, storagePath)
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)

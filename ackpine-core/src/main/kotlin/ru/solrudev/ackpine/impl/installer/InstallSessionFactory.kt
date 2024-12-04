@@ -113,10 +113,12 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.confirmation,
 			resolveNotificationData(parameters.notificationData, parameters.name),
 			parameters.requireUserAction,
-			parameters.installMode, parameters.constraints,
+			parameters.installMode, parameters.preapproval, parameters.constraints,
 			parameters.requestUpdateOwnership, parameters.packageSource,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, installConstraintsDao,
-			executor, handler, notificationId, additionalParameters.commitAttemptsCount, dbWriteSemaphore
+			executor, handler, notificationId, additionalParameters.commitAttemptsCount,
+			isPreapproved = false, // TODO
+			dbWriteSemaphore
 		)
 	}
 

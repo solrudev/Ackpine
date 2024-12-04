@@ -82,6 +82,8 @@ public class InstallParameters private constructor(
 	 */
 	public val installMode: InstallMode,
 
+	public val preapproval: InstallPreapproval,
+
 	public val constraints: InstallConstraints,
 
 	public val requestUpdateOwnership: Boolean,
@@ -100,6 +102,7 @@ public class InstallParameters private constructor(
 		if (name != other.name) return false
 		if (requireUserAction != other.requireUserAction) return false
 		if (installMode != other.installMode) return false
+		if (preapproval != other.preapproval) return false
 		if (constraints != other.constraints) return false
 		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
 		if (packageSource != other.packageSource) return false
@@ -114,6 +117,7 @@ public class InstallParameters private constructor(
 		result = 31 * result + name.hashCode()
 		result = 31 * result + requireUserAction.hashCode()
 		result = 31 * result + installMode.hashCode()
+		result = 31 * result + preapproval.hashCode()
 		result = 31 * result + constraints.hashCode()
 		result = 31 * result + requestUpdateOwnership.hashCode()
 		result = 31 * result + packageSource.hashCode()
@@ -129,6 +133,7 @@ public class InstallParameters private constructor(
 				"name='$name', " +
 				"requireUserAction=$requireUserAction, " +
 				"installMode=$installMode, " +
+				"preapproval=$preapproval, " +
 				"constraints=$constraints, " +
 				"requestUpdateOwnership=$requestUpdateOwnership, " +
 				"packageSource=$packageSource" +
@@ -225,6 +230,9 @@ public class InstallParameters private constructor(
 		public var installMode: InstallMode = InstallMode.Full
 			private set
 
+		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
+			private set
+
 		public var constraints: InstallConstraints = InstallConstraints.NONE
 			private set
 
@@ -296,6 +304,13 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.preapproval].
+		 */
+		public fun setPreapproval(preapproval: InstallPreapproval): Builder = apply {
+			this.preapproval = preapproval
+		}
+
+		/**
 		 * Sets [InstallParameters.constraints].
 		 */
 		public fun setConstraints(constraints: InstallConstraints): Builder = apply {
@@ -329,6 +344,7 @@ public class InstallParameters private constructor(
 				name,
 				requireUserAction,
 				installMode,
+				preapproval,
 				constraints,
 				requestUpdateOwnership,
 				packageSource
