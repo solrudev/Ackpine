@@ -66,7 +66,7 @@ public class InstallConstraints private constructor(
 				")"
 	}
 
-	public interface TimeoutStrategy : Serializable {
+	public sealed interface TimeoutStrategy : Serializable {
 
 		public data object CommitEagerly : TimeoutStrategy {
 			private const val serialVersionUID = 6543830064438769365L
@@ -82,6 +82,12 @@ public class InstallConstraints private constructor(
 			private companion object {
 				private const val serialVersionUID = -8122854334695670099L
 			}
+		}
+
+		@Suppress("unused")
+		private data object NonExhaustiveWhenGuard : TimeoutStrategy {
+			private const val serialVersionUID: Long = -8649947530739529521L
+			private fun readResolve(): Any = NonExhaustiveWhenGuard
 		}
 
 		@Suppress("RedundantVisibilityModifier")
