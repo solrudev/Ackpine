@@ -36,7 +36,6 @@ public interface InstallConstraintsDsl {
 	public var isAppNotTopVisibleRequired: Boolean
 	public var isDeviceIdleRequired: Boolean
 	public var isNotInCallRequired: Boolean
-	public var timeout: Duration
 	public var timeoutStrategy: InstallConstraints.TimeoutStrategy
 }
 
@@ -44,7 +43,6 @@ public interface InstallConstraintsDsl {
 internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstraintsDsl {
 
 	private val builder = InstallConstraints.Builder(timeout.inWholeMilliseconds)
-	private var _timeout = timeout
 
 	override var isAppNotForegroundRequired: Boolean
 		get() = builder.isAppNotForegroundRequired
@@ -74,13 +72,6 @@ internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstrai
 		get() = builder.isNotInCallRequired
 		set(value) {
 			builder.setNotInCallRequired(value)
-		}
-
-	override var timeout: Duration
-		get() = _timeout
-		set(value) {
-			_timeout = value
-			builder.setTimeoutMillis(value.inWholeMilliseconds)
 		}
 
 	override var timeoutStrategy: InstallConstraints.TimeoutStrategy
