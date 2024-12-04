@@ -5,3 +5,4 @@
 -keep class ru.solrudev.ackpine.installer.InstallFailure$* { *; }
 -keep class ru.solrudev.ackpine.uninstaller.UninstallFailure { *; }
 -keep class ru.solrudev.ackpine.uninstaller.UninstallFailure$* { *; }
+-keep class ru.solrudev.ackpine.installer.parameters.InstallConstraints$TimeoutStrategy { *; }
