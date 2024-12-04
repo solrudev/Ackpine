@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
+@file:SuppressLint("LongLogTag")
+
 package ru.solrudev.ackpine.impl.installer.session
 
+import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
@@ -76,6 +79,7 @@ import kotlin.random.nextInt
 
 private const val ACKPINE_SESSION_BASED_INSTALLER = "ackpine_session_based_installer"
 private const val SESSION_COMMIT_PROGRESS_VALUE = "session_commit_progress_value"
+private const val TAG = "SessionBasedInstallSession"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -183,7 +187,8 @@ internal class SessionBasedInstallSession internal constructor(
 			commitPackageInstallerSession(notificationId)
 		} else try {
 			commitPackageInstallerSessionWithConstraints(notificationId)
-		} catch (_: SecurityException) {
+		} catch (exception: SecurityException) {
+			Log.w(TAG, "$id: ${exception.message}")
 			commitPackageInstallerSession(notificationId)
 		}
 		val currentAttempt = attempts.incrementAndGet()
@@ -208,7 +213,7 @@ internal class SessionBasedInstallSession internal constructor(
 			val currentAttempt = attempts.get()
 			val shouldRetry = currentAttempt <= constraints.timeoutStrategy.retries
 			if (shouldRetry) {
-				Log.i("AckpineSessionInstaller", "Retrying $id: attempt #$currentAttempt")
+				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
 				notifyAwaiting()
 			}
 			return !shouldRetry
