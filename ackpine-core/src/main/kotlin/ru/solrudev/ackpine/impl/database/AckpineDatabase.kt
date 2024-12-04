@@ -88,7 +88,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 3, to = 4),
 		AutoMigration(from = 5, to = 6),
 		AutoMigration(from = 6, to = 7),
-		AutoMigration(from = 7, to = 8)
+		AutoMigration(from = 8, to = 9)
 	],
 	version = 9,
 	exportSchema = true
