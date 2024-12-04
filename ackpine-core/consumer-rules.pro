@@ -1,10 +1,4 @@
 # Serializable
--keep class ru.solrudev.ackpine.session.parameters.NotificationString { *; }
--keep class ru.solrudev.ackpine.session.parameters.NotificationString$* { *; }
--keep class ru.solrudev.ackpine.session.parameters.Default { *; }
--keep class ru.solrudev.ackpine.session.parameters.Empty { *; }
--keep class ru.solrudev.ackpine.session.parameters.Raw { *; }
--keep class ru.solrudev.ackpine.session.parameters.Resource { *; }
 -keep interface ru.solrudev.ackpine.session.parameters.DrawableId { *; }
 -keep class * implements ru.solrudev.ackpine.session.parameters.DrawableId { *; }
 -keep class ru.solrudev.ackpine.installer.InstallFailure { *; }
