@@ -129,19 +129,19 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		)
 	}
 
+	protected inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
+		ackpineSessionFuture.handleResult { session ->
+			val completableSession = session as? CompletableSession<F>
+			block(completableSession)
+		}
+	}
+
 	private fun notifySessionCommitted() {
 		if (!shouldNotifyWhenCommitted()) {
 			return
 		}
 		withCompletableSession { session ->
 			session?.notifyCommitted()
-		}
-	}
-
-	private inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult { session ->
-			val completableSession = session as? CompletableSession<F>
-			block(completableSession)
 		}
 	}
 
