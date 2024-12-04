@@ -20,7 +20,7 @@ import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import kotlin.time.Duration
 
 /**
- * Constructs a new instance of [InstallParameters].
+ * Constructs a new instance of [InstallConstraints].
  */
 public inline fun InstallConstraints(
 	timeout: Duration,
