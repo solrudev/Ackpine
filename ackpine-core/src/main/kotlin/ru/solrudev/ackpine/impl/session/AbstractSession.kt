@@ -49,7 +49,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -148,14 +147,12 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		if (isPreparing || isCancelling.get()) {
 			return false
 		}
-		val isStateChangedToActive = stateUpdater.compareAndSet(this, Pending, Active)
-		if (isStateChangedToActive) {
-			notifyStateListeners(Active)
-		}
-		if (!isStateChangedToActive || state !is Active) {
+		val currentState = state
+		if (currentState !is Pending && currentState !is Active) {
 			return false
 		}
 		isPreparing = true
+		state = Active
 		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
@@ -288,12 +285,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		Cancelled -> SessionEntity.State.CANCELLED
 		Succeeded -> SessionEntity.State.SUCCEEDED
 		is Failed -> SessionEntity.State.FAILED
-	}
-
-	private companion object {
-		private val stateUpdater = AtomicReferenceFieldUpdater.newUpdater(
-			AbstractSession::class.java, Session.State::class.java, "state"
-		)
 	}
 }
 
