@@ -47,6 +47,7 @@ import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
+import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -103,6 +104,7 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	private val installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler,
@@ -190,6 +192,11 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun onPreapproved() {
 		isPreapproved = true
+		executor.execute {
+			dbWriteSemaphore.withPermit {
+				installPreapprovalDao.setPreapproved(id.toString())
+			}
+		}
 		executor.execute {
 			try {
 				writeApksToSession(nativeSessionId)

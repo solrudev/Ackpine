@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
+import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -64,7 +65,8 @@ internal interface InstallSessionFactory {
 		val packageName: String = "",
 		val lastUpdateTimestamp: Long = Long.MAX_VALUE,
 		val needToCompleteIfSucceeded: Boolean = false,
-		val commitAttemptsCount: Int = 0
+		val commitAttemptsCount: Int = 0,
+		val isPreapproved: Boolean = false
 	)
 }
 
@@ -76,6 +78,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val sessionFailureDao: SessionFailureDao<InstallFailure>,
 	private val sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	private val installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler
@@ -115,9 +118,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.requireUserAction,
 			parameters.installMode, parameters.preapproval, parameters.constraints,
 			parameters.requestUpdateOwnership, parameters.packageSource,
-			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, installConstraintsDao,
-			executor, handler, notificationId, additionalParameters.commitAttemptsCount,
-			isPreapproved = false, // TODO
+			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, installPreapprovalDao,
+			installConstraintsDao, executor, handler, notificationId,
+			additionalParameters.commitAttemptsCount, additionalParameters.isPreapproved,
 			dbWriteSemaphore
 		)
 	}

@@ -25,6 +25,7 @@ import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
+import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -62,6 +63,9 @@ internal abstract class InstallSessionDao protected constructor(private val data
 		if (session.packageName != null) {
 			insertPackageName(session.session.id, session.packageName)
 		}
+		if (session.preapproval != null) {
+			insertInstallPreapproval(session.preapproval)
+		}
 		if (session.constraints != null) {
 			insertInstallConstraints(session.constraints)
 		}
@@ -96,6 +100,9 @@ internal abstract class InstallSessionDao protected constructor(private val data
 
 	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
 	abstract fun insertPackageName(id: String, packageName: String)
+
+	@Insert
+	protected abstract fun insertInstallPreapproval(installPreapproval: InstallPreapprovalEntity)
 
 	@Insert
 	protected abstract fun insertInstallConstraints(installConstraints: InstallConstraintsEntity)

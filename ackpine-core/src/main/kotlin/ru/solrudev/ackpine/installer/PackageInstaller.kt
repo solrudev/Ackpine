@@ -120,6 +120,7 @@ public interface PackageInstaller {
 					database.installSessionDao(),
 					database.sessionProgressDao(),
 					database.nativeSessionIdDao(),
+					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
 					PackageInstallerPlugin.executor,
 					Handler(context.mainLooper)

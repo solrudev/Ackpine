@@ -126,6 +126,11 @@ internal data class SessionEntity internal constructor(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
+		val preapproval: InstallPreapprovalEntity?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id"
+		)
 		val constraints: InstallConstraintsEntity?,
 		@Relation(
 			parentColumn = "id",

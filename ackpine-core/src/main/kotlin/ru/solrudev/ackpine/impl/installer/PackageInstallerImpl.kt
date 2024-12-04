@@ -30,6 +30,7 @@ import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
+import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -37,6 +38,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
@@ -227,6 +229,13 @@ internal class PackageInstallerImpl internal constructor(
 			parameters.notificationData,
 			parameters.name
 		)
+		val preapprovalEntity = InstallPreapprovalEntity(
+			sessionId,
+			parameters.preapproval.packageName,
+			parameters.preapproval.label,
+			parameters.preapproval.languageTag,
+			parameters.preapproval.icon.toString()
+		)
 		val constraintsEntity = InstallConstraintsEntity(
 			sessionId,
 			parameters.constraints.isAppNotForegroundRequired,
@@ -254,7 +263,8 @@ internal class PackageInstallerImpl internal constructor(
 				name = parameters.name,
 				notificationId, installModeEntity, packageName,
 				lastUpdateTimestamp = Long.MAX_VALUE,
-				constraintsEntity, parameters.requestUpdateOwnership, parameters.packageSource
+				preapprovalEntity, constraintsEntity,
+				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
 	}
@@ -270,6 +280,13 @@ internal class PackageInstallerImpl internal constructor(
 				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" },
 				installMode.dontKillApp
 			)
+		}
+		val installPreapproval = if (preapproval == null) {
+			InstallPreapproval.NONE
+		} else {
+			InstallPreapproval.Builder(preapproval.packageName, preapproval.label, preapproval.locale)
+				.setIcon(preapproval.icon.toUri())
+				.build()
 		}
 		val installConstraints = if (constraints == null) {
 			InstallConstraints.NONE
@@ -301,6 +318,7 @@ internal class PackageInstallerImpl internal constructor(
 			}
 			.setRequireUserAction(session.requireUserAction)
 			.setInstallMode(installMode)
+			.setPreapproval(installPreapproval)
 			.setConstraints(installConstraints)
 			.setRequestUpdateOwnership(requestUpdateOwnership ?: false)
 			.setPackageSource(packageSource ?: PackageSource.Unspecified)
@@ -315,7 +333,8 @@ internal class PackageInstallerImpl internal constructor(
 				packageName = packageName.orEmpty(),
 				lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
 				needToCompleteIfSucceeded,
-				commitAttemptsCount = constraints?.commitAttemptsCount ?: 0
+				commitAttemptsCount = constraints?.commitAttemptsCount ?: 0,
+				isPreapproved = preapproval?.isPreapproved ?: false
 			)
 		)
 	}

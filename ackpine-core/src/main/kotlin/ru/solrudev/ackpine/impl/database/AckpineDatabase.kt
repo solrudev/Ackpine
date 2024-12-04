@@ -33,6 +33,7 @@ import ru.solrudev.ackpine.impl.database.converters.ResolvableStringConverters
 import ru.solrudev.ackpine.impl.database.converters.TimeoutStrategyConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
+import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
@@ -44,6 +45,7 @@ import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
+import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.LastUpdateTimestampEntity
 import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
@@ -78,6 +80,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		SessionNameEntity::class,
 		InstallModeEntity::class,
 		LastUpdateTimestampEntity::class,
+		InstallPreapprovalEntity::class,
 		InstallConstraintsEntity::class,
 		UpdateOwnershipEntity::class,
 		PackageSourceEntity::class
@@ -113,6 +116,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun notificationIdDao(): NotificationIdDao
 	abstract fun sessionNameDao(): SessionNameDao
 	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
+	abstract fun installPreapprovalDao(): InstallPreapprovalDao
 	abstract fun installConstraintsDao(): InstallConstraintsDao
 
 	internal companion object {
