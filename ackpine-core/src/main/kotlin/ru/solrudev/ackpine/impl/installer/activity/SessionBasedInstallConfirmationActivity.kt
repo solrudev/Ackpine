@@ -32,6 +32,7 @@ import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
@@ -78,6 +79,11 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		if (isPreapproval) {
+			withCompletableSession { session ->
+				(session as PreapprovalListener).onPreapproval()
+			}
+		}
 		if (savedInstanceState == null) {
 			launchInstallActivity()
 		} else {

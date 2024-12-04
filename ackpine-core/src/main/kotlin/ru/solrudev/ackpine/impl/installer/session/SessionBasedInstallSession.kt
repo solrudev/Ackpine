@@ -126,6 +126,9 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
+	@Volatile
+	private var isPreapprovalActive = false
+
 	private val nativeSessionIdSemaphore = BinarySemaphore()
 	private val attempts = AtomicInteger(commitAttemptsCount)
 
@@ -162,6 +165,9 @@ internal class SessionBasedInstallSession internal constructor(
 		get() = context.packageManager.packageInstaller
 
 	override fun prepare() {
+		if (isPreapprovalActive) {
+			return
+		}
 		val sessionId = getSessionId()
 		if (isPreapprovalIgnored() || isPreapproved) {
 			writeApksToSession(sessionId)
@@ -190,8 +196,13 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
+	override fun onPreapproval() {
+		isPreapprovalActive = true
+	}
+
 	override fun onPreapproved() {
 		isPreapproved = true
+		isPreapprovalActive = false
 		executor.execute {
 			dbWriteSemaphore.withPermit {
 				installPreapprovalDao.setPreapproved(id.toString())
@@ -234,6 +245,7 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun doCleanup() {
 		executor.execute(::abandonSession) // may be long if storage is under load
 		packageInstaller.clearSessionCallback()
+		isPreapprovalActive = false
 	}
 
 	private fun isPreapprovalIgnored(): Boolean {

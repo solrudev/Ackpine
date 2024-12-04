@@ -20,5 +20,6 @@ import androidx.annotation.RestrictTo
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface PreapprovalListener {
+	fun onPreapproval()
 	fun onPreapproved()
 }
