@@ -24,7 +24,7 @@ import kotlin.time.Duration
  */
 public inline fun InstallConstraints(
 	timeout: Duration,
-	configure: InstallConstraintsDsl.() -> Unit
+	configure: InstallConstraintsDsl.() -> Unit = {}
 ): InstallConstraints {
 	return InstallConstraintsDslBuilder(timeout).apply(configure).build()
 }
