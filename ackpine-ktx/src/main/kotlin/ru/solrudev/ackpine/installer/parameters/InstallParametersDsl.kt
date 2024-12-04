@@ -83,7 +83,6 @@ public interface InstallParametersDsl : ConfirmationDsl {
 
 	public var packageSource: PackageSource
 
-	public fun constraints(timeout: Duration)
 	public fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit)
 
 	public fun preapproval(
@@ -206,10 +205,6 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		set(value) {
 			builder.setPackageSource(value)
 		}
-
-	override fun constraints(timeout: Duration) {
-		constraints = InstallConstraints(timeout)
-	}
 
 	override fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit) {
 		constraints = InstallConstraints(timeout, configure)
