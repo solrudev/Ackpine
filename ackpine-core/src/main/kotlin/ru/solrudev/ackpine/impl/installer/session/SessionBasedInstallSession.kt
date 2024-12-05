@@ -169,7 +169,7 @@ internal class SessionBasedInstallSession internal constructor(
 			return
 		}
 		val sessionId = getSessionId()
-		if (isPreapprovalIgnored() || isPreapproved) {
+		if (!shouldGetPreapproval()) {
 			writeApksToSession(sessionId)
 			return
 		}
@@ -244,12 +244,14 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun doCleanup() {
 		executor.execute(::abandonSession) // may be long if storage is under load
-		packageInstaller.clearSessionCallback()
+		clearPackageInstallerSessionCallback()
 		isPreapprovalActive = false
 	}
 
-	private fun isPreapprovalIgnored(): Boolean {
-		return preapproval == InstallPreapproval.NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	private fun shouldGetPreapproval(): Boolean {
+		return !isPreapproved
+				&& preapproval != InstallPreapproval.NONE
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -362,18 +364,10 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun getSessionId(): Int {
 		val isSessionCreated = nativeSessionIdSemaphore.withPermit { nativeSessionId != -1 }
-		return when {
-			isPreapprovalIgnored() -> {
-				if (isSessionCreated) {
-					abandonSession()
-					packageInstaller.clearSessionCallback()
-				}
-				createSession()
-			}
-
-			isSessionCreated -> nativeSessionId
-			else -> createSession()
+		if (isSessionCreated) {
+			return nativeSessionId
 		}
+		return createSession()
 	}
 
 	private fun createSession(): Int {
@@ -473,6 +467,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionStream = openWrite("$index.apk", 0, length)
 		sessionStream.buffered().use { bufferedSessionStream ->
 			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
+				Thread.sleep(100)
 				val current = currentProgress.addAndGet(progress)
 				setStagingProgress(current.toFloat() / progressMax)
 			})
@@ -491,11 +486,11 @@ internal class SessionBasedInstallSession internal constructor(
 		return callback
 	}
 
-	private fun PackageInstaller.clearSessionCallback() {
+	private fun clearPackageInstallerSessionCallback() {
 		val callback = sessionCallback ?: return
 		sessionCallback = null
 		handler.post {
-			unregisterSessionCallback(callback)
+			packageInstaller.unregisterSessionCallback(callback)
 		}
 	}
 
