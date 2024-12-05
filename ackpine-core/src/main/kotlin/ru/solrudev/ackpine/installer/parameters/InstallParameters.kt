@@ -82,6 +82,16 @@ public class InstallParameters private constructor(
 	 */
 	public val installMode: InstallMode,
 
+	/**
+	 * Details for requesting the pre-commit install approval.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallPreapproval.NONE].
+	 *
+	 * @see [PackageInstaller.PreapprovalDetails]
+	 */
 	public val preapproval: InstallPreapproval,
 
 	/**
@@ -237,6 +247,16 @@ public class InstallParameters private constructor(
 		public var installMode: InstallMode = InstallMode.Full
 			private set
 
+		/**
+		 * Details for requesting the pre-commit install approval.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 *
+		 * Default value is [InstallPreapproval.NONE].
+		 *
+		 * @see [PackageInstaller.PreapprovalDetails]
+		 */
 		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
 			private set
 

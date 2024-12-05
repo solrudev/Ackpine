@@ -61,8 +61,8 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
-	 * installer type.
+	 * Applying this option is best-effort. It takes effect only on API level >= [34][Build.VERSION_CODES.S] with
+	 * [InstallerType.SESSION_BASED] installer type.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
@@ -75,6 +75,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 */
 	public var installMode: InstallMode
 
+	/**
+	 * Details for requesting the pre-commit install approval.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallPreapproval.NONE].
+	 *
+	 * @see [PackageInstaller.PreapprovalDetails]
+	 */
 	public var preapproval: InstallPreapproval
 
 	/**
@@ -185,6 +195,12 @@ public inline fun InstallParametersDsl.constraints(
 	constraints = InstallConstraints(timeout, configure)
 }
 
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param languageTag the locale of the app label being used. Represented by IETF BCP 47 language tag.
+ */
 public inline fun InstallParametersDsl.preapproval(
 	packageName: String,
 	label: String,
@@ -194,6 +210,12 @@ public inline fun InstallParametersDsl.preapproval(
 	preapproval = InstallPreapproval(packageName, label, languageTag, configure)
 }
 
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ */
 @RequiresApi(Build.VERSION_CODES.N)
 public inline fun InstallParametersDsl.preapproval(
 	packageName: String,
@@ -204,6 +226,12 @@ public inline fun InstallParametersDsl.preapproval(
 	preapproval = InstallPreapproval(packageName, label, locale, configure)
 }
 
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ */
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public inline fun InstallParametersDsl.preapproval(
 	packageName: String,

@@ -23,8 +23,15 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import java.util.Locale
 
+/**
+ * DSL allowing to configure [pre-commit install approval][InstallPreapproval].
+ */
 @SessionParametersDsl
 public interface InstallPreapprovalDsl {
+
+	/**
+	 * The icon representing the app to be installed.
+	 */
 	public var icon: Uri
 }
 

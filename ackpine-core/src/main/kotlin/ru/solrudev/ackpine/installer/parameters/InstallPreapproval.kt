@@ -16,16 +16,41 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import android.content.pm.PackageInstaller
 import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.util.Locale
 
+/**
+ * Details for requesting the pre-commit install approval.
+ *
+ * Takes effect only on API level >= [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED]
+ * installer type.
+ *
+ * @see [PackageInstaller.PreapprovalDetails]
+ */
 public class InstallPreapproval private constructor(
+
+	/**
+	 * The package name of the app to be installed.
+	 */
 	public val packageName: String,
+
+	/**
+	 * The label representing the app to be installed.
+	 */
 	public val label: String,
+
+	/**
+	 * The locale of the app label being used. Represented by IETF BCP 47 language tag.
+	 */
 	public val languageTag: String,
+
+	/**
+	 * The icon representing the app to be installed.
+	 */
 	public val icon: Uri
 ) {
 
@@ -57,6 +82,9 @@ public class InstallPreapproval private constructor(
 				")"
 	}
 
+	/**
+	 * Builder for [InstallPreapproval].
+	 */
 	public class Builder(
 		private val packageName: String,
 		private val label: String,
@@ -77,13 +105,22 @@ public class InstallPreapproval private constructor(
 			locale: Locale
 		) : this(packageName, label, locale.toLanguageTag())
 
+		/**
+		 * The icon representing the app to be installed.
+		 */
 		public var icon: Uri = Uri.EMPTY
 			private set
 
+		/**
+		 * Sets [InstallPreapproval.icon].
+		 */
 		public fun setIcon(icon: Uri): Builder = apply {
 			this.icon = icon
 		}
 
+		/**
+		 * Constructs a new instance of [InstallPreapproval].
+		 */
 		public fun build(): InstallPreapproval {
 			return InstallPreapproval(packageName, label, languageTag, icon)
 		}
@@ -91,6 +128,9 @@ public class InstallPreapproval private constructor(
 
 	public companion object {
 
+		/**
+		 * Default [InstallPreapproval], which is no preapproval.
+		 */
 		@JvmField
 		public val NONE: InstallPreapproval = InstallPreapproval(
 			packageName = "",
