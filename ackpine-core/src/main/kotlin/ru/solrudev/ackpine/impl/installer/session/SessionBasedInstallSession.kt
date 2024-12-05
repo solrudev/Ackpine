@@ -466,7 +466,6 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionStream = openWrite("$index.apk", 0, length)
 		sessionStream.buffered().use { bufferedSessionStream ->
 			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
-				Thread.sleep(100)
 				val current = currentProgress.addAndGet(progress)
 				setStagingProgress(current.toFloat() / progressMax)
 			})
