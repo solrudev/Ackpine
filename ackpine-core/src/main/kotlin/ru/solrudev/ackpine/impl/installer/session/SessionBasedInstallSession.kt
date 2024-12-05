@@ -254,15 +254,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun getPackageInstallerPreapprovalDetails(): PackageInstaller.PreapprovalDetails {
-		val icon = if (preapproval.icon != Uri.EMPTY) {
-			context.contentResolver.openInputStream(preapproval.icon)?.use { iconStream ->
-				iconStream.buffered().use { bufferedIconStream ->
-					BitmapFactory.decodeStream(bufferedIconStream)
-				}
-			}
-		} else {
-			null
-		}
+		val icon = readPreapprovalIconBitmap()
 		val builder = PackageInstaller.PreapprovalDetails.Builder()
 			.setPackageName(preapproval.packageName)
 			.setLabel(preapproval.label)
@@ -271,6 +263,20 @@ internal class SessionBasedInstallSession internal constructor(
 			builder.setIcon(icon)
 		}
 		return builder.build()
+	}
+
+	private fun readPreapprovalIconBitmap() = try {
+		if (preapproval.icon != Uri.EMPTY) {
+			context.contentResolver.openInputStream(preapproval.icon)?.use { iconStream ->
+				iconStream.buffered().use { bufferedIconStream ->
+					BitmapFactory.decodeStream(bufferedIconStream)
+				}
+			}
+		} else {
+			null
+		}
+	} catch (_: Exception) {
+		null
 	}
 
 	private fun isInstallConstraintsIgnored(): Boolean {
