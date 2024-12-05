@@ -23,44 +23,6 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import java.util.Locale
 
-/**
- * Constructs a new instance of [InstallPreapproval].
- */
-public inline fun InstallPreapproval(
-	packageName: String,
-	label: String,
-	languageTag: String,
-	configure: InstallPreapprovalDsl.() -> Unit = {}
-): InstallPreapproval {
-	return InstallPreapprovalDslBuilder(packageName, label, languageTag).apply(configure).build()
-}
-
-/**
- * Constructs a new instance of [InstallPreapproval].
- */
-@RequiresApi(Build.VERSION_CODES.N)
-public inline fun InstallPreapproval(
-	packageName: String,
-	label: String,
-	locale: ULocale,
-	configure: InstallPreapprovalDsl.() -> Unit = {}
-): InstallPreapproval {
-	return InstallPreapprovalDslBuilder(packageName, label, locale).apply(configure).build()
-}
-
-/**
- * Constructs a new instance of [InstallPreapproval].
- */
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-public inline fun InstallPreapproval(
-	packageName: String,
-	label: String,
-	locale: Locale,
-	configure: InstallPreapprovalDsl.() -> Unit = {}
-): InstallPreapproval {
-	return InstallPreapprovalDslBuilder(packageName, label, locale).apply(configure).build()
-}
-
 @SessionParametersDsl
 public interface InstallPreapprovalDsl {
 	public var icon: Uri
