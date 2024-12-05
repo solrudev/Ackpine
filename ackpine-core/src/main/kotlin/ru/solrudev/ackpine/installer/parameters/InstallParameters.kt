@@ -90,7 +90,7 @@ public class InstallParameters private constructor(
 	 *
 	 * Default value is [InstallPreapproval.NONE].
 	 *
-	 * @see [PackageInstaller.PreapprovalDetails]
+	 * @see [PackageInstaller.Session.requestUserPreapproval]
 	 */
 	public val preapproval: InstallPreapproval,
 
@@ -273,7 +273,7 @@ public class InstallParameters private constructor(
 		 *
 		 * Default value is [InstallPreapproval.NONE].
 		 *
-		 * @see [PackageInstaller.PreapprovalDetails]
+		 * @see [PackageInstaller.Session.requestUserPreapproval]
 		 */
 		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
 			private set

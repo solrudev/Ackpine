@@ -83,7 +83,7 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 *
 	 * Default value is [InstallPreapproval.NONE].
 	 *
-	 * @see [PackageInstaller.PreapprovalDetails]
+	 * @see [PackageInstaller.Session.requestUserPreapproval]
 	 */
 	public var preapproval: InstallPreapproval
 

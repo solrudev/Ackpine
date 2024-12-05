@@ -29,7 +29,7 @@ import java.util.Locale
  * Takes effect only on API level >= [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED]
  * installer type.
  *
- * @see [PackageInstaller.PreapprovalDetails]
+ * @see [PackageInstaller.Session.requestUserPreapproval]
  */
 public class InstallPreapproval private constructor(
 
