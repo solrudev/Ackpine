@@ -82,51 +82,6 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	public var requestUpdateOwnership: Boolean
 
 	public var packageSource: PackageSource
-
-	public fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit)
-
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		languageTag: String
-	)
-
-	@RequiresApi(Build.VERSION_CODES.N)
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		locale: ULocale
-	)
-
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		locale: Locale
-	)
-
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		languageTag: String,
-		configure: InstallPreapprovalDsl.() -> Unit
-	)
-
-	@RequiresApi(Build.VERSION_CODES.N)
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		locale: ULocale,
-		configure: InstallPreapprovalDsl.() -> Unit
-	)
-
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-	public fun preapproval(
-		packageName: String,
-		label: String,
-		locale: Locale,
-		configure: InstallPreapprovalDsl.() -> Unit
-	)
 }
 
 @PublishedApi
@@ -206,52 +161,41 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun constraints(timeout: Duration, configure: InstallConstraintsDsl.() -> Unit) {
-		constraints = InstallConstraints(timeout, configure)
-	}
-
-	override fun preapproval(packageName: String, label: String, languageTag: String) {
-		preapproval = InstallPreapproval(packageName, label, languageTag)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.N)
-	override fun preapproval(packageName: String, label: String, locale: ULocale) {
-		preapproval = InstallPreapproval(packageName, label, locale)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-	override fun preapproval(packageName: String, label: String, locale: Locale) {
-		preapproval = InstallPreapproval(packageName, label, locale)
-	}
-
-	override fun preapproval(
-		packageName: String,
-		label: String,
-		languageTag: String,
-		configure: InstallPreapprovalDsl.() -> Unit
-	) {
-		preapproval = InstallPreapproval(packageName, label, languageTag, configure)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.N)
-	override fun preapproval(
-		packageName: String,
-		label: String,
-		locale: ULocale,
-		configure: InstallPreapprovalDsl.() -> Unit
-	) {
-		preapproval = InstallPreapproval(packageName, label, locale, configure)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-	override fun preapproval(
-		packageName: String,
-		label: String,
-		locale: Locale,
-		configure: InstallPreapprovalDsl.() -> Unit
-	) {
-		preapproval = InstallPreapproval(packageName, label, locale, configure)
-	}
-
 	fun build() = builder.build()
+}
+
+public inline fun InstallParametersDsl.constraints(
+	timeout: Duration,
+	configure: InstallConstraintsDsl.() -> Unit
+) {
+	constraints = InstallConstraints(timeout, configure)
+}
+
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	languageTag: String,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, languageTag, configure)
+}
+
+@RequiresApi(Build.VERSION_CODES.N)
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: ULocale,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, configure)
+}
+
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: Locale,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, configure)
 }
