@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ConstPropertyName")
+
 package ru.solrudev.ackpine.installer.parameters
 
 import java.io.Serializable

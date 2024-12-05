@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ConstPropertyName")
+
 package ru.solrudev.ackpine.helpers.concurrent
 
 import androidx.annotation.RestrictTo
