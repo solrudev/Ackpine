@@ -25,6 +25,8 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.getByType
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.SampleConstants
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
@@ -33,6 +35,8 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(AppPlugin::class)
+		val applicationExtension = extensions.getByType<ApplicationExtension>()
+		extensions.create<AckpineSampleBaseExtension>("ackpine", applicationExtension)
 		configureJava()
 		configureAndroid()
 	}
