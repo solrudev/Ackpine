@@ -77,6 +77,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 
 	public var preapproval: InstallPreapproval
 
+	/**
+	 * Installation constraints.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallConstraints.NONE].
+	 *
+	 * @see [PackageInstaller.InstallConstraints]
+	 */
 	public var constraints: InstallConstraints
 
 	public var requestUpdateOwnership: Boolean
@@ -166,6 +176,7 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 /**
  * Configures [installation constraints DSL][InstallConstraintsDsl].
+ * @param timeout the maximum time to wait, in milliseconds until the constraints are satisfied.
  */
 public inline fun InstallParametersDsl.constraints(
 	timeout: Duration,
