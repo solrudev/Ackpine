@@ -22,17 +22,42 @@ import ru.solrudev.ackpine.installer.parameters.PackageSource.Other
 import ru.solrudev.ackpine.installer.parameters.PackageSource.Store
 import ru.solrudev.ackpine.installer.parameters.PackageSource.Unspecified
 
-@get:JvmSynthetic
-internal val packageSources = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)
-
+/**
+ * Indicates the package source of the app being installed. This is informational and may be used as a signal by the
+ * system.
+ *
+ * Default value is [Unspecified].
+ */
 public sealed class PackageSource(
 	@get:JvmSynthetic
 	internal val ordinal: Int
 ) {
+
+	/**
+	 * The installer did not specify the package source. Default value.
+	 */
 	public data object Unspecified : PackageSource(0)
+
+	/**
+	 * The package being installed is from a store. An app store that installs an app for the user would use this.
+	 */
 	public data object Store : PackageSource(1)
+
+	/**
+	 * The package being installed comes from a local file on the device. A file manager that is facilitating the
+	 * installation of an APK file would use this.
+	 */
 	public data object LocalFile : PackageSource(2)
+
+	/**
+	 * The package being installed comes from a file that was downloaded to the device by the user. For use in place
+	 * of [LocalFile] when the installer knows the package was downloaded.
+	 */
 	public data object DownloadedFile : PackageSource(3)
+
+	/**
+	 * The package being installed is from a source not reflected by any other package source constant.
+	 */
 	public data object Other : PackageSource(4)
 
 	@Suppress("unused")
@@ -41,19 +66,39 @@ public sealed class PackageSource(
 	@Suppress("RedundantVisibilityModifier")
 	private companion object {
 
+		/**
+		 * The installer did not specify the package source. Default value.
+		 */
 		@JvmField
 		public val UNSPECIFIED: PackageSource = Unspecified
 
+		/**
+		 * The package being installed is from a store. An app store that installs an app for the user would use this.
+		 */
 		@JvmField
 		public val STORE: PackageSource = Store
 
+		/**
+		 * The package being installed comes from a local file on the device. A file manager that is facilitating the
+		 * installation of an APK file would use this.
+		 */
 		@JvmField
 		public val LOCAL_FILE: PackageSource = LocalFile
 
+		/**
+		 * The package being installed comes from a file that was downloaded to the device by the user. For use in place
+		 * of [LOCAL_FILE] when the installer knows the package was downloaded.
+		 */
 		@JvmField
 		public val DOWNLOADED_FILE: PackageSource = DownloadedFile
 
+		/**
+		 * The package being installed is from a source not reflected by any other package source constant.
+		 */
 		@JvmField
 		public val OTHER: PackageSource = Other
 	}
 }
+
+@get:JvmSynthetic
+internal val packageSources = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)

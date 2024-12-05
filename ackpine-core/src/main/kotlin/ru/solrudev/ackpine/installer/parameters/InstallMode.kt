@@ -58,6 +58,9 @@ public sealed interface InstallMode {
 		val dontKillApp: Boolean = false
 	) : InstallMode {
 
+		/**
+		 * @deprecated
+		 */
 		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
 		public fun copy(packageName: String = this.packageName): InheritExisting {
 			return InheritExisting(packageName, dontKillApp)

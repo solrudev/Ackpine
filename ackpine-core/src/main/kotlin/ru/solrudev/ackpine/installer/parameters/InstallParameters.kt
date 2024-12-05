@@ -106,8 +106,26 @@ public class InstallParameters private constructor(
 	 */
 	public val constraints: InstallConstraints,
 
+	/**
+	 * Optionally indicate whether the package being installed needs the update ownership
+	 * enforcement. Once the update ownership enforcement is enabled, the other installers
+	 * will need the user action to update the package even if the installers have been
+	 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
+	 *
+	 * The update ownership enforcement can only be enabled on initial installation. Set
+	 * this to `true` on package update is a no-op.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 */
 	public val requestUpdateOwnership: Boolean,
 
+	/**
+	 * Indicates the package source of the app being installed. This is informational and may be used as a signal
+	 * by the system.
+	 *
+	 * Default value is [PackageSource.Unspecified].
+	 */
 	public val packageSource: PackageSource
 ) : ConfirmationAware {
 
@@ -273,9 +291,27 @@ public class InstallParameters private constructor(
 		public var constraints: InstallConstraints = InstallConstraints.NONE
 			private set
 
+		/**
+		 * Optionally indicate whether the package being installed needs the update ownership
+		 * enforcement. Once the update ownership enforcement is enabled, the other installers
+		 * will need the user action to update the package even if the installers have been
+		 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
+		 *
+		 * The update ownership enforcement can only be enabled on initial installation. Set
+		 * this to `true` on package update is a no-op.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 */
 		public var requestUpdateOwnership: Boolean = false
 			private set
 
+		/**
+		 * Indicates the package source of the app being installed. This is informational and may be used as a signal
+		 * by the system.
+		 *
+		 * Default value is [PackageSource.Unspecified].
+		 */
 		public var packageSource: PackageSource = PackageSource.Unspecified
 			private set
 
