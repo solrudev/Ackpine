@@ -180,7 +180,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
-		if (isInstallConstraintsIgnored() || shouldCommitNormallyAfterTimeout()) {
+		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
 			commitPackageInstallerSession()
 		} else try {
 			commitPackageInstallerSessionWithConstraints()
@@ -219,7 +219,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
-		if (isInstallConstraintsIgnored() || constraints.timeoutStrategy == TimeoutStrategy.Fail) {
+		if (!shouldApplyInstallConstraints() || constraints.timeoutStrategy == TimeoutStrategy.Fail) {
 			return true
 		}
 		if (state !is Failed || state.failure !is Timeout) {
@@ -280,8 +280,8 @@ internal class SessionBasedInstallSession internal constructor(
 		null
 	}
 
-	private fun isInstallConstraintsIgnored(): Boolean {
-		return constraints == InstallConstraints.NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	private fun shouldApplyInstallConstraints(): Boolean {
+		return constraints != InstallConstraints.NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
