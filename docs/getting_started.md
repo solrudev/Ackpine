@@ -178,6 +178,7 @@ Error causes are delivered as `Failure` objects through state listener or as a r
         is InstallFailure.Invalid -> "Invalid"
         is InstallFailure.Storage -> "Storage path: ${failure.storagePath}"
         is InstallFailure.Timeout -> "Timeout"
+        else -> "Unknown failure"
     }
     ```
 
@@ -203,6 +204,8 @@ Error causes are delivered as `Failure` objects through state listener or as a r
         error = "Storage path: " + f.getStoragePath();
     } else if (failure instanceof InstallFailure.Timeout) {
         error = "Timeout";
+    } else {
+        error = "Unknown failure";
     }
     ```
 

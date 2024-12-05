@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("Unused")
+@file:Suppress("Unused", "ConstPropertyName")
 
 package ru.solrudev.ackpine.uninstaller
 
@@ -30,7 +30,7 @@ public sealed interface UninstallFailure : Failure, Serializable {
 	 * The operation failed in a generic way.
 	 */
 	public data object Generic : UninstallFailure {
-		private const val serialVersionUID: Long = -6110974914043192127L
+		private const val serialVersionUID = -6110974914043192127L
 	}
 
 	/**
@@ -39,7 +39,7 @@ public sealed interface UninstallFailure : Failure, Serializable {
 	 */
 	public data class Aborted(public val message: String) : UninstallFailure {
 		private companion object {
-			private const val serialVersionUID: Long = -2386460202828522962L
+			private const val serialVersionUID = -2386460202828522962L
 		}
 	}
 
@@ -48,7 +48,13 @@ public sealed interface UninstallFailure : Failure, Serializable {
 	 */
 	public data class Exceptional(public override val exception: Exception) : UninstallFailure, Failure.Exceptional {
 		private companion object {
-			private const val serialVersionUID: Long = -3918656046001035393L
+			private const val serialVersionUID = -3918656046001035393L
 		}
+	}
+
+	@Suppress("unused")
+	private data object NonExhaustiveWhenGuard : UninstallFailure {
+		private const val serialVersionUID = 6803470565073569530L
+		private fun readResolve(): Any = NonExhaustiveWhenGuard
 	}
 }
