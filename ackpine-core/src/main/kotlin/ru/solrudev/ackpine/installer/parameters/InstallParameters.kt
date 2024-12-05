@@ -155,9 +155,6 @@ public class InstallParameters private constructor(
 			_apks = RealMutableApkList(apks)
 		}
 
-		/**
-		 * Mutable list of APKs [URIs][Uri] to install in one session.
-		 */
 		private val _apks: MutableApkList
 
 		/**
