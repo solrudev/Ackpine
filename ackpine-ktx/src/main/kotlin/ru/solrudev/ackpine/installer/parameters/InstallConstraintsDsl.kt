@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import kotlin.time.Duration
 
@@ -63,6 +64,8 @@ public interface InstallConstraintsDsl {
 
 	/**
 	 * Strategy for handling timeout when the constraints were not satisfied.
+	 *
+	 * Default strategy is [TimeoutStrategy.Fail].
 	 */
 	public var timeoutStrategy: InstallConstraints.TimeoutStrategy
 }

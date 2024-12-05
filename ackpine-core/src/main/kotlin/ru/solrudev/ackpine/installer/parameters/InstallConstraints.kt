@@ -20,6 +20,7 @@ package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
 import android.os.Build
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import java.io.Serializable
 import kotlin.time.Duration
 
@@ -81,6 +82,8 @@ public class InstallConstraints private constructor(
 
 	/**
 	 * Strategy for handling timeout when the constraints were not satisfied.
+	 *
+	 * Default strategy is [TimeoutStrategy.Fail].
 	 */
 	public val timeoutStrategy: TimeoutStrategy
 ) {
@@ -226,6 +229,8 @@ public class InstallConstraints private constructor(
 
 		/**
 		 * Strategy for handling timeout when the constraints were not satisfied.
+		 *
+		 * Default strategy is [TimeoutStrategy.Fail].
 		 */
 		public var timeoutStrategy: TimeoutStrategy = TimeoutStrategy.Fail
 			private set
