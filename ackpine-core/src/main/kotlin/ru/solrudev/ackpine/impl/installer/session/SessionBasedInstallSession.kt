@@ -61,7 +61,6 @@ import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
-import ru.solrudev.ackpine.installer.parameters.InstallConstraints.Companion.NONE
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
@@ -282,7 +281,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun isInstallConstraintsIgnored(): Boolean {
-		return constraints == NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+		return constraints == InstallConstraints.NONE || Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
