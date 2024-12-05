@@ -20,22 +20,50 @@ import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import kotlin.time.Duration
 
 /**
- * Constructs a new instance of [InstallConstraints].
+ * DSL allowing to configure [installation constraints][InstallConstraints].
  */
-public inline fun InstallConstraints(
-	timeout: Duration,
-	configure: InstallConstraintsDsl.() -> Unit = {}
-): InstallConstraints {
-	return InstallConstraintsDslBuilder(timeout).apply(configure).build()
-}
-
 @SessionParametersDsl
 public interface InstallConstraintsDsl {
+
+	/**
+	 * This constraint requires the app in question is not in the foreground.
+	 */
 	public var isAppNotForegroundRequired: Boolean
+
+	/**
+	 * This constraint requires the app in question is not interacting with the user.
+	 * User interaction includes:
+	 * - playing or recording audio/video
+	 * - sending or receiving network data
+	 * - being visible to the user
+	 */
 	public var isAppNotInteractingRequired: Boolean
+
+	/**
+	 * This constraint requires the app in question is not top-visible to the user.
+	 * A top-visible app is showing UI at the top of the screen that the user is
+	 * interacting with.
+	 *
+	 * Note this constraint is a subset of [isAppNotForegroundRequired]
+	 * because a top-visible app is also a foreground app. This is also a subset
+	 * of [isAppNotInteractingRequired] because a top-visible app is interacting
+	 * with the user.
+	 */
 	public var isAppNotTopVisibleRequired: Boolean
+
+	/**
+	 * This constraint requires the device is idle.
+	 */
 	public var isDeviceIdleRequired: Boolean
+
+	/**
+	 * This constraint requires there is no ongoing call in the device.
+	 */
 	public var isNotInCallRequired: Boolean
+
+	/**
+	 * Strategy for handling timeout when the constraints were not satisfied.
+	 */
 	public var timeoutStrategy: InstallConstraints.TimeoutStrategy
 }
 

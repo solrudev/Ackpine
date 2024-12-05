@@ -18,16 +18,70 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import android.content.pm.PackageInstaller
+import android.os.Build
 import java.io.Serializable
 import kotlin.time.Duration
 
+/**
+ * A class to encapsulate constraints for installation.
+ *
+ * Specifies the conditions to check against for the packages in question. This can be used
+ * by app stores to deliver auto updates without disrupting the user experience (referred as
+ * gentle update) - for example, an app store might hold off updates when it find out the
+ * app to update is interacting with the user.
+ *
+ * Takes effect only on API level >= [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED]
+ * installer type.
+ *
+ * @see PackageInstaller.InstallConstraints
+ */
 public class InstallConstraints private constructor(
+
+	/**
+	 * This constraint requires the app in question is not in the foreground.
+	 */
 	public val isAppNotForegroundRequired: Boolean,
+
+	/**
+	 * This constraint requires the app in question is not interacting with the user.
+	 * User interaction includes:
+	 * - playing or recording audio/video
+	 * - sending or receiving network data
+	 * - being visible to the user
+	 */
 	public val isAppNotInteractingRequired: Boolean,
+
+	/**
+	 * This constraint requires the app in question is not top-visible to the user.
+	 * A top-visible app is showing UI at the top of the screen that the user is
+	 * interacting with.
+	 *
+	 * Note this constraint is a subset of [isAppNotForegroundRequired]
+	 * because a top-visible app is also a foreground app. This is also a subset
+	 * of [isAppNotInteractingRequired] because a top-visible app is interacting
+	 * with the user.
+	 */
 	public val isAppNotTopVisibleRequired: Boolean,
+
+	/**
+	 * This constraint requires the device is idle.
+	 */
 	public val isDeviceIdleRequired: Boolean,
+
+	/**
+	 * This constraint requires there is no ongoing call in the device.
+	 */
 	public val isNotInCallRequired: Boolean,
+
+	/**
+	 * The maximum time to wait, in milliseconds until the constraints are satisfied.
+	 */
 	public val timeoutMillis: Long,
+
+	/**
+	 * Strategy for handling timeout when the constraints were not satisfied.
+	 */
 	public val timeoutStrategy: TimeoutStrategy
 ) {
 
@@ -68,18 +122,33 @@ public class InstallConstraints private constructor(
 				")"
 	}
 
+	/**
+	 * Strategy for handling timeout when the constraints for installation were not satisfied.
+	 */
 	public sealed interface TimeoutStrategy : Serializable {
 
+		/**
+		 * Tells installer to commit session immediately after timeout if constraints are not met.
+		 */
 		public data object CommitEagerly : TimeoutStrategy {
 			private const val serialVersionUID = 6543830064438769365L
 			private fun readResolve(): Any = CommitEagerly
 		}
 
+		/**
+		 * Tells installer to report failure on timeout if constraints are not met.
+		 */
 		public data object Fail : TimeoutStrategy {
 			private const val serialVersionUID = 7548970614475805450L
 			private fun readResolve(): Any = Fail
 		}
 
+		/**
+		 * If constraints are not met after set timeout, tells installer to wait again for when constraints are
+		 * satisfied for [retries] times with the same timeout.
+		 *
+		 * If constraints are met earlier, session will be committed immediately.
+		 */
 		public data class Retry(public val retries: Int) : TimeoutStrategy {
 			private companion object {
 				private const val serialVersionUID = -8122854334695670099L
@@ -88,65 +157,124 @@ public class InstallConstraints private constructor(
 
 		@Suppress("unused")
 		private data object NonExhaustiveWhenGuard : TimeoutStrategy {
-			private const val serialVersionUID: Long = -8649947530739529521L
+			private const val serialVersionUID = -8649947530739529521L
 			private fun readResolve(): Any = NonExhaustiveWhenGuard
 		}
 
 		@Suppress("RedundantVisibilityModifier")
 		private companion object {
 
+			/**
+			 * Tells installer to commit session immediately after timeout if constraints are not met.
+			 */
 			@JvmField
 			public val COMMIT_EAGERLY: TimeoutStrategy = CommitEagerly
 
+			/**
+			 * Tells installer to report failure on timeout if constraints are not met.
+			 */
 			@JvmField
 			public val FAIL: TimeoutStrategy = Fail
 		}
 	}
 
+	/**
+	 * Builder for [InstallConstraints].
+	 */
 	public class Builder(private val timeoutMillis: Long) {
 
+		/**
+		 * This constraint requires the app in question is not in the foreground.
+		 */
 		public var isAppNotForegroundRequired: Boolean = false
 			private set
 
+		/**
+		 * This constraint requires the app in question is not interacting with the user.
+		 * User interaction includes:
+		 * - playing or recording audio/video
+		 * - sending or receiving network data
+		 * - being visible to the user
+		 */
 		public var isAppNotInteractingRequired: Boolean = false
 			private set
 
+		/**
+		 * This constraint requires the app in question is not top-visible to the user.
+		 * A top-visible app is showing UI at the top of the screen that the user is
+		 * interacting with.
+		 *
+		 * Note this constraint is a subset of [isAppNotForegroundRequired]
+		 * because a top-visible app is also a foreground app. This is also a subset
+		 * of [isAppNotInteractingRequired] because a top-visible app is interacting
+		 * with the user.
+		 */
 		public var isAppNotTopVisibleRequired: Boolean = false
 			private set
 
+		/**
+		 * This constraint requires the device is idle.
+		 */
 		public var isDeviceIdleRequired: Boolean = false
 			private set
 
+		/**
+		 * This constraint requires there is no ongoing call in the device.
+		 */
 		public var isNotInCallRequired: Boolean = false
 			private set
 
+		/**
+		 * Strategy for handling timeout when the constraints were not satisfied.
+		 */
 		public var timeoutStrategy: TimeoutStrategy = TimeoutStrategy.Fail
 			private set
 
+		/**
+		 * Sets [InstallConstraints.isAppNotForegroundRequired].
+		 */
 		public fun setAppNotForegroundRequired(value: Boolean): Builder = apply {
 			isAppNotForegroundRequired = value
 		}
 
+		/**
+		 * Sets [InstallConstraints.isAppNotInteractingRequired].
+		 */
 		public fun setAppNotInteractingRequired(value: Boolean): Builder = apply {
 			isAppNotInteractingRequired = value
 		}
 
+		/**
+		 * Sets [InstallConstraints.isAppNotTopVisibleRequired].
+		 */
 		public fun setAppNotTopVisibleRequired(value: Boolean): Builder = apply {
 			isAppNotTopVisibleRequired = value
 		}
 
+		/**
+		 * Sets [InstallConstraints.isDeviceIdleRequired].
+		 */
 		public fun setDeviceIdleRequired(value: Boolean): Builder = apply {
 			isDeviceIdleRequired = value
 		}
 
+		/**
+		 * Sets [InstallConstraints.isNotInCallRequired].
+		 */
 		public fun setNotInCallRequired(value: Boolean): Builder = apply {
 			isNotInCallRequired = value
 		}
 
+		/**
+		 * Sets [InstallConstraints.timeoutStrategy].
+		 */
 		public fun setTimeoutStrategy(strategy: TimeoutStrategy): Builder = apply {
 			timeoutStrategy = strategy
 		}
 
+		/**
+		 * Constructs a new instance of [InstallConstraints].
+		 */
 		public fun build(): InstallConstraints = InstallConstraints(
 			isAppNotForegroundRequired,
 			isAppNotInteractingRequired,
@@ -160,9 +288,15 @@ public class InstallConstraints private constructor(
 
 	public companion object {
 
+		/**
+		 * Default [InstallConstraints], which is no constraints.
+		 */
 		@JvmField
 		public val NONE: InstallConstraints = Builder(timeoutMillis = 0L).build()
 
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
 		@JvmStatic
 		public fun gentleUpdate(timeoutMillis: Long, timeoutStrategy: TimeoutStrategy): InstallConstraints {
 			return Builder(timeoutMillis)
@@ -171,6 +305,9 @@ public class InstallConstraints private constructor(
 				.build()
 		}
 
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
 		@JvmStatic
 		public fun gentleUpdate(timeoutMillis: Long): InstallConstraints {
 			return Builder(timeoutMillis)
@@ -178,6 +315,9 @@ public class InstallConstraints private constructor(
 				.build()
 		}
 
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
 		@JvmSynthetic
 		public fun gentleUpdate(timeout: Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
 			return Builder(timeout.inWholeMilliseconds)
@@ -186,6 +326,9 @@ public class InstallConstraints private constructor(
 				.build()
 		}
 
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
 		@JvmSynthetic
 		public fun gentleUpdate(timeout: Duration): InstallConstraints {
 			return Builder(timeout.inWholeMilliseconds)

@@ -68,8 +68,8 @@ public class InstallParameters private constructor(
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
-	 * installer type.
+	 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
+	 * [InstallerType.SESSION_BASED] installer type.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
@@ -84,6 +84,16 @@ public class InstallParameters private constructor(
 
 	public val preapproval: InstallPreapproval,
 
+	/**
+	 * Installation constraints.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallConstraints.NONE].
+	 *
+	 * @see [PackageInstaller.InstallConstraints]
+	 */
 	public val constraints: InstallConstraints,
 
 	public val requestUpdateOwnership: Boolean,
@@ -211,7 +221,7 @@ public class InstallParameters private constructor(
 		/**
 		 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 		 *
-		 * Applying this option is best-effort. It takes effect only on API level >= 31 with
+		 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
 		 * [InstallerType.SESSION_BASED] installer type.
 		 *
 		 * @see [PackageInstaller.SessionParams.setRequireUserAction]
@@ -230,6 +240,16 @@ public class InstallParameters private constructor(
 		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
 			private set
 
+		/**
+		 * Installation constraints.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 *
+		 * Default value is [InstallConstraints.NONE].
+		 *
+		 * @see [PackageInstaller.InstallConstraints]
+		 */
 		public var constraints: InstallConstraints = InstallConstraints.NONE
 			private set
 

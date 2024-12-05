@@ -164,6 +164,9 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 	fun build() = builder.build()
 }
 
+/**
+ * Configures [installation constraints DSL][InstallConstraintsDsl].
+ */
 public inline fun InstallParametersDsl.constraints(
 	timeout: Duration,
 	configure: InstallConstraintsDsl.() -> Unit
