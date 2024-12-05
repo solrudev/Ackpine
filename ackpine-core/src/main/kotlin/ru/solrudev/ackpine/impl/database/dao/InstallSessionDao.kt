@@ -101,10 +101,10 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
 	abstract fun insertPackageName(id: String, packageName: String)
 
-	@Insert
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertInstallPreapproval(installPreapproval: InstallPreapprovalEntity)
 
-	@Insert
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertInstallConstraints(installConstraints: InstallConstraintsEntity)
 
 	@Query(
