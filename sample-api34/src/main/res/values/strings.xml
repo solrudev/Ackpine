@@ -20,6 +20,7 @@
 	<string name="default_percentage" translatable="false">0%</string>
 	<string name="percentage" translatable="false">%d%%</string>
 	<string name="install">Install</string>
+	<string name="button_install">Install</string>
 	<string name="cancel">Cancel</string>
 	<string name="error">Error</string>
 	<string name="error_with_reason">Error: %s</string>

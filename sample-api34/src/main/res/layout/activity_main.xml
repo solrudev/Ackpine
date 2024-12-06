@@ -52,7 +52,7 @@
 			android:id="@+id/button_main_install"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:text="@string/install" />
+			android:text="@string/button_install" />
 
 	</LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
