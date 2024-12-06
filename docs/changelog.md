@@ -52,6 +52,7 @@ Version 0.9.0 (2024-12-07)
 
 - Source-incompatible: `Session.await()` now returns `Session.State.Completed`. Overload returning `SessionResult` is left for binary compatibility, but will be removed in the next minor version.
 - Source-incompatible: `when` matches on `InstallFailure` and `UninstallFailure` type are no longer exhaustive.
+- Deprecated: `SessionResult` is deprecated and will be removed in the next minor version.
 - Added `InstallPreapproval` class and related APIs to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
 - Added `InstallConstraints` class and related APIs to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
 - Added `dontKillApp` boolean property to `InstallMode.InheritExisting`.
