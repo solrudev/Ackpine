@@ -17,6 +17,8 @@
 package ru.solrudev.ackpine.gradle.app
 
 import com.android.build.api.dsl.ApplicationExtension
+import ru.solrudev.ackpine.gradle.AckpineCommonExtension
+import ru.solrudev.ackpine.gradle.SampleConstants
 import javax.inject.Inject
 
 /**
@@ -24,10 +26,4 @@ import javax.inject.Inject
  */
 public abstract class AckpineSampleBaseExtension @Inject constructor(
 	applicationExtension: ApplicationExtension
-) {
-
-	/**
-	 * Minimum SDK version.
-	 */
-	public var minSdk: Int? by applicationExtension.defaultConfig::minSdk
-}
+) : AckpineCommonExtension(applicationExtension, SampleConstants.PACKAGE_NAME)
