@@ -25,5 +25,13 @@ import javax.inject.Inject
  * Extension for Ackpine `sample` plugin.
  */
 public abstract class AckpineSampleBaseExtension @Inject constructor(
-	applicationExtension: ApplicationExtension
-) : AckpineCommonExtension(applicationExtension, SampleConstants.PACKAGE_NAME)
+	private val applicationExtension: ApplicationExtension
+) : AckpineCommonExtension(applicationExtension, SampleConstants.PACKAGE_NAME) {
+
+	override var id: String
+		get() = super.id
+		set(value) {
+			super.id = value
+			applicationExtension.defaultConfig.applicationId = applicationExtension.namespace
+		}
+}
