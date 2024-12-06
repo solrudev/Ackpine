@@ -132,20 +132,13 @@ class MainViewModel(
 		}
 	}
 
-	private fun handleSessionState(state: Session.State<InstallFailure>) {
-		val error = if (state is Session.State.Failed) {
-			error(state.failure.message)
-		} else {
-			ResolvableString.empty()
-		}
-		_uiState.update {
-			it.copy(
-				error = error,
-				isInstallationVisible = state is Session.State.Failed || !state.isTerminal,
-				isCancellable = state != Session.State.Committed,
-				buttonText = buttonText(state)
-			)
-		}
+	private fun handleSessionState(state: Session.State<InstallFailure>) = _uiState.update {
+		it.copy(
+			error = error(state),
+			isInstallationVisible = state is Session.State.Failed || !state.isTerminal,
+			isCancellable = state != Session.State.Committed,
+			buttonText = buttonText(state)
+		)
 	}
 
 	private fun updateProgress(progress: Progress) = _uiState.update {
@@ -170,6 +163,15 @@ class MainViewModel(
 		ResolvableString.transientResource(R.string.install)
 	} else {
 		ResolvableString.transientResource(R.string.cancel)
+	}
+
+	private fun error(state: Session.State<InstallFailure>): ResolvableString {
+		val error = if (state is Session.State.Failed) {
+			error(state.failure.message)
+		} else {
+			ResolvableString.empty()
+		}
+		return error
 	}
 
 	private fun error(message: String?) = if (message != null) {
