@@ -41,6 +41,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.edit
+import androidx.core.os.bundleOf
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -316,9 +317,12 @@ internal class SessionBasedInstallSession internal constructor(
 			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE, notificationData.title)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE, notificationData.contentText)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON, notificationData.icon)
+			val notificationBundle = bundleOf(
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE to notificationData.title,
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE to notificationData.contentText,
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON to notificationData.icon,
+			)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_BUNDLE, notificationBundle)
 			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 		}
 		val receiverPendingIntent = PendingIntent.getBroadcast(

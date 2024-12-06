@@ -27,6 +27,7 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
+import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
@@ -186,14 +187,15 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	}
 
 	private fun getNotificationData(intent: Intent): NotificationData {
+		val bundle = intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)!!
 		val notificationTitle = requireNotNull(
-			intent.getSerializableExtraCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
+			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
 		) { "$TAG: notificationTitle was null." }
 		val notificationMessage = requireNotNull(
-			intent.getSerializableExtraCompat<ResolvableString>(EXTRA_NOTIFICATION_MESSAGE)
+			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_MESSAGE)
 		) { "$TAG: notificationMessage was null." }
 		val notificationIcon = requireNotNull(
-			intent.getSerializableExtraCompat<DrawableId>(EXTRA_NOTIFICATION_ICON)
+			bundle.getSerializableCompat<DrawableId>(EXTRA_NOTIFICATION_ICON)
 		) { "$TAG: notificationIcon was null." }
 		return NotificationData.Builder()
 			.setTitle(notificationTitle)
@@ -220,6 +222,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
+
+		@get:JvmSynthetic
+		internal const val EXTRA_NOTIFICATION_BUNDLE = "ru.solrudev.ackpine.extra.NOTIFICATION_BUNDLE"
 
 		@get:JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_ID = "ru.solrudev.ackpine.extra.NOTIFICATION_ID"
