@@ -1,31 +1,62 @@
 Change Log
 ==========
 
-Version 0.9.0 (2024-12-??)
+Version 0.9.0 (2024-12-07)
 --------------------------
 
 ### Dependencies
 
-TODO
+- Updated Dokka to 2.0.0-Beta.
+- Updated Gradle wrapper to 8.11.1.
 
 ### Bug fixes and improvements
 
-- Introduce `InstallPreapproval` API. TODO: detailed changelog
-- Introduce `InstallConstraints` API. TODO: detailed changelog
-- Add `requestUpdateOwnership` option for install sessions. TODO: detailed changelog
-- Add `packageSource` option for install sessions. TODO: detailed changelog
-- Add `dontKillApp` option for install sessions with `InheritExisting` install mode. TODO: detailed changelog
-- Source-incompatible: deprecate `SessionResult` and return `Session.State.Completed` from `Session.await()`. TODO: detailed changelog
-- Source-incompatible: `when` matches on `InstallFailure` and `UninstallFailure` type are no longer exhaustive. TODO: detailed changelog
+- Introduce `InstallPreapproval` API. See documentation on usage.
+- Introduce `InstallConstraints` API. See documentation on usage.
+- Add `requestUpdateOwnership` option for install sessions.
+- Add `packageSource` option for install sessions.
+- Add `dontKillApp` option for install sessions with `InheritExisting` install mode.
+
+- Source-incompatible: deprecate `SessionResult` and return `Session.State.Completed` from `Session.await()`.
+
+    `SessionResult` was an early design leftover which was mistakenly overlooked. Now it's finally been dealt with.
+
+    To migrate, change `SessionResult.Success` to `Session.State.Succeeded`, and `SessionResult.Error` to `Session.State.Failed`. `cause` property of `SessionResult.Error` is replaced with `failure` property of `Session.State.Failed`.
+
+    ```kotlin
+    // Old
+    when (val result = session.await()) {
+        is SessionResult.Success -> println("Success")
+        is SessionResult.Error -> println(result.cause.message)
+    }
+
+    // New
+    when (val result = session.await()) {
+        Session.State.Succeeded -> println("Success")
+        is Session.State.Failed -> println(result.failure.message)
+    }
+    ```
+
+- Source-incompatible: `when` matches on `InstallFailure` and `UninstallFailure` type are no longer exhaustive.
+
+    This change was made to guard against possible additions of failure types in future Android versions, like `Timeout` in Android 14.
+
 - Fix session not launching after process restart if it was in the midst of preparations.
-- Don't show notification for `SESSION_BASED` install sessions when `DEFERRED` confirmation is set and user action is not required.
+- Show notification for `SESSION_BASED` install sessions when `DEFERRED` confirmation is set only if user action is actually required.
 - Fix possible races when `ListenableFutures` returned from `getSessionsAsync()` and `getActiveSessionsAsync()` might not get completed.
 - Lower API level required for `READ_EXTERNAL_STORAGE` permission in sample apps.
+- Add `sample-api34` sample project.
 - Add "Building" section to documentation.
 
 ### Public API changes
 
-TODO
+- Source-incompatible: `Session.await()` now returns `Session.State.Completed`. Overload returning `SessionResult` is left for binary compatibility, but will be removed in the next minor version.
+- Source-incompatible: `when` matches on `InstallFailure` and `UninstallFailure` type are no longer exhaustive.
+- Added `InstallPreapproval` class and related APIs to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
+- Added `InstallConstraints` class and related APIs to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
+- Added `dontKillApp` boolean property to `InstallMode.InheritExisting`.
+- Added `requestUpdateOwnership` property to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
+- Added `PackageSource` class and related APIs to `InstallParameters`, `InstallParameters.Builder` and `InstallParametersDsl`.
 
 Version 0.8.3 (2024-11-07)
 --------------------------
