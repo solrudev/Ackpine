@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,15 @@
  * limitations under the License.
  */
 
-plugins {
-	id("ru.solrudev.ackpine.project")
-}
+package ru.solrudev.ackpine.sample.updater
 
-dependencies {
-	// task :buildAckpine
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
+import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.session.Progress
 
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
-}
+data class InstallUiState(
+	val isInstallationVisible: Boolean = false,
+	val progress: Progress = Progress(),
+	val error: ResolvableString = ResolvableString.empty(),
+	val isCancellable: Boolean = true,
+	val buttonText: ResolvableString = ResolvableString.transientResource(R.string.install)
+)
