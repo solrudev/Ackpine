@@ -131,7 +131,7 @@ public class InstallConstraints private constructor(
 	public sealed interface TimeoutStrategy : Serializable {
 
 		/**
-		 * Tells installer to commit session immediately after timeout if constraints are not met.
+		 * Tells installer to commit session immediately after timeout even if constraints are not met.
 		 */
 		public data object CommitEagerly : TimeoutStrategy {
 			private const val serialVersionUID = 6543830064438769365L
@@ -168,7 +168,7 @@ public class InstallConstraints private constructor(
 		private companion object {
 
 			/**
-			 * Tells installer to commit session immediately after timeout if constraints are not met.
+			 * Tells installer to commit session immediately after timeout even if constraints are not met.
 			 */
 			@JvmField
 			public val COMMIT_EAGERLY: TimeoutStrategy = CommitEagerly

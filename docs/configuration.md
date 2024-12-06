@@ -17,13 +17,30 @@ An example of creating a session with custom parameters:
         apks += apkSplitsUris
         confirmation = Confirmation.DEFERRED
         installerType = InstallerType.SESSION_BASED
-        installMode = InstallMode.InheritExisting("com.example.package")
+        installMode = InstallMode.InheritExisting(
+            packageName = "com.example.package",
+            dontKillApp = true
+        )
         name = fileName
-        requireUserAction = false
+        requireUserAction = true
+        requestUpdateOwnership = true
+        packageSource = PackageSource.Store
         notification {
             title = InstallMessageTitle
             contentText = InstallMessage(fileName)
             icon = InstallIcon
+        }
+        preapproval(
+            packageName = "com.example.package",
+            label = "Sample App",
+            locale = ULocale.US
+        ) {
+            icon = iconUri
+        }
+        constraints(timeout = 1.minutes) {
+            timeoutStrategy = TimeoutStrategy.CommitEagerly
+            isAppNotForegroundRequired = true
+            isAppNotInteractingRequired = true
         }
     }
     
@@ -52,13 +69,23 @@ An example of creating a session with custom parameters:
             .addApks(apkSplitsUris)
             .setConfirmation(Confirmation.DEFERRED)
             .setInstallerType(InstallerType.SESSION_BASED)
-            .setInstallMode(new InstallMode.InheritExisting("com.example.package"))
+            .setInstallMode(new InstallMode.InheritExisting("com.example.package", true))
             .setName(fileName)
-            .setRequireUserAction(false)
+            .setRequireUserAction(true)
+            .setRequestUpdateOwnership(true)
+            .setPackageSource(PackageSource.STORE)
             .setNotificationData(new NotificationData.Builder()
                     .setTitle(Resources.INSTALL_MESSAGE_TITLE)
                     .setContentText(new Resources.InstallMessage(fileName))
                     .setIcon(Resources.INSTALL_ICON)
+                    .build())
+            .setPreapproval(new InstallPreapproval.Builder("com.example.package", "Sample App", ULocale.US)
+                    .setIcon(iconUri)
+                    .build())
+            .setConstraints(new InstallConstraints.Builder(60000L)
+                    .setTimeoutStrategy(TimeoutStrategy.COMMIT_EAGERLY)
+                    .setAppNotForegroundRequired(true)
+                    .setAppNotInteractingRequired(true)
                     .build())
             .build());
     
@@ -172,3 +199,41 @@ Available for install sessions. Takes effect only when using `SESSION_BASED` ins
     If there are no existing APKs for the target app, this behaves like `Full`.
 
     Requires package name of the app being installed. If the APKs staged in the session aren't consistent with the set package name, the install will fail.
+
+    Optionally, it's possible to request the system to not kill any of the package's running processes as part of a session in which splits are being added by setting `dontKillApp` to `true`. This option takes effect only on API level >= 34.
+
+Preapproval
+-----------
+
+Available for install sessions on API level >= 34. Attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
+
+Preapproval requires package name of the app being installed, label representing it and locale used to get the label to be provided. Optionally, it's possible to also provide the app's icon via `Uri`.
+
+Constraints
+-----------
+
+Available for install sessions on API level >= 34. Constraints specify the conditions to check against for the installed packages. This can be used by app stores to deliver auto updates without disrupting the user experience (referred as gentle update) - for example, an app store might hold off updates when it find out the app to update is interacting with the user. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.InstallConstraints).
+
+Installer waits for constraints to be satisfied, so to configure them, timeout duration is required to be provided after which installer will act based on set `TimeoutStrategy`.
+
+`TimeoutStrategy` may be one of the following:
+
+- `Fail` (default) - installer reports failure on timeout if constraints are not met.
+- `CommitEagerly` - installer commits session immediately after timeout even if constraints are not met.
+- `Retry` - installer retries waiting for constraints to be satisfied with the same timeout if constraints were not met after the first attempt. Requires `retries` parameter to be provided when created.
+
+Update ownership
+----------------
+
+Available for install sessions on API level >= 34.
+
+Optionally indicate whether the package being installed needs the update ownership enforcement. Once the update ownership enforcement is enabled, the other installers will need the user action to update the package even if the installers have been granted the `INSTALL_PACKAGES` permission. Default to `false`. The update ownership enforcement can only be enabled on initial installation. Setting this to `true` on package update is a no-op.
+
+Package source
+--------------
+
+Available for install sessions.
+
+Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is `PackageSource.Unspecified`.
+
+Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level >= 33.

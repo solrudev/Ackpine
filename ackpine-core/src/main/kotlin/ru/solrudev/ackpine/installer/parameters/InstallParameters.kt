@@ -112,7 +112,7 @@ public class InstallParameters private constructor(
 	 * will need the user action to update the package even if the installers have been
 	 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
 	 *
-	 * The update ownership enforcement can only be enabled on initial installation. Set
+	 * The update ownership enforcement can only be enabled on initial installation. Setting
 	 * this to `true` on package update is a no-op.
 	 *
 	 * Applying this option is best-effort. It takes effect only on API level >=

@@ -47,8 +47,8 @@ public sealed interface InstallMode {
 	 * @property packageName Package name of the app being installed. If the APKs staged in the session aren't
 	 * consistent with this package name, the install will fail.
 	 *
-	 * @property dontKillApp Requests that the system not kill any of the package's running processes as part of a
-	 * session in which splits being added. By default, all installs will result in the package's running processes
+	 * @property dontKillApp Requests the system to not kill any of the package's running processes as part of a
+	 * session in which splits are being added. By default, all installs will result in the package's running processes
 	 * being killed before the install completes.
 	 *
 	 * Takes effect only on API level >= 34.

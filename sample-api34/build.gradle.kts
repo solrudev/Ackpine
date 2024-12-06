@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-description = "Sample application showcasing usage of features supported on API level 34"
+description = "Sample application showcasing usage of features supported on API level 34 and higher"
 
 plugins {
 	id("ru.solrudev.ackpine.sample.kotlin")
