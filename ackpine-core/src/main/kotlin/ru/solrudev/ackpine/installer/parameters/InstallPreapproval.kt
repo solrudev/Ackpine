@@ -44,7 +44,7 @@ public class InstallPreapproval private constructor(
 	public val label: String,
 
 	/**
-	 * The locale of the app label being used. Represented by IETF BCP 47 language tag.
+	 * The locale of the app label being installed. Represented by IETF BCP 47 language tag.
 	 */
 	public val languageTag: String,
 

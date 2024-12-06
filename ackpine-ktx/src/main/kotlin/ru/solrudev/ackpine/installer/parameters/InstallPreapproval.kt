@@ -25,7 +25,7 @@ import java.util.Locale
  * Constructs a new instance of [InstallPreapproval].
  * @param packageName the package name of the app to be installed.
  * @param label the label representing the app to be installed.
- * @param languageTag the locale of the app label being used. Represented by IETF BCP 47 language tag.
+ * @param languageTag the locale of the app label being installed. Represented by IETF BCP 47 language tag.
  */
 public inline fun InstallPreapproval(
 	packageName: String,
@@ -40,7 +40,7 @@ public inline fun InstallPreapproval(
  * Constructs a new instance of [InstallPreapproval].
  * @param packageName the package name of the app to be installed.
  * @param label the label representing the app to be installed.
- * @param locale the locale of the app label being used.
+ * @param locale the locale of the app label being installed.
  */
 @RequiresApi(Build.VERSION_CODES.N)
 public inline fun InstallPreapproval(
@@ -56,7 +56,7 @@ public inline fun InstallPreapproval(
  * Constructs a new instance of [InstallPreapproval].
  * @param packageName the package name of the app to be installed.
  * @param label the label representing the app to be installed.
- * @param locale the locale of the app label being used.
+ * @param locale the locale of the app label being installed.
  */
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public inline fun InstallPreapproval(
