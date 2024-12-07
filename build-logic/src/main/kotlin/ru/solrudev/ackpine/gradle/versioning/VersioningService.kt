@@ -21,7 +21,6 @@ import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.readProperties
-import java.io.File
 
 internal abstract class VersioningService : BuildService<VersioningService.Parameters> {
 
