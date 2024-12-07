@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.session
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.session.Session.State.Active
 import ru.solrudev.ackpine.session.Session.State.Awaiting
 import ru.solrudev.ackpine.session.Session.State.Cancelled
@@ -64,7 +65,8 @@ public interface Session<out F : Failure> {
 	public val isCancelled: Boolean
 
 	/**
-	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations.
+	 * Launches the session preparations. This includes copying needed files to temporary folder and other operations,
+	 * like requesting [preapproval from user][InstallPreapproval].
 	 *
 	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
 	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
@@ -78,8 +80,8 @@ public interface Session<out F : Failure> {
 	public fun launch(): Boolean
 
 	/**
-	 * Commits everything that was prepared in the session. This will launch user's [confirmation][Confirmation] of
-	 * installation or uninstallation.
+	 * Commits everything that was prepared in the session. This will possibly launch user's
+	 * [confirmation][Confirmation] of installation or uninstallation.
 	 *
 	 * This method allows to re-commit the session when it's not in process of being committed or confirmed, e.g. when
 	 * confirmation was interrupted with process death.
