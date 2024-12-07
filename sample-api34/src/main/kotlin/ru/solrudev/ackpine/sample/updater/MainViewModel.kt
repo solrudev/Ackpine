@@ -135,7 +135,7 @@ class MainViewModel(
 	private fun handleSessionState(state: Session.State<InstallFailure>) = _uiState.update {
 		it.copy(
 			error = error(state),
-			isInstalling = state is Session.State.Failed || !state.isTerminal,
+			isInstallationVisible = state is Session.State.Failed || !state.isTerminal,
 			isCancellable = state != Session.State.Committed,
 			buttonText = buttonText(state)
 		)
@@ -165,13 +165,10 @@ class MainViewModel(
 		ResolvableString.transientResource(R.string.cancel)
 	}
 
-	private fun error(state: Session.State<InstallFailure>): ResolvableString {
-		val error = if (state is Session.State.Failed) {
-			error(state.failure.message)
-		} else {
-			ResolvableString.empty()
-		}
-		return error
+	private fun error(state: Session.State<InstallFailure>) = if (state is Session.State.Failed) {
+		error(state.failure.message)
+	} else {
+		ResolvableString.empty()
 	}
 
 	private fun error(message: String?) = if (message != null) {

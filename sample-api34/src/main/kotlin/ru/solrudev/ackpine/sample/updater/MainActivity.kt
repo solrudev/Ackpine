@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 				binding.cardMainInstall.buttonInstall.isEnabled = uiState.isCancellable
 				binding.cardMainInstall.buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
 				setProgress(uiState.progress)
-				setError(uiState.error, uiState.isInstalling)
+				setError(uiState.error, uiState.isInstallationVisible)
 			}
 		}
 	}
@@ -69,12 +69,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		)
 	}
 
-	private fun setError(error: ResolvableString, isInstalling: Boolean) = with(binding.cardMainInstall) {
+	private fun setError(error: ResolvableString, isInstallationVisible: Boolean) = with(binding.cardMainInstall) {
 		TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 		val hasError = !error.isEmpty
 		textViewInstall.isVisible = !hasError
-		progressBarInstall.isVisible = !hasError && isInstalling
-		textViewInstallPercentage.isVisible = !hasError && isInstalling
+		progressBarInstall.isVisible = !hasError && isInstallationVisible
+		textViewInstallPercentage.isVisible = !hasError && isInstallationVisible
 		textViewInstallError.isVisible = hasError
 		textViewInstallError.text = error.resolve(this@MainActivity)
 	}
