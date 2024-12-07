@@ -27,6 +27,7 @@ import androidx.transition.Fade
 import androidx.transition.TransitionManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.launch
+import ru.solrudev.ackpine.AssetFileProvider
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.updater.databinding.ActivityMainBinding
 import ru.solrudev.ackpine.session.Progress
@@ -40,17 +41,21 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
 		setSupportActionBar(binding.toolbarMain)
-		binding.contentMain.layoutTransition?.enableTransitionType(LayoutTransition.CHANGING)
-		binding.buttonMainInstall.setOnClickListener {
+		binding.cardMainInstall.imageViewInstallIcon.setImageURI(
+			AssetFileProvider.getUriForAsset("ackpine_icon.webp")
+		)
+		binding.cardMainInstall.containerCardInstall.layoutTransition?.enableTransitionType(LayoutTransition.CHANGING)
+		binding.cardMainInstall.buttonInstall.setOnClickListener {
 			viewModel.onButtonClick()
 		}
 		lifecycleScope.launch {
 			viewModel.uiState.flowWithLifecycle(lifecycle).collect { uiState ->
-				binding.cardMainInstall.containerCardInstall.isVisible = uiState.isInstallationVisible
-				binding.buttonMainInstall.isEnabled = uiState.isCancellable
-				binding.buttonMainInstall.text = uiState.buttonText.resolve(this@MainActivity)
+				binding.cardMainInstall.progressBarInstall.isVisible = uiState.isInstallationVisible
+				binding.cardMainInstall.textViewInstallPercentage.isVisible = uiState.isInstallationVisible
+				binding.cardMainInstall.buttonInstall.isEnabled = uiState.isCancellable
+				binding.cardMainInstall.buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
 				setProgress(uiState.progress)
-				setError(uiState.error)
+				setError(uiState.error, uiState.isInstallationVisible)
 			}
 		}
 	}
@@ -66,12 +71,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		)
 	}
 
-	private fun setError(error: ResolvableString) = with(binding.cardMainInstall) {
+	private fun setError(error: ResolvableString, isInstallationVisible: Boolean) = with(binding.cardMainInstall) {
 		TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 		val hasError = !error.isEmpty
 		textViewInstall.isVisible = !hasError
-		progressBarInstall.isVisible = !hasError
-		textViewInstallPercentage.isVisible = !hasError
+		progressBarInstall.isVisible = !hasError && isInstallationVisible
+		textViewInstallPercentage.isVisible = !hasError && isInstallationVisible
 		textViewInstallError.isVisible = hasError
 		textViewInstallError.text = error.resolve(this@MainActivity)
 	}

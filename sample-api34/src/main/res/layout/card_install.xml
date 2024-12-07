@@ -21,36 +21,48 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:layout_marginVertical="@dimen/card_margin_vertical"
-	android:visibility="gone"
-	tools:visibility="visible">
+	android:animateLayoutChanges="true">
 
 	<androidx.constraintlayout.widget.ConstraintLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:minHeight="@dimen/card_min_height"
+		android:animateLayoutChanges="true"
 		android:padding="@dimen/card_padding">
+
+		<ImageView
+			android:id="@+id/imageView_install_icon"
+			android:layout_width="@dimen/application_icon_size"
+			android:layout_height="@dimen/application_icon_size"
+			android:importantForAccessibility="no"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			tools:src="@mipmap/ic_launcher" />
 
 		<TextView
 			android:id="@+id/textView_install_error"
-			android:layout_width="match_parent"
+			android:layout_width="0dp"
 			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="@dimen/card_element_margin"
 			android:textColor="?colorError"
-			android:visibility="gone"
 			app:layout_constraintBottom_toBottomOf="parent"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintStart_toStartOf="parent"
+			android:visibility="gone"
+			app:layout_constraintEnd_toStartOf="@id/button_install"
 			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintStart_toEndOf="@id/imageView_install_icon"
 			tools:text="Install failed" />
 
 		<TextView
 			android:id="@+id/textView_install"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
-			android:text="@string/install"
+			android:layout_marginHorizontal="@dimen/card_element_margin"
+			android:text="@string/installed_app_name"
 			android:textAppearance="?textAppearanceBodyMedium"
 			app:layout_constraintBottom_toTopOf="@id/progressBar_install"
 			app:layout_constraintEnd_toStartOf="@id/textView_install_percentage"
-			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintStart_toEndOf="@id/imageView_install_icon"
 			app:layout_constraintTop_toTopOf="parent" />
 
 		<com.google.android.material.progressindicator.LinearProgressIndicator
@@ -58,10 +70,13 @@
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="@dimen/card_element_margin"
+			android:layout_marginHorizontal="@dimen/card_element_margin"
+			android:visibility="gone"
+			app:layout_constraintEnd_toStartOf="@id/button_install"
 			app:layout_constraintBottom_toBottomOf="parent"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintTop_toBottomOf="@id/textView_install"
+			app:layout_constraintStart_toEndOf="@id/imageView_install_icon"
+			tools:visibility="visible"
 			tools:progress="28"
 			tools:showAnimationBehavior="none" />
 
@@ -69,14 +84,26 @@
 			android:id="@+id/textView_install_percentage"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
+			android:layout_marginEnd="@dimen/card_element_margin"
 			android:text="@string/default_percentage"
 			android:textAppearance="?textAppearanceBodyMedium"
+			android:visibility="gone"
+			app:layout_constraintEnd_toStartOf="@id/button_install"
 			app:layout_constraintBottom_toBottomOf="@id/textView_install"
-			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toEndOf="@id/textView_install"
-			app:layout_constraintTop_toTopOf="@id/textView_install"
 			app:layout_constraintWidth="wrap_content"
+			app:layout_constraintTop_toTopOf="@id/textView_install"
+			tools:visibility="visible"
 			tools:text="28%" />
+
+		<Button
+			android:id="@+id/button_install"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/button_install"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
 
 	</androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

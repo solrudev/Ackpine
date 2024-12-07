@@ -17,6 +17,7 @@
 
 <resources>
 	<string name="app_name" translatable="false">Ackpine Updater</string>
+	<string name="installed_app_name" translatable="false">Ackpine</string>
 	<string name="default_percentage" translatable="false">0%</string>
 	<string name="percentage" translatable="false">%d%%</string>
 	<string name="install">Install</string>
