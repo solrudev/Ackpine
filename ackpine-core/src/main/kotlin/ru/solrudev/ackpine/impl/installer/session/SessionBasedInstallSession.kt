@@ -29,6 +29,7 @@ import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
 import android.content.pm.PackageInstaller.SessionParams.MODE_INHERIT_EXISTING
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.icu.util.ULocale
 import android.net.Uri
@@ -169,14 +170,14 @@ internal class SessionBasedInstallSession internal constructor(
 			return
 		}
 		val sessionId = getSessionId()
-		if (!shouldGetPreapproval()) {
+		if (!shouldRequestPreapproval()) {
 			writeApksToSession(sessionId)
 			return
 		}
-		val preapprovalDetails = getPackageInstallerPreapprovalDetails()
+		val preapprovalDetails = createPackageInstallerPreapprovalDetails()
 		packageInstaller.openSession(sessionId).requestUserPreapproval(
 			preapprovalDetails,
-			getPackageInstallerStatusIntentSender()
+			createPackageInstallerStatusIntentSender()
 		)
 	}
 
@@ -248,14 +249,14 @@ internal class SessionBasedInstallSession internal constructor(
 		isPreapprovalActive = false
 	}
 
-	private fun shouldGetPreapproval(): Boolean {
+	private fun shouldRequestPreapproval(): Boolean {
 		return !isPreapproved
 				&& preapproval != InstallPreapproval.NONE
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	private fun getPackageInstallerPreapprovalDetails(): PackageInstaller.PreapprovalDetails {
+	private fun createPackageInstallerPreapprovalDetails(): PackageInstaller.PreapprovalDetails {
 		val icon = readPreapprovalIconBitmap()
 		val builder = PackageInstaller.PreapprovalDetails.Builder()
 			.setPackageName(preapproval.packageName)
@@ -267,30 +268,33 @@ internal class SessionBasedInstallSession internal constructor(
 		return builder.build()
 	}
 
-	private fun readPreapprovalIconBitmap() = try {
-		if (preapproval.icon != Uri.EMPTY) {
+	private fun readPreapprovalIconBitmap(): Bitmap? {
+		if (preapproval.icon == Uri.EMPTY) {
+			return null
+		}
+		return try {
 			context.contentResolver.openInputStream(preapproval.icon)?.use { iconStream ->
 				iconStream.buffered().use { bufferedIconStream ->
 					BitmapFactory.decodeStream(bufferedIconStream)
 				}
 			}
-		} else {
+		} catch (_: Exception) {
 			null
 		}
-	} catch (_: Exception) {
-		null
 	}
 
 	private fun shouldApplyInstallConstraints(): Boolean {
-		return constraints != InstallConstraints.NONE && Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+		return constraints != InstallConstraints.NONE
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
-		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly && attempts.get() == 1
+		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly
+				&& attempts.get() == 1
 	}
 
 	private fun commitPackageInstallerSession() {
-		val statusReceiver = getPackageInstallerStatusIntentSender()
+		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			packageInstaller.openSession(sessionId).commit(statusReceiver)
@@ -300,10 +304,10 @@ internal class SessionBasedInstallSession internal constructor(
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun commitPackageInstallerSessionWithConstraints() {
-		val statusReceiver = getPackageInstallerStatusIntentSender()
+		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			val installConstraints = getPackageInstallerInstallConstraints()
+			val installConstraints = createPackageInstallerInstallConstraints()
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 			)
@@ -311,7 +315,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun getPackageInstallerStatusIntentSender(): IntentSender {
+	private fun createPackageInstallerStatusIntentSender(): IntentSender {
 		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
 			action = PackageInstallerStatusReceiver.getAction(context)
 			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
@@ -335,23 +339,25 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	private fun getPackageInstallerInstallConstraints() = PackageInstaller.InstallConstraints.Builder().apply {
+	private fun createPackageInstallerInstallConstraints(): PackageInstaller.InstallConstraints {
+		val builder = PackageInstaller.InstallConstraints.Builder()
 		if (constraints.isAppNotForegroundRequired) {
-			setAppNotForegroundRequired()
+			builder.setAppNotForegroundRequired()
 		}
 		if (constraints.isAppNotInteractingRequired) {
-			setAppNotForegroundRequired()
+			builder.setAppNotForegroundRequired()
 		}
 		if (constraints.isAppNotTopVisibleRequired) {
-			setAppNotTopVisibleRequired()
+			builder.setAppNotTopVisibleRequired()
 		}
 		if (constraints.isDeviceIdleRequired) {
-			setDeviceIdleRequired()
+			builder.setDeviceIdleRequired()
 		}
 		if (constraints.isNotInCallRequired) {
-			setNotInCallRequired()
+			builder.setNotInCallRequired()
 		}
-	}.build()
+		return builder.build()
+	}
 
 	private fun writeCommitProgressIfAbsent() {
 		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)

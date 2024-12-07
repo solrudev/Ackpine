@@ -149,7 +149,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		}
 	}
 
-	@Suppress("unused")
+	@Suppress("Unused")
 	private data object NonExhaustiveWhenGuard : InstallFailure(message = null) {
 		private const val serialVersionUID = 5505702817232605632L
 		private fun readResolve(): Any = NonExhaustiveWhenGuard

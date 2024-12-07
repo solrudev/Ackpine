@@ -16,7 +16,7 @@
 
 <resources>
 
-	<style name="Base.V29.Theme.Ackpine" parent="Base.V21.Theme.Ackpine">
+	<style name="Base.V29.Theme.Ackpine" parent="Base.V24.Theme.Ackpine">
 		<item name="android:forceDarkAllowed">false</item>
 	</style>
 

@@ -166,15 +166,15 @@ internal class PackageInstallerImpl internal constructor(
 
 	private fun getSessionFromDb(
 		sessionId: UUID,
-		future: Completer<ProgressSession<InstallFailure>?>
+		completer: Completer<ProgressSession<InstallFailure>?>
 	) {
 		sessions[sessionId]?.let { session ->
-			future.set(session)
+			completer.set(session)
 			return
 		}
 		val session = installSessionDao.getInstallSession(sessionId.toString())
 		val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-		future.set(installSession)
+		completer.set(installSession)
 	}
 
 	private inline fun initializeSessions(
@@ -213,30 +213,35 @@ internal class PackageInstallerImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
+		val sessionId = id.toString()
 		var packageName: String? = null
-		var dontKillApp = false
 		val installMode = when (parameters.installMode) {
-			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
+			is InstallMode.Full -> InstallModeEntity(
+				sessionId,
+				InstallModeEntity.InstallMode.FULL,
+				dontKillApp = false
+			)
 			is InstallMode.InheritExisting -> {
 				packageName = parameters.installMode.packageName
-				dontKillApp = parameters.installMode.dontKillApp
-				InstallModeEntity.InstallMode.INHERIT_EXISTING
+				InstallModeEntity(
+					sessionId,
+					InstallModeEntity.InstallMode.INHERIT_EXISTING,
+					parameters.installMode.dontKillApp
+				)
 			}
 		}
-		val sessionId = id.toString()
-		val installModeEntity = InstallModeEntity(sessionId, installMode, dontKillApp)
 		val notificationData = installSessionFactory.resolveNotificationData(
 			parameters.notificationData,
 			parameters.name
 		)
-		val preapprovalEntity = InstallPreapprovalEntity(
+		val preapproval = InstallPreapprovalEntity(
 			sessionId,
 			parameters.preapproval.packageName,
 			parameters.preapproval.label,
 			parameters.preapproval.languageTag,
 			parameters.preapproval.icon.toString()
 		)
-		val constraintsEntity = InstallConstraintsEntity(
+		val constraints = InstallConstraintsEntity(
 			sessionId,
 			parameters.constraints.isAppNotForegroundRequired,
 			parameters.constraints.isAppNotInteractingRequired,
@@ -261,9 +266,9 @@ internal class PackageInstallerImpl internal constructor(
 				installerType = parameters.installerType,
 				uris = parameters.apks.toList().map { it.toString() },
 				name = parameters.name,
-				notificationId, installModeEntity, packageName,
+				notificationId, installMode, packageName,
 				lastUpdateTimestamp = Long.MAX_VALUE,
-				preapprovalEntity, constraintsEntity,
+				preapproval, constraints,
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)

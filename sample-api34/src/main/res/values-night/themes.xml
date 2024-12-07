@@ -16,7 +16,7 @@
   -->
 
 <resources>
-    <style name="Base.V21.Night.Theme.Ackpine" parent="Theme.Material3.Dark">
+    <style name="Base.V24.Night.Theme.Ackpine" parent="Theme.Material3.Dark">
         <item name="colorPrimary">@color/md_theme_primary</item>
         <item name="colorOnPrimary">@color/md_theme_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_primaryContainer</item>
@@ -65,5 +65,5 @@
         <item name="colorSurfaceContainerHighest">@color/md_theme_surfaceContainerHighest</item>
     </style>
 
-    <style name="Base.V21.Theme.Ackpine" parent="Base.V21.Night.Theme.Ackpine" />
+    <style name="Base.V24.Theme.Ackpine" parent="Base.V24.Night.Theme.Ackpine" />
 </resources>

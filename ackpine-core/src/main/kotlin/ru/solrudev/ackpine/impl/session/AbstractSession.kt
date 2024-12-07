@@ -110,7 +110,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected abstract fun prepare()
 
 	/**
-	 * Launch session's confirmation with [Context.launchConfirmation]. This method is called on a worker thread.
+	 * Launch session's confirmation. This method is called on a worker thread.
 	 */
 	@WorkerThread
 	protected abstract fun launchConfirmation()

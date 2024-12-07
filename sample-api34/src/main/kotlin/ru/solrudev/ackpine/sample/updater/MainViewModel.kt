@@ -135,7 +135,7 @@ class MainViewModel(
 	private fun handleSessionState(state: Session.State<InstallFailure>) = _uiState.update {
 		it.copy(
 			error = error(state),
-			isInstallationVisible = state is Session.State.Failed || !state.isTerminal,
+			isInstalling = state is Session.State.Failed || !state.isTerminal,
 			isCancellable = state != Session.State.Committed,
 			buttonText = buttonText(state)
 		)

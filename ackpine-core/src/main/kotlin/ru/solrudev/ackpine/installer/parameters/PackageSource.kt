@@ -60,7 +60,7 @@ public sealed class PackageSource(
 	 */
 	public data object Other : PackageSource(4)
 
-	@Suppress("unused")
+	@Suppress("Unused")
 	private data object NonExhaustiveWhenGuard : PackageSource(-1)
 
 	@Suppress("RedundantVisibilityModifier")

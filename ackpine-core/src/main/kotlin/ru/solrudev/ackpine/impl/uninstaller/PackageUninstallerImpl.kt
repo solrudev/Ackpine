@@ -95,14 +95,14 @@ internal class PackageUninstallerImpl internal constructor(
 		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
 	}
 
-	private fun getSessionFromDb(sessionId: UUID, future: Completer<Session<UninstallFailure>?>) {
+	private fun getSessionFromDb(sessionId: UUID, completer: Completer<Session<UninstallFailure>?>) {
 		sessions[sessionId]?.let { session ->
-			future.set(session)
+			completer.set(session)
 			return
 		}
 		val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
 		val uninstallSession = session?.toUninstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-		future.set(uninstallSession)
+		completer.set(uninstallSession)
 	}
 
 	private inline fun initializeSessions(

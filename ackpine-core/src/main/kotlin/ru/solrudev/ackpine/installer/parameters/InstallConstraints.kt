@@ -158,7 +158,7 @@ public class InstallConstraints private constructor(
 			}
 		}
 
-		@Suppress("unused")
+		@Suppress("Unused")
 		private data object NonExhaustiveWhenGuard : TimeoutStrategy {
 			private const val serialVersionUID = -8649947530739529521L
 			private fun readResolve(): Any = NonExhaustiveWhenGuard

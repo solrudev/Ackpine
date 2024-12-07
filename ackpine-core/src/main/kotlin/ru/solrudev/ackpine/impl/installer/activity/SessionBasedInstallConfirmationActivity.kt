@@ -54,11 +54,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 	}
 
 	private val isPreapproval
-		get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
-		} else {
-			false
-		}
+		get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+				&& intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
 
 	private val handler = Handler(Looper.getMainLooper())
 	private var canInstallPackages = false

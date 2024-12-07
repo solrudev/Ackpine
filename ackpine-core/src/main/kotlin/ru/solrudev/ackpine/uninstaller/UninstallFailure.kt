@@ -52,7 +52,7 @@ public sealed interface UninstallFailure : Failure, Serializable {
 		}
 	}
 
-	@Suppress("unused")
+	@Suppress("Unused")
 	private data object NonExhaustiveWhenGuard : UninstallFailure {
 		private const val serialVersionUID = 6803470565073569530L
 		private fun readResolve(): Any = NonExhaustiveWhenGuard

@@ -50,12 +50,10 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		}
 		lifecycleScope.launch {
 			viewModel.uiState.flowWithLifecycle(lifecycle).collect { uiState ->
-				binding.cardMainInstall.progressBarInstall.isVisible = uiState.isInstallationVisible
-				binding.cardMainInstall.textViewInstallPercentage.isVisible = uiState.isInstallationVisible
 				binding.cardMainInstall.buttonInstall.isEnabled = uiState.isCancellable
 				binding.cardMainInstall.buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
 				setProgress(uiState.progress)
-				setError(uiState.error, uiState.isInstallationVisible)
+				setError(uiState.error, uiState.isInstalling)
 			}
 		}
 	}
@@ -71,12 +69,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		)
 	}
 
-	private fun setError(error: ResolvableString, isInstallationVisible: Boolean) = with(binding.cardMainInstall) {
+	private fun setError(error: ResolvableString, isInstalling: Boolean) = with(binding.cardMainInstall) {
 		TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 		val hasError = !error.isEmpty
 		textViewInstall.isVisible = !hasError
-		progressBarInstall.isVisible = !hasError && isInstallationVisible
-		textViewInstallPercentage.isVisible = !hasError && isInstallationVisible
+		progressBarInstall.isVisible = !hasError && isInstalling
+		textViewInstallPercentage.isVisible = !hasError && isInstalling
 		textViewInstallError.isVisible = hasError
 		textViewInstallError.text = error.resolve(this@MainActivity)
 	}

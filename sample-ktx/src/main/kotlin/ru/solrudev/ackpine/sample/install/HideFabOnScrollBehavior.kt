@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 
-@Suppress("UNUSED")
+@Suppress("Unused")
 class HideFabOnScrollBehavior<V : View> : HideBottomViewOnScrollBehavior<V> {
 
 	constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)

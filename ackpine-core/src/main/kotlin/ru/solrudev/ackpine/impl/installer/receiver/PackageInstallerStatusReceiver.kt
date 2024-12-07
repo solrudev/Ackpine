@@ -204,11 +204,8 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			.build()
 	}
 
-	private fun isPreapproval(intent: Intent) = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-		intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
-	} else {
-		false
-	}
+	private fun isPreapproval(intent: Intent) = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+			&& intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
 
 	private fun InstallFailure.Companion.fromIntent(intent: Intent, status: Int, message: String?): InstallFailure {
 		val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
