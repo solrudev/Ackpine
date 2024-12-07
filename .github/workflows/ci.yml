@@ -109,6 +109,6 @@ jobs:
         if: success()
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          BRANCH: gh-pages
-          FOLDER: site
-          SINGLE_COMMIT: true
+          branch: gh-pages
+          folder: site
+          single-commit: true
