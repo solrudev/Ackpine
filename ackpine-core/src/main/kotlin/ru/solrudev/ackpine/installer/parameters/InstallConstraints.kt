@@ -27,7 +27,7 @@ import kotlin.time.Duration
 /**
  * A class to encapsulate constraints for installation.
  *
- * Specifies the conditions to check against for the packages in question. This can be used
+ * Specifies the conditions to check against for the packages being installed. This can be used
  * by app stores to deliver auto updates without disrupting the user experience (referred as
  * gentle update) - for example, an app store might hold off updates when it find out the
  * app to update is interacting with the user.
@@ -47,9 +47,9 @@ public class InstallConstraints private constructor(
 	/**
 	 * This constraint requires the app in question is not interacting with the user.
 	 * User interaction includes:
-	 * - playing or recording audio/video
-	 * - sending or receiving network data
-	 * - being visible to the user
+	 * * playing or recording audio/video
+	 * * sending or receiving network data
+	 * * being visible to the user
 	 */
 	public val isAppNotInteractingRequired: Boolean,
 
@@ -147,8 +147,8 @@ public class InstallConstraints private constructor(
 		}
 
 		/**
-		 * If constraints are not met after set timeout, tells installer to wait again for when constraints are
-		 * satisfied for [retries] times with the same timeout.
+		 * Tells installer to retry waiting for constraints to be satisfied with the same timeout for [retries] times
+		 * if constraints were not met after the first attempt.
 		 *
 		 * If constraints are met earlier, session will be committed immediately.
 		 */
@@ -195,9 +195,9 @@ public class InstallConstraints private constructor(
 		/**
 		 * This constraint requires the app in question is not interacting with the user.
 		 * User interaction includes:
-		 * - playing or recording audio/video
-		 * - sending or receiving network data
-		 * - being visible to the user
+		 * * playing or recording audio/video
+		 * * sending or receiving network data
+		 * * being visible to the user
 		 */
 		public var isAppNotInteractingRequired: Boolean = false
 			private set

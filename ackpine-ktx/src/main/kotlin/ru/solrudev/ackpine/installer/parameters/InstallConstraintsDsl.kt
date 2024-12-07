@@ -34,9 +34,9 @@ public interface InstallConstraintsDsl {
 	/**
 	 * This constraint requires the app in question is not interacting with the user.
 	 * User interaction includes:
-	 * - playing or recording audio/video
-	 * - sending or receiving network data
-	 * - being visible to the user
+	 * * playing or recording audio/video
+	 * * sending or receiving network data
+	 * * being visible to the user
 	 */
 	public var isAppNotInteractingRequired: Boolean
 
