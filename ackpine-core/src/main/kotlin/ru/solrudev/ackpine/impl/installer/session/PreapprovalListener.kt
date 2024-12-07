@@ -17,9 +17,21 @@
 package ru.solrudev.ackpine.impl.installer.session
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 
+/**
+ * A listener for [pre-commit install preapproval][InstallPreapproval].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface PreapprovalListener {
+
+	/**
+	 * Called when preapproval is requested.
+	 */
 	fun onPreapproval()
+
+	/**
+	 * Called when session has been preapproved.
+	 */
 	fun onPreapproved()
 }
