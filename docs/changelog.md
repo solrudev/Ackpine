@@ -13,7 +13,7 @@ Version 0.9.0 (2024-12-07)
 
 - Introduce `InstallPreapproval` API. See documentation on usage.
 - Introduce `InstallConstraints` API. See documentation on usage.
-- Add `requestUpdateOwnership` option for install sessions.
+- Add `requestUpdateOwnership` option for install sessions. Permission `ENFORCE_UPDATE_OWNERSHIP` was added to `AndroidManifest.xml`.
 - Add `packageSource` option for install sessions.
 - Add `dontKillApp` option for install sessions with `InheritExisting` install mode.
 
