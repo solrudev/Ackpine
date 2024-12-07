@@ -24,8 +24,6 @@ import androidx.room.Query
 @Dao
 internal interface InstallPreapprovalDao {
 
-	@Query(
-		"UPDATE OR IGNORE sessions_install_preapproval SET is_preapproved = 1 WHERE session_id = :sessionId"
-	)
+	@Query("UPDATE OR IGNORE sessions_install_preapproval SET is_preapproved = 1 WHERE session_id = :sessionId")
 	fun setPreapproved(sessionId: String)
 }

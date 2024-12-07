@@ -145,7 +145,7 @@ internal data class SessionEntity internal constructor(
 			entity = PackageSourceEntity::class,
 			projection = ["package_source"]
 		)
-		val packageSource: PackageSource?,
+		val packageSource: PackageSource?
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
