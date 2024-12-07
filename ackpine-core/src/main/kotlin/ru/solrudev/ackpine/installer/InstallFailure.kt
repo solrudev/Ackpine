@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ConstPropertyName")
+
 package ru.solrudev.ackpine.installer
 
 import android.content.pm.PackageInstaller
@@ -25,6 +27,7 @@ import ru.solrudev.ackpine.installer.InstallFailure.Generic
 import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
 import ru.solrudev.ackpine.installer.InstallFailure.Invalid
 import ru.solrudev.ackpine.installer.InstallFailure.Storage
+import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.session.Failure
 import java.io.Serializable
 
@@ -44,7 +47,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		public override val exception: Exception
 	) : InstallFailure("Install failed due to an exception."), Failure.Exceptional {
 		private companion object {
-			private const val serialVersionUID: Long = -9079346194912065953L
+			private const val serialVersionUID = -9079346194912065953L
 		}
 	}
 
@@ -56,7 +59,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		public override val message: String? = null
 	) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 6785833663285844380L
+			private const val serialVersionUID = 6785833663285844380L
 		}
 	}
 
@@ -66,7 +69,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Aborted(public override val message: String?) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 5217863192717623705L
+			private const val serialVersionUID = 5217863192717623705L
 		}
 	}
 
@@ -81,7 +84,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		public val otherPackageName: String? = null
 	) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 8457207819123634411L
+			private const val serialVersionUID = 8457207819123634411L
 		}
 	}
 
@@ -97,7 +100,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		public val otherPackageName: String? = null
 	) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = -5471020595408614795L
+			private const val serialVersionUID = -5471020595408614795L
 		}
 	}
 
@@ -108,7 +111,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Incompatible(public override val message: String?) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 7194911454975521530L
+			private const val serialVersionUID = 7194911454975521530L
 		}
 	}
 
@@ -118,7 +121,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Invalid(public override val message: String?) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 9045650456707265963L
+			private const val serialVersionUID = 9045650456707265963L
 		}
 	}
 
@@ -133,7 +136,7 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 		public val storagePath: String? = null
 	) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = -7427274925677501111L
+			private const val serialVersionUID = -7427274925677501111L
 		}
 	}
 
@@ -142,13 +145,19 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	 */
 	public data class Timeout(public override val message: String?) : InstallFailure(message) {
 		private companion object {
-			private const val serialVersionUID: Long = 5534247941342428912L
+			private const val serialVersionUID = 5534247941342428912L
 		}
+	}
+
+	@Suppress("Unused")
+	private data object NonExhaustiveWhenGuard : InstallFailure(message = null) {
+		private const val serialVersionUID = 5505702817232605632L
+		private fun readResolve(): Any = NonExhaustiveWhenGuard
 	}
 
 	internal companion object {
 
-		private const val serialVersionUID: Long = -4122677617329666142L
+		private const val serialVersionUID = -4122677617329666142L
 
 		/**
 		 * Converts Android's [PackageInstaller] failure status code to [InstallFailure] object.

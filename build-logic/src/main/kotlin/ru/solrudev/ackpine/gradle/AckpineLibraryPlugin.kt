@@ -16,26 +16,34 @@
 
 package ru.solrudev.ackpine.gradle
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.named
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
+import ru.solrudev.ackpine.gradle.helpers.consumable
+import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		group = rootProject.group
-		version = rootProject.version
+		group = Constants.PACKAGE_NAME
+		version = versionNumber.get().toString()
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)
@@ -43,13 +51,14 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 		configureKotlin()
 		val libraryExtension = extensions.getByType<LibraryExtension>()
-		extensions.create<AckpineExtension>("ackpine", libraryExtension)
+		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension)
 		configureAndroid()
+		registerConsumableLibraryConfiguration()
 	}
 
 	private fun Project.configureKotlin() {
 		extensions.configure<KotlinAndroidProjectExtension> {
-			jvmToolchain(17)
+			jvmToolchain(Constants.JDK_VERSION)
 			explicitApi()
 
 			compilerOptions {
@@ -60,24 +69,42 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
-		compileSdk = 34
-		buildToolsVersion = "34.0.0"
+		compileSdk = Constants.COMPILE_SDK
+		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 
 		defaultConfig {
-			minSdk = 16
+			minSdk = Constants.MIN_SDK
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
-		buildTypes {
-			named("release") {
-				isMinifyEnabled = false
-				proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-			}
+		buildTypes.named("release") {
+			isMinifyEnabled = false
+			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
 		}
 
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
 		}
+	}
+
+	private fun Project.registerConsumableLibraryConfiguration() {
+		val library = configurations.register("library") {
+			consumable()
+			attributes {
+				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
+			}
+		}
+		extensions.configure<LibraryAndroidComponentsExtension> {
+			onVariants(withReleaseBuildType()) { variant ->
+				val aar = variant.artifacts.get(SingleArtifact.AAR)
+				library.addOutgoingArtifact(aar)
+			}
+		}
+	}
+
+	internal companion object {
+		internal const val LIBRARY_ELEMENTS = "aar"
+		internal const val PLUGIN_ID = "ru.solrudev.ackpine.library"
 	}
 }

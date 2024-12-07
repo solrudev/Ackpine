@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("Unused")
+@file:Suppress("Unused", "ConstPropertyName")
 
 package ru.solrudev.ackpine.resources
 

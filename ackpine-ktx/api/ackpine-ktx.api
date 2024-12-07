@@ -17,15 +17,60 @@ public final class ru/solrudev/ackpine/installer/parameters/ApkListKt {
 	public static final fun plusAssign (Lru/solrudev/ackpine/installer/parameters/MutableApkList;Ljava/lang/Iterable;)V
 }
 
+public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallConstraintsDsl {
+	public abstract fun getTimeoutStrategy ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;
+	public abstract fun isAppNotForegroundRequired ()Z
+	public abstract fun isAppNotInteractingRequired ()Z
+	public abstract fun isAppNotTopVisibleRequired ()Z
+	public abstract fun isDeviceIdleRequired ()Z
+	public abstract fun isNotInCallRequired ()Z
+	public abstract fun setAppNotForegroundRequired (Z)V
+	public abstract fun setAppNotInteractingRequired (Z)V
+	public abstract fun setAppNotTopVisibleRequired (Z)V
+	public abstract fun setDeviceIdleRequired (Z)V
+	public abstract fun setNotInCallRequired (Z)V
+	public abstract fun setTimeoutStrategy (Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallConstraintsDslBuilder : ru/solrudev/ackpine/installer/parameters/InstallConstraintsDsl {
+	public synthetic fun <init> (JLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public fun getTimeoutStrategy ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;
+	public fun isAppNotForegroundRequired ()Z
+	public fun isAppNotInteractingRequired ()Z
+	public fun isAppNotTopVisibleRequired ()Z
+	public fun isDeviceIdleRequired ()Z
+	public fun isNotInCallRequired ()Z
+	public fun setAppNotForegroundRequired (Z)V
+	public fun setAppNotInteractingRequired (Z)V
+	public fun setAppNotTopVisibleRequired (Z)V
+	public fun setDeviceIdleRequired (Z)V
+	public fun setNotInCallRequired (Z)V
+	public fun setTimeoutStrategy (Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallConstraintsKt {
+	public static final fun InstallConstraints-VtjQ1oo (JLkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public static synthetic fun InstallConstraints-VtjQ1oo$default (JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+}
+
 public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl : ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
 	public abstract fun getApks ()Lru/solrudev/ackpine/installer/parameters/MutableApkList;
+	public abstract fun getConstraints ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public abstract fun getInstallMode ()Lru/solrudev/ackpine/installer/parameters/InstallMode;
 	public abstract fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public abstract fun getName ()Ljava/lang/String;
+	public abstract fun getPackageSource ()Lru/solrudev/ackpine/installer/parameters/PackageSource;
+	public abstract fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public abstract fun getRequestUpdateOwnership ()Z
 	public abstract fun getRequireUserAction ()Z
+	public abstract fun setConstraints (Lru/solrudev/ackpine/installer/parameters/InstallConstraints;)V
 	public abstract fun setInstallMode (Lru/solrudev/ackpine/installer/parameters/InstallMode;)V
 	public abstract fun setInstallerType (Lru/solrudev/ackpine/installer/parameters/InstallerType;)V
 	public abstract fun setName (Ljava/lang/String;)V
+	public abstract fun setPackageSource (Lru/solrudev/ackpine/installer/parameters/PackageSource;)V
+	public abstract fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)V
+	public abstract fun setRequestUpdateOwnership (Z)V
 	public abstract fun setRequireUserAction (Z)V
 }
 
@@ -35,17 +80,35 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl
 	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallParameters;
 	public fun getApks ()Lru/solrudev/ackpine/installer/parameters/MutableApkList;
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
+	public fun getConstraints ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public fun getInstallMode ()Lru/solrudev/ackpine/installer/parameters/InstallMode;
 	public fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
 	public fun getName ()Ljava/lang/String;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
+	public fun getPackageSource ()Lru/solrudev/ackpine/installer/parameters/PackageSource;
+	public fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public fun getRequestUpdateOwnership ()Z
 	public fun getRequireUserAction ()Z
 	public fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)V
+	public fun setConstraints (Lru/solrudev/ackpine/installer/parameters/InstallConstraints;)V
 	public fun setInstallMode (Lru/solrudev/ackpine/installer/parameters/InstallMode;)V
 	public fun setInstallerType (Lru/solrudev/ackpine/installer/parameters/InstallerType;)V
 	public fun setName (Ljava/lang/String;)V
 	public fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)V
+	public fun setPackageSource (Lru/solrudev/ackpine/installer/parameters/PackageSource;)V
+	public fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)V
+	public fun setRequestUpdateOwnership (Z)V
 	public fun setRequireUserAction (Z)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDslKt {
+	public static final fun constraints-8Mi8wO0 (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;JLkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun preapproval$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun preapproval$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public static synthetic fun preapproval$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParametersKt {
@@ -53,8 +116,32 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParametersKt 
 	public static final fun InstallParameters (Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallParameters;
 }
 
+public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDsl {
+	public abstract fun getIcon ()Landroid/net/Uri;
+	public abstract fun setIcon (Landroid/net/Uri;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDslBuilder : ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDsl {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;)V
+	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public fun getIcon ()Landroid/net/Uri;
+	public fun setIcon (Landroid/net/Uri;)V
+}
+
+public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalKt {
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+}
+
 public final class ru/solrudev/ackpine/session/SessionAwaitKt {
-	public static final fun await (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final synthetic fun await (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun awaitCompletedState (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class ru/solrudev/ackpine/session/SessionProgressKt {

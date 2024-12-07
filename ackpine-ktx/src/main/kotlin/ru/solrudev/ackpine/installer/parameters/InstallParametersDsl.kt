@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
+import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -24,6 +25,8 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import java.util.Locale
+import kotlin.time.Duration
 
 /**
  * DSL allowing to configure [parameters for creating install session][InstallParameters].
@@ -58,8 +61,8 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
-	 * installer type.
+	 * Applying this option is best-effort. It takes effect only on API level >= [34][Build.VERSION_CODES.S] with
+	 * [InstallerType.SESSION_BASED] installer type.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
@@ -71,6 +74,52 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Default value is [InstallMode.Full].
 	 */
 	public var installMode: InstallMode
+
+	/**
+	 * Details for requesting the pre-commit install approval.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallPreapproval.NONE].
+	 *
+	 * @see [PackageInstaller.Session.requestUserPreapproval]
+	 */
+	public var preapproval: InstallPreapproval
+
+	/**
+	 * Installation constraints.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallConstraints.NONE].
+	 *
+	 * @see [PackageInstaller.InstallConstraints]
+	 */
+	public var constraints: InstallConstraints
+
+	/**
+	 * Optionally indicate whether the package being installed needs the update ownership
+	 * enforcement. Once the update ownership enforcement is enabled, the other installers
+	 * will need the user action to update the package even if the installers have been
+	 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
+	 *
+	 * The update ownership enforcement can only be enabled on initial installation. Setting
+	 * this to `true` on package update is a no-op.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 */
+	public var requestUpdateOwnership: Boolean
+
+	/**
+	 * Indicates the package source of the app being installed. This is informational and may be used as a signal
+	 * by the system.
+	 *
+	 * Default value is [PackageSource.Unspecified].
+	 */
+	public var packageSource: PackageSource
 }
 
 @PublishedApi
@@ -126,5 +175,87 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setInstallMode(value)
 		}
 
+	override var preapproval: InstallPreapproval
+		get() = builder.preapproval
+		set(value) {
+			builder.setPreapproval(value)
+		}
+
+	override var constraints: InstallConstraints
+		get() = builder.constraints
+		set(value) {
+			builder.setConstraints(value)
+		}
+
+	override var requestUpdateOwnership: Boolean
+		get() = builder.requestUpdateOwnership
+		set(value) {
+			builder.setRequestUpdateOwnership(value)
+		}
+
+	override var packageSource: PackageSource
+		get() = builder.packageSource
+		set(value) {
+			builder.setPackageSource(value)
+		}
+
 	fun build() = builder.build()
+}
+
+/**
+ * Configures [installation constraints DSL][InstallConstraintsDsl].
+ * @param timeout the maximum time to wait, in milliseconds until the constraints are satisfied.
+ */
+public inline fun InstallParametersDsl.constraints(
+	timeout: Duration,
+	configure: InstallConstraintsDsl.() -> Unit
+) {
+	constraints = InstallConstraints(timeout, configure)
+}
+
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param languageTag the locale of the app label being used. Represented by IETF BCP 47 language tag.
+ */
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	languageTag: String,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, languageTag, configure)
+}
+
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: ULocale,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, configure)
+}
+
+/**
+ * Configures [pre-commit install approval DSL][InstallPreapprovalDsl].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ */
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public inline fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: Locale,
+	configure: InstallPreapprovalDsl.() -> Unit = {}
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, configure)
 }

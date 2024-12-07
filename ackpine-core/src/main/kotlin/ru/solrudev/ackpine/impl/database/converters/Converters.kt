@@ -18,6 +18,10 @@ package ru.solrudev.ackpine.impl.database.converters
 
 import androidx.room.TypeConverter
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
+import ru.solrudev.ackpine.installer.parameters.PackageSource
+import ru.solrudev.ackpine.installer.parameters.PackageSource.Unspecified
+import ru.solrudev.ackpine.installer.parameters.packageSources
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
@@ -64,4 +68,26 @@ internal object UninstallFailureConverters {
 	@TypeConverter
 	@JvmStatic
 	internal fun toByteArray(uninstallFailure: UninstallFailure): ByteArray = uninstallFailure.serialize()
+}
+
+internal object TimeoutStrategyConverters {
+
+	@TypeConverter
+	@JvmStatic
+	internal fun fromByteArray(byteArray: ByteArray): TimeoutStrategy = byteArray.deserialize()
+
+	@TypeConverter
+	@JvmStatic
+	internal fun toByteArray(timeoutStrategy: TimeoutStrategy): ByteArray = timeoutStrategy.serialize()
+}
+
+internal object PackageSourceConverters {
+
+	@TypeConverter
+	@JvmStatic
+	internal fun fromOrdinal(ordinal: Int): PackageSource = packageSources.getOrNull(ordinal) ?: Unspecified
+
+	@TypeConverter
+	@JvmStatic
+	internal fun toByteArray(packageSource: PackageSource): Int = packageSource.ordinal
 }

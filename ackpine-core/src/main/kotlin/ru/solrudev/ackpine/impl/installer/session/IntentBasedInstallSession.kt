@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.impl.installer.session
 import android.content.Context
 import android.net.Uri
 import android.os.Build
-import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
@@ -43,6 +42,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -130,8 +130,8 @@ internal class IntentBasedInstallSession internal constructor(
 			}
 		}
 
-	override fun prepare(cancellationSignal: CancellationSignal) {
-		createApkCopy(cancellationSignal)
+	override fun prepare() {
+		createApkCopy()
 		val apkPackageName = context.packageManager
 			.getPackageArchiveInfo(apkFile.absolutePath, 0)
 			?.packageName
@@ -148,7 +148,7 @@ internal class IntentBasedInstallSession internal constructor(
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(notificationId: Int) {
+	override fun launchConfirmation() {
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
@@ -166,10 +166,11 @@ internal class IntentBasedInstallSession internal constructor(
 		setProgress((PROGRESS_MAX * 0.9).roundToInt())
 	}
 
-	override fun onCompleted(success: Boolean) {
-		if (success) {
+	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
+		if (state is Succeeded) {
 			setProgress(PROGRESS_MAX)
 		}
+		return true
 	}
 
 	private fun getApkUri(): Uri {
@@ -180,7 +181,7 @@ internal class IntentBasedInstallSession internal constructor(
 
 	}
 
-	private fun createApkCopy(cancellationSignal: CancellationSignal) {
+	private fun createApkCopy() {
 		if (apkFile.exists()) {
 			apkFile.delete()
 		}

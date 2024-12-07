@@ -16,57 +16,49 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
-import com.vanniktech.maven.publish.MavenPublishPlugin
+import com.vanniktech.maven.publish.MavenPublishBasePlugin
 import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.hasPlugin
-import org.gradle.kotlin.dsl.withType
-import org.jetbrains.dokka.gradle.DokkaPlugin
-import org.jetbrains.dokka.gradle.DokkaTaskPartial
 import ru.solrudev.ackpine.gradle.AckpineArtifact
-import ru.solrudev.ackpine.gradle.AckpineExtension
+import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		check(rootProject.plugins.hasPlugin(AckpinePublishingPlugin::class)) {
-			"Applying library-publish plugin requires the publishing plugin to be applied to the root project"
+		if (!pluginManager.hasPlugin(AckpineLibraryPlugin.PLUGIN_ID)) {
+			error("Applying library-publish plugin requires the library plugin to be applied")
 		}
-		check(plugins.hasPlugin(AckpineLibraryPlugin::class)) {
-			"Applying library-publish plugin requires the library plugin to be applied"
+		pluginManager.apply(MavenPublishBasePlugin::class)
+		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
+			addIdListener { id ->
+				configureArtifactCoordinates(id)
+			}
 		}
-		pluginManager.run {
-			apply(MavenPublishPlugin::class)
-			apply(DokkaPlugin::class)
-		}
-		val ackpineExtension = extensions.getByType<AckpineExtension>()
-		val artifact = ackpineExtension.extensions.create<AckpineArtifact>("artifact")
-		configureDokka(artifact)
-		configurePublishing(ackpineExtension, artifact)
+		val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
+		configurePublishing(artifact.name, provider { description })
 	}
 
-	private fun Project.configureDokka(artifact: AckpineArtifact) = afterEvaluate {
-		tasks.withType<DokkaTaskPartial>().configureEach {
-			enabled = artifact.dokka.get()
-		}
+	private fun Project.configureArtifactCoordinates(id: String) = extensions.configure<MavenPublishBaseExtension> {
+		coordinates(group.toString(), artifactId = "ackpine-$id", version.toString())
 	}
 
 	private fun Project.configurePublishing(
-		ackpineExtension: AckpineExtension,
-		artifact: AckpineArtifact
+		artifactName: Provider<String>,
+		artifactDescription: Provider<String>
 	) = extensions.configure<MavenPublishBaseExtension> {
 		configure(
-			AndroidSingleVariantLibrary(
-				variant = "release",
+			AndroidMultiVariantLibrary(
+				includedBuildTypeValues = setOf("release"),
 				sourcesJar = true,
 				publishJavadocJar = false
 			)
@@ -74,34 +66,30 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		publishToMavenCentral(SonatypeHost.S01)
 		signAllPublications()
 
-		afterEvaluate {
-			coordinates(group.toString(), artifactId = "ackpine-${ackpineExtension.id}", version.toString())
+		pom {
+			name = artifactName
+			description = artifactDescription
+			inceptionYear = "2023"
+			url = "https://ackpine.solrudev.ru"
 
-			pom {
-				name = artifact.name
-				description = this@afterEvaluate.description
-				inceptionYear = "2023"
-				url = "https://ackpine.solrudev.ru"
-
-				licenses {
-					license {
-						name = "The Apache Software License, Version 2.0"
-						url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
-					}
+			licenses {
+				license {
+					name = "The Apache Software License, Version 2.0"
+					url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
 				}
+			}
 
-				developers {
-					developer {
-						id = "solrudev"
-						name = "Ilya Fomichev"
-					}
+			developers {
+				developer {
+					id = "solrudev"
+					name = "Ilya Fomichev"
 				}
+			}
 
-				scm {
-					connection = "scm:git:github.com/solrudev/Ackpine.git"
-					developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
-					url = "https://github.com/solrudev/Ackpine/tree/master"
-				}
+			scm {
+				connection = "scm:git:github.com/solrudev/Ackpine.git"
+				developerConnection = "scm:git:ssh://github.com/solrudev/Ackpine.git"
+				url = "https://github.com/solrudev/Ackpine/tree/master"
 			}
 		}
 	}

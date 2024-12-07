@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,20 @@
  */
 
 plugins {
-	id("ru.solrudev.ackpine.publishing")
+	id("ru.solrudev.ackpine.project")
 }
 
-tasks.register<Delete>("clean").configure {
-	delete(rootProject.layout.buildDirectory)
+dependencies {
+	// task :buildAckpine
+	library(projects.ackpineCore)
+	library(projects.ackpineKtx)
+	library(projects.ackpineSplits)
+	library(projects.ackpineAssets)
+	library(projects.ackpineRuntime)
+	library(projects.ackpineResources)
+
+	// task :buildSamples
+	sample(projects.sampleJava)
+	sample(projects.sampleKtx)
+	sample(projects.sampleApi34)
 }

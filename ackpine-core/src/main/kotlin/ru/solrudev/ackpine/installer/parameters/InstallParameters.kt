@@ -68,8 +68,8 @@ public class InstallParameters private constructor(
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= 31 with [InstallerType.SESSION_BASED]
-	 * installer type.
+	 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
+	 * [InstallerType.SESSION_BASED] installer type.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
@@ -80,7 +80,53 @@ public class InstallParameters private constructor(
 	 *
 	 * Default value is [InstallMode.Full].
 	 */
-	public val installMode: InstallMode
+	public val installMode: InstallMode,
+
+	/**
+	 * Details for requesting the pre-commit install approval.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallPreapproval.NONE].
+	 *
+	 * @see [PackageInstaller.Session.requestUserPreapproval]
+	 */
+	public val preapproval: InstallPreapproval,
+
+	/**
+	 * Installation constraints.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * Default value is [InstallConstraints.NONE].
+	 *
+	 * @see [PackageInstaller.InstallConstraints]
+	 */
+	public val constraints: InstallConstraints,
+
+	/**
+	 * Optionally indicate whether the package being installed needs the update ownership
+	 * enforcement. Once the update ownership enforcement is enabled, the other installers
+	 * will need the user action to update the package even if the installers have been
+	 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
+	 *
+	 * The update ownership enforcement can only be enabled on initial installation. Setting
+	 * this to `true` on package update is a no-op.
+	 *
+	 * Applying this option is best-effort. It takes effect only on API level >=
+	 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+	 */
+	public val requestUpdateOwnership: Boolean,
+
+	/**
+	 * Indicates the package source of the app being installed. This is informational and may be used as a signal
+	 * by the system.
+	 *
+	 * Default value is [PackageSource.Unspecified].
+	 */
+	public val packageSource: PackageSource
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -94,6 +140,10 @@ public class InstallParameters private constructor(
 		if (name != other.name) return false
 		if (requireUserAction != other.requireUserAction) return false
 		if (installMode != other.installMode) return false
+		if (preapproval != other.preapproval) return false
+		if (constraints != other.constraints) return false
+		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
+		if (packageSource != other.packageSource) return false
 		return true
 	}
 
@@ -105,17 +155,27 @@ public class InstallParameters private constructor(
 		result = 31 * result + name.hashCode()
 		result = 31 * result + requireUserAction.hashCode()
 		result = 31 * result + installMode.hashCode()
+		result = 31 * result + preapproval.hashCode()
+		result = 31 * result + constraints.hashCode()
+		result = 31 * result + requestUpdateOwnership.hashCode()
+		result = 31 * result + packageSource.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "InstallParameters(apks=$apks, " +
+		return "InstallParameters(" +
+				"apks=$apks, " +
 				"installerType=$installerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
 				"name='$name', " +
 				"requireUserAction=$requireUserAction, " +
-				"installMode=$installMode)"
+				"installMode=$installMode, " +
+				"preapproval=$preapproval, " +
+				"constraints=$constraints, " +
+				"requestUpdateOwnership=$requestUpdateOwnership, " +
+				"packageSource=$packageSource" +
+				")"
 	}
 
 	/**
@@ -133,9 +193,6 @@ public class InstallParameters private constructor(
 			_apks = RealMutableApkList(apks)
 		}
 
-		/**
-		 * Mutable list of APKs [URIs][Uri] to install in one session.
-		 */
 		private val _apks: MutableApkList
 
 		/**
@@ -192,7 +249,7 @@ public class InstallParameters private constructor(
 		/**
 		 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 		 *
-		 * Applying this option is best-effort. It takes effect only on API level >= 31 with
+		 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
 		 * [InstallerType.SESSION_BASED] installer type.
 		 *
 		 * @see [PackageInstaller.SessionParams.setRequireUserAction]
@@ -206,6 +263,56 @@ public class InstallParameters private constructor(
 		 * Default value is [InstallMode.Full].
 		 */
 		public var installMode: InstallMode = InstallMode.Full
+			private set
+
+		/**
+		 * Details for requesting the pre-commit install approval.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 *
+		 * Default value is [InstallPreapproval.NONE].
+		 *
+		 * @see [PackageInstaller.Session.requestUserPreapproval]
+		 */
+		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
+			private set
+
+		/**
+		 * Installation constraints.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 *
+		 * Default value is [InstallConstraints.NONE].
+		 *
+		 * @see [PackageInstaller.InstallConstraints]
+		 */
+		public var constraints: InstallConstraints = InstallConstraints.NONE
+			private set
+
+		/**
+		 * Optionally indicate whether the package being installed needs the update ownership
+		 * enforcement. Once the update ownership enforcement is enabled, the other installers
+		 * will need the user action to update the package even if the installers have been
+		 * granted the `INSTALL_PACKAGES` permission. Default to `false`.
+		 *
+		 * The update ownership enforcement can only be enabled on initial installation. Set
+		 * this to `true` on package update is a no-op.
+		 *
+		 * Applying this option is best-effort. It takes effect only on API level >=
+		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
+		 */
+		public var requestUpdateOwnership: Boolean = false
+			private set
+
+		/**
+		 * Indicates the package source of the app being installed. This is informational and may be used as a signal
+		 * by the system.
+		 *
+		 * Default value is [PackageSource.Unspecified].
+		 */
+		public var packageSource: PackageSource = PackageSource.Unspecified
 			private set
 
 		/**
@@ -270,12 +377,50 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.preapproval].
+		 */
+		public fun setPreapproval(preapproval: InstallPreapproval): Builder = apply {
+			this.preapproval = preapproval
+		}
+
+		/**
+		 * Sets [InstallParameters.constraints].
+		 */
+		public fun setConstraints(constraints: InstallConstraints): Builder = apply {
+			this.constraints = constraints
+		}
+
+		/**
+		 * Sets [InstallParameters.requestUpdateOwnership].
+		 */
+		public fun setRequestUpdateOwnership(requestUpdateOwnership: Boolean): Builder = apply {
+			this.requestUpdateOwnership = requestUpdateOwnership
+		}
+
+		/**
+		 * Sets [InstallParameters.packageSource].
+		 */
+		public fun setPackageSource(packageSource: PackageSource): Builder = apply {
+			this.packageSource = packageSource
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
 			return InstallParameters(
-				apks, installerType, confirmation, notificationData, name, requireUserAction, installMode
+				ReadOnlyApkList(apks),
+				installerType,
+				confirmation,
+				notificationData,
+				name,
+				requireUserAction,
+				installMode,
+				preapproval,
+				constraints,
+				requestUpdateOwnership,
+				packageSource
 			)
 		}
 
@@ -327,10 +472,9 @@ private class RealMutableApkList : MutableApkList {
 	override fun toList() = apks.toList()
 
 	override fun equals(other: Any?): Boolean {
-		if (other !is RealMutableApkList) {
-			return false
-		}
-		return apks == other
+		if (this === other) return true
+		if (other !is RealMutableApkList) return false
+		return apks == other.apks
 	}
 
 	override fun hashCode() = apks.hashCode()
@@ -341,4 +485,16 @@ private class RealMutableApkList : MutableApkList {
 			throw SplitPackagesNotSupportedException()
 		}
 	}
+}
+
+private class ReadOnlyApkList(private val apkList: ApkList) : ApkList by apkList {
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is ReadOnlyApkList) return false
+		return apkList == other.apkList
+	}
+
+	override fun hashCode() = apkList.hashCode()
+	override fun toString() = apkList.toString()
 }

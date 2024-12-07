@@ -14,51 +14,11 @@
  * limitations under the License.
  */
 
-import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
-import ru.solrudev.ackpine.gradle.versioning.versionCode
-
 description = "Sample application in Java showcasing Ackpine usage"
 
 plugins {
-	id(libs.plugins.android.application.get().pluginId)
-}
-
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-}
-
-android {
-	compileSdk = 34
-	buildToolsVersion = "34.0.0"
-	namespace = Constants.SAMPLE_PACKAGE_NAME
-
-	defaultConfig {
-		applicationId = Constants.SAMPLE_PACKAGE_NAME
-		minSdk = 21
-		targetSdk = 34
-		versionCode = getVersionFromPropertiesFile().versionCode
-		versionName = rootProject.version.toString()
-	}
-
-	buildTypes {
-		named("release") {
-			isMinifyEnabled = true
-			isShrinkResources = true
-			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-		}
-	}
-
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_17
-		targetCompatibility = JavaVersion.VERSION_17
-	}
-
-	buildFeatures {
-		viewBinding = true
-	}
+	id("ru.solrudev.ackpine.sample.base")
+	id("ru.solrudev.ackpine.app-release")
 }
 
 dependencies {

@@ -14,47 +14,64 @@
  * limitations under the License.
  */
 
+@file:SuppressLint("LongLogTag")
+
 package ru.solrudev.ackpine.impl.installer.session
 
 import android.annotation.SuppressLint
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
+import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
 import android.content.pm.PackageInstaller.SessionParams.MODE_INHERIT_EXISTING
 import android.content.pm.PackageManager
 import android.content.res.AssetFileDescriptor
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
-import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import android.os.Process
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import androidx.concurrent.futures.ResolvableFuture
-import com.google.common.util.concurrent.ListenableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.core.content.edit
+import androidx.core.os.bundleOf
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
+import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallCommitActivity
+import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
-import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
-import ru.solrudev.ackpine.impl.session.helpers.commitSession
-import ru.solrudev.ackpine.impl.session.helpers.getSessionBasedSessionCommitProgressValue
-import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
+import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.InstallFailure.Timeout
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import ru.solrudev.ackpine.installer.parameters.InstallMode
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Completed
+import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -63,6 +80,10 @@ import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
+
+private const val ACKPINE_SESSION_BASED_INSTALLER = "ackpine_session_based_installer"
+private const val SESSION_COMMIT_PROGRESS_VALUE = "session_commit_progress_value"
+private const val TAG = "SessionBasedInstallSession"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -76,13 +97,21 @@ internal class SessionBasedInstallSession internal constructor(
 	private val notificationData: NotificationData,
 	private val requireUserAction: Boolean,
 	private val installMode: InstallMode,
+	private val preapproval: InstallPreapproval,
+	private val constraints: InstallConstraints,
+	private val requestUpdateOwnership: Boolean,
+	private val packageSource: PackageSource,
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
+	private val installPreapprovalDao: InstallPreapprovalDao,
+	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler,
 	notificationId: Int,
+	commitAttemptsCount: Int,
+	@Volatile private var isPreapproved: Boolean,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
@@ -90,7 +119,7 @@ internal class SessionBasedInstallSession internal constructor(
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
 	notificationId, dbWriteSemaphore
-) {
+), PreapprovalListener {
 
 	@Volatile
 	private var nativeSessionId = -1
@@ -98,7 +127,11 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var sessionCallback: PackageInstaller.SessionCallback? = null
 
+	@Volatile
+	private var isPreapprovalActive = false
+
 	private val nativeSessionIdSemaphore = BinarySemaphore()
+	private val attempts = AtomicInteger(commitAttemptsCount)
 
 	init {
 		completeIfSucceeded(initialState, initialProgress)
@@ -132,54 +165,226 @@ internal class SessionBasedInstallSession internal constructor(
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
 
-	override fun prepare(cancellationSignal: CancellationSignal) {
-		nativeSessionIdSemaphore.withPermit {
-			if (nativeSessionId != -1) {
-				abandonSession()
-				packageInstaller.clearSessionCallback()
-			}
+	override fun prepare() {
+		if (isPreapprovalActive) {
+			return
 		}
-		val sessionId = packageInstaller.createSession(createSessionParams())
-		nativeSessionId = sessionId
-		persistNativeSessionId(sessionId)
-		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
-		val session = packageInstaller.openSession(sessionId)
-		session.writeApks(cancellationSignal).handleResult(
-			onException = { exception ->
-				session.close()
-				if (exception is OperationCanceledException) {
-					cancel()
-				} else {
-					completeExceptionally(exception)
-				}
-			},
-			block = {
-				session.close()
-				notifyAwaiting()
-			})
+		val sessionId = getSessionId()
+		if (!shouldRequestPreapproval()) {
+			writeApksToSession(sessionId)
+			return
+		}
+		val preapprovalDetails = createPackageInstallerPreapprovalDetails()
+		packageInstaller.openSession(sessionId).requestUserPreapproval(
+			preapprovalDetails,
+			createPackageInstallerStatusIntentSender()
+		)
 	}
 
-	override fun launchConfirmation(notificationId: Int) {
-		when (confirmation) {
-			Confirmation.IMMEDIATE -> {
-				packageInstaller.commitSession(
-					context, nativeSessionId, ackpineSessionId = id, generateRequestCode()
-				)
-				notifyCommitted()
-			}
-			Confirmation.DEFERRED -> context.launchConfirmation<SessionBasedInstallCommitActivity>(
-				confirmation, notificationData,
-				sessionId = id,
-				notificationId,
-				generateRequestCode(),
-				CANCEL_CURRENT_FLAGS
-			) { intent -> intent.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId) }
+	override fun launchConfirmation() {
+		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
+			commitPackageInstallerSession()
+		} else try {
+			commitPackageInstallerSessionWithConstraints()
+		} catch (exception: SecurityException) {
+			Log.w(TAG, "$id: ${exception.message}")
+			commitPackageInstallerSession()
 		}
+		val currentAttempt = attempts.incrementAndGet()
+		notifyCommitted()
+		dbWriteSemaphore.withPermit {
+			installConstraintsDao.setCommitAttemptsCount(id.toString(), currentAttempt)
+		}
+	}
+
+	override fun onPreapproval() {
+		isPreapprovalActive = true
+	}
+
+	override fun onPreapproved() {
+		isPreapproved = true
+		isPreapprovalActive = false
+		executor.execute {
+			dbWriteSemaphore.withPermit {
+				installPreapprovalDao.setPreapproved(id.toString())
+			}
+		}
+		executor.execute {
+			try {
+				writeApksToSession(nativeSessionId)
+			} catch (_: OperationCanceledException) {
+				cancel()
+			} catch (exception: Exception) {
+				completeExceptionally(exception)
+			}
+		}
+	}
+
+	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
+		if (!shouldApplyInstallConstraints() || constraints.timeoutStrategy == TimeoutStrategy.Fail) {
+			return true
+		}
+		if (state !is Failed || state.failure !is Timeout) {
+			return true
+		}
+		if (shouldCommitNormallyAfterTimeout()) {
+			notifyAwaiting()
+			return false
+		}
+		if (constraints.timeoutStrategy is TimeoutStrategy.Retry) {
+			val currentAttempt = attempts.get()
+			val shouldRetry = currentAttempt <= constraints.timeoutStrategy.retries
+			if (shouldRetry) {
+				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
+				notifyAwaiting()
+			}
+			return !shouldRetry
+		}
+		return true
 	}
 
 	override fun doCleanup() {
 		executor.execute(::abandonSession) // may be long if storage is under load
-		packageInstaller.clearSessionCallback()
+		clearPackageInstallerSessionCallback()
+		isPreapprovalActive = false
+	}
+
+	private fun shouldRequestPreapproval(): Boolean {
+		return !isPreapproved
+				&& preapproval != InstallPreapproval.NONE
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	}
+
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	private fun createPackageInstallerPreapprovalDetails(): PackageInstaller.PreapprovalDetails {
+		val icon = readPreapprovalIconBitmap()
+		val builder = PackageInstaller.PreapprovalDetails.Builder()
+			.setPackageName(preapproval.packageName)
+			.setLabel(preapproval.label)
+			.setLocale(ULocale.forLanguageTag(preapproval.languageTag))
+		if (icon != null) {
+			builder.setIcon(icon)
+		}
+		return builder.build()
+	}
+
+	private fun readPreapprovalIconBitmap(): Bitmap? {
+		if (preapproval.icon == Uri.EMPTY) {
+			return null
+		}
+		return try {
+			context.contentResolver.openInputStream(preapproval.icon)?.use { iconStream ->
+				iconStream.buffered().use { bufferedIconStream ->
+					BitmapFactory.decodeStream(bufferedIconStream)
+				}
+			}
+		} catch (_: Exception) {
+			null
+		}
+	}
+
+	private fun shouldApplyInstallConstraints(): Boolean {
+		return constraints != InstallConstraints.NONE
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	}
+
+	private fun shouldCommitNormallyAfterTimeout(): Boolean {
+		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly
+				&& attempts.get() == 1
+	}
+
+	private fun commitPackageInstallerSession() {
+		val statusReceiver = createPackageInstallerStatusIntentSender()
+		val sessionId = nativeSessionId
+		if (packageInstaller.getSessionInfo(sessionId) != null) {
+			packageInstaller.openSession(sessionId).commit(statusReceiver)
+			writeCommitProgressIfAbsent()
+		}
+	}
+
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	private fun commitPackageInstallerSessionWithConstraints() {
+		val statusReceiver = createPackageInstallerStatusIntentSender()
+		val sessionId = nativeSessionId
+		if (packageInstaller.getSessionInfo(sessionId) != null) {
+			val installConstraints = createPackageInstallerInstallConstraints()
+			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
+				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
+			)
+			writeCommitProgressIfAbsent()
+		}
+	}
+
+	private fun createPackageInstallerStatusIntentSender(): IntentSender {
+		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
+			action = PackageInstallerStatusReceiver.getAction(context)
+			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
+			val notificationBundle = bundleOf(
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE to notificationData.title,
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE to notificationData.contentText,
+				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON to notificationData.icon,
+			)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_BUNDLE, notificationBundle)
+			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+		}
+		val receiverPendingIntent = PendingIntent.getBroadcast(
+			context,
+			generateRequestCode(),
+			receiverIntent,
+			UPDATE_CURRENT_FLAGS
+		)
+		return receiverPendingIntent.intentSender
+	}
+
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	private fun createPackageInstallerInstallConstraints(): PackageInstaller.InstallConstraints {
+		val builder = PackageInstaller.InstallConstraints.Builder()
+		if (constraints.isAppNotForegroundRequired) {
+			builder.setAppNotForegroundRequired()
+		}
+		if (constraints.isAppNotInteractingRequired) {
+			builder.setAppNotForegroundRequired()
+		}
+		if (constraints.isAppNotTopVisibleRequired) {
+			builder.setAppNotTopVisibleRequired()
+		}
+		if (constraints.isDeviceIdleRequired) {
+			builder.setDeviceIdleRequired()
+		}
+		if (constraints.isNotInCallRequired) {
+			builder.setNotInCallRequired()
+		}
+		return builder.build()
+	}
+
+	private fun writeCommitProgressIfAbsent() {
+		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		if (!preferences.contains(SESSION_COMMIT_PROGRESS_VALUE)) {
+			preferences.edit {
+				putFloat(
+					SESSION_COMMIT_PROGRESS_VALUE,
+					packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
+				)
+			}
+		}
+	}
+
+	private fun getSessionId(): Int {
+		val isSessionCreated = nativeSessionIdSemaphore.withPermit { nativeSessionId != -1 }
+		if (isSessionCreated) {
+			return nativeSessionId
+		}
+		return createSession()
+	}
+
+	private fun createSession(): Int {
+		val sessionId = packageInstaller.createSession(createSessionParams())
+		nativeSessionId = sessionId
+		persistNativeSessionId(sessionId)
+		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
+		return sessionId
 	}
 
 	private fun createSessionParams(): PackageInstaller.SessionParams {
@@ -187,6 +392,9 @@ internal class SessionBasedInstallSession internal constructor(
 			is InstallMode.Full -> PackageInstaller.SessionParams(MODE_FULL_INSTALL)
 			is InstallMode.InheritExisting -> PackageInstaller.SessionParams(MODE_INHERIT_EXISTING).apply {
 				setAppPackageName(installMode.packageName)
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+					setDontKillApp(installMode.dontKillApp)
+				}
 			}
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -203,12 +411,33 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 			sessionParams.setRequireUserAction(requireUserAction)
 		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			sessionParams.setPackageSource(packageSource.toPackageInstallerPackageSource())
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			sessionParams.setRequestUpdateOwnership(requestUpdateOwnership)
+		}
 		return sessionParams
 	}
 
-	@SuppressLint("RestrictedApi")
-	private fun PackageInstaller.Session.writeApks(cancellationSignal: CancellationSignal): ListenableFuture<Unit> {
-		val future = ResolvableFuture.create<Unit>()
+	private fun writeApksToSession(sessionId: Int) {
+		val session = packageInstaller.openSession(sessionId)
+		session.writeApks().handleResult(
+			onException = { exception ->
+				session.close()
+				if (exception is OperationCanceledException) {
+					cancel()
+				} else {
+					completeExceptionally(exception)
+				}
+			},
+			block = {
+				session.close()
+				notifyAwaiting()
+			})
+	}
+
+	private fun PackageInstaller.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
@@ -218,30 +447,29 @@ internal class SessionBasedInstallSession internal constructor(
 			try {
 				executor.execute {
 					try {
-						writeApk(afd, index, currentProgress, progressMax, cancellationSignal)
+						writeApk(afd, index, currentProgress, progressMax)
 						if (countdown.decrementAndGet() == 0) {
-							future.set(Unit)
+							completer.set(Unit)
 						}
 					} catch (t: Throwable) {
-						future.setException(t)
+						completer.setException(t)
 					} finally {
 						afd.close()
 					}
 				}
 			} catch (t: Throwable) {
-				future.setException(t)
+				completer.setException(t)
 				afd.close()
 			}
 		}
-		return future
+		"SessionBasedInstallSession.writeApks"
 	}
 
 	private fun PackageInstaller.Session.writeApk(
 		afd: AssetFileDescriptor,
 		index: Int,
 		currentProgress: AtomicInteger,
-		progressMax: Int,
-		cancellationSignal: CancellationSignal
+		progressMax: Int
 	) = afd.createInputStream().use { apkStream ->
 		requireNotNull(apkStream) { "APK $index InputStream was null." }
 		val length = afd.declaredLength
@@ -266,11 +494,11 @@ internal class SessionBasedInstallSession internal constructor(
 		return callback
 	}
 
-	private fun PackageInstaller.clearSessionCallback() {
+	private fun clearPackageInstallerSessionCallback() {
 		val callback = sessionCallback ?: return
 		sessionCallback = null
 		handler.post {
-			unregisterSessionCallback(callback)
+			packageInstaller.unregisterSessionCallback(callback)
 		}
 	}
 
@@ -299,4 +527,20 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
+}
+
+@JvmSynthetic
+internal fun Context.getSessionBasedSessionCommitProgressValue(): Float {
+	return getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+		.getFloat(SESSION_COMMIT_PROGRESS_VALUE, 1f)
+}
+
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
+private fun PackageSource.toPackageInstallerPackageSource() = when (this) {
+	PackageSource.Unspecified -> PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED
+	PackageSource.Store -> PackageInstaller.PACKAGE_SOURCE_STORE
+	PackageSource.LocalFile -> PackageInstaller.PACKAGE_SOURCE_LOCAL_FILE
+	PackageSource.DownloadedFile -> PackageInstaller.PACKAGE_SOURCE_DOWNLOADED_FILE
+	PackageSource.Other -> PackageInstaller.PACKAGE_SOURCE_OTHER
+	else -> PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED
 }

@@ -16,44 +16,29 @@
 
 package ru.solrudev.ackpine.gradle
 
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
-public abstract class AckpineExtension @Inject constructor(
-	private val libraryExtension: LibraryExtension
-) : ExtensionAware {
+internal typealias IdListener = (id: String) -> Unit
 
-	private var _id = ""
+/**
+ * Extension for Ackpine `library` plugin.
+ */
+public abstract class AckpineLibraryExtension @Inject constructor(
+	libraryExtension: LibraryExtension
+) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware
 
-	/**
-	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes and in artifact ID.
-	 */
-	public var id: String
-		get() = _id
-		set(value) {
-			_id = value
-			libraryExtension.namespace = "${Constants.PACKAGE_NAME}.$value"
-		}
-
-	/**
-	 * Minimum SDK version.
-	 */
-	public var minSdk: Int? by libraryExtension.defaultConfig::minSdk
-}
-
+/**
+ * Extension for Ackpine `library-publish` plugin.
+ */
 public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFactory) {
 
 	/**
 	 * Name of the published artifact.
 	 */
 	public val name: Property<String> = objectFactory.property<String>().convention("")
-
-	/**
-	 * Enable or disable API documentation generation with Dokka for this module.
-	 */
-	public val dokka: Property<Boolean> = objectFactory.property<Boolean>().convention(true)
 }

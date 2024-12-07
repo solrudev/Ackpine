@@ -66,7 +66,6 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 			putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, packageName)
 		}
 		startActivityForResult(intent, requestCode)
-		notifySessionCommitted()
 	}
 
 	internal companion object {

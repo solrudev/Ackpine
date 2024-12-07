@@ -219,7 +219,7 @@ public final class InstallFragment extends Fragment {
 	@NonNull
 	private HashSet<String> getRequiredPermissions() {
 		final var permissions = new HashSet<String>();
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
 			permissions.add(READ_EXTERNAL_STORAGE);
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -232,7 +232,7 @@ public final class InstallFragment extends Fragment {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true;
 		}
-		final var readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+		final var readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
 				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
 		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;

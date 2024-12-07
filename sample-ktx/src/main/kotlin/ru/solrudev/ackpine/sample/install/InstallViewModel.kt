@@ -52,7 +52,6 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.SessionResult
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
@@ -99,11 +98,11 @@ class InstallViewModel(
 	}
 
 	private fun awaitSessionsFromSavedState() = viewModelScope.launch {
-		val sessions = this@InstallViewModel.sessionDataRepository.sessions.value
+		val sessions = sessionDataRepository.sessions.value
 		if (sessions.isNotEmpty()) {
 			sessions
 				.map { sessionData ->
-					async { this@InstallViewModel.packageInstaller.getSession(sessionData.id) }
+					async { packageInstaller.getSession(sessionData.id) }
 				}
 				.awaitAll()
 				.filterNotNull()
@@ -121,8 +120,8 @@ class InstallViewModel(
 			.launchIn(this)
 		try {
 			when (val result = session.await()) {
-				is SessionResult.Success -> sessionDataRepository.removeSessionData(session.id)
-				is SessionResult.Error -> handleSessionError(result.cause.message, session.id)
+				Session.State.Succeeded -> sessionDataRepository.removeSessionData(session.id)
+				is Session.State.Failed -> handleSessionError(result.failure.message, session.id)
 			}
 		} catch (exception: CancellationException) {
 			sessionDataRepository.removeSessionData(session.id)
@@ -146,7 +145,7 @@ class InstallViewModel(
 		try {
 			return map { it.uri }.toList()
 		} catch (exception: SplitPackageException) {
-			val errorString = when (exception) {
+			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
 				is ConflictingBaseApkException -> ResolvableString.transientResource(R.string.error_conflicting_base_apk)
 				is ConflictingSplitNameException -> ResolvableString.transientResource(
@@ -164,7 +163,6 @@ class InstallViewModel(
 					exception.expected, exception.actual, exception.name
 				)
 			}
-			error.value = errorString
 			return emptyList()
 		} catch (exception: Exception) {
 			error.value = ResolvableString.raw(exception.message.orEmpty())

@@ -19,6 +19,7 @@ description = "A library providing consistent APIs for installing and uninstalli
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
 	alias(libs.plugins.kotlin.ksp)
 }
 

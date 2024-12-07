@@ -27,11 +27,12 @@ Launching an install or uninstall session with default parameters and getting it
     ```kotlin
     try {
         when (val result = packageInstaller.createSession(apkUri).await()) {
-            is SessionResult.Success -> println("Success")
-            is SessionResult.Error -> println(result.cause.message)
+            Session.State.Succeeded -> println("Success")
+            is Session.State.Failed -> println(result.failure.message)
         }
-    } catch (_: CancellationException) {
+    } catch (cancellationException: CancellationException) {
         println("Cancelled")
+        throw cancellationException
     } catch (exception: Exception) {
         println(exception)
     }
@@ -166,7 +167,7 @@ Error causes are delivered as `Failure` objects through state listener or as a r
 === "Kotlin"
 
     ```kotlin
-    val failure = installError.cause
+    val failure = failedResult.failure
     val error = when (failure) {
         is InstallFailure.Aborted -> "Aborted"
         is InstallFailure.Blocked -> "Blocked by ${failure.otherPackageName}"
@@ -177,6 +178,7 @@ Error causes are delivered as `Failure` objects through state listener or as a r
         is InstallFailure.Invalid -> "Invalid"
         is InstallFailure.Storage -> "Storage path: ${failure.storagePath}"
         is InstallFailure.Timeout -> "Timeout"
+        else -> "Unknown failure"
     }
     ```
 
@@ -202,6 +204,8 @@ Error causes are delivered as `Failure` objects through state listener or as a r
         error = "Storage path: " + f.getStoragePath();
     } else if (failure instanceof InstallFailure.Timeout) {
         error = "Timeout";
+    } else {
+        error = "Unknown failure";
     }
     ```
 

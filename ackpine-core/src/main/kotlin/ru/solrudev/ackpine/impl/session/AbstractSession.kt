@@ -49,7 +49,6 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -64,15 +63,16 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val executor: Executor,
 	private val handler: Handler,
 	private val exceptionalFailureFactory: (Exception) -> F,
-	private val notificationId: Int,
+	protected val notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : CompletableSession<F> {
+
+	protected val cancellationSignal = CancellationSignal()
 
 	private val stateListeners = Collections.newSetFromMap(
 		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
 	)
 
-	private val cancellationSignal = CancellationSignal()
 	private val stateLock = Any()
 	private val isCancelling = AtomicBoolean(false)
 	private val isCommitCalled = AtomicBoolean(false)
@@ -107,13 +107,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * be called.
 	 */
 	@WorkerThread
-	protected abstract fun prepare(cancellationSignal: CancellationSignal)
+	protected abstract fun prepare()
 
 	/**
-	 * Launch session's confirmation with [Context.launchConfirmation]. This method is called on a worker thread.
+	 * Launch session's confirmation. This method is called on a worker thread.
 	 */
 	@WorkerThread
-	protected abstract fun launchConfirmation(notificationId: Int)
+	protected abstract fun launchConfirmation()
 
 	/**
 	 * Release any held resources after session's completion or cancellation. Processing in this method should be
@@ -125,6 +125,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
 	 */
 	protected fun notifyAwaiting() {
+		isCommitCalled.set(false)
 		state = Awaiting
 		isPreparing = false
 	}
@@ -138,25 +139,24 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	/**
 	 * This callback method is invoked when the session's been [completed][Session.isCompleted]. Processing in
 	 * this method should be lightweight.
+	 * @return `true` if completion was handled.
 	 */
-	protected open fun onCompleted(success: Boolean) { /* optional */ }
+	protected open fun onCompleted(state: Completed<F>): Boolean = true
 
 	final override fun launch(): Boolean {
 		if (isPreparing || isCancelling.get()) {
 			return false
 		}
-		val isStateChangedToActive = stateUpdater.compareAndSet(this, Pending, Active)
-		if (isStateChangedToActive) {
-			notifyStateListeners(Active)
-		}
-		if (!isStateChangedToActive || state !is Active) {
+		val currentState = state
+		if (currentState !is Pending && currentState !is Active) {
 			return false
 		}
 		isPreparing = true
+		state = Active
 		executor.execute {
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
-				prepare(cancellationSignal)
+				prepare()
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
@@ -179,7 +179,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		executor.execute {
 			try {
-				launchConfirmation(notificationId)
+				launchConfirmation()
 			} catch (_: OperationCanceledException) {
 				handleCancellation()
 			} catch (exception: Exception) {
@@ -238,9 +238,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun complete(state: Completed<F>) {
-		onCompleted(state is Succeeded)
-		this.state = state
-		cleanup()
+		if (onCompleted(state)) {
+			this.state = state
+			cleanup()
+		}
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
@@ -284,12 +285,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		Cancelled -> SessionEntity.State.CANCELLED
 		Succeeded -> SessionEntity.State.SUCCEEDED
 		is Failed -> SessionEntity.State.FAILED
-	}
-
-	private companion object {
-		private val stateUpdater = AtomicReferenceFieldUpdater.newUpdater(
-			AbstractSession::class.java, Session.State::class.java, "state"
-		)
 	}
 }
 

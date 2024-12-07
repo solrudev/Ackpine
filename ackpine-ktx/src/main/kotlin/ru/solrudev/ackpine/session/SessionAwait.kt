@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,8 +35,65 @@ import kotlin.coroutines.resumeWithException
  *
  * This function handles session's lifecycle appropriately, like [Session.TerminalStateListener].
  *
+ * @return [Session.State.Completed]
+ */
+@JvmName("awaitCompletedState")
+public suspend fun <F : Failure> Session<F>.await(): Session.State.Completed<F> {
+	return suspendCancellableCoroutine { continuation ->
+		val subscriptionContainer = DisposableSubscriptionContainer()
+		addStateListener(subscriptionContainer, AwaitCompletedSessionStateListener(this, continuation))
+		continuation.invokeOnCancellation {
+			subscriptionContainer.dispose()
+			cancel()
+		}
+	}
+}
+
+private class AwaitCompletedSessionStateListener<F : Failure>(
+	private val session: Session<F>,
+	private val continuation: CancellableContinuation<Session.State.Completed<F>>
+) : Session.StateListener<F> {
+
+	override fun onStateChanged(sessionId: UUID, state: Session.State<F>) {
+		if (state.isTerminal) {
+			session.removeStateListener(this)
+		}
+		when (state) {
+			Session.State.Pending -> session.launch()
+			Session.State.Active -> session.launch() // re-launch if preparations were interrupted
+			Session.State.Awaiting -> session.commit()
+			Session.State.Committed -> session.commit() // re-commit if confirmation was interrupted
+			Session.State.Cancelled -> continuation.cancel()
+			Session.State.Succeeded -> continuation.resume(Session.State.Succeeded)
+			is Session.State.Failed -> state.failure.let { failure ->
+				if (failure is Failure.Exceptional) {
+					continuation.resumeWithException(failure.exception)
+				} else {
+					continuation.resume(state)
+				}
+			}
+		}
+	}
+}
+
+/**
+ * Launches the [Session] if it's not already, awaits for its completion without blocking a thread and resumes when it's
+ * complete, returning the resulting value or throwing the corresponding exception if the session was cancelled.
+ *
+ * This suspending function is cancellable.
+ * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
+ * function immediately resumes with [CancellationException] and cancels the session.
+ *
+ * This function handles session's lifecycle appropriately, like [Session.TerminalStateListener].
+ *
  * @return [SessionResult]
  */
+@Deprecated(
+	message = "This overload returns deprecated SessionResult type. It will be removed in next minor release.",
+	level = DeprecationLevel.HIDDEN
+)
+@Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "DEPRECATION_ERROR")
+@kotlin.internal.LowPriorityInOverloadResolution
 public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendCancellableCoroutine { continuation ->
 	val subscriptionContainer = DisposableSubscriptionContainer()
 	addStateListener(subscriptionContainer, AwaitSessionStateListener(this, continuation))
@@ -46,6 +103,7 @@ public suspend fun <F : Failure> Session<F>.await(): SessionResult<F> = suspendC
 	}
 }
 
+@Suppress("DEPRECATION_ERROR")
 private class AwaitSessionStateListener<F : Failure>(
 	private val session: Session<F>,
 	private val continuation: CancellableContinuation<SessionResult<F>>

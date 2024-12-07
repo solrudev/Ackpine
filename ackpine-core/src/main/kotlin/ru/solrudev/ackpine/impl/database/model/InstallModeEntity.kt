@@ -38,7 +38,9 @@ internal data class InstallModeEntity internal constructor(
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
 	@ColumnInfo(name = "install_mode")
-	val installMode: InstallMode
+	val installMode: InstallMode,
+	@ColumnInfo(name = "dont_kill_app", defaultValue = "false")
+	val dontKillApp: Boolean
 ) {
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

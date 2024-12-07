@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.impl.uninstaller.session
 
 import android.content.Context
-import android.os.CancellationSignal
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
@@ -58,12 +57,12 @@ internal class UninstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ) {
 
-	override fun prepare(cancellationSignal: CancellationSignal) {
+	override fun prepare() {
 		// no preparation needed
 		notifyAwaiting()
 	}
 
-	override fun launchConfirmation(notificationId: Int) {
+	override fun launchConfirmation() {
 		context.launchConfirmation<UninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,14 @@ rootProject.name = "build-logic"
 pluginManagement {
 	repositories {
 		gradlePluginPortal()
-		google()
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+				includeGroup("com.google.testing.platform")
+			}
+		}
 		mavenCentral()
 	}
 }
@@ -27,12 +34,19 @@ pluginManagement {
 dependencyResolutionManagement {
 	repositories {
 		gradlePluginPortal()
-		google()
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+				includeGroup("com.google.testing.platform")
+			}
+		}
 		mavenCentral()
 	}
 
 	versionCatalogs {
-		create("libs") {
+		register("libs") {
 			from(files("../gradle/libs.versions.toml"))
 		}
 	}

@@ -26,6 +26,10 @@ kotlin {
 gradlePlugin {
 	plugins {
 		register("ackpine") {
+			id = "ru.solrudev.ackpine.project"
+			implementationClass = "ru.solrudev.ackpine.gradle.AckpinePlugin"
+		}
+		register("ackpine-library") {
 			id = "ru.solrudev.ackpine.library"
 			implementationClass = "ru.solrudev.ackpine.gradle.AckpineLibraryPlugin"
 		}
@@ -33,9 +37,21 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.library-publish"
 			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpineLibraryPublishPlugin"
 		}
-		register("ackpine-publishing") {
-			id = "ru.solrudev.ackpine.publishing"
-			implementationClass = "ru.solrudev.ackpine.gradle.publishing.AckpinePublishingPlugin"
+		register("ackpine-app-release") {
+			id = "ru.solrudev.ackpine.app-release"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AppReleasePlugin"
+		}
+		register("ackpine-sample") {
+			id = "ru.solrudev.ackpine.sample.base"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AckpineSampleBasePlugin"
+		}
+		register("ackpine-kotlin-sample") {
+			id = "ru.solrudev.ackpine.sample.kotlin"
+			implementationClass = "ru.solrudev.ackpine.gradle.app.AckpineKotlinSamplePlugin"
+		}
+		register("ackpine-dokka") {
+			id = "ru.solrudev.ackpine.dokka"
+			implementationClass = "ru.solrudev.ackpine.gradle.documentation.DokkaConventionPlugin"
 		}
 	}
 }

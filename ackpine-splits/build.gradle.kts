@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ description = "Utilities for working with split APKs"
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
 }
 
 ackpine {

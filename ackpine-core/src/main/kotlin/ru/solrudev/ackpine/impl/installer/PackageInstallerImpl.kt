@@ -18,23 +18,29 @@ package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
-import androidx.concurrent.futures.ResolvableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithFuture
+import ru.solrudev.ackpine.helpers.concurrent.executeWithCompleter
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
+import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
@@ -42,6 +48,9 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
+
+private typealias SessionsCollectionTransformer =
+			(Collection<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
@@ -85,39 +94,39 @@ internal class PackageInstallerImpl internal constructor(
 		return session
 	}
 
-	@SuppressLint("RestrictedApi")
-	override fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?> {
-		val future = ResolvableFuture.create<ProgressSession<InstallFailure>?>()
-		sessions[sessionId]?.let(future::set) ?: executor.executeWithFuture(future) {
+	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
+		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
 			if (areCommittedSessionsInitialized) {
-				getSessionFromDb(sessionId, future)
+				getSessionFromDb(sessionId, completer)
 			} else {
 				committedSessionsInitSemaphore.withPermit {
-					getSessionFromDb(sessionId, future)
+					getSessionFromDb(sessionId, completer)
 				}
 			}
 		}
-		return future
+		"PackageInstallerImpl.getSessionAsync($sessionId)"
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		val tag = "PackageInstallerImpl.getSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
-				set(sessions.values.toList())
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.toList())
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.toList() }
+		return initializeSessions(tag) { sessions -> sessions.toList() }
 	}
 
-	@SuppressLint("RestrictedApi")
 	override fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		val tag = "PackageInstallerImpl.getActiveSessionsAsync"
 		if (isSessionsMapInitialized) {
-			return ResolvableFuture.create<List<ProgressSession<InstallFailure>>>().apply {
-				set(sessions.values.filter { it.isActive })
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(sessions.values.filter { it.isActive })
+				tag
 			}
 		}
-		return initializeSessions { sessions -> sessions.filter { it.isActive } }
+		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
 	}
 
 	@SuppressLint("NewApi")
@@ -155,46 +164,47 @@ internal class PackageInstallerImpl internal constructor(
 		areCommittedSessionsInitialized = true
 	}
 
-	@SuppressLint("RestrictedApi")
-	private fun getSessionFromDb(sessionId: UUID, future: ResolvableFuture<ProgressSession<InstallFailure>>) {
+	private fun getSessionFromDb(
+		sessionId: UUID,
+		completer: Completer<ProgressSession<InstallFailure>?>
+	) {
 		sessions[sessionId]?.let { session ->
-			future.set(session)
+			completer.set(session)
 			return
 		}
 		val session = installSessionDao.getInstallSession(sessionId.toString())
 		val installSession = session?.toInstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-		future.set(installSession)
+		completer.set(installSession)
 	}
 
-	@SuppressLint("RestrictedApi")
 	private inline fun initializeSessions(
-		crossinline transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
-	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		val future = ResolvableFuture.create<List<ProgressSession<InstallFailure>>>()
-		executor.executeWithFuture(future) {
+		caller: String,
+		crossinline transform: SessionsCollectionTransformer
+	) = CallbackToFutureAdapter.getFuture { completer ->
+		executor.executeWithCompleter(completer) {
 			committedSessionsInitSemaphore.withPermit {
-				initializeSessions(future, transform)
+				val sessions = initializeSessions()
+				completer.set(transform(sessions))
 			}
 		}
-		return future
+		"$caller -> PackageInstallerImpl.initializeSessions"
 	}
 
-	@SuppressLint("RestrictedApi")
-	private inline fun initializeSessions(
-		future: ResolvableFuture<List<ProgressSession<InstallFailure>>>,
-		transform: (Iterable<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
-	) {
+	private fun initializeSessions(): Collection<ProgressSession<InstallFailure>> {
 		if (isSessionsMapInitialized) {
-			return
+			return sessions.values
 		}
-		for (session in installSessionDao.getInstallSessions()) {
-			if (!sessions.containsKey(UUID.fromString(session.session.id))) {
+		installSessionDao.getInstallSessions()
+			.asSequence()
+			.filterNot { session ->
+				sessions.containsKey(UUID.fromString(session.session.id))
+			}
+			.forEach { session ->
 				val installSession = session.toInstallSession()
 				sessions.putIfAbsent(installSession.id, installSession)
 			}
-		}
 		isSessionsMapInitialized = true
-		future.set(transform(sessions.values))
+		return sessions.values
 	}
 
 	private fun persistSession(
@@ -203,22 +213,48 @@ internal class PackageInstallerImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
+		val sessionId = id.toString()
 		var packageName: String? = null
 		val installMode = when (parameters.installMode) {
-			is InstallMode.Full -> InstallModeEntity.InstallMode.FULL
+			is InstallMode.Full -> InstallModeEntity(
+				sessionId,
+				InstallModeEntity.InstallMode.FULL,
+				dontKillApp = false
+			)
 			is InstallMode.InheritExisting -> {
 				packageName = parameters.installMode.packageName
-				InstallModeEntity.InstallMode.INHERIT_EXISTING
+				InstallModeEntity(
+					sessionId,
+					InstallModeEntity.InstallMode.INHERIT_EXISTING,
+					parameters.installMode.dontKillApp
+				)
 			}
 		}
 		val notificationData = installSessionFactory.resolveNotificationData(
 			parameters.notificationData,
 			parameters.name
 		)
+		val preapproval = InstallPreapprovalEntity(
+			sessionId,
+			parameters.preapproval.packageName,
+			parameters.preapproval.label,
+			parameters.preapproval.languageTag,
+			parameters.preapproval.icon.toString()
+		)
+		val constraints = InstallConstraintsEntity(
+			sessionId,
+			parameters.constraints.isAppNotForegroundRequired,
+			parameters.constraints.isAppNotInteractingRequired,
+			parameters.constraints.isAppNotTopVisibleRequired,
+			parameters.constraints.isDeviceIdleRequired,
+			parameters.constraints.isNotInCallRequired,
+			parameters.constraints.timeoutMillis,
+			parameters.constraints.timeoutStrategy
+		)
 		installSessionDao.insertInstallSession(
 			SessionEntity.InstallSession(
 				session = SessionEntity(
-					id.toString(),
+					sessionId,
 					SessionEntity.Type.INSTALL,
 					SessionEntity.State.PENDING,
 					parameters.confirmation,
@@ -231,7 +267,9 @@ internal class PackageInstallerImpl internal constructor(
 				uris = parameters.apks.toList().map { it.toString() },
 				name = parameters.name,
 				notificationId, installMode, packageName,
-				lastUpdateTimestamp = Long.MAX_VALUE
+				lastUpdateTimestamp = Long.MAX_VALUE,
+				preapproval, constraints,
+				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
 	}
@@ -240,13 +278,34 @@ internal class PackageInstallerImpl internal constructor(
 	private fun SessionEntity.InstallSession.toInstallSession(
 		needToCompleteIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure> {
-		val installMode = when (installMode) {
+		val installMode = when (installMode?.installMode) {
 			null -> InstallMode.Full
 			InstallModeEntity.InstallMode.FULL -> InstallMode.Full
 			InstallModeEntity.InstallMode.INHERIT_EXISTING -> InstallMode.InheritExisting(
-				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" }
+				requireNotNull(packageName) { "Package name was null when install mode is INHERIT_EXISTING" },
+				installMode.dontKillApp
 			)
 		}
+		val installPreapproval = if (preapproval == null) {
+			InstallPreapproval.NONE
+		} else {
+			InstallPreapproval.Builder(preapproval.packageName, preapproval.label, preapproval.locale)
+				.setIcon(preapproval.icon.toUri())
+				.build()
+		}
+		val installConstraints = if (constraints == null) {
+			InstallConstraints.NONE
+		} else {
+			InstallConstraints.Builder(constraints.timeoutMillis)
+				.setAppNotForegroundRequired(constraints.isAppNotForegroundRequired)
+				.setAppNotInteractingRequired(constraints.isAppNotInteractingRequired)
+				.setAppNotTopVisibleRequired(constraints.isAppNotTopVisibleRequired)
+				.setDeviceIdleRequired(constraints.isDeviceIdleRequired)
+				.setNotInCallRequired(constraints.isNotInCallRequired)
+				.setTimeoutStrategy(constraints.timeoutStrategy)
+				.build()
+		}
+		val sessionName = name
 		val parameters = InstallParameters.Builder(uris.map(String::toUri))
 			.setInstallerType(installerType)
 			.setConfirmation(session.confirmation)
@@ -258,13 +317,16 @@ internal class PackageInstallerImpl internal constructor(
 					.build()
 			)
 			.apply {
-				val name = this@toInstallSession.name
-				if (!name.isNullOrEmpty()) {
-					setName(name)
+				if (!sessionName.isNullOrEmpty()) {
+					setName(sessionName)
 				}
 			}
 			.setRequireUserAction(session.requireUserAction)
 			.setInstallMode(installMode)
+			.setPreapproval(installPreapproval)
+			.setConstraints(installConstraints)
+			.setRequestUpdateOwnership(requestUpdateOwnership ?: false)
+			.setPackageSource(packageSource ?: PackageSource.Unspecified)
 			.build()
 		return installSessionFactory.create(
 			parameters,
@@ -272,9 +334,13 @@ internal class PackageInstallerImpl internal constructor(
 			initialState = session.state.toSessionState(session.id, installSessionDao),
 			initialProgress = sessionProgressDao.getProgress(session.id) ?: Progress(),
 			notificationId!!, BinarySemaphore(),
-			packageName = packageName.orEmpty(),
-			lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
-			needToCompleteIfSucceeded
+			InstallSessionFactory.AdditionalParameters(
+				packageName = packageName.orEmpty(),
+				lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
+				needToCompleteIfSucceeded,
+				commitAttemptsCount = constraints?.commitAttemptsCount ?: 0,
+				isPreapproved = preapproval?.isPreapproved ?: false
+			)
 		)
 	}
 }

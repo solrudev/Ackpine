@@ -3,6 +3,7 @@
 *.aar
 *.ap_
 *.aab
+release/
 
 # Files for the ART/Dalvik VM
 *.dex
@@ -80,3 +81,7 @@ lint/tmp/
 
 # Android Profiling
 *.hprof
+
+docs/api/
+changelog.txt
+.kotlin/

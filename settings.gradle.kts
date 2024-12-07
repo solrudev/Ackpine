@@ -17,13 +17,21 @@
 rootProject.name = "Ackpine"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 pluginManagement {
 	includeBuild("build-logic")
 
 	repositories {
 		gradlePluginPortal()
-		google()
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+				includeGroup("com.google.testing.platform")
+			}
+		}
 		mavenCentral()
 	}
 }
@@ -37,7 +45,14 @@ dependencyResolutionManagement {
 
 	repositories {
 		gradlePluginPortal()
-		google()
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+				includeGroup("com.google.testing.platform")
+			}
+		}
 		mavenCentral()
 	}
 
@@ -59,3 +74,5 @@ include(":ackpine-runtime")
 include(":ackpine-resources")
 include(":sample-java")
 include(":sample-ktx")
+include(":sample-api34")
+include(":api-documentation")

@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import android.os.Build
 import ru.solrudev.ackpine.installer.parameters.InstallMode.Full
 import ru.solrudev.ackpine.installer.parameters.InstallMode.InheritExisting
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
@@ -46,8 +47,26 @@ public sealed interface InstallMode {
 	 *
 	 * @property packageName Package name of the app being installed. If the APKs staged in the session aren't
 	 * consistent with this package name, the install will fail.
+	 *
+	 * @property dontKillApp Requests the system to not kill any of the package's running processes as part of a
+	 * session in which splits are being added. By default, all installs will result in the package's running processes
+	 * being killed before the install completes.
+	 *
+	 * Takes effect only on API level >= [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE].
 	 */
-	public data class InheritExisting(val packageName: String) : InstallMode
+	public data class InheritExisting @JvmOverloads public constructor(
+		val packageName: String,
+		val dontKillApp: Boolean = false
+	) : InstallMode {
+
+		/**
+		 * @deprecated
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(packageName: String = this.packageName): InheritExisting {
+			return InheritExisting(packageName, dontKillApp)
+		}
+	}
 
 	private companion object {
 

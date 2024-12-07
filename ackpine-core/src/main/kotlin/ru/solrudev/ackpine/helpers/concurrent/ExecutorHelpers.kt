@@ -16,24 +16,22 @@
 
 package ru.solrudev.ackpine.helpers.concurrent
 
-import android.annotation.SuppressLint
-import androidx.concurrent.futures.ResolvableFuture
+import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import java.util.concurrent.Executor
 import java.util.concurrent.Semaphore
 
-@SuppressLint("RestrictedApi")
 @JvmSynthetic
-internal inline fun <V> Executor.executeWithFuture(future: ResolvableFuture<V>, crossinline command: () -> Unit) {
+internal inline fun <V> Executor.executeWithCompleter(completer: Completer<V>, crossinline command: () -> Unit) {
 	try {
 		execute {
 			try {
 				command()
 			} catch (t: Throwable) {
-				future.setException(t)
+				completer.setException(t)
 			}
 		}
 	} catch (throwable: Throwable) {
-		future.setException(throwable)
+		completer.setException(throwable)
 	}
 }
 

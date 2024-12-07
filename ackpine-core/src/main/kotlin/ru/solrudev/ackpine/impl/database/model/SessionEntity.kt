@@ -23,6 +23,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.DrawableId
@@ -104,11 +105,9 @@ internal data class SessionEntity internal constructor(
 		val notificationId: Int?,
 		@Relation(
 			parentColumn = "id",
-			entityColumn = "session_id",
-			entity = InstallModeEntity::class,
-			projection = ["install_mode"]
+			entityColumn = "session_id"
 		)
-		val installMode: InstallModeEntity.InstallMode?,
+		val installMode: InstallModeEntity?,
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -122,7 +121,31 @@ internal data class SessionEntity internal constructor(
 			entity = LastUpdateTimestampEntity::class,
 			projection = ["last_update_timestamp"]
 		)
-		val lastUpdateTimestamp: Long?
+		val lastUpdateTimestamp: Long?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id"
+		)
+		val preapproval: InstallPreapprovalEntity?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id"
+		)
+		val constraints: InstallConstraintsEntity?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = UpdateOwnershipEntity::class,
+			projection = ["request_update_ownership"]
+		)
+		val requestUpdateOwnership: Boolean?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = PackageSourceEntity::class,
+			projection = ["package_source"]
+		)
+		val packageSource: PackageSource?
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

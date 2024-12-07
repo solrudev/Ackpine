@@ -19,6 +19,7 @@ description = "Abstractions for resolvable and persistable Android resources"
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
 }
 
 ackpine {

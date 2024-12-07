@@ -14,57 +14,11 @@
  * limitations under the License.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
-import ru.solrudev.ackpine.gradle.Constants
-import ru.solrudev.ackpine.gradle.versioning.getVersionFromPropertiesFile
-import ru.solrudev.ackpine.gradle.versioning.versionCode
-
 description = "Sample application in Kotlin showcasing Ackpine usage and leveraging ackpine-ktx extensions"
 
 plugins {
-	id(libs.plugins.android.application.get().pluginId)
-	id(libs.plugins.kotlin.android.get().pluginId)
-}
-
-kotlin {
-	jvmToolchain(17)
-}
-
-android {
-	compileSdk = 34
-	buildToolsVersion = "34.0.0"
-	namespace = Constants.SAMPLE_PACKAGE_NAME
-
-	defaultConfig {
-		applicationId = Constants.SAMPLE_PACKAGE_NAME
-		minSdk = 21
-		targetSdk = 34
-		versionCode = getVersionFromPropertiesFile().versionCode
-		versionName = rootProject.version.toString()
-	}
-
-	buildTypes {
-		named("release") {
-			isMinifyEnabled = true
-			isShrinkResources = true
-			proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-		}
-	}
-
-	compileOptions {
-		sourceCompatibility = JavaVersion.VERSION_17
-		targetCompatibility = JavaVersion.VERSION_17
-	}
-
-	buildFeatures {
-		viewBinding = true
-	}
-}
-
-tasks.withType<KotlinJvmCompile>().configureEach {
-	compilerOptions {
-		freeCompilerArgs.add("-Xjvm-default=all")
-	}
+	id("ru.solrudev.ackpine.sample.kotlin")
+	id("ru.solrudev.ackpine.app-release")
 }
 
 dependencies {
