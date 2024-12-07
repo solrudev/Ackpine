@@ -64,7 +64,7 @@ class MainViewModel(
 	private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-	private val _uiState = MutableStateFlow(InstallUiState())
+	private val _uiState = MutableStateFlow(UpdaterUiState())
 
 	val uiState = _uiState
 		.onStart { awaitSessionFromSavedState() }

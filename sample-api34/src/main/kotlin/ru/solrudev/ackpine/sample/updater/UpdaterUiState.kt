@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.sample.updater
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 
-data class InstallUiState(
+data class UpdaterUiState(
 	val isInstallationVisible: Boolean = false,
 	val progress: Progress = Progress(),
 	val error: ResolvableString = ResolvableString.empty(),
