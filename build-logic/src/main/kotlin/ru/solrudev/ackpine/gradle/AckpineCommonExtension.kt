@@ -18,6 +18,9 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.CommonExtension
 
+/**
+ * Common extension properties for Ackpine `library` and `sample` plugins.
+ */
 public abstract class AckpineCommonExtension(
 	private val commonExtension: CommonExtension<*, *, *, *, *, *>,
 	private val packageName: String
@@ -27,7 +30,8 @@ public abstract class AckpineCommonExtension(
 	private var _id = packageName
 
 	/**
-	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes and in artifact ID.
+	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes, in artifact ID
+	 * and in application ID.
 	 */
 	@Suppress("MemberVisibilityCanBePrivate")
 	public open var id: String
