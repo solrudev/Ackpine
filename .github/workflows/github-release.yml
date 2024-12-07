@@ -52,6 +52,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Copy gradle.properties
+        run: |
+          mkdir -p ~/.gradle
+          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
