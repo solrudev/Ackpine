@@ -50,8 +50,9 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	open fun insertInstallSession(session: SessionEntity.InstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertInstallerType(session.session.id, session.installerType)
-		val installMode = session.installMode?.installMode ?: InstallModeEntity.InstallMode.FULL
-		insertInstallMode(session.session.id, installMode)
+		if (session.installMode != null) {
+			insertInstallMode(session.installMode)
+		}
 		insertUris(session.uris.map { uri ->
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
@@ -95,8 +96,8 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	@Query("INSERT OR IGNORE INTO sessions_installer_types(session_id, installer_type) VALUES (:id, :installerType)")
 	protected abstract fun insertInstallerType(id: String, installerType: InstallerType)
 
-	@Query("INSERT OR IGNORE INTO sessions_install_modes(session_id, install_mode) VALUES (:id, :installMode)")
-	protected abstract fun insertInstallMode(id: String, installMode: InstallModeEntity.InstallMode)
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
+	protected abstract fun insertInstallMode(installMode: InstallModeEntity)
 
 	@Query("INSERT OR IGNORE INTO sessions_package_names(session_id, package_name) VALUES (:id, :packageName)")
 	abstract fun insertPackageName(id: String, packageName: String)
