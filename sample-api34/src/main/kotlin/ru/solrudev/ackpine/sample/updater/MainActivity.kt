@@ -23,8 +23,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.transition.Fade
-import androidx.transition.TransitionManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.AssetFileProvider
@@ -72,7 +70,6 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 	}
 
 	private fun setError(error: ResolvableString) = with(binding.cardMainInstall) {
-		TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
 		val hasError = !error.isEmpty
 		textViewInstall.isVisible = !hasError
 		textViewInstallError.isVisible = hasError
