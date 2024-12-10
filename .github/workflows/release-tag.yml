@@ -18,6 +18,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           fetch-depth: '0'
+          persist-credentials: false
 
       - name: Push tag
         uses: anothrNick/github-tag-action@v1
