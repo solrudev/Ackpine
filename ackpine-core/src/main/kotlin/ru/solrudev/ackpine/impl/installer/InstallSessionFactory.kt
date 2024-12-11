@@ -20,7 +20,9 @@ package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.os.Handler
+import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
@@ -35,6 +37,8 @@ import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactory.AdditionalParameters
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
+import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
+import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
@@ -42,6 +46,8 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.Session.State.Committed
+import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -68,7 +74,8 @@ internal interface InstallSessionFactory {
 		val lastUpdateTimestamp: Long = Long.MAX_VALUE,
 		val needToCompleteIfSucceeded: Boolean = false,
 		val commitAttemptsCount: Int = 0,
-		val isPreapproved: Boolean = false
+		val isPreapproved: Boolean = false,
+		val nativeSessionId: Int = -1
 	)
 }
 
@@ -121,10 +128,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 			parameters.installMode, parameters.preapproval, parameters.constraints,
 			parameters.requestUpdateOwnership, parameters.packageSource,
 			sessionDao, sessionFailureDao, sessionProgressDao, nativeSessionIdDao, installPreapprovalDao,
-			installConstraintsDao, executor, handler, notificationId,
+			installConstraintsDao, executor, handler, additionalParameters.nativeSessionId, notificationId,
 			additionalParameters.commitAttemptsCount, additionalParameters.isPreapproved,
 			dbWriteSemaphore
-		)
+		).apply { completeIfSucceeded(initialState, initialProgress, additionalParameters.nativeSessionId) }
 	}
 
 	override fun resolveNotificationData(notificationData: NotificationData, name: String) = notificationData.run {
@@ -144,6 +151,31 @@ internal class InstallSessionFactoryImpl internal constructor(
 			return AckpinePromptInstallMessageWithLabel(name)
 		}
 		return AckpinePromptInstallMessage
+	}
+
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	private fun SessionBasedInstallSession.completeIfSucceeded(
+		initialState: Session.State<InstallFailure>,
+		initialProgress: Progress,
+		nativeSessionId: Int
+	) {
+		if (initialState.isTerminal) {
+			return
+		}
+		val progressThreshold = (applicationContext.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()
+		if (initialProgress.progress >= progressThreshold) {
+			// means that actual installation is ongoing or is completed
+			notifyCommitted() // block clients from committing
+		}
+		// If app is killed while installing but system installer activity remains visible,
+		// session is stuck in Committed state after new process start.
+		// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
+		// success is not handled), so if native session doesn't exist, it can only mean that it succeeded.
+		// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
+		val packageInstaller = applicationContext.packageManager.packageInstaller
+		if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
+			handler.postDelayed({ complete(Succeeded) }, 2000)
+		}
 	}
 }
 

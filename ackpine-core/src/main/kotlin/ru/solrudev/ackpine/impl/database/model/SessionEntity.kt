@@ -145,7 +145,14 @@ internal data class SessionEntity internal constructor(
 			entity = PackageSourceEntity::class,
 			projection = ["package_source"]
 		)
-		val packageSource: PackageSource?
+		val packageSource: PackageSource?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = NativeSessionIdEntity::class,
+			projection = ["native_session_id"]
+		)
+		val nativeSessionId: Int? = -1
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

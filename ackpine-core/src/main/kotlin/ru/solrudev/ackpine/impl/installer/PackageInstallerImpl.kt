@@ -339,7 +339,8 @@ internal class PackageInstallerImpl internal constructor(
 				lastUpdateTimestamp = lastUpdateTimestamp ?: Long.MAX_VALUE,
 				needToCompleteIfSucceeded,
 				commitAttemptsCount = constraints?.commitAttemptsCount ?: 0,
-				isPreapproved = preapproval?.isPreapproved ?: false
+				isPreapproved = preapproval?.isPreapproved ?: false,
+				nativeSessionId = nativeSessionId ?: -1
 			)
 		)
 	}

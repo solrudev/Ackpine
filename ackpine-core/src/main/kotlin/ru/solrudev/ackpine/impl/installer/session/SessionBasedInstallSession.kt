@@ -44,7 +44,6 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.edit
 import androidx.core.os.bundleOf
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
@@ -69,10 +68,8 @@ import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.Session.State.Committed
 import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Failed
-import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
@@ -109,6 +106,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	private val handler: Handler,
+	@Volatile private var nativeSessionId: Int,
 	notificationId: Int,
 	commitAttemptsCount: Int,
 	@Volatile private var isPreapproved: Boolean,
@@ -122,45 +120,16 @@ internal class SessionBasedInstallSession internal constructor(
 ), PreapprovalListener {
 
 	@Volatile
-	private var nativeSessionId = -1
-
-	@Volatile
-	private var sessionCallback: PackageInstaller.SessionCallback? = null
+	private var sessionCallback = if (nativeSessionId != -1) {
+		packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
+	} else {
+		null
+	}
 
 	@Volatile
 	private var isPreapprovalActive = false
 
-	private val nativeSessionIdSemaphore = BinarySemaphore()
 	private val attempts = AtomicInteger(commitAttemptsCount)
-
-	init {
-		completeIfSucceeded(initialState, initialProgress)
-	}
-
-	private fun completeIfSucceeded(initialState: Session.State<InstallFailure>, initialProgress: Progress) {
-		if (initialState.isTerminal) {
-			return
-		}
-		if (initialProgress.progress >= (context.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()) {
-			// means that actual installation is ongoing or is completed
-			notifyCommitted() // block clients from committing
-		}
-		executor.executeWithSemaphore(nativeSessionIdSemaphore) {
-			val nativeSessionId = nativeSessionIdDao.getNativeSessionId(id.toString()) ?: -1
-			this.nativeSessionId = nativeSessionId
-			if (nativeSessionId != -1) {
-				sessionCallback = packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
-			}
-			// If app is killed while installing but system installer activity remains visible,
-			// session is stuck in Committed state after new process start.
-			// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
-			// success is not handled), so if native session doesn't exist, it can only mean that it succeeded.
-			// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
-			if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
-				handler.postDelayed({ complete(Succeeded) }, 2000)
-			}
-		}
-	}
 
 	private val packageInstaller: PackageInstaller
 		get() = context.packageManager.packageInstaller
@@ -372,7 +341,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun getSessionId(): Int {
-		val isSessionCreated = nativeSessionIdSemaphore.withPermit { nativeSessionId != -1 }
+		val isSessionCreated = nativeSessionId != -1
 		if (isSessionCreated) {
 			return nativeSessionId
 		}
