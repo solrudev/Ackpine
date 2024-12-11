@@ -34,7 +34,8 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
+import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
 import ru.solrudev.ackpine.session.ProgressSession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -116,16 +117,6 @@ internal class PackageInstallerImpl internal constructor(
 
 	@SuppressLint("NewApi")
 	private fun initializeCommittedSessions() = executor.executeWithSemaphore(committedSessionsInitSemaphore) {
-		val intentBasedSessions = mutableListOf<SessionEntity.InstallSession>()
-		for (session in installSessionDao.getCommittedInstallSessions()) {
-			when (session.installerType) {
-				InstallerType.INTENT_BASED -> intentBasedSessions += session
-				InstallerType.SESSION_BASED -> {
-					val installSession = installSessionFactory.create(session)
-					sessions[installSession.id] = installSession
-				}
-			}
-		}
 		// InstallSessionDao.getCommittedInstallSessions() list is sorted by last commit timestamp
 		// in descending order. We complete only the last committed intent-based session if
 		// self-update succeeded. Unfortunately, on Android 10+, if there were multiple installer
@@ -134,10 +125,15 @@ internal class PackageInstallerImpl internal constructor(
 		// not able to work around the process stop and determine whether installations launched
 		// from them were successful, so they will remain in COMMITTED state. Luckily, it can be
 		// believed that this usage scenario is not very probable.
-		intentBasedSessions.forEachIndexed { index, session ->
-			val installSession = installSessionFactory.create(session, needToCompleteIfSucceeded = index == 0)
-			sessions[installSession.id] = installSession
-		}
+		installSessionDao.getCommittedInstallSessions()
+			.groupingBy { it.installerType }
+			.aggregate { type, _: Unit?, session, first ->
+				val installSession = installSessionFactory.create(
+					session,
+					needToCompleteIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
+				)
+				sessions[installSession.id] = installSession
+			}
 		areCommittedSessionsInitialized = true
 	}
 
