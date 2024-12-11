@@ -134,7 +134,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		needToCompleteIfSucceeded: Boolean
 	): ProgressSession<InstallFailure> = when (session.installerType) {
 		InstallerType.INTENT_BASED -> createIntentBasedInstallSession(session, needToCompleteIfSucceeded)
-		InstallerType.SESSION_BASED -> createSessionBasedInstallSession(session)
+		InstallerType.SESSION_BASED -> createSessionBasedInstallSession(session, needToCompleteIfSucceeded)
 	}
 
 	override fun resolveNotificationData(notificationData: NotificationData, name: String) = notificationData.run {
@@ -201,7 +201,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 	}
 
 	private fun createSessionBasedInstallSession(
-		installSession: SessionEntity.InstallSession
+		installSession: SessionEntity.InstallSession,
+		needToCompleteIfSucceeded: Boolean
 	): SessionBasedInstallSession {
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
@@ -224,7 +225,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			isPreapproved = installSession.preapproval?.isPreapproved ?: false,
 			dbWriteSemaphore = BinarySemaphore()
 		)
-		if (initialState.isTerminal) {
+		if (!needToCompleteIfSucceeded || initialState.isTerminal) {
 			return session
 		}
 		val progressThreshold = (applicationContext.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()
