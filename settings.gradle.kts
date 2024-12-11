@@ -23,7 +23,6 @@ pluginManagement {
 	includeBuild("build-logic")
 
 	repositories {
-		gradlePluginPortal()
 		google {
 			content {
 				includeGroupAndSubgroups("androidx")
@@ -33,6 +32,7 @@ pluginManagement {
 			}
 		}
 		mavenCentral()
+		gradlePluginPortal()
 	}
 }
 
@@ -44,7 +44,6 @@ dependencyResolutionManagement {
 	repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
 
 	repositories {
-		gradlePluginPortal()
 		google {
 			content {
 				includeGroupAndSubgroups("androidx")
@@ -54,6 +53,7 @@ dependencyResolutionManagement {
 			}
 		}
 		mavenCentral()
+		gradlePluginPortal()
 	}
 
 	versionCatalogs {
