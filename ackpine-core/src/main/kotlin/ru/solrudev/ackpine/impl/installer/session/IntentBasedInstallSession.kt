@@ -41,7 +41,6 @@ import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.Session.State.Committed
 import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -69,9 +68,6 @@ internal class IntentBasedInstallSession internal constructor(
 	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
-	packageName: String,
-	lastUpdateTimestamp: Long,
-	needToCompleteIfSucceeded: Boolean,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
@@ -82,43 +78,6 @@ internal class IntentBasedInstallSession internal constructor(
 ) {
 
 	private val apkFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
-
-	init {
-		completeIfSucceeded(initialState, packageName, lastUpdateTimestamp, needToCompleteIfSucceeded, executor)
-	}
-
-	private fun completeIfSucceeded(
-		initialState: Session.State<InstallFailure>,
-		packageName: String,
-		lastUpdateTimestamp: Long,
-		needToCompleteIfSucceeded: Boolean,
-		executor: Executor
-	) {
-		if (initialState.isTerminal) {
-			return
-		}
-		// Though it somewhat helps with self-update sessions, it's still faulty:
-		// if app is force-stopped while the session is committed (not confirmed) and in the meantime
-		// another installer updates the app, this session will be viewed as completed successfully.
-		// We can check that initiating installer package is the same as ours, but then if this session
-		// was successful, and before launching the app again it was updated by another installer,
-		// the session will be stuck as committed. Sadly, without centralized system
-		// sessions repository, such as android.content.pm.PackageInstaller, we can't reliably determine
-		// whether the intent-based Ackpine session was really successful.
-		val isSelfUpdate = initialState is Committed && context.packageName == packageName
-		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
-		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
-		if (isSuccessfulSelfUpdate && needToCompleteIfSucceeded) {
-			complete(Succeeded)
-		}
-		if (isSuccessfulSelfUpdate) {
-			executor.execute {
-				dbWriteSemaphore.withPermit {
-					lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
-				}
-			}
-		}
-	}
 
 	private val Context.externalDir: File
 		get() {
