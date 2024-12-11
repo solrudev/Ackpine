@@ -34,18 +34,13 @@ import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
-import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.installer.parameters.InstallConstraints
-import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -78,6 +73,7 @@ internal interface InstallSessionFactory {
 	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
 }
 
+@SuppressLint("NewApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
@@ -92,7 +88,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val handler: Handler
 ) : InstallSessionFactory {
 
-	@SuppressLint("NewApi")
 	override fun create(
 		parameters: InstallParameters,
 		id: UUID,
@@ -134,7 +129,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 		)
 	}
 
-	@SuppressLint("NewApi")
 	override fun create(
 		session: SessionEntity.InstallSession,
 		needToCompleteIfSucceeded: Boolean
@@ -167,8 +161,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		needToCompleteIfSucceeded: Boolean
 	): IntentBasedInstallSession {
 		val id = UUID.fromString(installSession.session.id)
-		val initialState = installSession.getInitialState()
-		val initialProgress = installSession.getInitialProgress()
+		val initialState = installSession.getState(installSessionDao)
+		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val session = IntentBasedInstallSession(
 			applicationContext,
 			apk = installSession.uris.singleOrNull()?.toUri() ?: throw SplitPackagesNotSupportedException(),
@@ -206,45 +200,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 		return session
 	}
 
-	@SuppressLint("NewApi")
 	private fun createSessionBasedInstallSession(
 		installSession: SessionEntity.InstallSession
 	): SessionBasedInstallSession {
-		val installMode = when (installSession.installMode?.installMode) {
-			null -> InstallMode.Full
-			InstallModeEntity.InstallMode.FULL -> InstallMode.Full
-			InstallModeEntity.InstallMode.INHERIT_EXISTING -> InstallMode.InheritExisting(
-				requireNotNull(installSession.packageName) {
-					"Package name was null when install mode is INHERIT_EXISTING"
-				},
-				installSession.installMode.dontKillApp
-			)
-		}
-		val preapproval = if (installSession.preapproval == null) {
-			InstallPreapproval.NONE
-		} else {
-			InstallPreapproval.Builder(
-				installSession.preapproval.packageName,
-				installSession.preapproval.label,
-				installSession.preapproval.locale
-			)
-				.setIcon(installSession.preapproval.icon.toUri())
-				.build()
-		}
-		val constraints = if (installSession.constraints == null) {
-			InstallConstraints.NONE
-		} else {
-			InstallConstraints.Builder(installSession.constraints.timeoutMillis)
-				.setAppNotForegroundRequired(installSession.constraints.isAppNotForegroundRequired)
-				.setAppNotInteractingRequired(installSession.constraints.isAppNotInteractingRequired)
-				.setAppNotTopVisibleRequired(installSession.constraints.isAppNotTopVisibleRequired)
-				.setDeviceIdleRequired(installSession.constraints.isDeviceIdleRequired)
-				.setNotInCallRequired(installSession.constraints.isNotInCallRequired)
-				.setTimeoutStrategy(installSession.constraints.timeoutStrategy)
-				.build()
-		}
-		val initialState = installSession.getInitialState()
-		val initialProgress = installSession.getInitialProgress()
+		val initialState = installSession.getState(installSessionDao)
+		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
 		val session = SessionBasedInstallSession(
 			applicationContext,
@@ -252,7 +212,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id = UUID.fromString(installSession.session.id),
 			initialState, initialProgress,
 			installSession.session.confirmation, installSession.getNotificationData(),
-			installSession.session.requireUserAction, installMode, preapproval, constraints,
+			installSession.session.requireUserAction, installSession.getInstallMode(),
+			installSession.getPreapproval(), installSession.getConstraints(),
 			requestUpdateOwnership = installSession.requestUpdateOwnership ?: false,
 			packageSource = installSession.packageSource ?: PackageSource.Unspecified,
 			sessionDao,
@@ -282,20 +243,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 		}
 		return session
 	}
-
-	private fun SessionEntity.InstallSession.getInitialState(): Session.State<InstallFailure> {
-		return session.state.toSessionState(session.id, installSessionDao)
-	}
-
-	private fun SessionEntity.InstallSession.getInitialProgress(): Progress {
-		return sessionProgressDao.getProgress(session.id) ?: Progress()
-	}
-
-	private fun SessionEntity.InstallSession.getNotificationData() = NotificationData.Builder()
-		.setTitle(session.notificationTitle)
-		.setContentText(session.notificationText)
-		.setIcon(session.notificationIcon)
-		.build()
 
 	private fun getLastSelfUpdateTimestamp(): Long {
 		return applicationContext.packageManager.getPackageInfo(applicationContext.packageName, 0).lastUpdateTime
