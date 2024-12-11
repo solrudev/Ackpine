@@ -19,7 +19,9 @@ package ru.solrudev.ackpine.impl.installer
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
+import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -90,4 +92,42 @@ internal fun SessionEntity.InstallSession.getConstraints(): InstallConstraints {
 		.setNotInCallRequired(constraints.isNotInCallRequired)
 		.setTimeoutStrategy(constraints.timeoutStrategy)
 		.build()
+}
+
+@JvmSynthetic
+internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
+	return when (this) {
+		is InstallMode.Full -> InstallModeEntity(
+			sessionId,
+			InstallModeEntity.InstallMode.FULL,
+			dontKillApp = false
+		)
+
+		is InstallMode.InheritExisting -> {
+			InstallModeEntity(
+				sessionId,
+				InstallModeEntity.InstallMode.INHERIT_EXISTING,
+				dontKillApp
+			)
+		}
+	}
+}
+
+@JvmSynthetic
+internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalEntity {
+	return InstallPreapprovalEntity(sessionId, packageName, label, languageTag, icon.toString())
+}
+
+@JvmSynthetic
+internal fun InstallConstraints.toEntity(sessionId: String): InstallConstraintsEntity {
+	return InstallConstraintsEntity(
+		sessionId,
+		isAppNotForegroundRequired,
+		isAppNotInteractingRequired,
+		isAppNotTopVisibleRequired,
+		isDeviceIdleRequired,
+		isNotInCallRequired,
+		timeoutMillis,
+		timeoutStrategy
+	)
 }

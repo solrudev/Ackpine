@@ -26,9 +26,6 @@ import ru.solrudev.ackpine.helpers.concurrent.executeWithCompleter
 import ru.solrudev.ackpine.helpers.concurrent.executeWithSemaphore
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
-import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
-import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
-import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
@@ -191,42 +188,10 @@ internal class PackageInstallerImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
 		val sessionId = id.toString()
-		var packageName: String? = null
-		val installMode = when (parameters.installMode) {
-			is InstallMode.Full -> InstallModeEntity(
-				sessionId,
-				InstallModeEntity.InstallMode.FULL,
-				dontKillApp = false
-			)
-			is InstallMode.InheritExisting -> {
-				packageName = parameters.installMode.packageName
-				InstallModeEntity(
-					sessionId,
-					InstallModeEntity.InstallMode.INHERIT_EXISTING,
-					parameters.installMode.dontKillApp
-				)
-			}
-		}
+		val packageName = (parameters.installMode as? InstallMode.InheritExisting)?.packageName
 		val notificationData = installSessionFactory.resolveNotificationData(
 			parameters.notificationData,
 			parameters.name
-		)
-		val preapproval = InstallPreapprovalEntity(
-			sessionId,
-			parameters.preapproval.packageName,
-			parameters.preapproval.label,
-			parameters.preapproval.languageTag,
-			parameters.preapproval.icon.toString()
-		)
-		val constraints = InstallConstraintsEntity(
-			sessionId,
-			parameters.constraints.isAppNotForegroundRequired,
-			parameters.constraints.isAppNotInteractingRequired,
-			parameters.constraints.isAppNotTopVisibleRequired,
-			parameters.constraints.isDeviceIdleRequired,
-			parameters.constraints.isNotInCallRequired,
-			parameters.constraints.timeoutMillis,
-			parameters.constraints.timeoutStrategy
 		)
 		installSessionDao.insertInstallSession(
 			SessionEntity.InstallSession(
@@ -243,9 +208,12 @@ internal class PackageInstallerImpl internal constructor(
 				installerType = parameters.installerType,
 				uris = parameters.apks.toList().map { it.toString() },
 				name = parameters.name,
-				notificationId, installMode, packageName,
+				notificationId,
+				installMode = parameters.installMode.toEntity(sessionId),
+				packageName,
 				lastUpdateTimestamp = Long.MAX_VALUE,
-				preapproval, constraints,
+				preapproval = parameters.preapproval.toEntity(sessionId),
+				constraints = parameters.constraints.toEntity(sessionId),
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
