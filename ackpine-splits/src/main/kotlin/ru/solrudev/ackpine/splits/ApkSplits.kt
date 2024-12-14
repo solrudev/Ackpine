@@ -59,35 +59,27 @@ public object ApkSplits {
 				.forEach { yield(ApkCompatibility(isPreferred = true, it)) }
 			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
 			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
-			libsSplits.sortBy { apk ->
+			val groupedLibs = libsSplits.groupSortedBy { apk ->
 				val index = Abi.deviceAbis.indexOf(apk.abi)
 				if (index == -1) Int.MAX_VALUE else index
 			}
-			libsSplits.firstOrNull()
-				?.takeIf { apk -> apk.abi in Abi.deviceAbis }
-				?.also { libsSplits -= it }
-				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
-			densitySplits.sortBy { apk -> abs(deviceDensity - apk.dpi.density) }
-			densitySplits.firstOrNull()
-				?.also { densitySplits -= it }
-				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
-			localizationSplits.sortBy { apk ->
+			val groupedDensity = densitySplits.groupSortedBy { apk -> abs(deviceDensity - apk.dpi.density) }
+			val groupedLocalizations = localizationSplits.groupSortedBy { apk ->
 				val index = deviceLanguages.indexOf(apk.locale.language)
 				if (index == -1) Int.MAX_VALUE else index
 			}
-			localizationSplits.firstOrNull()
-				?.takeIf { apk -> apk.locale.language in deviceLanguages }
-				?.also { localizationSplits -= it }
-				?.let { yield(ApkCompatibility(isPreferred = true, it)) }
-			for (apk in libsSplits) {
-				yield(ApkCompatibility(isPreferred = false, apk))
+			for (libs in groupedLibs) {
+				yieldAndRemovePreferred(libs) { apk -> apk.abi in Abi.deviceAbis }
 			}
-			for (apk in densitySplits) {
-				yield(ApkCompatibility(isPreferred = false, apk))
+			for (density in groupedDensity) {
+				yieldAndRemovePreferred(density)
 			}
-			for (apk in localizationSplits) {
-				yield(ApkCompatibility(isPreferred = false, apk))
+			for (localization in groupedLocalizations) {
+				yieldAndRemovePreferred(localization) { apk -> apk.locale.language in deviceLanguages }
 			}
+			yieldRemaining(groupedLibs)
+			yieldRemaining(groupedDensity)
+			yieldRemaining(groupedLocalizations)
 		}
 	}
 
@@ -228,6 +220,30 @@ public object ApkSplits {
 	): Sequence<Apk> = onEach { apk ->
 		if (apk is SplitType) {
 			splits += apk
+		}
+	}
+
+	private inline fun <T, R : Comparable<R>> List<T>.groupSortedBy(
+		crossinline selector: (T) -> R?
+	) where T : Apk.ConfigSplit, T : Apk = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
+		.values
+		.onEach { groupedSplits ->
+			groupedSplits.sortBy(selector)
+		}
+
+	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldAndRemovePreferred(
+		splits: MutableList<T>,
+		predicate: (T) -> Boolean = { true }
+	) where T : Apk.ConfigSplit, T : Apk = splits.firstOrNull()
+		?.takeIf(predicate)
+		?.also { splits -= it }
+		?.let { yield(ApkCompatibility(isPreferred = true, it)) }
+
+	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldRemaining(
+		groupedSplits: MutableCollection<out List<T>>
+	) where T : Apk.ConfigSplit, T : Apk {
+		for (apk in groupedSplits.flatten()) {
+			yield(ApkCompatibility(isPreferred = false, apk))
 		}
 	}
 }

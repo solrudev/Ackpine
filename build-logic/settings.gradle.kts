@@ -18,7 +18,6 @@ rootProject.name = "build-logic"
 
 pluginManagement {
 	repositories {
-		gradlePluginPortal()
 		google {
 			content {
 				includeGroupAndSubgroups("androidx")
@@ -28,12 +27,12 @@ pluginManagement {
 			}
 		}
 		mavenCentral()
+		gradlePluginPortal()
 	}
 }
 
 dependencyResolutionManagement {
 	repositories {
-		gradlePluginPortal()
 		google {
 			content {
 				includeGroupAndSubgroups("androidx")
@@ -43,6 +42,7 @@ dependencyResolutionManagement {
 			}
 		}
 		mavenCentral()
+		gradlePluginPortal()
 	}
 
 	versionCatalogs {

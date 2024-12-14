@@ -54,7 +54,7 @@ class UninstallViewModel(
 
 	val uiState = _uiState
 		.onStart { awaitSessionFromSavedState() }
-		.stateIn(viewModelScope, SharingStarted.Lazily, UninstallUiState())
+		.stateIn(viewModelScope, SharingStarted.Lazily, _uiState.value)
 
 	fun loadApplications(refresh: Boolean, applicationsFactory: () -> List<ApplicationData>) {
 		if (!refresh && _uiState.value.applications.isNotEmpty()) {

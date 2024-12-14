@@ -111,13 +111,12 @@ public interface PackageInstaller {
 			val database = AckpineDatabase.getInstance(context.applicationContext, PackageInstallerPlugin.executor)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
-				database.sessionProgressDao(),
 				PackageInstallerPlugin.executor,
 				InstallSessionFactoryImpl(
 					context.applicationContext,
 					database.lastUpdateTimestampDao(),
-					database.sessionDao(),
 					database.installSessionDao(),
+					database.sessionDao(),
 					database.sessionProgressDao(),
 					database.nativeSessionIdDao(),
 					database.installPreapprovalDao(),

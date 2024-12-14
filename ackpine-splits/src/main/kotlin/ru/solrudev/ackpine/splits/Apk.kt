@@ -42,13 +42,50 @@ import java.util.zip.ZipInputStream
  * Represents an APK split.
  */
 public sealed class Apk(
+
+	/**
+	 * [Uri] of the APK file.
+	 */
 	public open val uri: Uri,
+
+	/**
+	 * Split name of the APK.
+	 */
 	public open val name: String,
+
+	/**
+	 * Size of the APK file in bytes.
+	 */
 	public open val size: Long,
+
+	/**
+	 * Package name of the APK file.
+	 */
 	public open val packageName: String,
+
+	/**
+	 * An internal version number of the APK file.
+	 */
 	public open val versionCode: Long,
+
+	/**
+	 * Description of the APK split.
+	 */
 	public open val description: String
 ) {
+
+	/**
+	 * Marks an [Apk] as a configuration APK split ([Libs], [ScreenDensity] and [Localization]).
+	 */
+	public sealed interface ConfigSplit {
+
+		/**
+		 * Name of the split which this configuration APK is intended for.
+		 *
+		 * Empty value means this is for [Base] APK.
+		 */
+		public val configForSplit: String
+	}
 
 	/**
 	 * Base APK.
@@ -59,6 +96,10 @@ public sealed class Apk(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
+
+		/**
+		 * The version number shown to users.
+		 */
 		public val versionName: String
 	) : Apk(uri, name, size, packageName, versionCode, description = name) {
 		override fun isCompatible(context: Context): Boolean = true
@@ -80,42 +121,85 @@ public sealed class Apk(
 	/**
 	 * APK split containing native libraries.
 	 */
-	public data class Libs(
+	public data class Libs @JvmOverloads public constructor(
 		override val uri: Uri,
 		override val name: String,
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
-		public val abi: Abi
-	) : Apk(uri, name, size, packageName, versionCode, description = abi.name.lowercase()) {
+
+		/**
+		 * An [Abi] of the native code contained in this APK file.
+		 */
+		public val abi: Abi,
+		override val configForSplit: String = ""
+	) : Apk(uri, name, size, packageName, versionCode, description = abi.name.lowercase()), ConfigSplit {
+
 		override fun isCompatible(context: Context): Boolean = abi in Abi.deviceAbis
+
+		/**
+		 * @deprecated
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			uri: Uri = this.uri,
+			name: String = this.name,
+			size: Long = this.size,
+			packageName: String = this.packageName,
+			versionCode: Long = this.versionCode,
+			abi: Abi = this.abi
+		): Libs = Libs(uri, name, size, packageName, versionCode, abi, configForSplit)
 	}
 
 	/**
 	 * APK split containing graphic resources tailored to specific screen density.
 	 */
-	public data class ScreenDensity(
+	public data class ScreenDensity @JvmOverloads public constructor(
 		override val uri: Uri,
 		override val name: String,
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
-		public val dpi: Dpi
-	) : Apk(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()) {
+
+		/**
+		 * A [Dpi] of the graphical resources contained in this APK file.
+		 */
+		public val dpi: Dpi,
+		override val configForSplit: String = ""
+	) : Apk(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()), ConfigSplit {
+
 		override fun isCompatible(context: Context): Boolean = dpi == context.dpi
+
+		/**
+		 * @deprecated
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			uri: Uri = this.uri,
+			name: String = this.name,
+			size: Long = this.size,
+			packageName: String = this.packageName,
+			versionCode: Long = this.versionCode,
+			dpi: Dpi = this.dpi
+		): ScreenDensity = ScreenDensity(uri, name, size, packageName, versionCode, dpi, configForSplit)
 	}
 
 	/**
 	 * APK split containing localized resources.
 	 */
-	public data class Localization(
+	public data class Localization @JvmOverloads public constructor(
 		override val uri: Uri,
 		override val name: String,
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
-		public val locale: Locale
-	) : Apk(uri, name, size, packageName, versionCode, description = "") {
+
+		/**
+		 * A [Locale] of the string resources contained in this APK file.
+		 */
+		public val locale: Locale,
+		override val configForSplit: String = ""
+	) : Apk(uri, name, size, packageName, versionCode, description = ""), ConfigSplit {
 
 		override val description: String
 			get() = locale.displayLanguage
@@ -123,6 +207,19 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean {
 			return locale.language in deviceLocales(context).map { it.language }
 		}
+
+		/**
+		 * @deprecated
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			uri: Uri = this.uri,
+			name: String = this.name,
+			size: Long = this.size,
+			packageName: String = this.packageName,
+			versionCode: Long = this.versionCode,
+			locale: Locale = this.locale
+		): Localization = Localization(uri, name, size, packageName, versionCode, locale, configForSplit)
 	}
 
 	/**
@@ -229,10 +326,43 @@ public sealed class Apk(
 			val abi = Abi.fromSplitName(splitName)
 			val locale = localeFromSplitName(splitName)
 			return when {
-				dpi != null -> ScreenDensity(uri, splitName, size, manifest.packageName, manifest.versionCode, dpi)
-				abi != null -> Libs(uri, splitName, size, manifest.packageName, manifest.versionCode, abi)
-				locale != null -> Localization(uri, splitName, size, manifest.packageName, manifest.versionCode, locale)
-				else -> Other(uri, splitName, size, manifest.packageName, manifest.versionCode)
+				dpi != null -> ScreenDensity(
+					uri,
+					splitName,
+					size,
+					manifest.packageName,
+					manifest.versionCode,
+					dpi,
+					manifest.configForSplit
+				)
+
+				abi != null -> Libs(
+					uri,
+					splitName,
+					size,
+					manifest.packageName,
+					manifest.versionCode,
+					abi,
+					manifest.configForSplit
+				)
+
+				locale != null -> Localization(
+					uri,
+					splitName,
+					size,
+					manifest.packageName,
+					manifest.versionCode,
+					locale,
+					manifest.configForSplit
+				)
+
+				else -> Other(
+					uri,
+					splitName,
+					size,
+					manifest.packageName,
+					manifest.versionCode
+				)
 			}
 		}
 	}

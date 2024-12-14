@@ -23,8 +23,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.transition.Fade
-import androidx.transition.TransitionManager
 import by.kirich1409.viewbindingdelegate.viewBinding
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.AssetFileProvider
@@ -50,10 +48,12 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		}
 		lifecycleScope.launch {
 			viewModel.uiState.flowWithLifecycle(lifecycle).collect { uiState ->
+				binding.cardMainInstall.progressBarInstall.isVisible = uiState.isInstalling
+				binding.cardMainInstall.textViewInstallPercentage.isVisible = uiState.isInstalling
 				binding.cardMainInstall.buttonInstall.isEnabled = uiState.isCancellable
 				binding.cardMainInstall.buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
 				setProgress(uiState.progress)
-				setError(uiState.error, uiState.isInstallationVisible)
+				setError(uiState.error)
 			}
 		}
 	}
@@ -69,12 +69,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		)
 	}
 
-	private fun setError(error: ResolvableString, isInstallationVisible: Boolean) = with(binding.cardMainInstall) {
-		TransitionManager.beginDelayedTransition(root, Fade().apply { duration = 150 })
+	private fun setError(error: ResolvableString) = with(binding.cardMainInstall) {
 		val hasError = !error.isEmpty
 		textViewInstall.isVisible = !hasError
-		progressBarInstall.isVisible = !hasError && isInstallationVisible
-		textViewInstallPercentage.isVisible = !hasError && isInstallationVisible
 		textViewInstallError.isVisible = hasError
 		textViewInstallError.text = error.resolve(this@MainActivity)
 	}
