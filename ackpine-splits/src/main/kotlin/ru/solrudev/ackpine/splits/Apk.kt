@@ -42,11 +42,35 @@ import java.util.zip.ZipInputStream
  * Represents an APK split.
  */
 public sealed class Apk(
+
+	/**
+	 * [Uri] of the APK file.
+	 */
 	public open val uri: Uri,
+
+	/**
+	 * Split name of the APK.
+	 */
 	public open val name: String,
+
+	/**
+	 * Size of the APK file in bytes.
+	 */
 	public open val size: Long,
+
+	/**
+	 * Package name of the APK file.
+	 */
 	public open val packageName: String,
+
+	/**
+	 * An internal version number of the APK file.
+	 */
 	public open val versionCode: Long,
+
+	/**
+	 * Description of the APK split.
+	 */
 	public open val description: String
 ) {
 
@@ -72,6 +96,10 @@ public sealed class Apk(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
+
+		/**
+		 * The version number shown to users.
+		 */
 		public val versionName: String
 	) : Apk(uri, name, size, packageName, versionCode, description = name) {
 		override fun isCompatible(context: Context): Boolean = true
@@ -99,6 +127,10 @@ public sealed class Apk(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
+
+		/**
+		 * An [Abi] of the native code contained in this APK file.
+		 */
 		public val abi: Abi,
 		override val configForSplit: String = ""
 	) : Apk(uri, name, size, packageName, versionCode, description = abi.name.lowercase()), ConfigSplit {
@@ -128,6 +160,10 @@ public sealed class Apk(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
+
+		/**
+		 * A [Dpi] of the graphical resources contained in this APK file.
+		 */
 		public val dpi: Dpi,
 		override val configForSplit: String = ""
 	) : Apk(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()), ConfigSplit {
@@ -157,6 +193,10 @@ public sealed class Apk(
 		override val size: Long,
 		override val packageName: String,
 		override val versionCode: Long,
+
+		/**
+		 * A [Locale] of the string resources contained in this APK file.
+		 */
 		public val locale: Locale,
 		override val configForSplit: String = ""
 	) : Apk(uri, name, size, packageName, versionCode, description = ""), ConfigSplit {
