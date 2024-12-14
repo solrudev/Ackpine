@@ -7,6 +7,12 @@ Version 0.9.1 (2024-12-14)
 ### Bug fixes and improvements
 
 - Proper support of dynamic features for split APKs (#95).
+- Add documentation for `Apk` properties.
+
+### Public API changes
+
+- Added `Apk.ConfigSplit` sealed interface in `ackpine-splits` module.
+- Added `configForSplit` property to `Apk.Libs`, `Apk.ScreenDensity` and `Apk.Localization` in `ackpine-splits` module.
 
 Version 0.9.0 (2024-12-07)
 --------------------------
