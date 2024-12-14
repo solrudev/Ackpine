@@ -193,9 +193,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			session.complete(Succeeded)
 		}
 		if (isSuccessfulSelfUpdate) {
-			executor.execute {
-				lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
-			}
+			lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
 		}
 		return session
 	}
