@@ -232,7 +232,6 @@ public sealed class Apk(
 		override val packageName: String,
 		override val versionCode: Long
 	) : Apk(uri, name, size, packageName, versionCode, description = name) {
-
 		override fun isCompatible(context: Context): Boolean = true
 	}
 
