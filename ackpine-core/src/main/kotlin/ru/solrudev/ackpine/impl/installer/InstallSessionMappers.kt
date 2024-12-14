@@ -103,13 +103,11 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 			dontKillApp = false
 		)
 
-		is InstallMode.InheritExisting -> {
-			InstallModeEntity(
-				sessionId,
-				InstallModeEntity.InstallMode.INHERIT_EXISTING,
-				dontKillApp
-			)
-		}
+		is InstallMode.InheritExisting -> InstallModeEntity(
+			sessionId,
+			InstallModeEntity.InstallMode.INHERIT_EXISTING,
+			dontKillApp
+		)
 	}
 }
 
