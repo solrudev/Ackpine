@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.9.1 (2024-12-14)
+--------------------------
+
+### Bug fixes and improvements
+
+- Proper support of dynamic features for split APKs (#95).
+
 Version 0.9.0 (2024-12-07)
 --------------------------
 
