@@ -39,31 +39,33 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
 		setSupportActionBar(binding.toolbarMain)
-		binding.cardMainInstall.imageViewInstallIcon.setImageURI(
-			AssetFileProvider.getUriForAsset("ackpine_icon.webp")
-		)
-		binding.cardMainInstall.containerCardInstall.layoutTransition?.enableTransitionType(LayoutTransition.CHANGING)
-		binding.cardMainInstall.buttonInstall.setOnClickListener {
-			viewModel.onButtonClick()
-		}
-		lifecycleScope.launch {
-			viewModel.uiState.flowWithLifecycle(lifecycle).collect { uiState ->
-				binding.cardMainInstall.progressBarInstall.isVisible = uiState.isInstalling
-				binding.cardMainInstall.textViewInstallPercentage.isVisible = uiState.isInstalling
-				binding.cardMainInstall.buttonInstall.isEnabled = uiState.isCancellable
-				binding.cardMainInstall.buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
-				setProgress(uiState.progress)
-				setError(uiState.error)
+		with(binding.cardMainInstall) {
+			imageViewInstallIcon.setImageURI(
+				AssetFileProvider.getUriForAsset("ackpine_icon.webp")
+			)
+			containerCardInstall.layoutTransition?.enableTransitionType(LayoutTransition.CHANGING)
+			buttonInstall.setOnClickListener {
+				viewModel.onButtonClick()
+			}
+			lifecycleScope.launch {
+				viewModel.uiState.flowWithLifecycle(lifecycle).collect { uiState ->
+					progressBarInstall.isVisible = uiState.isInstalling
+					textViewInstallPercentage.isVisible = uiState.isInstalling
+					buttonInstall.isEnabled = uiState.isCancellable
+					buttonInstall.text = uiState.buttonText.resolve(this@MainActivity)
+					setProgress(uiState.progress)
+					setError(uiState.error)
+				}
 			}
 		}
 	}
 
-	private fun setProgress(progressData: Progress) = with(binding) {
+	private fun setProgress(progressData: Progress) = with(binding.cardMainInstall) {
 		val progress = progressData.progress
 		val max = progressData.max
-		cardMainInstall.progressBarInstall.setProgress(progress, progress != 0)
-		cardMainInstall.progressBarInstall.max = max
-		cardMainInstall.textViewInstallPercentage.text = getString(
+		progressBarInstall.setProgress(progress, progress != 0)
+		progressBarInstall.max = max
+		textViewInstallPercentage.text = getString(
 			R.string.percentage,
 			((progress.toDouble()) / max * 100).toInt()
 		)

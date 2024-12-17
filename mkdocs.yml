@@ -16,7 +16,7 @@ copyright: 'Copyright &copy; 2023-2024 Ilya Fomichev'
 # Configuration
 theme:
   name: material
-  favicon: images/logo-favicon.svg
+  favicon: images/logo-icon.svg
   logo: images/logo-white.svg
   features:
     - content.code.copy

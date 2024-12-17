@@ -37,6 +37,8 @@ public class DokkaConventionPlugin : Plugin<Project> {
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
 		moduleVersion = versionNumber.get().toString()
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
+			customAssets.from(isolated.rootProject.projectDirectory.file("docs/images/logo-icon.svg"))
+			customStyleSheets.from(isolated.rootProject.projectDirectory.file("docs/css/logo-styles.css"))
 			footerMessage = "© Ilya Fomichev"
 		}
 	}
