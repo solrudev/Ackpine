@@ -30,6 +30,13 @@ ackpine {
 	}
 }
 
+dokka {
+	dokkaSourceSets.configureEach {
+		val implementationSources = sourceRoots.asFileTree.matching { include("**/impl/**") }
+		suppressedFiles.from(implementationSources)
+	}
+}
+
 dependencies {
 	ksp(androidx.room.compiler)
 	api(androidx.annotation)
