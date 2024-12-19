@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.9.2 (2024-12-19)
+--------------------------
+
+### Bug fixes and improvements
+
+- Fix `SESSION_BASED` installer session completing with "Install permission denied" failure when performing a self-update if install permission was not granted because it was unnecessary.
+
 Version 0.9.1 (2024-12-14)
 --------------------------
 

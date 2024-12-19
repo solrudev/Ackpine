@@ -135,8 +135,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 		when {
 			// Confirmation is a preapproval on API >= 34.
 			isPreapproval -> finish()
-			// User has cancelled install permission request or hasn't granted permission.
-			!canInstallPackages -> abortSession("Install permission denied")
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
 			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
 			// Session proceeded normally.
@@ -145,6 +143,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 			// gets updated almost like the installation was confirmed even though it wasn't and no result is received
 			// from PackageInstallerStatusReceiver.
 			isSessionAlive && !isSessionStuck -> finish()
+			// User has cancelled install permission request or hasn't granted permission.
+			!canInstallPackages -> abortSession("Install permission denied")
 			// User has dismissed confirmation activity.
 			isSessionAlive && isActivityCancelled -> abortSession()
 			// There was some error while installing which is not handled in PackageInstallerStatusReceiver,
