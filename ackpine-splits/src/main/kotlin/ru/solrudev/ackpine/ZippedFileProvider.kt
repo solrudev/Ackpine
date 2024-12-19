@@ -26,28 +26,22 @@ import android.content.res.AssetFileDescriptor
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
-import androidx.annotation.RequiresApi
 import androidx.core.net.toUri
-import ru.solrudev.ackpine.helpers.closeWithException
-import ru.solrudev.ackpine.helpers.entries
-import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.io.ZipEntryStream
 import ru.solrudev.ackpine.plugin.AckpinePlugin
 import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.Executor
-import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
 /**
  * [ContentProvider] which allows to open files inside of ZIP archives.
@@ -201,71 +195,9 @@ public class ZippedFileProvider : ContentProvider() {
 
 	private fun openZipEntryStream(uri: Uri, signal: CancellationSignal?): ZipEntryStream {
 		val zipFileUri = zipFileUri(uri)
-		val file = context?.let { context -> zipFileUri.toFile(context, signal) }
-		if (file?.canRead() == true) {
-			val zipFile = ZipFile(file)
-			return try {
-				val zipEntry = zipFile.getEntry(uri.encodedQuery)
-				ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
-			} catch (throwable: Throwable) {
-				zipFile.closeWithException(throwable)
-				throw throwable
-			}
-		}
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			return openZipEntryStreamApi26(zipFileUri, uri.encodedQuery, signal)
-		}
-		return openZipEntryStreamUsingZipInputStream(zipFileUri, uri.encodedQuery, signal)
-	}
-
-	@RequiresApi(Build.VERSION_CODES.O)
-	private fun openZipEntryStreamApi26(
-		zipFileUri: Uri,
-		zipEntryName: String?,
-		signal: CancellationSignal?
-	): ZipEntryStream {
-		var fd: ParcelFileDescriptor? = null
-		var fileInputStream: FileInputStream? = null
-		val zipFile: org.apache.commons.compress.archivers.zip.ZipFile
-		try {
-			fd = context?.contentResolver?.openFileDescriptor(zipFileUri, "r", signal)
-				?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
-			fileInputStream = FileInputStream(fd.fileDescriptor)
-			zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
-				.setSeekableByteChannel(fileInputStream.channel)
-				.get()
-		} catch (throwable: Throwable) {
-			fd?.closeWithException(throwable)
-			fileInputStream?.closeWithException(throwable)
-			throwable.printStackTrace()
-			return openZipEntryStreamUsingZipInputStream(zipFileUri, zipEntryName, signal)
-		}
-		try {
-			val zipEntry = zipFile.getEntry(zipEntryName)
-			return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
-		} catch (throwable: Throwable) {
-			fd.closeWithException(throwable)
-			fileInputStream.closeWithException(throwable)
-			zipFile.closeWithException(throwable)
-			throw throwable
-		}
-	}
-
-	private fun openZipEntryStreamUsingZipInputStream(
-		zipFileUri: Uri,
-		zipEntryName: String?,
-		signal: CancellationSignal?
-	): ZipEntryStream {
-		val zipStream = ZipInputStream(context?.contentResolver?.openInputStream(zipFileUri))
-		val zipEntry = try {
-			zipStream.entries()
-				.onEach { signal?.throwIfCanceled() }
-				.first { it.name == zipEntryName }
-		} catch (throwable: Throwable) {
-			zipStream.closeWithException(throwable)
-			throw throwable
-		}
-		return ZipEntryStream(zipStream, zipEntry.size)
+		val zipEntryName = uri.encodedQuery
+		return ZipEntryStream.open(zipFileUri, zipEntryName.orEmpty(), context!!, signal)
+			?: throw IOException("Zip entry $zipEntryName not found at $uri")
 	}
 
 	private fun zipFileUri(uri: Uri): Uri {
@@ -371,37 +303,4 @@ private object ZippedFileProviderPlugin : AckpinePlugin {
 	override fun setExecutor(executor: Executor) {
 		this.executor = executor
 	}
-}
-
-private class ZipEntryStream(
-	private val inputStream: InputStream,
-	val size: Long,
-	private vararg var resources: AutoCloseable
-) : InputStream() {
-
-	override fun read(): Int = inputStream.read()
-	override fun available(): Int = inputStream.available()
-	override fun markSupported(): Boolean = inputStream.markSupported()
-	override fun mark(readlimit: Int) = inputStream.mark(readlimit)
-	override fun read(b: ByteArray?): Int = inputStream.read(b)
-	override fun read(b: ByteArray?, off: Int, len: Int): Int = inputStream.read(b, off, len)
-	override fun reset() = inputStream.reset()
-	override fun skip(n: Long): Long = inputStream.skip(n)
-
-	override fun close() {
-		for (resource in resources) {
-			runCatching { resource.close() }
-		}
-		resources = emptyArray()
-		inputStream.close()
-	}
-
-	override fun equals(other: Any?): Boolean {
-		if (this === other) return true
-		if (other !is ZipEntryStream) return false
-		return inputStream == other.inputStream
-	}
-
-	override fun hashCode(): Int = inputStream.hashCode()
-	override fun toString(): String = inputStream.toString()
 }

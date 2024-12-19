@@ -21,15 +21,18 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
+import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.io.NonClosingInputStream.Companion.nonClosing
+import ru.solrudev.ackpine.io.ZipEntryStream
+import ru.solrudev.ackpine.io.toByteBuffer
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
-import ru.solrudev.ackpine.splits.helpers.NonClosingInputStream.Companion.nonClosing
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import ru.solrudev.ackpine.splits.helpers.displayNameAndSize
 import ru.solrudev.ackpine.splits.helpers.isApk
 import ru.solrudev.ackpine.splits.helpers.localeFromSplitName
+import ru.solrudev.ackpine.splits.parsing.ANDROID_MANIFEST_FILE_NAME
 import ru.solrudev.ackpine.splits.parsing.AndroidManifest
-import ru.solrudev.ackpine.splits.parsing.androidManifest
 import java.io.File
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -271,12 +274,12 @@ public sealed class Apk(
 			}
 			val (displayName, size) = uri.displayNameAndSize(context)
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
-			context.contentResolver.openInputStream(uri).use { inputStream ->
-				inputStream ?: return null
-				val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() }
-					?: return null
-				return createApkSplit(androidManifest, name, uri, size)
-			}
+			ZipEntryStream
+				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, signal = null)
+				.use { entryStream ->
+					entryStream ?: return null
+					return createApkSplit(entryStream.toByteBuffer(), name, uri, size)
+				}
 		}
 
 		@JvmSynthetic
@@ -286,7 +289,10 @@ public sealed class Apk(
 			}
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
-			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { it.androidManifest() } ?: return null
+			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { zipInputStream ->
+				zipInputStream.entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+				zipInputStream.toByteBuffer()
+			}
 			return createApkSplit(androidManifest, name, uri, zipEntry.size)
 		}
 
@@ -296,7 +302,8 @@ public sealed class Apk(
 			}
 			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
 			ZipFile(file).use { zipFile ->
-				val androidManifest = zipFile.androidManifest() ?: return null
+				val zipEntry = zipFile.getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
+				val androidManifest = zipFile.getInputStream(zipEntry).use(InputStream::toByteBuffer)
 				return createApkSplit(androidManifest, name, uri, file.length())
 			}
 		}
