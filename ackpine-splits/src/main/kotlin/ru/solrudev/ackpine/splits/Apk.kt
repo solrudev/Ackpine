@@ -274,12 +274,10 @@ public sealed class Apk(
 			}
 			val (displayName, size) = uri.displayNameAndSize(context)
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
-			ZipEntryStream
+			val androidManifest = ZipEntryStream
 				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, signal = null)
-				.use { entryStream ->
-					entryStream ?: return null
-					return createApkSplit(entryStream.toByteBuffer(), name, uri, size)
-				}
+				?.use(InputStream::toByteBuffer) ?: return null
+			return createApkSplit(androidManifest, name, uri, size)
 		}
 
 		@JvmSynthetic
@@ -301,11 +299,11 @@ public sealed class Apk(
 				return null
 			}
 			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
-			ZipFile(file).use { zipFile ->
+			val androidManifest = ZipFile(file).use { zipFile ->
 				val zipEntry = zipFile.getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
-				val androidManifest = zipFile.getInputStream(zipEntry).use(InputStream::toByteBuffer)
-				return createApkSplit(androidManifest, name, uri, file.length())
+				zipFile.getInputStream(zipEntry).toByteBuffer()
 			}
+			return createApkSplit(androidManifest, name, uri, file.length())
 		}
 
 		private fun createApkSplit(manifestByteBuffer: ByteBuffer, name: String, uri: Uri, size: Long): Apk? {
