@@ -22,7 +22,7 @@ import androidx.core.content.FileProvider
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
 import ru.solrudev.ackpine.helpers.entries
-import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.helpers.getFileFromUri
 import ru.solrudev.ackpine.io.NonClosingInputStream.Companion.nonClosing
 import ru.solrudev.ackpine.io.ZipEntryStream
 import ru.solrudev.ackpine.io.toByteBuffer
@@ -265,7 +265,7 @@ public sealed class Apk(
 		 */
 		@JvmStatic
 		public fun fromUri(uri: Uri, context: Context): Apk? {
-			val file = uri.toFile(context)
+			val file = context.getFileFromUri(uri)
 			if (file.canRead()) {
 				return fromFile(file, uri)
 			}

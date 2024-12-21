@@ -24,7 +24,7 @@ import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
-import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.helpers.getFileFromUri
 import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
@@ -72,7 +72,7 @@ internal class ZipEntryStream private constructor(
 			context: Context,
 			signal: CancellationSignal?
 		): ZipEntryStream? {
-			val file = uri.toFile(context, signal)
+			val file = context.getFileFromUri(uri, signal)
 			return when {
 				file.canRead() -> openZipEntryStreamUsingZipFile(file, zipEntryName)
 				Build.VERSION.SDK_INT >= 26 -> openZipEntryStreamApi26(uri, zipEntryName, context, signal)

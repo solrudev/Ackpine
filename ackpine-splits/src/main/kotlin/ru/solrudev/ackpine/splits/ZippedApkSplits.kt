@@ -23,7 +23,7 @@ import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
-import ru.solrudev.ackpine.helpers.toFile
+import ru.solrudev.ackpine.helpers.getFileFromUri
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.ZipFile
@@ -60,7 +60,7 @@ public object ZippedApkSplits {
 	public fun getApksForUri(uri: Uri, context: Context): Sequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
-			val file = uri.toFile(applicationContext)
+			val file = applicationContext.getFileFromUri(uri)
 			when {
 				file.canRead() -> yieldAllUsingFile(file)
 				Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> yieldAllApi26(applicationContext, uri)

@@ -27,14 +27,14 @@ import java.io.File
 import java.io.FileNotFoundException
 
 @JvmSynthetic
-internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): File {
-	if (scheme == ContentResolver.SCHEME_FILE) {
-		return File(requireNotNull(path) { "Uri path is null: $this" })
+internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null): File {
+	if (uri.scheme == ContentResolver.SCHEME_FILE) {
+		return File(requireNotNull(uri.path) { "Uri path is null: $uri" })
 	}
 	try {
-		context.contentResolver.openFileDescriptor(this, "r", signal).use { fileDescriptor ->
+		contentResolver.openFileDescriptor(uri, "r", signal).use { fileDescriptor ->
 			if (fileDescriptor == null) {
-				throw NullPointerException("ParcelFileDescriptor was null: $this")
+				throw NullPointerException("ParcelFileDescriptor was null: $uri")
 			}
 			val path = "/proc/${Process.myPid()}/fd/${fileDescriptor.fd}"
 			val canonicalPath = File(path).canonicalPath.let { canonicalPath ->
@@ -45,7 +45,7 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): F
 				}
 			}
 			if (canonicalPath == path) {
-				return tryFileFromExternalDocumentUri(context, this) ?: File("")
+				return tryGetFileFromExternalDocumentUri(this, uri) ?: File("")
 			}
 			return File(canonicalPath)
 		}
@@ -54,7 +54,7 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): F
 	}
 }
 
-private fun tryFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
+private fun tryGetFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
 	if (!DocumentsContract.isDocumentUri(context, uri)) {
 		return null
 	}
