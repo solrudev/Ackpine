@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.helpers
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Process
@@ -33,11 +32,7 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): F
 		return File(requireNotNull(path) { "Uri path is null: $this" })
 	}
 	try {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-			context.contentResolver.openFileDescriptor(this, "r", signal)
-		} else {
-			context.contentResolver.openFileDescriptor(this, "r")
-		}.use { fileDescriptor ->
+		context.contentResolver.openFileDescriptor(this, "r", signal).use { fileDescriptor ->
 			if (fileDescriptor == null) {
 				throw NullPointerException("ParcelFileDescriptor was null: $this")
 			}
@@ -60,7 +55,7 @@ internal fun Uri.toFile(context: Context, signal: CancellationSignal? = null): F
 }
 
 private fun tryFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
-	if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT || !DocumentsContract.isDocumentUri(context, uri)) {
+	if (!DocumentsContract.isDocumentUri(context, uri)) {
 		return null
 	}
 	if (uri.authority != "com.android.externalstorage.documents") {
