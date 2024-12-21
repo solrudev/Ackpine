@@ -25,6 +25,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.toFile
+import java.io.File
 import java.io.FileInputStream
 import java.io.InputStream
 import java.util.zip.ZipFile
@@ -72,20 +73,22 @@ internal class ZipEntryStream private constructor(
 			signal: CancellationSignal?
 		): ZipEntryStream? {
 			val file = uri.toFile(context, signal)
-			if (file.canRead()) {
-				val zipFile = ZipFile(file)
-				return try {
-					val zipEntry = zipFile.getEntry(uri.encodedQuery) ?: return null
-					ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
-				} catch (throwable: Throwable) {
-					zipFile.closeWithException(throwable)
-					throw throwable
-				}
+			return when {
+				file.canRead() -> openZipEntryStreamUsingZipFile(file, zipEntryName)
+				Build.VERSION.SDK_INT >= 26 -> openZipEntryStreamApi26(uri, zipEntryName, context, signal)
+				else -> openZipEntryStreamUsingZipInputStream(uri, zipEntryName, context, signal)
 			}
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				return openZipEntryStreamApi26(uri, zipEntryName, context, signal)
+		}
+
+		private fun openZipEntryStreamUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
+			val zipFile = ZipFile(file)
+			try {
+				val zipEntry = zipFile.getEntry(zipEntryName) ?: return null
+				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
+			} catch (throwable: Throwable) {
+				zipFile.closeWithException(throwable)
+				throw throwable
 			}
-			return openZipEntryStreamUsingZipInputStream(uri, zipEntryName, context, signal)
 		}
 
 		@RequiresApi(Build.VERSION_CODES.O)
