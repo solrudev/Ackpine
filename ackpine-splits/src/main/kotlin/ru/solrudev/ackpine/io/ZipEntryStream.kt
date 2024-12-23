@@ -83,7 +83,11 @@ internal class ZipEntryStream private constructor(
 		private fun openUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
 			val zipFile = ZipFile(file)
 			try {
-				val zipEntry = zipFile.getEntry(zipEntryName) ?: return null
+				val zipEntry = zipFile.getEntry(zipEntryName)
+				if (zipEntry == null) {
+					zipFile.close()
+					return null
+				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
 			} catch (throwable: Throwable) {
 				zipFile.closeWithException(throwable)
@@ -115,7 +119,13 @@ internal class ZipEntryStream private constructor(
 				return openUsingZipInputStream(uri, zipEntryName, context, signal)
 			}
 			try {
-				val zipEntry = zipFile.getEntry(zipEntryName) ?: return null
+				val zipEntry = zipFile.getEntry(zipEntryName)
+				if (zipEntry == null) {
+					fd.close()
+					fileInputStream.close()
+					zipFile.close()
+					return null
+				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
 			} catch (throwable: Throwable) {
 				fd.closeWithException(throwable)
@@ -135,10 +145,14 @@ internal class ZipEntryStream private constructor(
 			val zipEntry = try {
 				zipStream.entries()
 					.onEach { signal?.throwIfCanceled() }
-					.firstOrNull { it.name == zipEntryName } ?: return null
+					.firstOrNull { it.name == zipEntryName }
 			} catch (throwable: Throwable) {
 				zipStream.closeWithException(throwable)
 				throw throwable
+			}
+			if (zipEntry == null) {
+				zipStream.close()
+				return null
 			}
 			return ZipEntryStream(zipStream, zipEntry.size)
 		}
