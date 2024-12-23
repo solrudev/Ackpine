@@ -74,13 +74,13 @@ internal class ZipEntryStream private constructor(
 		): ZipEntryStream? {
 			val file = context.getFileFromUri(uri, signal)
 			return when {
-				file.canRead() -> openZipEntryStreamUsingZipFile(file, zipEntryName)
-				Build.VERSION.SDK_INT >= 26 -> openZipEntryStreamApi26(uri, zipEntryName, context, signal)
-				else -> openZipEntryStreamUsingZipInputStream(uri, zipEntryName, context, signal)
+				file.canRead() -> openUsingZipFile(file, zipEntryName)
+				Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> openApi26(uri, zipEntryName, context, signal)
+				else -> openUsingZipInputStream(uri, zipEntryName, context, signal)
 			}
 		}
 
-		private fun openZipEntryStreamUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
+		private fun openUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
 			val zipFile = ZipFile(file)
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName) ?: return null
@@ -92,8 +92,8 @@ internal class ZipEntryStream private constructor(
 		}
 
 		@RequiresApi(Build.VERSION_CODES.O)
-		private fun openZipEntryStreamApi26(
-			zipFileUri: Uri,
+		private fun openApi26(
+			uri: Uri,
 			zipEntryName: String,
 			context: Context,
 			signal: CancellationSignal?
@@ -102,8 +102,8 @@ internal class ZipEntryStream private constructor(
 			var fileInputStream: FileInputStream? = null
 			val zipFile: org.apache.commons.compress.archivers.zip.ZipFile
 			try {
-				fd = context.contentResolver.openFileDescriptor(zipFileUri, "r", signal)
-					?: throw NullPointerException("ParcelFileDescriptor was null: $zipFileUri")
+				fd = context.contentResolver.openFileDescriptor(uri, "r", signal)
+					?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
 				fileInputStream = FileInputStream(fd.fileDescriptor)
 				zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
 					.setSeekableByteChannel(fileInputStream.channel)
@@ -112,7 +112,7 @@ internal class ZipEntryStream private constructor(
 				fd?.closeWithException(throwable)
 				fileInputStream?.closeWithException(throwable)
 				throwable.printStackTrace()
-				return openZipEntryStreamUsingZipInputStream(zipFileUri, zipEntryName, context, signal)
+				return openUsingZipInputStream(uri, zipEntryName, context, signal)
 			}
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName) ?: return null
@@ -125,13 +125,13 @@ internal class ZipEntryStream private constructor(
 			}
 		}
 
-		private fun openZipEntryStreamUsingZipInputStream(
-			zipFileUri: Uri,
+		private fun openUsingZipInputStream(
+			uri: Uri,
 			zipEntryName: String,
 			context: Context,
 			signal: CancellationSignal?
 		): ZipEntryStream? {
-			val zipStream = ZipInputStream(context.contentResolver.openInputStream(zipFileUri))
+			val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri))
 			val zipEntry = try {
 				zipStream.entries()
 					.onEach { signal?.throwIfCanceled() }
