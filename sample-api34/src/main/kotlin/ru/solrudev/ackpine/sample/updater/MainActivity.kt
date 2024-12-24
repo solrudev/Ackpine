@@ -65,14 +65,11 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 	}
 
 	private fun applyInsets() = binding.containerMain.applyInsetter {
-		type(statusBars = true) {
+		type(statusBars = true, displayCutout = true) {
 			padding()
 		}
 		type(navigationBars = true) {
 			padding(horizontal = true)
-		}
-		type(displayCutout = true) {
-			padding(horizontal = true, top = true)
 		}
 	}
 
