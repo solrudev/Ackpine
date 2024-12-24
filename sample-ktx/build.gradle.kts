@@ -35,4 +35,5 @@ dependencies {
 	implementation(androidx.swiperefreshlayout)
 	implementation(libs.materialcomponents)
 	implementation(libs.viewbindingpropertydelegate)
+	implementation(libs.insetter)
 }

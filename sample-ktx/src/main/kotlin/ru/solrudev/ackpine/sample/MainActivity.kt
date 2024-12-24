@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.sample
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
 import androidx.navigation.NavController
@@ -27,6 +28,7 @@ import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import by.kirich1409.viewbindingdelegate.viewBinding
+import dev.chrisbanes.insetter.applyInsetter
 import ru.solrudev.ackpine.sample.databinding.NavHostBinding
 import ru.solrudev.ackpine.sample.install.InstallFragment
 
@@ -41,6 +43,8 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
+		enableEdgeToEdge()
+		applyInsets()
 		val navController = navController
 		binding.toolbarNavHost.setupWithNavController(navController, appBarConfiguration)
 		binding.bottomNavigationViewNavHost.setupWithNavController(navController)
@@ -52,6 +56,30 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		maybeHandleInstallUri(intent)
+	}
+
+	private fun applyInsets() = with(binding) {
+		appBarLayoutNavHost.applyInsetter {
+			type(statusBars = true) {
+				padding()
+			}
+			type(navigationBars = true) {
+				padding(horizontal = true)
+			}
+			type(displayCutout = true) {
+				padding(horizontal = true, top = true)
+			}
+		}
+		contentNavHost.applyInsetter {
+			type(navigationBars = true, displayCutout = true) {
+				padding(horizontal = true)
+			}
+		}
+		bottomNavigationViewNavHost.applyInsetter {
+			type(navigationBars = true, displayCutout = true) {
+				padding(horizontal = true, bottom = true)
+			}
+		}
 	}
 
 	private fun maybeHandleInstallUri(intent: Intent) {
