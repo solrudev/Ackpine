@@ -4,6 +4,8 @@ public final class ru/solrudev/ackpine/ZippedFileProvider : android/content/Cont
 	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
 	public fun delete (Landroid/net/Uri;Ljava/lang/String;[Ljava/lang/String;)I
 	public fun getType (Landroid/net/Uri;)Ljava/lang/String;
+	public static final fun getUriForZipEntry (Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;
+	public static final fun getUriForZipEntry (Ljava/io/File;Ljava/lang/String;)Landroid/net/Uri;
 	public static final fun getUriForZipEntry (Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;
 	public fun insert (Landroid/net/Uri;Landroid/content/ContentValues;)Landroid/net/Uri;
 	public static final fun isZippedFileProviderUri (Landroid/net/Uri;)Z
@@ -21,6 +23,8 @@ public final class ru/solrudev/ackpine/ZippedFileProvider : android/content/Cont
 }
 
 public final class ru/solrudev/ackpine/ZippedFileProvider$Companion {
+	public final fun getUriForZipEntry (Landroid/net/Uri;Ljava/lang/String;)Landroid/net/Uri;
+	public final fun getUriForZipEntry (Ljava/io/File;Ljava/lang/String;)Landroid/net/Uri;
 	public final fun getUriForZipEntry (Ljava/lang/String;Ljava/lang/String;)Landroid/net/Uri;
 	public final fun isZippedFileProviderUri (Landroid/net/Uri;)Z
 }

@@ -292,6 +292,28 @@ public class ZippedFileProvider : ContentProvider() {
 				.encodedQuery(zipEntryName)
 				.build()
 		}
+
+		/**
+		 * Creates an [Uri] for a ZIP entry.
+		 *
+		 * @param file a ZIP file containing [zip entry][zipEntryName].
+		 * @param zipEntryName name of the ZIP entry inside of the ZIP archive.
+		 */
+		@JvmStatic
+		public fun getUriForZipEntry(file: File, zipEntryName: String): Uri {
+			return getUriForZipEntry(file.absolutePath, zipEntryName)
+		}
+
+		/**
+		 * Creates an [Uri] for a ZIP entry.
+		 *
+		 * @param uri [Uri] pointing to a ZIP file containing [zip entry][zipEntryName].
+		 * @param zipEntryName name of the ZIP entry inside of the ZIP archive.
+		 */
+		@JvmStatic
+		public fun getUriForZipEntry(uri: Uri, zipEntryName: String): Uri {
+			return getUriForZipEntry(uri.toString(), zipEntryName)
+		}
 	}
 }
 
