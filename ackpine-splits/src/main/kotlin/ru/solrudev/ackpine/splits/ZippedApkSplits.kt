@@ -104,23 +104,17 @@ public object ZippedApkSplits {
 			yieldAllUsingZipInputStream(context, uri)
 			return
 		}
-		try {
-			zipFile.entries
-				.asSequence()
-				.filterNot { isClosed }
-				.mapNotNull { zipEntry ->
-					zipFile.getInputStream(zipEntry).use { entryStream ->
-						entryStream.use()
-						Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
-					}
+		zipFile.entries
+			.asSequence()
+			.filterNot { isClosed }
+			.mapNotNull { zipEntry ->
+				zipFile.getInputStream(zipEntry).use { entryStream ->
+					entryStream.use()
+					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
 				}
-				.forEach { yield(it) }
-		} catch (throwable: Throwable) {
-			fd.closeWithException(throwable)
-			fileInputStream.closeWithException(throwable)
-			zipFile.closeWithException(throwable)
-			throw throwable
-		}
+			}
+			.forEach { yield(it) }
+
 	}
 
 	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingZipInputStream(context: Context, uri: Uri) {
