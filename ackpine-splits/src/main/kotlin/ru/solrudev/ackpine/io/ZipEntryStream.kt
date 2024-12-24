@@ -70,7 +70,7 @@ internal class ZipEntryStream private constructor(
 			uri: Uri,
 			zipEntryName: String,
 			context: Context,
-			signal: CancellationSignal?
+			signal: CancellationSignal? = null
 		): ZipEntryStream? {
 			val file = context.getFileFromUri(uri, signal)
 			return when {

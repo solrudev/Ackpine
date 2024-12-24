@@ -275,7 +275,7 @@ public sealed class Apk(
 			val (displayName, size) = uri.displayNameAndSize(context)
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
 			val androidManifest = ZipEntryStream
-				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, signal = null)
+				.open(uri, ANDROID_MANIFEST_FILE_NAME, context)
 				?.use(InputStream::toByteBuffer) ?: return null
 			return createApkSplit(androidManifest, name, uri, size)
 		}
