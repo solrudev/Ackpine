@@ -144,7 +144,9 @@ public final class InstallFragment extends Fragment {
 	private void observeViewModel() {
 		viewModel.getError().observe(getViewLifecycleOwner(), error -> {
 			if (!error.isEmpty()) {
-				Snackbar.make(requireView(), error.resolve(requireContext()), Snackbar.LENGTH_LONG)
+				Snackbar.make(requireActivity().findViewById(R.id.content_nav_host),
+								error.resolve(requireContext()),
+								Snackbar.LENGTH_LONG)
 						.setAnchorView(binding.fabInstall)
 						.show();
 				viewModel.clearError();

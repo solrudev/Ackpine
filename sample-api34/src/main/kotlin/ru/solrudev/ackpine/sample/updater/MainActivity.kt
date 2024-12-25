@@ -18,12 +18,14 @@ package ru.solrudev.ackpine.sample.updater
 
 import android.animation.LayoutTransition
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import by.kirich1409.viewbindingdelegate.viewBinding
+import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.AssetFileProvider
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -38,6 +40,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
+		enableEdgeToEdge()
+		applyInsets()
 		setSupportActionBar(binding.toolbarMain)
 		with(binding.cardMainInstall) {
 			imageViewInstallIcon.setImageURI(
@@ -57,6 +61,15 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 					setError(uiState.error)
 				}
 			}
+		}
+	}
+
+	private fun applyInsets() = binding.containerMain.applyInsetter {
+		type(statusBars = true, displayCutout = true) {
+			padding()
+		}
+		type(navigationBars = true) {
+			padding(horizontal = true)
 		}
 	}
 

@@ -162,6 +162,7 @@ public sealed interface ResolvableString : Serializable {
 private data object Empty : ResolvableString {
 	private const val serialVersionUID = 5194188194930148316L
 	override fun resolve(context: Context): String = ""
+	private fun readResolve(): Any = Empty
 }
 
 private data class Raw(val value: String) : ResolvableString {

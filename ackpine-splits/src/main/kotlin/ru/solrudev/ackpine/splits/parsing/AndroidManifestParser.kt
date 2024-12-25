@@ -17,13 +17,10 @@
 package ru.solrudev.ackpine.splits.parsing
 
 import com.android.apksig.internal.apk.AndroidBinXmlParser
-import ru.solrudev.ackpine.helpers.entries
-import java.io.ByteArrayOutputStream
 import java.nio.ByteBuffer
-import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
-private const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
+@get:JvmSynthetic
+internal const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
 @JvmSynthetic
 internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
@@ -56,22 +53,4 @@ internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 		return null
 	}
 	return AndroidManifest(manifest)
-}
-
-@JvmSynthetic
-internal fun ZipInputStream.androidManifest(): ByteBuffer? {
-	entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
-	val buffer = ByteArrayOutputStream()
-	copyTo(buffer)
-	return ByteBuffer.wrap(buffer.toByteArray())
-}
-
-@JvmSynthetic
-internal fun ZipFile.androidManifest(): ByteBuffer? {
-	val androidManifestZipEntry = getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
-	getInputStream(androidManifestZipEntry).use { entryStream ->
-		val buffer = ByteArrayOutputStream()
-		entryStream.copyTo(buffer)
-		return ByteBuffer.wrap(buffer.toByteArray())
-	}
 }

@@ -21,14 +21,18 @@ import static android.content.Intent.ACTION_VIEW;
 import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
+import dev.chrisbanes.insetter.Insetter;
+import dev.chrisbanes.insetter.Side;
 import ru.solrudev.ackpine.sample.databinding.NavHostBinding;
 import ru.solrudev.ackpine.sample.install.InstallFragment;
 
@@ -44,6 +48,8 @@ public final class MainActivity extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		binding = NavHostBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
+		EdgeToEdge.enable(this);
+		applyInsets();
 		final NavController navController = getNavController();
 		NavigationUI.setupWithNavController(binding.toolbarNavHost, navController, appBarConfiguration);
 		NavigationUI.setupWithNavController(binding.bottomNavigationViewNavHost, navController);
@@ -56,6 +62,22 @@ public final class MainActivity extends AppCompatActivity {
 	protected void onNewIntent(@NonNull Intent intent) {
 		super.onNewIntent(intent);
 		maybeHandleInstallUri(intent);
+	}
+
+	private void applyInsets() {
+		Insetter.builder()
+				.padding(WindowInsetsCompat.Type.statusBars())
+				.padding(WindowInsetsCompat.Type.navigationBars(), Side.LEFT | Side.RIGHT)
+				.padding(WindowInsetsCompat.Type.displayCutout(), Side.LEFT | Side.RIGHT | Side.TOP)
+				.applyToView(binding.appBarLayoutNavHost);
+		Insetter.builder()
+				.padding(WindowInsetsCompat.Type.navigationBars(), Side.LEFT | Side.RIGHT)
+				.padding(WindowInsetsCompat.Type.displayCutout(), Side.LEFT | Side.RIGHT)
+				.applyToView(binding.contentNavHost);
+		Insetter.builder()
+				.padding(WindowInsetsCompat.Type.navigationBars(), Side.LEFT | Side.RIGHT | Side.BOTTOM)
+				.padding(WindowInsetsCompat.Type.displayCutout(), Side.LEFT | Side.RIGHT | Side.BOTTOM)
+				.applyToView(binding.bottomNavigationViewNavHost);
 	}
 
 	private void maybeHandleInstallUri(@NonNull Intent intent) {

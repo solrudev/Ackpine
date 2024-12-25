@@ -1,6 +1,30 @@
 Change Log
 ==========
 
+Version 0.9.3 (2024-12-25)
+--------------------------
+
+### Dependencies
+
+- Updated KSP to 2.0.21-1.0.28.
+- Updated Android Gradle Plugin to 8.7.3.
+- Updated `apksig` to 8.7.3.
+- Updated `binary-compatibility-validator` to 0.17.0.
+- Updated `androidx.navigation` to 2.8.5 (sample apps dependency).
+- Updated Guava to 33.4.0-android (sample apps dependency).
+
+### Bug fixes and improvements
+
+- Raise `compileSdk` to 35.
+- Use random access when parsing APK on API level 26+ in `Apk.fromUri()`. This greatly improves performance for large APKs.
+- Add `ZippedFileProvider.getUriForZipEntry()` overloads for `File` and `Uri`.
+- Raise `targetSdk` for sample apps to 35.
+- Proper support for edge-to-edge display in sample apps.
+
+### Public API changes
+
+- Added `getUriForZipEntry(File, String)` and `getUriForZipEntry(Uri, String)` to `ZippedFileProvider.Companion` and as static `ZippedFileProvider` methods.
+
 Version 0.9.2 (2024-12-19)
 --------------------------
 

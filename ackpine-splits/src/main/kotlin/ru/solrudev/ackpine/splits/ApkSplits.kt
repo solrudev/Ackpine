@@ -240,7 +240,7 @@ public object ApkSplits {
 		?.let { yield(ApkCompatibility(isPreferred = true, it)) }
 
 	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldRemaining(
-		groupedSplits: MutableCollection<out List<T>>
+		groupedSplits: Collection<List<T>>
 	) where T : Apk.ConfigSplit, T : Apk {
 		for (apk in groupedSplits.flatten()) {
 			yield(ApkCompatibility(isPreferred = false, apk))

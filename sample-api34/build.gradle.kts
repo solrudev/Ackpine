@@ -38,4 +38,5 @@ dependencies {
 	implementation(libs.materialcomponents)
 	implementation(libs.okhttp)
 	implementation(libs.viewbindingpropertydelegate)
+	implementation(libs.insetter)
 }
