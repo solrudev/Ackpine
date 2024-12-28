@@ -22,6 +22,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
+import ru.solrudev.ackpine.helpers.closeAll
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
@@ -121,9 +122,7 @@ internal class ZipEntryStream private constructor(
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName)
 				if (zipEntry == null) {
-					fd.close()
-					fileInputStream.close()
-					zipFile.close()
+					closeAll(fd, fileInputStream, zipFile)
 					return null
 				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)

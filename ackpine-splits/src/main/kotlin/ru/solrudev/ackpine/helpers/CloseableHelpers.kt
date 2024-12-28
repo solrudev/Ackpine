@@ -18,11 +18,30 @@ package ru.solrudev.ackpine.helpers
 
 import java.io.Closeable
 
+/**
+ * Closes [Closeable] resource and adds it to suppressed exceptions of the [cause] if closing failed.
+ */
 @JvmSynthetic
 internal fun Closeable.closeWithException(cause: Throwable) {
 	try {
 		close()
 	} catch (closeException: Throwable) {
 		cause.addSuppressed(closeException)
+	}
+}
+
+/**
+ * Guarantees closing all [resources] and delivery of every failure through thrown exception.
+ */
+@JvmSynthetic
+internal fun closeAll(vararg resources: AutoCloseable) {
+	val exceptions = resources.mapNotNullTo(mutableListOf()) { resource ->
+		runCatching { resource.close() }.exceptionOrNull()
+	}
+	val closeException = exceptions.firstOrNull()
+	exceptions.removeFirstOrNull()
+	if (closeException != null) {
+		exceptions.forEach(closeException::addSuppressed)
+		throw closeException
 	}
 }
