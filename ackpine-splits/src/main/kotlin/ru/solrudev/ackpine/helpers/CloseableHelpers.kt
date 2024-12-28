@@ -38,8 +38,7 @@ internal fun closeAll(vararg resources: AutoCloseable) {
 	val exceptions = resources.mapNotNullTo(mutableListOf()) { resource ->
 		runCatching { resource.close() }.exceptionOrNull()
 	}
-	val closeException = exceptions.firstOrNull()
-	exceptions.removeFirstOrNull()
+	val closeException = exceptions.removeFirstOrNull()
 	if (closeException != null) {
 		exceptions.forEach(closeException::addSuppressed)
 		throw closeException
