@@ -47,8 +47,8 @@ public final class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		binding = NavHostBinding.inflate(getLayoutInflater());
-		setContentView(binding.getRoot());
 		EdgeToEdge.enable(this);
+		setContentView(binding.getRoot());
 		applyInsets();
 		final NavController navController = getNavController();
 		NavigationUI.setupWithNavController(binding.toolbarNavHost, navController, appBarConfiguration);

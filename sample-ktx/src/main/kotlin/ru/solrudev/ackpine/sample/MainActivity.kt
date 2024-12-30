@@ -42,8 +42,8 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(binding.root)
 		enableEdgeToEdge()
+		setContentView(binding.root)
 		applyInsets()
 		val navController = navController
 		binding.toolbarNavHost.setupWithNavController(navController, appBarConfiguration)
