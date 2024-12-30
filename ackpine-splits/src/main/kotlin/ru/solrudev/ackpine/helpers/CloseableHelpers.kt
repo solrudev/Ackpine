@@ -16,20 +16,6 @@
 
 package ru.solrudev.ackpine.helpers
 
-import java.io.Closeable
-
-/**
- * Closes [Closeable] resource and adds it to suppressed exceptions of the [cause] if closing failed.
- */
-@JvmSynthetic
-internal fun Closeable.closeWithException(cause: Throwable) {
-	try {
-		close()
-	} catch (closeException: Throwable) {
-		cause.addSuppressed(closeException)
-	}
-}
-
 /**
  * Guarantees closing all [resources] and delivery of every failure through thrown exception.
  */

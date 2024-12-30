@@ -48,11 +48,11 @@ internal class ZipEntryStream private constructor(
 	override fun skip(n: Long): Long = inputStream.skip(n)
 
 	override fun close() {
-		for (resource in resources) {
-			runCatching { resource.close() }
+		try {
+			closeAll(inputStream, *resources)
+		} finally {
+			resources = emptyArray()
 		}
-		resources = emptyArray()
-		inputStream.close()
 	}
 
 	override fun equals(other: Any?): Boolean {

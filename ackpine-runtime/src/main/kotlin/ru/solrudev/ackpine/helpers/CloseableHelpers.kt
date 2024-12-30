@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,19 @@
  * limitations under the License.
  */
 
-description = "Provides support of asset files inside of application's package for Ackpine"
+package ru.solrudev.ackpine.helpers
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-	id("ru.solrudev.ackpine.dokka")
-}
+import androidx.annotation.RestrictTo
+import java.io.Closeable
 
-ackpine {
-	id = "assets"
-	artifact {
-		name = "Ackpine Assets"
+/**
+ * Closes [Closeable] resource and in case of failure adds the exception to suppressed exceptions of the [cause].
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public fun Closeable.closeWithException(cause: Throwable) {
+	try {
+		close()
+	} catch (closeException: Throwable) {
+		cause.addSuppressed(closeException)
 	}
-}
-
-dependencies {
-	implementation(projects.ackpineRuntime)
 }
