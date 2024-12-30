@@ -34,7 +34,7 @@ internal fun Closeable.closeWithException(cause: Throwable) {
  * Guarantees closing all [resources] and delivery of every failure through thrown exception.
  */
 @JvmSynthetic
-internal fun closeAll(vararg resources: AutoCloseable) {
+internal fun closeAll(resources: Iterable<AutoCloseable>) {
 	val exceptions = resources.mapNotNullTo(mutableListOf()) { resource ->
 		runCatching { resource.close() }.exceptionOrNull()
 	}
@@ -44,3 +44,9 @@ internal fun closeAll(vararg resources: AutoCloseable) {
 		throw closeException
 	}
 }
+
+/**
+ * Guarantees closing all [resources] and delivery of every failure through thrown exception.
+ */
+@JvmSynthetic
+internal fun closeAll(vararg resources: AutoCloseable) = closeAll(resources.asIterable())
