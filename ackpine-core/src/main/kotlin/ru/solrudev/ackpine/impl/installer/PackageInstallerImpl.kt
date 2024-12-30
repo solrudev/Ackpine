@@ -127,7 +127,7 @@ internal class PackageInstallerImpl internal constructor(
 			.aggregate { type, _: Unit?, session, first ->
 				val installSession = installSessionFactory.create(
 					session,
-					needToCompleteIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
+					completeIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
 				)
 				sessions[installSession.id] = installSession
 			}
