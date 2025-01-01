@@ -150,6 +150,7 @@ public class NotificationData private constructor(
  * object InstallIcon : DrawableId {
  *     private const val serialVersionUID = 3692803605642002954L
  *     override fun drawableId() = R.drawable.ic_install
+ *     private fun readResolve(): Any = InstallIcon
  * }
  * ```
  */

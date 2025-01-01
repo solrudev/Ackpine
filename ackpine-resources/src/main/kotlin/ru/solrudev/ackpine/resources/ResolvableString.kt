@@ -80,6 +80,7 @@ public sealed interface ResolvableString : Serializable {
 		 * object InstallMessageTitle : ResolvableString.Resource() {
 		 *     override fun stringId() = R.string.install_message_title
 		 *     private const val serialVersionUID = -1310602635578779088L
+		 *     private fun readResolve(): Any = InstallMessageTitle
 		 * }
 		 *
 		 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
@@ -111,6 +112,7 @@ public sealed interface ResolvableString : Serializable {
 	 * object InstallMessageTitle : ResolvableString.Resource() {
 	 *     override fun stringId() = R.string.install_message_title
 	 *     private const val serialVersionUID = -1310602635578779088L
+	 *     private fun readResolve(): Any = InstallMessageTitle
 	 * }
 	 *
 	 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
