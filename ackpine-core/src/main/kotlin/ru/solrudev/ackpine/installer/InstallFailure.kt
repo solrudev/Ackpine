@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("ConstPropertyName")
+@file:Suppress("ConstPropertyName", "Unused")
 
 package ru.solrudev.ackpine.installer
 

@@ -15,7 +15,7 @@
  */
 
 @file:JvmName("NotificationDataConstants")
-@file:Suppress("ConstPropertyName")
+@file:Suppress("ConstPropertyName", "Unused")
 
 package ru.solrudev.ackpine.session.parameters
 
