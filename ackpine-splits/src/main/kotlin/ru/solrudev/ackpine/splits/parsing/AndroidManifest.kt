@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2024 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ internal class AndroidManifest internal constructor(private val manifest: Map<St
 
 	@get:JvmSynthetic
 	internal val isFeatureSplit: Boolean
-		get() = manifest["$ANDROID_NAMESPACE:isFeatureSplit"]?.toBooleanStrict() ?: false
+		get() = manifest["$ANDROID_NAMESPACE:isFeatureSplit"]?.toBooleanStrict() == true
 
 	@get:JvmSynthetic
 	internal val configForSplit: String

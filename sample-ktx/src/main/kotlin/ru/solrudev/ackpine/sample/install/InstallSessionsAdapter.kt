@@ -59,7 +59,7 @@ class InstallSessionsAdapter(
 		}
 
 		val isSwipeable: Boolean
-			get() = currentSessionData?.error?.isEmpty?.not() ?: false
+			get() = currentSessionData?.error?.isEmpty == false
 
 		val sessionId: UUID?
 			get() = currentSessionData?.id

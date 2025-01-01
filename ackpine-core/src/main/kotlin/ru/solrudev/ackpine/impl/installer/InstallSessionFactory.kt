@@ -210,14 +210,14 @@ internal class InstallSessionFactoryImpl internal constructor(
 			installSession.session.confirmation, installSession.getNotificationData(),
 			installSession.session.requireUserAction, installSession.getInstallMode(),
 			installSession.getPreapproval(), installSession.getConstraints(),
-			requestUpdateOwnership = installSession.requestUpdateOwnership ?: false,
+			requestUpdateOwnership = installSession.requestUpdateOwnership == true,
 			packageSource = installSession.packageSource ?: PackageSource.Unspecified,
 			sessionDao,
 			sessionFailureDao = installSessionDao,
 			sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
 			executor, handler, nativeSessionId, installSession.notificationId!!,
 			commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
-			isPreapproved = installSession.preapproval?.isPreapproved ?: false,
+			isPreapproved = installSession.preapproval?.isPreapproved == true,
 			dbWriteSemaphore = BinarySemaphore()
 		)
 		if (!completeIfSucceeded || initialState.isTerminal) {
