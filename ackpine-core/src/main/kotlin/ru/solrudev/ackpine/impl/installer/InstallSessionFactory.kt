@@ -191,8 +191,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
 		if (isSuccessfulSelfUpdate) {
 			session.complete(Succeeded)
-		}
-		if (isSuccessfulSelfUpdate) {
 			lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
 		}
 		return session
