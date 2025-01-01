@@ -188,8 +188,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val lastUpdateTimestamp = installSession.lastUpdateTimestamp ?: Long.MAX_VALUE
 		val isSelfUpdate = initialState is Committed && applicationContext.packageName == packageName
 		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
-		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
-		if (isSuccessfulSelfUpdate) {
+		if (isSelfUpdate && isLastUpdateTimestampUpdated) {
 			session.complete(Succeeded)
 			lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
 		}
