@@ -173,5 +173,6 @@ private data object DefaultNotificationIcon : DrawableId {
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-@get:JvmSynthetic
+@JvmSynthetic
+@JvmField
 internal val DEFAULT_NOTIFICATION_STRING = ResolvableString.raw("ACKPINE_DEFAULT_NOTIFICATION_STRING")
