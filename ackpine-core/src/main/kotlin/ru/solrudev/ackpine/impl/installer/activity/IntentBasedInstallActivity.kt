@@ -70,7 +70,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 
 	internal companion object {
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val APK_URI_KEY = "ACKPINE_INSTALLER_APK_URI"
 	}
 }

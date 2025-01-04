@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 
 private const val BUFFER_LENGTH = 8192
 
-@get:JvmSynthetic
+@JvmSynthetic
 internal const val PROGRESS_MAX: Int = 100
 
 @JvmSynthetic

@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.splits.parsing
 import com.android.apksig.internal.apk.AndroidBinXmlParser
 import java.nio.ByteBuffer
 
-@get:JvmSynthetic
+@JvmSynthetic
 internal const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
 @JvmSynthetic

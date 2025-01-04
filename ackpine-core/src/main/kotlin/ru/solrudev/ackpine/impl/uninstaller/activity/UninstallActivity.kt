@@ -72,7 +72,7 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 
 	internal companion object {
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val PACKAGE_NAME_KEY = "ACKPINE_UNINSTALLER_PACKAGE_NAME"
 	}
 }
