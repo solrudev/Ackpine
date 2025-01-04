@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,11 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.edit
 import androidx.core.os.bundleOf
+import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.helpers.use
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
@@ -341,9 +343,9 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun getSessionId(): Int {
-		val isSessionCreated = nativeSessionId != -1
-		if (isSessionCreated) {
-			return nativeSessionId
+		val sessionId = nativeSessionId
+		if (sessionId != -1) {
+			return sessionId
 		}
 		return createSession()
 	}
@@ -392,17 +394,21 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun writeApksToSession(sessionId: Int) {
 		val session = packageInstaller.openSession(sessionId)
 		session.writeApks().handleResult(
+			block = {
+				try {
+					session.close()
+					notifyAwaiting()
+				} catch (exception: Exception) {
+					completeExceptionally(exception)
+				}
+			},
 			onException = { exception ->
-				session.close()
+				session.closeWithException(exception)
 				if (exception is OperationCanceledException) {
 					cancel()
 				} else {
 					completeExceptionally(exception)
 				}
-			},
-			block = {
-				session.close()
-				notifyAwaiting()
 			})
 	}
 
@@ -416,19 +422,19 @@ internal class SessionBasedInstallSession internal constructor(
 			try {
 				executor.execute {
 					try {
-						writeApk(afd, index, currentProgress, progressMax)
-						if (countdown.decrementAndGet() == 0) {
-							completer.set(Unit)
+						afd.use {
+							writeApk(afd, index, currentProgress, progressMax)
+							if (countdown.decrementAndGet() == 0) {
+								completer.set(Unit)
+							}
 						}
-					} catch (t: Throwable) {
-						completer.setException(t)
-					} finally {
-						afd.close()
+					} catch (throwable: Throwable) {
+						completer.setException(throwable)
 					}
 				}
-			} catch (t: Throwable) {
-				completer.setException(t)
-				afd.close()
+			} catch (exception: Exception) {
+				afd.closeWithException(exception)
+				completer.setException(exception)
 			}
 		}
 		"SessionBasedInstallSession.writeApks"

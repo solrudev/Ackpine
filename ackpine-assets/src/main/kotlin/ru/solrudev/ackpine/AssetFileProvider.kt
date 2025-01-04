@@ -31,6 +31,7 @@ import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import ru.solrudev.ackpine.helpers.use
 import java.io.FileNotFoundException
 
 /**
@@ -135,12 +136,8 @@ public class AssetFileProvider : ContentProvider() {
 		val row = arrayOfNulls<Any>(columnNames.size)
 		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.lastPathSegment)
 		if (OpenableColumns.SIZE in columnNames) {
-			var assetFileDescriptor: AssetFileDescriptor? = null
-			try {
-				assetFileDescriptor = openAssetFile(uri, "r", signal)
+			openAssetFile(uri, "r", signal).use { assetFileDescriptor ->
 				row.setColumn(OpenableColumns.SIZE, assetFileDescriptor?.declaredLength ?: -1L)
-			} finally {
-				assetFileDescriptor?.close()
 			}
 		}
 		cursor.addRow(row)

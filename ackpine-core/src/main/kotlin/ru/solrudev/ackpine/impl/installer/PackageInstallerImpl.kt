@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,7 @@ internal class PackageInstallerImpl internal constructor(
 			.aggregate { type, _: Unit?, session, first ->
 				val installSession = installSessionFactory.create(
 					session,
-					needToCompleteIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
+					completeIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
 				)
 				sessions[installSession.id] = installSession
 			}

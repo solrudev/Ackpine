@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.9.4 (2025-01-04)
+--------------------------
+
+### Bug fixes and improvements
+
+- Correct error handling when closing I/O resources.
+
 Version 0.9.3 (2024-12-25)
 --------------------------
 

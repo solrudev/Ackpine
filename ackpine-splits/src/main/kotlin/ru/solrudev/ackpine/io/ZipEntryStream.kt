@@ -22,6 +22,7 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import androidx.annotation.RequiresApi
+import ru.solrudev.ackpine.helpers.closeAll
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
@@ -47,21 +48,35 @@ internal class ZipEntryStream private constructor(
 	override fun skip(n: Long): Long = inputStream.skip(n)
 
 	override fun close() {
-		for (resource in resources) {
-			runCatching { resource.close() }
+		try {
+			closeAll(inputStream, *resources)
+		} finally {
+			resources = emptyArray()
 		}
-		resources = emptyArray()
-		inputStream.close()
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (other !is ZipEntryStream) return false
-		return inputStream == other.inputStream
+		if (inputStream != other.inputStream) return false
+		if (size != other.size) return false
+		return resources.contentEquals(other.resources)
 	}
 
-	override fun hashCode(): Int = inputStream.hashCode()
-	override fun toString(): String = inputStream.toString()
+	override fun hashCode(): Int {
+		var result = inputStream.hashCode()
+		result = 31 * result + size.hashCode()
+		result = 31 * result + resources.contentHashCode()
+		return result
+	}
+
+	override fun toString(): String {
+		return "ZipEntryStream(" +
+				"inputStream=$inputStream, " +
+				"size=$size, " +
+				"resources=${resources.contentToString()}" +
+				")"
+	}
 
 	internal companion object {
 
@@ -121,9 +136,7 @@ internal class ZipEntryStream private constructor(
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName)
 				if (zipEntry == null) {
-					fd.close()
-					fileInputStream.close()
-					zipFile.close()
+					closeAll(fd, fileInputStream, zipFile)
 					return null
 				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)

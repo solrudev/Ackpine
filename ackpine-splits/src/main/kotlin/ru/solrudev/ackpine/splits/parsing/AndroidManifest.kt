@@ -41,7 +41,7 @@ internal class AndroidManifest internal constructor(private val manifest: Map<St
 
 	@get:JvmSynthetic
 	internal val isFeatureSplit: Boolean
-		get() = manifest["$ANDROID_NAMESPACE:isFeatureSplit"]?.toBooleanStrict() ?: false
+		get() = manifest["$ANDROID_NAMESPACE:isFeatureSplit"]?.toBooleanStrict() == true
 
 	@get:JvmSynthetic
 	internal val configForSplit: String

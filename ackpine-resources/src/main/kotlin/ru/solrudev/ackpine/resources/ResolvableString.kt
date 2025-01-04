@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -80,6 +80,7 @@ public sealed interface ResolvableString : Serializable {
 		 * object InstallMessageTitle : ResolvableString.Resource() {
 		 *     override fun stringId() = R.string.install_message_title
 		 *     private const val serialVersionUID = -1310602635578779088L
+		 *     private fun readResolve(): Any = InstallMessageTitle
 		 * }
 		 *
 		 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
@@ -111,6 +112,7 @@ public sealed interface ResolvableString : Serializable {
 	 * object InstallMessageTitle : ResolvableString.Resource() {
 	 *     override fun stringId() = R.string.install_message_title
 	 *     private const val serialVersionUID = -1310602635578779088L
+	 *     private fun readResolve(): Any = InstallMessageTitle
 	 * }
 	 *
 	 * class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {

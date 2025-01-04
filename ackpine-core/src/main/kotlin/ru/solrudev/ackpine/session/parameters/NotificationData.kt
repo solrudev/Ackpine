@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 
 @file:JvmName("NotificationDataConstants")
-@file:Suppress("ConstPropertyName")
+@file:Suppress("ConstPropertyName", "Unused")
 
 package ru.solrudev.ackpine.session.parameters
 
@@ -150,6 +150,7 @@ public class NotificationData private constructor(
  * object InstallIcon : DrawableId {
  *     private const val serialVersionUID = 3692803605642002954L
  *     override fun drawableId() = R.drawable.ic_install
+ *     private fun readResolve(): Any = InstallIcon
  * }
  * ```
  */
@@ -173,5 +174,6 @@ private data object DefaultNotificationIcon : DrawableId {
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-@get:JvmSynthetic
+@JvmSynthetic
+@JvmField
 internal val DEFAULT_NOTIFICATION_STRING = ResolvableString.raw("ACKPINE_DEFAULT_NOTIFICATION_STRING")

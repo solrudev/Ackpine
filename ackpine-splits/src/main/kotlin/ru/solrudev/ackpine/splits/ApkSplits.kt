@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.exceptions.SplitPackageException
+import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
@@ -47,11 +48,12 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Sequence<Apk>.sortedByCompatibility(context: Context): Sequence<ApkCompatibility> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
+		val source = this
 		return sequence {
 			val libsSplits = mutableListOf<Apk.Libs>()
 			val densitySplits = mutableListOf<Apk.ScreenDensity>()
 			val localizationSplits = mutableListOf<Apk.Localization>()
-			this@sortedByCompatibility
+			source
 				.addSplitsOfTypeTo(libsSplits)
 				.addSplitsOfTypeTo(densitySplits)
 				.addSplitsOfTypeTo(localizationSplits)
@@ -59,12 +61,12 @@ public object ApkSplits {
 				.forEach { yield(ApkCompatibility(isPreferred = true, it)) }
 			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
 			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
-			val groupedLibs = libsSplits.groupSortedBy { apk ->
+			val groupedLibs = libsSplits.groupFeaturesSortedBy { apk ->
 				val index = Abi.deviceAbis.indexOf(apk.abi)
 				if (index == -1) Int.MAX_VALUE else index
 			}
-			val groupedDensity = densitySplits.groupSortedBy { apk -> abs(deviceDensity - apk.dpi.density) }
-			val groupedLocalizations = localizationSplits.groupSortedBy { apk ->
+			val groupedDensity = densitySplits.groupFeaturesSortedBy { apk -> abs(deviceDensity - apk.dpi.density) }
+			val groupedLocalizations = localizationSplits.groupFeaturesSortedBy { apk ->
 				val index = deviceLanguages.indexOf(apk.locale.language)
 				if (index == -1) Int.MAX_VALUE else index
 			}
@@ -223,25 +225,25 @@ public object ApkSplits {
 		}
 	}
 
-	private inline fun <T, R : Comparable<R>> List<T>.groupSortedBy(
+	private inline fun <T : Apk.ConfigSplit, R : Comparable<R>> List<T>.groupFeaturesSortedBy(
 		crossinline selector: (T) -> R?
-	) where T : Apk.ConfigSplit, T : Apk = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
+	) = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
 		.values
 		.onEach { groupedSplits ->
 			groupedSplits.sortBy(selector)
 		}
 
-	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldAndRemovePreferred(
+	private suspend inline fun <T : Apk> SequenceScope<ApkCompatibility>.yieldAndRemovePreferred(
 		splits: MutableList<T>,
 		predicate: (T) -> Boolean = { true }
-	) where T : Apk.ConfigSplit, T : Apk = splits.firstOrNull()
+	) = splits.firstOrNull()
 		?.takeIf(predicate)
 		?.also { splits -= it }
 		?.let { yield(ApkCompatibility(isPreferred = true, it)) }
 
-	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldRemaining(
+	private suspend inline fun <T : Apk> SequenceScope<ApkCompatibility>.yieldRemaining(
 		groupedSplits: Collection<List<T>>
-	) where T : Apk.ConfigSplit, T : Apk {
+	) {
 		for (apk in groupedSplits.flatten()) {
 			yield(ApkCompatibility(isPreferred = false, apk))
 		}
@@ -268,33 +270,29 @@ private class SplitPackageSequence(
 		override fun next(): Apk {
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
-				closeSource()
-				throw ConflictingSplitNameException(apk.name)
+				closeSource(ConflictingSplitNameException(apk.name))
 			}
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
-					closeSource()
-					throw ConflictingBaseApkException()
+					closeSource(ConflictingBaseApkException())
 				}
 				seenBaseApk = true
 			}
 			for (propertyChecker in propertyCheckers) {
-				propertyChecker.check(apk)
-					.onFailure { closeSource() }
-					.getOrThrow()
+				propertyChecker.check(apk).onFailure(::closeSource)
 			}
 			if (!hasNext() && !seenBaseApk) {
-				closeSource()
-				throw NoBaseApkException()
+				closeSource(NoBaseApkException())
 			}
 			return apk
 		}
 	}
 
-	private fun closeSource() {
+	private fun closeSource(exception: Throwable): Nothing {
 		if (source is CloseableSequence) {
-			source.close()
+			source.closeWithException(exception)
 		}
+		throw exception
 	}
 }
 

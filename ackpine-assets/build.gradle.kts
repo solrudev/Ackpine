@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,4 +27,8 @@ ackpine {
 	artifact {
 		name = "Ackpine Assets"
 	}
+}
+
+dependencies {
+	implementation(projects.ackpineRuntime)
 }

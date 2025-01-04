@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -220,22 +220,22 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_BUNDLE = "ru.solrudev.ackpine.extra.NOTIFICATION_BUNDLE"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_ID = "ru.solrudev.ackpine.extra.NOTIFICATION_ID"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_TITLE = "ru.solrudev.ackpine.extra.NOTIFICATION_TITLE"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_MESSAGE = "ru.solrudev.ackpine.extra.NOTIFICATION_MESSAGE"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_NOTIFICATION_ICON = "ru.solrudev.ackpine.extra.NOTIFICATION_ICON"
 
-		@get:JvmSynthetic
+		@JvmSynthetic
 		internal const val EXTRA_CONFIRMATION = "ru.solrudev.ackpine.extra.CONFIRMATION"
 	}
 }

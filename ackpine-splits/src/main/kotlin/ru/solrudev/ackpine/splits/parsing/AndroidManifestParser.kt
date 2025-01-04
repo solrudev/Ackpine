@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.splits.parsing
 import com.android.apksig.internal.apk.AndroidBinXmlParser
 import java.nio.ByteBuffer
 
-@get:JvmSynthetic
+@JvmSynthetic
 internal const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
 @JvmSynthetic

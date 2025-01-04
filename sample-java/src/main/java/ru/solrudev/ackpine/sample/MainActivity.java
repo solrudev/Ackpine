@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,8 +47,8 @@ public final class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		binding = NavHostBinding.inflate(getLayoutInflater());
-		setContentView(binding.getRoot());
 		EdgeToEdge.enable(this);
+		setContentView(binding.getRoot());
 		applyInsets();
 		final NavController navController = getNavController();
 		NavigationUI.setupWithNavController(binding.toolbarNavHost, navController, appBarConfiguration);

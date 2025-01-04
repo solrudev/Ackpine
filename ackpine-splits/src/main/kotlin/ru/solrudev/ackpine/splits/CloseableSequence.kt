@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.splits
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.helpers.closeAll
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
@@ -101,10 +102,11 @@ private class CloseableSequenceImpl<T>(
 
 	override fun close() {
 		isClosed = true
-		for (resource in resources) {
-			runCatching { resource.close() }
+		try {
+			closeAll(resources)
+		} finally {
+			resources.clear()
 		}
-		resources.clear()
 	}
 
 	override fun <T : AutoCloseable> T.use(): T {

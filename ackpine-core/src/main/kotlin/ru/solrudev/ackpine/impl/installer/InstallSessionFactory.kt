@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("ConstPropertyName")
+@file:Suppress("ConstPropertyName", "Unused")
 
 package ru.solrudev.ackpine.impl.installer
 
@@ -67,7 +67,7 @@ internal interface InstallSessionFactory {
 	@WorkerThread
 	fun create(
 		session: SessionEntity.InstallSession,
-		needToCompleteIfSucceeded: Boolean = false
+		completeIfSucceeded: Boolean = false
 	): ProgressSession<InstallFailure>
 
 	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
@@ -131,10 +131,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	override fun create(
 		session: SessionEntity.InstallSession,
-		needToCompleteIfSucceeded: Boolean
+		completeIfSucceeded: Boolean
 	): ProgressSession<InstallFailure> = when (session.installerType) {
-		InstallerType.INTENT_BASED -> createIntentBasedInstallSession(session, needToCompleteIfSucceeded)
-		InstallerType.SESSION_BASED -> createSessionBasedInstallSession(session, needToCompleteIfSucceeded)
+		InstallerType.INTENT_BASED -> createIntentBasedInstallSession(session, completeIfSucceeded)
+		InstallerType.SESSION_BASED -> createSessionBasedInstallSession(session, completeIfSucceeded)
 	}
 
 	override fun resolveNotificationData(notificationData: NotificationData, name: String) = notificationData.run {
@@ -158,7 +158,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun createIntentBasedInstallSession(
 		installSession: SessionEntity.InstallSession,
-		needToCompleteIfSucceeded: Boolean
+		completeIfSucceeded: Boolean
 	): IntentBasedInstallSession {
 		val id = UUID.fromString(installSession.session.id)
 		val initialState = installSession.getState(installSessionDao)
@@ -173,7 +173,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, installSession.notificationId!!,
 			BinarySemaphore()
 		)
-		if (!needToCompleteIfSucceeded || initialState.isTerminal) {
+		if (!completeIfSucceeded || initialState.isTerminal) {
 			return session
 		}
 		// Though it somewhat helps with self-update sessions, it's still faulty:
@@ -188,11 +188,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val lastUpdateTimestamp = installSession.lastUpdateTimestamp ?: Long.MAX_VALUE
 		val isSelfUpdate = initialState is Committed && applicationContext.packageName == packageName
 		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
-		val isSuccessfulSelfUpdate = isSelfUpdate && isLastUpdateTimestampUpdated
-		if (isSuccessfulSelfUpdate) {
+		if (isSelfUpdate && isLastUpdateTimestampUpdated) {
 			session.complete(Succeeded)
-		}
-		if (isSuccessfulSelfUpdate) {
 			lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
 		}
 		return session
@@ -200,7 +197,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun createSessionBasedInstallSession(
 		installSession: SessionEntity.InstallSession,
-		needToCompleteIfSucceeded: Boolean
+		completeIfSucceeded: Boolean
 	): SessionBasedInstallSession {
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
@@ -213,17 +210,17 @@ internal class InstallSessionFactoryImpl internal constructor(
 			installSession.session.confirmation, installSession.getNotificationData(),
 			installSession.session.requireUserAction, installSession.getInstallMode(),
 			installSession.getPreapproval(), installSession.getConstraints(),
-			requestUpdateOwnership = installSession.requestUpdateOwnership ?: false,
+			requestUpdateOwnership = installSession.requestUpdateOwnership == true,
 			packageSource = installSession.packageSource ?: PackageSource.Unspecified,
 			sessionDao,
 			sessionFailureDao = installSessionDao,
 			sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
 			executor, handler, nativeSessionId, installSession.notificationId!!,
 			commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
-			isPreapproved = installSession.preapproval?.isPreapproved ?: false,
+			isPreapproved = installSession.preapproval?.isPreapproved == true,
 			dbWriteSemaphore = BinarySemaphore()
 		)
-		if (!needToCompleteIfSucceeded || initialState.isTerminal) {
+		if (!completeIfSucceeded || initialState.isTerminal) {
 			return session
 		}
 		val progressThreshold = (applicationContext.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()

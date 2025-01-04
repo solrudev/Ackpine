@@ -100,5 +100,6 @@ public sealed class PackageSource(
 	}
 }
 
-@get:JvmSynthetic
+@JvmSynthetic
+@JvmField
 internal val packageSources = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)

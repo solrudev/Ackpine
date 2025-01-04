@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import kotlin.math.roundToInt
 
 private const val BUFFER_LENGTH = 8192
 
-@get:JvmSynthetic
+@JvmSynthetic
 internal const val PROGRESS_MAX: Int = 100
 
 @JvmSynthetic

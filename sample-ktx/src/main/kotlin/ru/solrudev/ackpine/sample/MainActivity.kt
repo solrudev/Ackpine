@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,8 +42,8 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(binding.root)
 		enableEdgeToEdge()
+		setContentView(binding.root)
 		applyInsets()
 		val navController = navController
 		binding.toolbarNavHost.setupWithNavController(navController, appBarConfiguration)

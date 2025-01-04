@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023-2024 Ilya Fomichev
+ * Copyright (C) 2023 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,14 +29,16 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 
-@get:JvmSynthetic
+@JvmSynthetic
+@JvmField
 internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 	PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
 } else {
 	PendingIntent.FLAG_CANCEL_CURRENT
 }
 
-@get:JvmSynthetic
+@JvmSynthetic
+@JvmField
 internal val UPDATE_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 	PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
 } else {

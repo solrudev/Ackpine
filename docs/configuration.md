@@ -47,6 +47,7 @@ An example of creating a session with custom parameters:
     object InstallMessageTitle : ResolvableString.Resource() {
         private const val serialVersionUID = -1310602635578779088L
         override fun stringId() = R.string.install_message_title
+        private fun readResolve(): Any = InstallMessageTitle
     }
     
     class InstallMessage(fileName: String) : ResolvableString.Resource(fileName) {
@@ -59,6 +60,7 @@ An example of creating a session with custom parameters:
     object InstallIcon : DrawableId {
         private const val serialVersionUID = 3692803605642002954L
         override fun drawableId() = R.drawable.ic_install
+        private fun readResolve(): Any = InstallIcon
     }
     ```
 
@@ -103,6 +105,11 @@ An example of creating a session with custom parameters:
             protected int stringId() {
                 return R.string.install_message_title;
             }
+    
+            @Serial
+            private Object readResolve() {
+                return Resources.INSTALL_MESSAGE_TITLE;
+            }
         }
     
         public static class InstallMessage extends ResolvableString.Resource {
@@ -128,6 +135,11 @@ An example of creating a session with custom parameters:
             @Override
             public int drawableId() {
                 return R.drawable.ic_install;
+            }
+    
+            @Serial
+            private Object readResolve() {
+                return Resources.INSTALL_ICON;
             }
         }
     }

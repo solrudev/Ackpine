@@ -39,8 +39,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		setContentView(binding.root)
 		enableEdgeToEdge()
+		setContentView(binding.root)
 		applyInsets()
 		setSupportActionBar(binding.toolbarMain)
 		with(binding.cardMainInstall) {
