@@ -165,9 +165,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		val context = requireContext().applicationContext
 		return when (extension) {
 			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
-			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, requireContext())
+			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, context)
 				.throwOnInvalidSplitPackage()
-				.filterCompatible(requireContext())
+				.filterCompatible(context)
 
 			else -> emptySequence()
 		}
