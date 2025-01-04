@@ -37,7 +37,7 @@ public inline fun <T : AssetFileDescriptor?, R> T.use(block: (T) -> R): R {
 		throw throwable
 	} finally {
 		when {
-			this == null -> {}
+			this == null -> { /* no-op */ }
 			exception == null -> close()
 			else -> try {
 				close()
