@@ -14,6 +14,7 @@ public final class ru/solrudev/ackpine/helpers/AssetFileDescriptorHelpersKt {
 
 public final class ru/solrudev/ackpine/helpers/CloseableHelpersKt {
 	public static final fun closeWithException (Ljava/io/Closeable;Ljava/lang/Throwable;)V
+	public static final fun closeWithException (Ljava/lang/AutoCloseable;Ljava/lang/Throwable;)V
 }
 
 public abstract interface class ru/solrudev/ackpine/plugin/AckpinePlugin {
