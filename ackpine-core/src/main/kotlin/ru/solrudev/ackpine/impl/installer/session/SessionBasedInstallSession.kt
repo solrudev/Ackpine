@@ -343,9 +343,9 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun getSessionId(): Int {
-		val isSessionCreated = nativeSessionId != -1
-		if (isSessionCreated) {
-			return nativeSessionId
+		val sessionId = nativeSessionId
+		if (sessionId != -1) {
+			return sessionId
 		}
 		return createSession()
 	}
