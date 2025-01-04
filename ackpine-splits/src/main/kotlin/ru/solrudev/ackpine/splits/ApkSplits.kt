@@ -60,12 +60,12 @@ public object ApkSplits {
 				.forEach { yield(ApkCompatibility(isPreferred = true, it)) }
 			val deviceDensity = applicationContext.resources.displayMetrics.densityDpi
 			val deviceLanguages = deviceLocales(applicationContext).map { it.language }
-			val groupedLibs = libsSplits.groupSortedBy { apk ->
+			val groupedLibs = libsSplits.groupFeaturesSortedBy { apk ->
 				val index = Abi.deviceAbis.indexOf(apk.abi)
 				if (index == -1) Int.MAX_VALUE else index
 			}
-			val groupedDensity = densitySplits.groupSortedBy { apk -> abs(deviceDensity - apk.dpi.density) }
-			val groupedLocalizations = localizationSplits.groupSortedBy { apk ->
+			val groupedDensity = densitySplits.groupFeaturesSortedBy { apk -> abs(deviceDensity - apk.dpi.density) }
+			val groupedLocalizations = localizationSplits.groupFeaturesSortedBy { apk ->
 				val index = deviceLanguages.indexOf(apk.locale.language)
 				if (index == -1) Int.MAX_VALUE else index
 			}
@@ -224,7 +224,7 @@ public object ApkSplits {
 		}
 	}
 
-	private inline fun <T, R : Comparable<R>> List<T>.groupSortedBy(
+	private inline fun <T, R : Comparable<R>> List<T>.groupFeaturesSortedBy(
 		crossinline selector: (T) -> R?
 	) where T : Apk.ConfigSplit, T : Apk = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
 		.values
