@@ -58,7 +58,7 @@ internal class ZipEntryStream private constructor(
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (other !is ZipEntryStream) return false
-		return inputStream == other.inputStream && resources.contentEquals(other.resources)
+		return inputStream == other.inputStream && size == other.size && resources.contentEquals(other.resources)
 	}
 
 	override fun hashCode(): Int = inputStream.hashCode()
