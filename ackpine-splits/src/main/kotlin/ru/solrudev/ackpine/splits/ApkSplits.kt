@@ -48,11 +48,12 @@ public object ApkSplits {
 	@JvmStatic
 	public fun Sequence<Apk>.sortedByCompatibility(context: Context): Sequence<ApkCompatibility> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
+		val source = this
 		return sequence {
 			val libsSplits = mutableListOf<Apk.Libs>()
 			val densitySplits = mutableListOf<Apk.ScreenDensity>()
 			val localizationSplits = mutableListOf<Apk.Localization>()
-			this@sortedByCompatibility
+			source
 				.addSplitsOfTypeTo(libsSplits)
 				.addSplitsOfTypeTo(densitySplits)
 				.addSplitsOfTypeTo(localizationSplits)
