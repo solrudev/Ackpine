@@ -34,7 +34,7 @@ public fun Closeable.closeWithException(cause: Throwable) {
 }
 
 /**
- * Closes [Closeable] resource and in case of failure adds the exception to suppressed exceptions of the [cause].
+ * Closes [AutoCloseable] resource and in case of failure adds the exception to suppressed exceptions of the [cause].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.KITKAT)
