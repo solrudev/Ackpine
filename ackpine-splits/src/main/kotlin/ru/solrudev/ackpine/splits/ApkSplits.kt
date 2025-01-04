@@ -23,6 +23,7 @@ import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.exceptions.SplitPackageException
+import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
@@ -268,33 +269,29 @@ private class SplitPackageSequence(
 		override fun next(): Apk {
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
-				closeSource()
-				throw ConflictingSplitNameException(apk.name)
+				closeSource(ConflictingSplitNameException(apk.name))
 			}
 			if (apk is Apk.Base) {
 				if (seenBaseApk) {
-					closeSource()
-					throw ConflictingBaseApkException()
+					closeSource(ConflictingBaseApkException())
 				}
 				seenBaseApk = true
 			}
 			for (propertyChecker in propertyCheckers) {
-				propertyChecker.check(apk)
-					.onFailure { closeSource() }
-					.getOrThrow()
+				propertyChecker.check(apk).onFailure(::closeSource)
 			}
 			if (!hasNext() && !seenBaseApk) {
-				closeSource()
-				throw NoBaseApkException()
+				closeSource(NoBaseApkException())
 			}
 			return apk
 		}
 	}
 
-	private fun closeSource() {
+	private fun closeSource(exception: Throwable): Nothing {
 		if (source is CloseableSequence) {
-			source.close()
+			source.closeWithException(exception)
 		}
+		throw exception
 	}
 }
 

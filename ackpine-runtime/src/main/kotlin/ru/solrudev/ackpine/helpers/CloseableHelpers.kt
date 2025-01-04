@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine.helpers
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import java.io.Closeable
 
@@ -24,6 +26,19 @@ import java.io.Closeable
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public fun Closeable.closeWithException(cause: Throwable) {
+	try {
+		close()
+	} catch (closeException: Throwable) {
+		cause.addSuppressed(closeException)
+	}
+}
+
+/**
+ * Closes [Closeable] resource and in case of failure adds the exception to suppressed exceptions of the [cause].
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+public fun AutoCloseable.closeWithException(cause: Throwable) {
 	try {
 		close()
 	} catch (closeException: Throwable) {
