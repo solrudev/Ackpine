@@ -58,11 +58,25 @@ internal class ZipEntryStream private constructor(
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (other !is ZipEntryStream) return false
-		return inputStream == other.inputStream && size == other.size && resources.contentEquals(other.resources)
+		if (inputStream != other.inputStream) return false
+		if (size != other.size) return false
+		return resources.contentEquals(other.resources)
 	}
 
-	override fun hashCode(): Int = inputStream.hashCode()
-	override fun toString(): String = inputStream.toString()
+	override fun hashCode(): Int {
+		var result = inputStream.hashCode()
+		result = 31 * result + size.hashCode()
+		result = 31 * result + resources.contentHashCode()
+		return result
+	}
+
+	override fun toString(): String {
+		return "ZipEntryStream(" +
+				"inputStream=$inputStream, " +
+				"size=$size, " +
+				"resources=${resources.contentToString()}" +
+				")"
+	}
 
 	internal companion object {
 
