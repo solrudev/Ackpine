@@ -225,25 +225,25 @@ public object ApkSplits {
 		}
 	}
 
-	private inline fun <T, R : Comparable<R>> List<T>.groupFeaturesSortedBy(
+	private inline fun <T : Apk.ConfigSplit, R : Comparable<R>> List<T>.groupFeaturesSortedBy(
 		crossinline selector: (T) -> R?
-	) where T : Apk.ConfigSplit, T : Apk = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
+	) = groupByTo(mutableMapOf()) { apk -> apk.configForSplit }
 		.values
 		.onEach { groupedSplits ->
 			groupedSplits.sortBy(selector)
 		}
 
-	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldAndRemovePreferred(
+	private suspend inline fun <T : Apk> SequenceScope<ApkCompatibility>.yieldAndRemovePreferred(
 		splits: MutableList<T>,
 		predicate: (T) -> Boolean = { true }
-	) where T : Apk.ConfigSplit, T : Apk = splits.firstOrNull()
+	) = splits.firstOrNull()
 		?.takeIf(predicate)
 		?.also { splits -= it }
 		?.let { yield(ApkCompatibility(isPreferred = true, it)) }
 
-	private suspend inline fun <T> SequenceScope<ApkCompatibility>.yieldRemaining(
+	private suspend inline fun <T : Apk> SequenceScope<ApkCompatibility>.yieldRemaining(
 		groupedSplits: Collection<List<T>>
-	) where T : Apk.ConfigSplit, T : Apk {
+	) {
 		for (apk in groupedSplits.flatten()) {
 			yield(ApkCompatibility(isPreferred = false, apk))
 		}
