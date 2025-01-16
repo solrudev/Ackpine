@@ -40,6 +40,7 @@ import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
+import kotlin.coroutines.cancellation.CancellationException
 
 /**
  * Represents an APK split.
@@ -265,30 +266,38 @@ public sealed class Apk(
 		 */
 		@JvmStatic
 		public fun fromUri(uri: Uri, context: Context): Apk? {
-			val file = context.getFileFromUri(uri)
-			if (file.canRead()) {
-				return fromFile(file, uri)
-			}
-			if (!uri.isApk(context)) {
-				return null
-			}
-			val (displayName, size) = uri.displayNameAndSize(context)
-			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
-			val androidManifest = ZipEntryStream
-				.open(uri, ANDROID_MANIFEST_FILE_NAME, context)
-				?.use(InputStream::toByteBuffer) ?: return null
-			return createApkSplit(androidManifest, name, uri, size)
+			return fromUriImpl(uri, context)
+		}
+
+		/**
+		 * Reads file at provided [uri], parses it and creates an [APK split][Apk] instance.
+		 *
+		 * Returns `null` if provided file is not an APK.
+		 *
+		 * @param cancelToken a cancellation signal for cooperative cancellation. This function will halt its operations
+		 * and throw [CancellationException] when [cancelToken] is cancelled via its [owner][CancelToken.Owner].
+		 */
+		@JvmStatic
+		public fun fromUri(uri: Uri, context: Context, cancelToken: CancelToken): Apk? {
+			return fromUriImpl(uri, context, cancelToken)
 		}
 
 		@JvmSynthetic
-		internal fun fromZipEntry(zipPath: String, zipEntry: ZipEntry, inputStream: InputStream): Apk? {
+		internal fun fromZipEntry(
+			zipPath: String,
+			zipEntry: ZipEntry,
+			inputStream: InputStream,
+			scope: CloseableSequenceScope<Apk>
+		): Apk? {
 			if (!zipEntry.isApk) {
 				return null
 			}
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
 			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { zipInputStream ->
-				zipInputStream.entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+				zipInputStream.entries()
+					.filterNot { scope.isClosed }
+					.firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
 				zipInputStream.toByteBuffer()
 			}
 			return createApkSplit(androidManifest, name, uri, zipEntry.size)
@@ -304,6 +313,24 @@ public sealed class Apk(
 				zipFile.getInputStream(zipEntry).toByteBuffer()
 			}
 			return createApkSplit(androidManifest, name, uri, file.length())
+		}
+
+		// No @JvmOverloads to make cancelToken non-nullable in a public-facing API
+		private fun fromUriImpl(uri: Uri, context: Context, cancelToken: CancelToken? = null): Apk? {
+			val signal = cancelToken?.signal
+			val file = context.getFileFromUri(uri, signal)
+			if (file.canRead()) {
+				return fromFile(file, uri)
+			}
+			if (!uri.isApk(context)) {
+				return null
+			}
+			val (displayName, size) = uri.displayNameAndSize(context, signal)
+			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
+			val androidManifest = ZipEntryStream
+				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, signal)
+				?.use(InputStream::toByteBuffer) ?: return null
+			return createApkSplit(androidManifest, name, uri, size)
 		}
 
 		private fun createApkSplit(manifestByteBuffer: ByteBuffer, name: String, uri: Uri, size: Long): Apk? {

@@ -78,7 +78,7 @@ public object ZippedApkSplits {
 			.mapNotNull { zipEntry ->
 				zipFile.getInputStream(zipEntry).use { entryStream ->
 					// java.util.zip.ZipFile closes all entry streams when closed, no need to apply .use()
-					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream, scope = this)
 				}
 			}
 			.forEach { yield(it) }
@@ -110,7 +110,7 @@ public object ZippedApkSplits {
 			.mapNotNull { zipEntry ->
 				zipFile.getInputStream(zipEntry).use { entryStream ->
 					entryStream.use()
-					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
+					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream, scope = this)
 				}
 			}
 			.forEach { yield(it) }
@@ -121,7 +121,7 @@ public object ZippedApkSplits {
 		val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri)).use()
 		zipStream.entries()
 			.filterNot { isClosed }
-			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
+			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream, scope = this) }
 			.forEach { yield(it) }
 	}
 }

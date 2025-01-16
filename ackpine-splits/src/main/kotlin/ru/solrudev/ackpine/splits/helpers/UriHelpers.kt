@@ -18,14 +18,15 @@ package ru.solrudev.ackpine.splits.helpers
 
 import android.content.Context
 import android.net.Uri
+import android.os.CancellationSignal
 import android.provider.OpenableColumns
 
 @JvmSynthetic
-internal fun Uri.displayNameAndSize(context: Context): Pair<String, Long> {
+internal fun Uri.displayNameAndSize(context: Context, signal: CancellationSignal? = null): Pair<String, Long> {
 	context.contentResolver.query(
 		this,
 		arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE),
-		null, null, null
+		null, null, null, signal
 	).use { cursor ->
 		cursor ?: return "" to -1L
 		if (!cursor.moveToFirst()) {
