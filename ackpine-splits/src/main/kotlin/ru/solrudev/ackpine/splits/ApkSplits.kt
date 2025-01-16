@@ -71,6 +71,18 @@ public object ApkSplits {
 		)
 	}
 
+	/**
+	 * Returns a list of [APK splits][Apk] and throws [SplitPackageException] if the split package is invalid.
+	 *
+	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
+	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
+	 * be thrown.
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the iterable, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 */
 	@JvmStatic
 	public fun Iterable<Apk>.validate(): List<Apk> {
 		return asSequence().validate().toList()
