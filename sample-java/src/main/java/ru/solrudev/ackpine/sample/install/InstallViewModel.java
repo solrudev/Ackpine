@@ -37,10 +37,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import kotlin.sequences.Sequence;
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException;
@@ -56,12 +56,14 @@ import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
-import ru.solrudev.ackpine.splits.Apk;
+import ru.solrudev.ackpine.splits.CancelToken;
+import ru.solrudev.ackpine.splits.SplitPackage;
 
 public final class InstallViewModel extends ViewModel {
 
 	private final MutableLiveData<ResolvableString> error = new MutableLiveData<>();
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
+	private final CancelToken.Owner cancelTokenOwner = new CancelToken.Owner();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
 	private final ExecutorService executor;
@@ -80,9 +82,9 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	public void installPackage(@NonNull Sequence<Apk> apks, @NonNull String fileName) {
+	public void installPackage(@NonNull SplitPackage.Provider splitPackage, @NonNull String fileName) {
 		executor.execute(() -> {
-			final var uris = mapApkSequenceToUri(apks);
+			final var uris = getApkUris(splitPackage);
 			if (uris.isEmpty()) {
 				return;
 			}
@@ -135,6 +137,7 @@ public final class InstallViewModel extends ViewModel {
 
 	@Override
 	protected void onCleared() {
+		cancelTokenOwner.cancel();
 		subscriptions.clear();
 		executor.shutdownNow();
 		final var sessions = getSessionsSnapshot();
@@ -176,11 +179,11 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	@NonNull
-	private List<Uri> mapApkSequenceToUri(@NonNull Sequence<Apk> apks) {
+	private List<Uri> getApkUris(@NonNull SplitPackage.Provider splitPackage) {
 		try {
 			final var uris = new ArrayList<Uri>();
-			for (final var iterator = apks.iterator(); iterator.hasNext(); ) {
-				final var apk = iterator.next();
+			final var cancelToken = cancelTokenOwner.getToken();
+			for (final var apk : splitPackage.toList(cancelToken)) {
 				uris.add(apk.getUri());
 			}
 			return uris;
@@ -198,6 +201,8 @@ public final class InstallViewModel extends ViewModel {
 				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_version_code,
 						e.getExpected(), e.getActual(), e.getName()));
 			}
+			return Collections.emptyList();
+		} catch (CancellationException exception) {
 			return Collections.emptyList();
 		} catch (Exception exception) {
 			final var message = exception.getMessage() != null ? exception.getMessage() : "";

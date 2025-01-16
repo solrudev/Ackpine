@@ -42,8 +42,9 @@ import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
 import ru.solrudev.ackpine.sample.util.getDisplayName
 import ru.solrudev.ackpine.splits.Apk
-import ru.solrudev.ackpine.splits.ApkSplits.filterCompatible
-import ru.solrudev.ackpine.splits.ApkSplits.throwOnInvalidSplitPackage
+import ru.solrudev.ackpine.splits.ApkSplits.validate
+import ru.solrudev.ackpine.splits.SplitPackage
+import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
 
 class InstallFragment : Fragment(R.layout.fragment_install) {
@@ -160,16 +161,17 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		viewModel.installPackage(apks, name)
 	}
 
-	private fun getApksFromUri(uri: Uri, name: String): Sequence<Apk> {
+	private fun getApksFromUri(uri: Uri, name: String): SplitPackage.Provider {
 		val extension = name.substringAfterLast('.', "").lowercase()
 		val context = requireContext().applicationContext
 		return when (extension) {
-			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
+			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.toSplitPackage()
 			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, context)
-				.throwOnInvalidSplitPackage()
+				.validate()
+				.toSplitPackage()
 				.filterCompatible(context)
 
-			else -> emptySequence()
+			else -> SplitPackage.empty()
 		}
 	}
 

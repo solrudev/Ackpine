@@ -22,7 +22,7 @@ plugins {
 }
 
 dependencies {
-	implementation(projects.ackpineSplits)
+	implementation(projects.ackpineSplitsKtx)
 	implementation(projects.ackpineKtx)
 	implementation(projects.ackpineResources)
 	implementation(androidx.activity)
