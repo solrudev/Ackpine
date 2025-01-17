@@ -6,19 +6,19 @@ Split APKs
 Reading zipped splits
 ---------------------
 
-`ZippedApkSplits` class contains factory methods for sequences of APK splits which are contained inside of a zipped file such as ZIP, APKS, APKM and XAPK.
+`ZippedApkSplits` class contains factory methods for lazy sequences of APK splits which are contained inside of a zipped file such as ZIP, APKS, APKM and XAPK.
 
 === "Kotlin"
 
     ```kotlin
-    val splits: Sequence<Apk> = ZippedApkSplits.getApksForUri(zippedFileUri, context)
+    val splits: CloseableSequence<Apk> = ZippedApkSplits.getApksForUri(zippedFileUri, context)
     val splitsList = splits.toList()
     ```
 
 === "Java"
 
     ```java
-    Sequence<Apk> splits = ZippedApkSplits.getApksForUri(zippedFileUri, context);
+    CloseableSequence<Apk> splits = ZippedApkSplits.getApksForUri(zippedFileUri, context);
     List<Apk> splitsList = new ArrayList<>();
 	for (var iterator = splits.iterator(); iterator.hasNext(); ) {
         var apk = iterator.next();
@@ -28,6 +28,8 @@ Reading zipped splits
 
 !!! warning "Attention"
     Iteration of these sequences is blocking due to I/O operations. Don't iterate them on UI thread!
+
+As you can see, these sequences have a type of `CloseableSequence` which implements `AutoCloseable`. That means they can close all held resources, and effectively be cancelled externally at any moment with a `close()` call.
 
 `Apk` has the following properties:
 
@@ -48,42 +50,38 @@ val description: String
 Working with splits
 -------------------
 
-`ApkSplits` class contains utilities for transforming `Apk` sequences. In Kotlin they appear as extensions of `Sequence<Apk>` and `Sequence<ApkCompatibility>`.
+### Sequences transformations
+
+`ApkSplits` class contains utilities for transforming `Apk` sequences. In Kotlin they appear as extensions of `Sequence<Apk>`.
+
+For sequences of APKs, the following operations are available:
+
+- `validate()` operation validates a split package and throws `SplitPackageException` if it's not valid when the sequence is iterated, while also closing all opened I/O resources. This operation cooperates with cancellation if upstream sequence supports it.
+
+Example:
 
 === "Kotlin"
 
     ```kotlin
-    val sortedSplitsList = mutableListOf<ApkCompatibility>()
-    // Building a one-time pipeline
-    val splits = ZippedApkSplits.getApksForUri(zippedFileUri, context)
-        .throwOnInvalidSplitPackage()
-        .sortedByCompatibility(context)
-        .addAllTo(sortedSplitsList)
-        .filterCompatible()
+    val splits: CloseableSequence<Apk> = ZippedApkSplits
+        .getApksForUri(zippedFileUri, context)
+        .validate()
     val splitsList = try {
         splits.toList()
     } catch (exception: SplitPackageException) {
         println(exception)
         emptyList()
-    }
-    sortedSplitsList.filterNot { it.isPreferred }
-        .map { it.apk }
-        .forEach(::println) // prints incompatible APKs
+    } 
     ```
 
 === "Java"
 
     ```java
-    List<ApkCompatibility> sortedSplitsList = new ArrayList<>();
-    // Building a one-time pipeline
-    Sequence<Apk> zippedApkSplits = ZippedApkSplits.getApksForUri(uri, context);
-    Sequence<Apk> verifiedSplits = ApkSplits.throwOnInvalidSplitPackage(zippedApkSplits);
-    Sequence<ApkCompatibility> sortedSplits = ApkSplits.sortedByCompatibility(verifiedSplits, context);
-    Sequence<ApkCompatibility> addingToListSplits = ApkSplits.addAllTo(sortedSplits, sortedSplitsList);
-    Sequence<Apk> filteredSplits = ApkSplits.filterCompatible(addingToListSplits);
+    CloseableSequence<Apk> splits = ZippedApkSplits.getApksForUri(zippedFileUri, context);
+    CloseableSequence<Apk> validatedSplits = ApkSplits.validate(splits);
     List<Apk> splitsList = new ArrayList<>();
 	try {
-	    for (var iterator = filteredSplits.iterator(); iterator.hasNext(); ) {
+        for (var iterator = validatedSplits.iterator(); iterator.hasNext(); ) {
             var apk = iterator.next();
             splitsList.add(apk);
         }
@@ -91,22 +89,129 @@ Working with splits
         System.out.println(exception);
         splitsList = Collections.emptyList();
     }
-    for (var apkCompatibility : sortedSplitsList) {
-        if (!apkCompatibility.isPreferred()) {
-            System.out.println(apkCompatibility.getApk()); // prints incompatible APKs
-        }
-    }
-    
     ```
 
-- `throwOnInvalidSplitPackage()` operation validates a split package and throws `SplitPackageException` if it's not valid when the sequence is iterated.
+### `SplitPackage` API
 
-- `sortedByCompatibility(Context)` operation returns a sequence that contains APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one. The returned sequence contains `ApkCompatibility` objects, which are pairs of an `isPreferred` flag and an `Apk` object being checked.
+For manipulating split packages, you can use `SplitPackage` API.
 
-- `filterCompatible()` operation filters out the splits which are not the most preferred for the device. A `filterCompatible(Context)` overload is the same as writing `sortedByCompatibility(context).filterCompatible()`.
+`ackpine-splits-ktx` module contains Kotlin-idiomatic extensions which are used in the examples below.
 
-!!! Note
-    To correctly close I/O resources and skip unnecessary I/O operations, it's best to apply `throwOnInvalidSplitPackage()` immediately after creating the sequence with `ZippedApkSplits` factories.
+First, you create a `SplitPackage.Provider` from a sequence of APKs, e.g. obtained from `ZippedApkSplits`:
+
+=== "Kotlin"
+
+    ```kotlin
+    val splits = sequence.toSplitPackage()
+    ```
+
+=== "Java"
+
+    ```java
+    var splits = SplitPackage.from(sequence);
+    ```
+
+Then you can apply different operations to it, and when you're done, materialize it into a `SplitPackage` object:
+
+=== "Kotlin"
+
+    ```kotlin
+    val compatibleSplits = splits.filterCompatible(context)
+    val splitPackage = compatibleSplits.get() // <- suspending, cancellable
+    // print SplitPackage entries for libs APKs
+    println(splitPackage.libs)
+    ```
+
+=== "Java"
+
+    ```java
+    var compatibleSplits = splits.filterCompatible(context);
+    var splitPackageFuture = compatibleSplits.getAsync(); // cancellable
+    // using Guava
+    Futures.addCallback(splitPackageFuture, new FutureCallback<>() {
+        @Override
+        public void onSuccess(@NonNull SplitPackage splitPackage) {
+            // print SplitPackage entries for libs APKs
+            System.out.println(splitPackage.getLibs());
+        }
+        
+        @Override
+        public void onFailure(@NonNull Throwable t) {
+        }
+    }, MoreExecutors.directExecutor());
+    ```
+
+The `get()` is cancellable if split package source supports cancellation (such as `CloseableSequence`).
+
+`libs` in the previous example is a `List<SplitPackage.Entry<Apk.Libs>>`.
+
+Each entry in APK lists inside of `SplitPackage` has `isPreferred` and `apk` properties:
+
+- `isPreferred` — indicates whether the APK is the most preferred for the device among all splits of the same type. By default it is `true`. When an operation which checks compatibility is applied, this flag is updated accordingly;
+- `apk` — `Apk` object.
+
+List of available `SplitPackage.Provider` operations:
+
+- `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+
+- `filterPreferred()` operation filters out the splits which are not the most preferred for the device by examining the entries' `isPreferred` flag. If `sortedByCompatibility()` operation wasn't applied, it will do nothing.
+
+- `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device. It acts the same as `sortedByCompatibility(context).filterPreferred()`.
+
+Full example of a pipeline:
+
+=== "Kotlin"
+
+    ```kotlin
+    val splits = ZippedApkSplits.getApksForUri(zippedFileUri, context)
+        .validate()
+        .toSplitPackage()
+        .sortedByCompatibility(context)
+    val sortedSplits = try {
+        splits.get()             // <- suspending, cancellable
+    } catch (exception: SplitPackageException) {
+        println(exception)
+        SplitPackage.empty().get()
+    }
+    println(sortedSplits.libs)   // prints SplitPackage entries for libs APKs,
+                                 // ordered by their compatibility with the device
+    sortedSplits
+        .toList()
+        .filterNot { entry -> entry.isPreferred }
+        .map { entry -> entry.apk }
+        .forEach(::println)      // prints incompatible APKs
+    ```
+
+=== "Java"
+
+    ```java
+    Sequence<Apk> zippedApkSplits = ZippedApkSplits.getApksForUri(uri, context);
+    Sequence<Apk> validatedSplits = ApkSplits.validate(zippedApkSplits);
+    SplitPackage.Provider splits = SplitPackage
+            .from(validatedSplits)
+            .sortedByCompatibility(context);
+    // using Guava
+    Futures.addCallback(splits.getAsync(), new FutureCallback<>() {
+        @Override
+        public void onSuccess(@NonNull SplitPackage sortedSplits) {
+            // prints SplitPackage entries for libs APKs,
+            // ordered by their compatibility with the device
+            System.out.println(sortedSplits.getLibs());
+            for (var entry : sortedSplits.toList()) {
+                if (!entry.isPreferred()) {
+                    System.out.println(entry.getApk()); // prints incompatible APKs
+                }
+            }
+        }
+        
+        @Override
+        public void onFailure(@NonNull Throwable exception) {
+            if (exception instanceof SplitPackageException) {
+                System.out.println(exception);
+            }
+        }
+    }, MoreExecutors.directExecutor());
+    ```
 
 Creating APK splits from separate files
 ---------------------------------------
@@ -117,12 +222,12 @@ You can parse an APK file from a `File` or `Uri` using static `Apk` factories:
 
     ```kotlin
     val apkFromFile: Apk? = Apk.fromFile(file, context)
-    val apkFromUri: Apk? = Apk.fromUri(uri, context)
+    val apkFromUri: Apk? = Apk.fromUri(uri, context, cancellationSignal)
     ```
 
 === "Java"
 
     ```java
     Apk apkFromFile = Apk.fromFile(file, context);
-    Apk apkFromUri = Apk.fromUri(uri, context);
+    Apk apkFromUri = Apk.fromUri(uri, context, cancellationSignal);
     ```

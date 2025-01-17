@@ -41,6 +41,9 @@ dependencies {
     // optional - utilities for working with split APKs
     implementation("ru.solrudev.ackpine:ackpine-splits:$ackpineVersion")
 
+	// optional - Kotlin extensions and Coroutines support for ackpine-splits
+	implementation("ru.solrudev.ackpine:ackpine-splits-ktx:$ackpineVersion")
+
     // optional - support for asset files inside of application's package
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
 }
