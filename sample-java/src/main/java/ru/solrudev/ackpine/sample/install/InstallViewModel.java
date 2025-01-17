@@ -78,7 +78,7 @@ public final class InstallViewModel extends ViewModel {
 	public void installPackage(@NonNull SplitPackage.Provider splitPackage, @NonNull String fileName) {
 		Futures.addCallback(splitPackage.toListAsync(), new FutureCallback<>() {
 			@Override
-			public void onSuccess(List<Apk> result) {
+			public void onSuccess(List<SplitPackage.Entry<?>> result) {
 				installPackage(result, fileName);
 			}
 
@@ -148,13 +148,13 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	private void installPackage(List<Apk> apks, @NonNull String fileName) {
+	private void installPackage(List<SplitPackage.Entry<?>> apks, @NonNull String fileName) {
 		if (apks.isEmpty()) {
 			return;
 		}
 		final var uris = new ArrayList<Uri>();
-		for (final var apk : apks) {
-			uris.add(apk.getUri());
+		for (final var entry : apks) {
+			uris.add(entry.getApk().getUri());
 		}
 		final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
 				.setName(fileName)

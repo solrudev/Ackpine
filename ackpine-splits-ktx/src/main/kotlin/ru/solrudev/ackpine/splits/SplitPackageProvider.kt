@@ -38,6 +38,6 @@ public suspend fun SplitPackage.Provider.get(): SplitPackage {
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
  * function immediately resumes with [CancellationException].
  */
-public suspend fun SplitPackage.Provider.toList(): List<Apk> {
+public suspend fun SplitPackage.Provider.toList(): List<SplitPackage.Entry<*>> {
 	return toListAsync().await()
 }

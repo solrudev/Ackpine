@@ -230,27 +230,21 @@ public open class SplitPackage(
 		 *
 		 * This future may be cancelled if the split package source supports it (such as [CloseableSequence]).
 		 */
-		public fun toListAsync(): ListenableFuture<List<Apk>> {
+		public fun toListAsync(): ListenableFuture<List<Entry<*>>> {
 			return getAsync().map { splitPackage ->
 				buildList {
-					addAllApks(splitPackage.base)
-					addAllApks(splitPackage.libs)
-					addAllApks(splitPackage.screenDensity)
-					addAllApks(splitPackage.localization)
-					addAllApks(splitPackage.other)
+					addAll(splitPackage.base)
+					addAll(splitPackage.libs)
+					addAll(splitPackage.screenDensity)
+					addAll(splitPackage.localization)
+					addAll(splitPackage.other)
 					for (feature in splitPackage.dynamicFeatures) {
-						add(feature.feature)
-						addAllApks(feature.libs)
-						addAllApks(feature.screenDensity)
-						addAllApks(feature.localization)
+						add(Entry(isPreferred = true, feature.feature))
+						addAll(feature.libs)
+						addAll(feature.screenDensity)
+						addAll(feature.localization)
 					}
 				}
-			}
-		}
-
-		private fun MutableList<Apk>.addAllApks(apks: List<Entry<*>>) {
-			for (entry in apks) {
-				add(entry.apk)
 			}
 		}
 	}
