@@ -29,7 +29,7 @@ import kotlin.coroutines.RestrictsSuspension
  * When iteration is completed or interrupted with exception originating from this sequence, all resources are
  * automatically closed.
  */
-public interface CloseableSequence<T> : Sequence<T>, AutoCloseable {
+public interface CloseableSequence<out T> : Sequence<T>, AutoCloseable {
 
 	/**
 	 * Returns whether the [CloseableSequence] was closed though a call to [close].

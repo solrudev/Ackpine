@@ -102,7 +102,7 @@ public open class SplitPackage(
 	 * same type. By default it is `true`.
 	 * @property apk an [APK split][Apk].
 	 */
-	public data class Entry<T : Apk>(
+	public data class Entry<out T : Apk>(
 		public val isPreferred: Boolean,
 		public val apk: T
 	)
