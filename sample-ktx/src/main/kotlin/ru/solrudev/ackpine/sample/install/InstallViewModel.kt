@@ -54,7 +54,7 @@ import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.splits.SplitPackage
-import ru.solrudev.ackpine.splits.toList
+import ru.solrudev.ackpine.splits.get
 import java.util.UUID
 
 class InstallViewModel(
@@ -142,7 +142,10 @@ class InstallViewModel(
 
 	private suspend inline fun getApkUris(splitPackage: SplitPackage.Provider): List<Uri> {
 		try {
-			return splitPackage.toList().map { it.apk.uri }
+			return splitPackage
+				.get()
+				.toList()
+				.map { it.apk.uri }
 		} catch (exception: SplitPackageException) {
 			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)

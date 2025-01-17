@@ -98,7 +98,7 @@ public open class SplitPackage(
 	/**
 	 * A [SplitPackage] entry.
 	 *
-	 * @property isPreferred indicates whether the [apk] is the most preferred for the device among other splits of the
+	 * @property isPreferred indicates whether the [apk] is the most preferred for the device among all splits of the
 	 * same type. By default it is `true`.
 	 * @property apk an [APK split][Apk].
 	 */
@@ -108,10 +108,22 @@ public open class SplitPackage(
 	)
 
 	/**
-	 * Creates a [Provider] which returns this [SplitPackage].
+	 * Returns a new list populated with all [APK splits][Apk] contained in this split package.
 	 */
-	public open fun asProvider(): Provider {
-		return SplitPackageProvider { completer -> completer.set(this) }
+	public fun toList(): List<Entry<*>> {
+		return buildList {
+			addAll(base)
+			addAll(libs)
+			addAll(screenDensity)
+			addAll(localization)
+			addAll(other)
+			for (feature in dynamicFeatures) {
+				add(Entry(isPreferred = true, feature.feature))
+				addAll(feature.libs)
+				addAll(feature.screenDensity)
+				addAll(feature.localization)
+			}
+		}
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -158,6 +170,8 @@ public open class SplitPackage(
 		 * Creates a [SplitPackage] with transformations applied via this provider.
 		 *
 		 * This future may be cancelled if the split package source supports it (such as [CloseableSequence]).
+		 *
+		 * The resulting [SplitPackage] is not cached.
 		 */
 		public fun getAsync(): ListenableFuture<SplitPackage>
 
@@ -221,30 +235,6 @@ public open class SplitPackage(
 				is FilteredProvider -> this
 
 				else -> SortingProvider(provider = this, context.applicationContext)
-			}
-		}
-
-		/**
-		 * Creates a [SplitPackage] with transformations applied via this provider and returns a new list populated with
-		 * all [APK splits][Apk] contained in this package.
-		 *
-		 * This future may be cancelled if the split package source supports it (such as [CloseableSequence]).
-		 */
-		public fun toListAsync(): ListenableFuture<List<Entry<*>>> {
-			return getAsync().map { splitPackage ->
-				buildList {
-					addAll(splitPackage.base)
-					addAll(splitPackage.libs)
-					addAll(splitPackage.screenDensity)
-					addAll(splitPackage.localization)
-					addAll(splitPackage.other)
-					for (feature in splitPackage.dynamicFeatures) {
-						add(Entry(isPreferred = true, feature.feature))
-						addAll(feature.libs)
-						addAll(feature.screenDensity)
-						addAll(feature.localization)
-					}
-				}
 			}
 		}
 	}
@@ -444,9 +434,7 @@ public open class SplitPackage(
 		localization: List<Entry<Apk.Localization>>,
 		other: List<Entry<Apk.Other>>,
 		dynamicFeatures: List<DynamicFeature>
-	) : SplitPackage(base, libs, screenDensity, localization, other, dynamicFeatures) {
-		override fun asProvider() = SortedProvider(this)
-	}
+	) : SplitPackage(base, libs, screenDensity, localization, other, dynamicFeatures)
 
 	private class FilteredSplitPackage(
 		base: List<Entry<Apk.Base>>,
@@ -455,9 +443,7 @@ public open class SplitPackage(
 		localization: List<Entry<Apk.Localization>>,
 		other: List<Entry<Apk.Other>>,
 		dynamicFeatures: List<DynamicFeature>
-	) : SplitPackage(base, libs, screenDensity, localization, other, dynamicFeatures) {
-		override fun asProvider() = FilteredProvider(this)
-	}
+	) : SplitPackage(base, libs, screenDensity, localization, other, dynamicFeatures)
 
 	private object EmptySplitPackage : SplitPackage(
 		emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList()

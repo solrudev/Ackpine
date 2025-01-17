@@ -30,14 +30,3 @@ import kotlinx.coroutines.Job
 public suspend fun SplitPackage.Provider.get(): SplitPackage {
 	return getAsync().await()
 }
-
-/**
- * A suspending variant of [toListAsync][SplitPackage.Provider.toListAsync].
- *
- * This suspending function is cancellable.
- * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
- * function immediately resumes with [CancellationException].
- */
-public suspend fun SplitPackage.Provider.toList(): List<SplitPackage.Entry<*>> {
-	return toListAsync().await()
-}

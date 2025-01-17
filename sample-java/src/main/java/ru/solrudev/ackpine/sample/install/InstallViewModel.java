@@ -75,11 +75,11 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	public void installPackage(@NonNull SplitPackage.Provider splitPackage, @NonNull String fileName) {
-		Futures.addCallback(splitPackage.toListAsync(), new FutureCallback<>() {
+	public void installPackage(@NonNull SplitPackage.Provider splitPackageProvider, @NonNull String fileName) {
+		Futures.addCallback(splitPackageProvider.getAsync(), new FutureCallback<>() {
 			@Override
-			public void onSuccess(List<SplitPackage.Entry<?>> result) {
-				installPackage(result, fileName);
+			public void onSuccess(SplitPackage splitPackage) {
+				installPackage(splitPackage, fileName);
 			}
 
 			@Override
@@ -148,7 +148,8 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	private void installPackage(List<SplitPackage.Entry<?>> apks, @NonNull String fileName) {
+	private void installPackage(@NonNull SplitPackage splitPackage, @NonNull String fileName) {
+		final var apks = splitPackage.toList();
 		if (apks.isEmpty()) {
 			return;
 		}
