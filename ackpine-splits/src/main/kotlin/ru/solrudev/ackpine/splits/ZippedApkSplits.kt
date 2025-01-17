@@ -42,7 +42,7 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForFile(file: File): Sequence<Apk> = closeableSequence {
+	public fun getApksForFile(file: File): CloseableSequence<Apk> = closeableSequence {
 		yieldAllUsingFile(file)
 	}
 
@@ -57,7 +57,7 @@ public object ZippedApkSplits {
 	 * The returned sequence is constrained to be iterated only once.
 	 */
 	@JvmStatic
-	public fun getApksForUri(uri: Uri, context: Context): Sequence<Apk> {
+	public fun getApksForUri(uri: Uri, context: Context): CloseableSequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
 			val file = applicationContext.getFileFromUri(uri)

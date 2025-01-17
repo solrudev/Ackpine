@@ -54,7 +54,7 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@JvmStatic
-	public fun Sequence<Apk>.validate(): Sequence<Apk> {
+	public fun Sequence<Apk>.validate(): CloseableSequence<Apk> {
 		if (this is SplitPackageSequence) {
 			return this
 		}
@@ -380,7 +380,7 @@ private class SplitPackageSequence(
 ) : CloseableSequence<Apk> {
 
 	@Volatile
-	private var isClosed = false
+	override var isClosed = false
 
 	override fun iterator() = object : Iterator<Apk> {
 
