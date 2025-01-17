@@ -25,7 +25,6 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -143,9 +142,7 @@ class InstallViewModel(
 
 	private suspend inline fun getApkUris(splitPackage: SplitPackage.Provider): List<Uri> {
 		try {
-			return splitPackage
-				.toList(Dispatchers.IO)
-				.map { it.uri }
+			return splitPackage.toList().map { it.uri }
 		} catch (exception: SplitPackageException) {
 			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
