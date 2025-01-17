@@ -33,4 +33,5 @@ ackpine {
 dependencies {
 	api(projects.ackpineSplits)
 	api(kotlinx.coroutines.core)
+	implementation(androidx.concurrent.futures.ktx)
 }

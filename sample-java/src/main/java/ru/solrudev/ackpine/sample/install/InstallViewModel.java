@@ -34,12 +34,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
@@ -56,24 +53,20 @@ import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
-import ru.solrudev.ackpine.splits.CancelToken;
+import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.SplitPackage;
 
 public final class InstallViewModel extends ViewModel {
 
 	private final MutableLiveData<ResolvableString> error = new MutableLiveData<>();
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
-	private final CancelToken.Owner cancelTokenOwner = new CancelToken.Owner();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
-	private final ExecutorService executor;
 
 	public InstallViewModel(@NonNull PackageInstaller packageInstaller,
-							@NonNull SessionDataRepository sessionDataRepository,
-							@NonNull ExecutorService executor) {
+							@NonNull SessionDataRepository sessionDataRepository) {
 		this.packageInstaller = packageInstaller;
 		this.sessionDataRepository = sessionDataRepository;
-		this.executor = executor;
 		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
@@ -83,18 +76,26 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void installPackage(@NonNull SplitPackage.Provider splitPackage, @NonNull String fileName) {
-		executor.execute(() -> {
-			final var uris = getApkUris(splitPackage);
-			if (uris.isEmpty()) {
-				return;
+		Futures.addCallback(splitPackage.toListAsync(), new FutureCallback<>() {
+			@Override
+			public void onSuccess(List<Apk> result) {
+				installPackage(result, fileName);
 			}
-			final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
-					.setName(fileName)
-					.build());
-			final var sessionData = new SessionData(session.getId(), fileName);
-			sessionDataRepository.addSessionData(sessionData);
-			addSessionListeners(session);
-		});
+
+			@Override
+			public void onFailure(@NonNull Throwable exception) {
+				if (exception instanceof CancellationException) {
+					return;
+				}
+				if (exception instanceof SplitPackageException) {
+					handleSplitPackageException((SplitPackageException) exception);
+					return;
+				}
+				final var message = exception.getMessage() != null ? exception.getMessage() : "";
+				error.postValue(ResolvableString.raw(message));
+				Log.e("InstallViewModel", null, exception);
+			}
+		}, MoreExecutors.directExecutor());
 	}
 
 	@NonNull
@@ -137,15 +138,45 @@ public final class InstallViewModel extends ViewModel {
 
 	@Override
 	protected void onCleared() {
-		cancelTokenOwner.cancel();
 		subscriptions.clear();
-		executor.shutdownNow();
 		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
 				cancelSession(sessionData.id());
 				sessionDataRepository.removeSessionData(sessionData.id());
 			}
+		}
+	}
+
+	private void installPackage(List<Apk> apks, @NonNull String fileName) {
+		if (apks.isEmpty()) {
+			return;
+		}
+		final var uris = new ArrayList<Uri>();
+		for (final var apk : apks) {
+			uris.add(apk.getUri());
+		}
+		final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
+				.setName(fileName)
+				.build());
+		final var sessionData = new SessionData(session.getId(), fileName);
+		sessionDataRepository.addSessionData(sessionData);
+		addSessionListeners(session);
+	}
+
+	private void handleSplitPackageException(SplitPackageException exception) {
+		if (exception instanceof NoBaseApkException) {
+			error.postValue(ResolvableString.transientResource(R.string.error_no_base_apk));
+		} else if (exception instanceof ConflictingBaseApkException) {
+			error.postValue(ResolvableString.transientResource(R.string.error_conflicting_base_apk));
+		} else if (exception instanceof ConflictingSplitNameException e) {
+			error.postValue(ResolvableString.transientResource(R.string.error_conflicting_split_name, e.getName()));
+		} else if (exception instanceof ConflictingPackageNameException e) {
+			error.postValue(ResolvableString.transientResource(R.string.error_conflicting_package_name,
+					e.getExpected(), e.getActual(), e.getName()));
+		} else if (exception instanceof ConflictingVersionCodeException e) {
+			error.postValue(ResolvableString.transientResource(R.string.error_conflicting_version_code,
+					e.getExpected(), e.getActual(), e.getName()));
 		}
 	}
 
@@ -176,40 +207,6 @@ public final class InstallViewModel extends ViewModel {
 
 	private List<SessionData> getSessionsSnapshot() {
 		return sessionDataRepository.getSessions().getValue();
-	}
-
-	@NonNull
-	private List<Uri> getApkUris(@NonNull SplitPackage.Provider splitPackage) {
-		try {
-			final var uris = new ArrayList<Uri>();
-			final var cancelToken = cancelTokenOwner.getToken();
-			for (final var apk : splitPackage.toList(cancelToken)) {
-				uris.add(apk.getUri());
-			}
-			return uris;
-		} catch (SplitPackageException exception) {
-			if (exception instanceof NoBaseApkException) {
-				error.postValue(ResolvableString.transientResource(R.string.error_no_base_apk));
-			} else if (exception instanceof ConflictingBaseApkException) {
-				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_base_apk));
-			} else if (exception instanceof ConflictingSplitNameException e) {
-				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_split_name, e.getName()));
-			} else if (exception instanceof ConflictingPackageNameException e) {
-				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_package_name,
-						e.getExpected(), e.getActual(), e.getName()));
-			} else if (exception instanceof ConflictingVersionCodeException e) {
-				error.postValue(ResolvableString.transientResource(R.string.error_conflicting_version_code,
-						e.getExpected(), e.getActual(), e.getName()));
-			}
-			return Collections.emptyList();
-		} catch (CancellationException exception) {
-			return Collections.emptyList();
-		} catch (Exception exception) {
-			final var message = exception.getMessage() != null ? exception.getMessage() : "";
-			error.postValue(ResolvableString.raw(message));
-			Log.e("InstallViewModel", null, exception);
-			return Collections.emptyList();
-		}
 	}
 
 	private final class SessionStateListener extends Session.TerminalStateListener<InstallFailure> {
@@ -249,8 +246,7 @@ public final class InstallViewModel extends ViewModel {
 				final var packageInstaller = PackageInstaller.getInstance(application);
 				final var savedStateHandle = createSavedStateHandle(creationExtras);
 				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
-				final var executor = Executors.newFixedThreadPool(8);
-				return new InstallViewModel(packageInstaller, sessionsRepository, executor);
+				return new InstallViewModel(packageInstaller, sessionsRepository);
 			}
 	);
 }

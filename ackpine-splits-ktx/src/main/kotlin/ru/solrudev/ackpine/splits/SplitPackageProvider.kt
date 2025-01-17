@@ -16,60 +16,28 @@
 
 package ru.solrudev.ackpine.splits
 
+import androidx.concurrent.futures.await
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 /**
- * A suspending variant of [get][SplitPackage.Provider.get].
- *
- * [get][SplitPackage.Provider.get] will be called in the specified [context], by default [Dispatchers.IO].
- *
- * This function should **not** be called with main thread context, because underlying [get][SplitPackage.Provider.get]
- * can be blocking.
+ * A suspending variant of [get][SplitPackage.Provider.getAsync].
  *
  * This suspending function is cancellable.
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
  * function immediately resumes with [CancellationException].
  */
-public suspend fun SplitPackage.Provider.get(context: CoroutineContext = Dispatchers.IO): SplitPackage {
-	return executeCancellable(context, ::get)
+public suspend fun SplitPackage.Provider.get(): SplitPackage {
+	return getAsync().await()
 }
 
 /**
- * A suspending variant of [toList][SplitPackage.Provider.toList].
- *
- * [toList][SplitPackage.Provider.toList] will be called in the specified [context], by default [Dispatchers.IO].
- *
- * This function should **not** be called with main thread context, because underlying
- * [toList][SplitPackage.Provider.toList] can be blocking.
+ * A suspending variant of [toList][SplitPackage.Provider.toListAsync].
  *
  * This suspending function is cancellable.
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
  * function immediately resumes with [CancellationException].
  */
-public suspend fun SplitPackage.Provider.toList(context: CoroutineContext = Dispatchers.IO): List<Apk> {
-	return executeCancellable(context, ::toList)
-}
-
-private suspend fun <R> executeCancellable(
-	context: CoroutineContext,
-	action: (CancelToken) -> R
-) = withContext(context) {
-	suspendCancellableCoroutine { continuation ->
-		val cancelTokenOwner = CancelToken.Owner()
-		continuation.invokeOnCancellation {
-			cancelTokenOwner.cancel()
-		}
-		try {
-			continuation.resume(action(cancelTokenOwner.token))
-		} catch (exception: Throwable) {
-			continuation.resumeWithException(exception)
-		}
-	}
+public suspend fun SplitPackage.Provider.toList(): List<Apk> {
+	return toListAsync().await()
 }

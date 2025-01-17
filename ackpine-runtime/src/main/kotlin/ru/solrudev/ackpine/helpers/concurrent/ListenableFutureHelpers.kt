@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
 @JvmSynthetic
-internal inline fun <V> ListenableFuture<V>.handleResult(
+public inline fun <V> ListenableFuture<V>.handleResult(
 	crossinline onException: (Exception) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
 ) {
@@ -34,17 +34,18 @@ internal inline fun <V> ListenableFuture<V>.handleResult(
 	addListener({
 		try {
 			block(getAndUnwrapException())
-		} catch (e: Exception) {
-			onException(e)
+		} catch (exception: Exception) {
+			onException(exception)
 		}
 	}, DirectExecutor.INSTANCE)
 }
 
-private fun <V> ListenableFuture<V>.getAndUnwrapException(): V {
+@PublishedApi
+internal fun <V> ListenableFuture<V>.getAndUnwrapException(): V {
 	val value = try {
 		get()
-	} catch (e: ExecutionException) {
-		throw e.cause ?: e
+	} catch (exception: ExecutionException) {
+		throw exception.cause ?: exception
 	}
 	return value
 }

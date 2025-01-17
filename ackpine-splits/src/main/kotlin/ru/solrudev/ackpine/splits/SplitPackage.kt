@@ -17,11 +17,18 @@
 package ru.solrudev.ackpine.splits
 
 import android.content.Context
+import androidx.concurrent.futures.CallbackToFutureAdapter
+import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.CompletedListenableFuture
+import ru.solrudev.ackpine.helpers.map
+import ru.solrudev.ackpine.helpers.onCancellation
+import ru.solrudev.ackpine.plugin.AckpinePlugin
+import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.splits.SplitPackage.DynamicFeature
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
-import kotlin.coroutines.cancellation.CancellationException
+import java.util.concurrent.Executor
 import kotlin.math.abs
 
 /**
@@ -104,7 +111,7 @@ public open class SplitPackage(
 	 * Creates a [Provider] which returns this [SplitPackage].
 	 */
 	public open fun asProvider(): Provider {
-		return Provider { this }
+		return SplitPackageProvider { completer -> completer.set(this) }
 	}
 
 	override fun equals(other: Any?): Boolean {
@@ -150,13 +157,10 @@ public open class SplitPackage(
 		/**
 		 * Creates a [SplitPackage] with transformations applied via this provider.
 		 *
-		 * **Note**: this call may be blocking if split package source performs I/O operations (e.g. when source is
-		 * obtained from [ZippedApkSplits] factories).
-		 *
-		 * @param cancelToken a cancellation signal for cooperative cancellation. This function will halt its operations
-		 * and throw [CancellationException] when [cancelToken] is cancelled via its [owner][CancelToken.Owner].
+		 * This future may be cancelled if the split package source supports it (such as sequences created with
+		 * [ZippedApkSplits]).
 		 */
-		public fun get(cancelToken: CancelToken): SplitPackage
+		public fun getAsync(): ListenableFuture<SplitPackage>
 
 		/**
 		 * Returns a [Provider] giving out only [APK splits][Apk] which are the most compatible with the device.
@@ -225,25 +229,23 @@ public open class SplitPackage(
 		 * Creates a [SplitPackage] with transformations applied via this provider and returns a new list populated with
 		 * all [APK splits][Apk] contained in this package.
 		 *
-		 * **Note**: if provider performs I/O on [get] call (e.g. when split package source is obtained from
-		 * [ZippedApkSplits] factories), this operation will be blocking.
-		 *
-		 * @param cancelToken a cancellation signal for cooperative cancellation. This function will halt its operations\
-		 * and throw [CancellationException] when [cancelToken] is cancelled via its [owner][CancelToken.Owner].
+		 * This future may be cancelled if the split package source supports it (such as sequences created with
+		 * [ZippedApkSplits]).
 		 */
-		public fun toList(cancelToken: CancelToken): List<Apk> {
-			return buildList {
-				val splitPackage = get(cancelToken)
-				addAllApks(splitPackage.base)
-				addAllApks(splitPackage.libs)
-				addAllApks(splitPackage.screenDensity)
-				addAllApks(splitPackage.localization)
-				addAllApks(splitPackage.other)
-				for (feature in splitPackage.dynamicFeatures) {
-					add(feature.feature)
-					addAllApks(feature.libs)
-					addAllApks(feature.screenDensity)
-					addAllApks(feature.localization)
+		public fun toListAsync(): ListenableFuture<List<Apk>> {
+			return getAsync().map { splitPackage ->
+				buildList {
+					addAllApks(splitPackage.base)
+					addAllApks(splitPackage.libs)
+					addAllApks(splitPackage.screenDensity)
+					addAllApks(splitPackage.localization)
+					addAllApks(splitPackage.other)
+					for (feature in splitPackage.dynamicFeatures) {
+						add(feature.feature)
+						addAllApks(feature.libs)
+						addAllApks(feature.screenDensity)
+						addAllApks(feature.localization)
+					}
 				}
 			}
 		}
@@ -257,21 +259,22 @@ public open class SplitPackage(
 
 	private class FilteringProvider(private val provider: Provider) : Provider {
 
-		override fun get(cancelToken: CancelToken): SplitPackage {
-			val splitPackage = provider.get(cancelToken)
-			if (splitPackage is FilteredSplitPackage) {
-				return splitPackage
+		override fun getAsync(): ListenableFuture<SplitPackage> {
+			return provider.getAsync().map { splitPackage ->
+				if (splitPackage is FilteredSplitPackage) {
+					return@map splitPackage
+				}
+				val libs = splitPackage.libs.filter { it.isPreferred }
+				val density = splitPackage.screenDensity.filter { it.isPreferred }
+				val localization = splitPackage.localization.filter { it.isPreferred }
+				val features = splitPackage.dynamicFeatures.map { feature ->
+					val featureLibs = feature.libs.filter { it.isPreferred }
+					val featureDensity = feature.screenDensity.filter { it.isPreferred }
+					val featureLocalization = feature.localization.filter { it.isPreferred }
+					DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+				}
+				FilteredSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 			}
-			val libs = splitPackage.libs.filter { it.isPreferred }
-			val density = splitPackage.screenDensity.filter { it.isPreferred }
-			val localization = splitPackage.localization.filter { it.isPreferred }
-			val features = splitPackage.dynamicFeatures.map { feature ->
-				val featureLibs = feature.libs.filter { it.isPreferred }
-				val featureDensity = feature.screenDensity.filter { it.isPreferred }
-				val featureLocalization = feature.localization.filter { it.isPreferred }
-				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
-			}
-			return FilteredSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 		}
 	}
 
@@ -280,47 +283,48 @@ public open class SplitPackage(
 		private val context: Context
 	) : Provider {
 
-		override fun get(cancelToken: CancelToken): SplitPackage {
-			val splitPackage = provider.get(cancelToken)
-			if (splitPackage is SortedSplitPackage || splitPackage is FilteredSplitPackage) {
-				return splitPackage
-			}
-			val deviceDensity = context.resources.displayMetrics.densityDpi
-			val deviceLanguages = deviceLocales(context).map { it.language }
-			val libs = splitPackage
-				.libs
-				.sortedByCompatibility(
-					isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-					selector = ::libsIndex
-				)
-			val density = splitPackage
-				.screenDensity
-				.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
-			val localization = splitPackage
-				.localization
-				.sortedByCompatibility(
-					isCompatible = { apk -> apk.locale.language in deviceLanguages },
-					selector = { apk -> localizationIndex(apk, deviceLanguages) }
-				)
-			val features = splitPackage.dynamicFeatures.map { feature ->
-				val featureLibs = feature
+		override fun getAsync(): ListenableFuture<SplitPackage> {
+			return provider.getAsync().map { splitPackage ->
+				if (splitPackage is SortedSplitPackage || splitPackage is FilteredSplitPackage) {
+					return@map splitPackage
+				}
+				val deviceDensity = context.resources.displayMetrics.densityDpi
+				val deviceLanguages = deviceLocales(context).map { it.language }
+				val libs = splitPackage
 					.libs
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.abi in Abi.deviceAbis },
 						selector = ::libsIndex
 					)
-				val featureDensity = feature
+				val density = splitPackage
 					.screenDensity
 					.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
-				val featureLocalization = feature
+				val localization = splitPackage
 					.localization
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.locale.language in deviceLanguages },
 						selector = { apk -> localizationIndex(apk, deviceLanguages) }
 					)
-				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+				val features = splitPackage.dynamicFeatures.map { feature ->
+					val featureLibs = feature
+						.libs
+						.sortedByCompatibility(
+							isCompatible = { apk -> apk.abi in Abi.deviceAbis },
+							selector = ::libsIndex
+						)
+					val featureDensity = feature
+						.screenDensity
+						.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
+					val featureLocalization = feature
+						.localization
+						.sortedByCompatibility(
+							isCompatible = { apk -> apk.locale.language in deviceLanguages },
+							selector = { apk -> localizationIndex(apk, deviceLanguages) }
+						)
+					DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+				}
+				SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 			}
-			return SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 		}
 
 		private inline fun <T : Apk, R : Comparable<R>> List<Entry<T>>.sortedByCompatibility(
@@ -347,8 +351,8 @@ public open class SplitPackage(
 	}
 
 	private object EmptyProvider : Provider {
-		override fun get(cancelToken: CancelToken): SplitPackage {
-			return EmptySplitPackage
+		override fun getAsync(): ListenableFuture<SplitPackage> {
+			return CallbackToFutureAdapter.getFuture { completer -> completer.set(EmptySplitPackage) }
 		}
 	}
 
@@ -368,55 +372,57 @@ public open class SplitPackage(
 		/**
 		 * Returns a [Provider] which iterates over the [APK splits][Apk] [sequence][Sequence] and creates a
 		 * [SplitPackage] containing all APK splits from this sequence.
-		 *
-		 * **Note**: if provided sequence performs I/O on iteration (such as created by [ZippedApkSplits] factories),
-		 * provider's [get][Provider.get] call will be blocking.
 		 */
 		@JvmStatic
 		@JvmName("from")
 		public fun Sequence<Apk>.toSplitPackage(): Provider {
 			val source = this
-			return Provider { cancelToken ->
-				cancelToken.onCancel {
+			return SplitPackageProvider { completer ->
+				completer.onCancellation {
 					if (source is CloseableSequence) {
 						source.close()
 					}
 				}
-				val base = mutableListOf<Entry<Apk.Base>>()
-				val libs = mutableListOf<Entry<Apk.Libs>>()
-				val density = mutableListOf<Entry<Apk.ScreenDensity>>()
-				val localization = mutableListOf<Entry<Apk.Localization>>()
-				val other = mutableListOf<Entry<Apk.Other>>()
-				val features = mutableListOf<Apk.Feature>()
-				try {
-					for (apk in source) {
-						when (apk) {
-							is Apk.Base -> base += Entry(isPreferred = true, apk)
-							is Apk.Libs -> libs += Entry(isPreferred = true, apk)
-							is Apk.Localization -> localization += Entry(isPreferred = true, apk)
-							is Apk.Other -> other += Entry(isPreferred = true, apk)
-							is Apk.ScreenDensity -> density += Entry(isPreferred = true, apk)
-							is Apk.Feature -> features += apk
-						}
+				ExecutorPlugin.executor.execute {
+					try {
+						completer.set(createSplitPackage(source))
+					} catch (exception: Exception) {
+						completer.setException(exception)
 					}
-				} catch (exception: Exception) {
-					cancelToken.throwIfCancelled(exception)
-					throw exception
 				}
-				val featureLibsMap = libs.groupBy { it.apk.configForSplit }
-				val featureDensityMap = density.groupBy { it.apk.configForSplit }
-				val featureLocalizationMap = localization.groupBy { it.apk.configForSplit }
-				val dynamicFeatures = features.map { feature ->
-					val featureLibs = featureLibsMap[feature.name].orEmpty()
-					val featureDensity = featureDensityMap[feature.name].orEmpty()
-					val featureLocalization = featureLocalizationMap[feature.name].orEmpty()
-					libs.removeAll(featureLibs)
-					density.removeAll(featureDensity)
-					localization.removeAll(featureLocalization)
-					DynamicFeature(feature, featureLibs, featureDensity, featureLocalization)
-				}
-				SequenceSplitPackage(base, libs, density, localization, other, dynamicFeatures)
 			}
+		}
+
+		private fun createSplitPackage(source: Sequence<Apk>): SequenceSplitPackage {
+			val base = mutableListOf<Entry<Apk.Base>>()
+			val libs = mutableListOf<Entry<Apk.Libs>>()
+			val density = mutableListOf<Entry<Apk.ScreenDensity>>()
+			val localization = mutableListOf<Entry<Apk.Localization>>()
+			val other = mutableListOf<Entry<Apk.Other>>()
+			val features = mutableListOf<Apk.Feature>()
+			for (apk in source) {
+				when (apk) {
+					is Apk.Base -> base += Entry(isPreferred = true, apk)
+					is Apk.Libs -> libs += Entry(isPreferred = true, apk)
+					is Apk.Localization -> localization += Entry(isPreferred = true, apk)
+					is Apk.Other -> other += Entry(isPreferred = true, apk)
+					is Apk.ScreenDensity -> density += Entry(isPreferred = true, apk)
+					is Apk.Feature -> features += apk
+				}
+			}
+			val featureLibsMap = libs.groupBy { it.apk.configForSplit }
+			val featureDensityMap = density.groupBy { it.apk.configForSplit }
+			val featureLocalizationMap = localization.groupBy { it.apk.configForSplit }
+			val dynamicFeatures = features.map { feature ->
+				val featureLibs = featureLibsMap[feature.name].orEmpty()
+				val featureDensity = featureDensityMap[feature.name].orEmpty()
+				val featureLocalization = featureLocalizationMap[feature.name].orEmpty()
+				libs.removeAll(featureLibs)
+				density.removeAll(featureDensity)
+				localization.removeAll(featureLocalization)
+				DynamicFeature(feature, featureLibs, featureDensity, featureLocalization)
+			}
+			return SequenceSplitPackage(base, libs, density, localization, other, dynamicFeatures)
 		}
 
 		/**
@@ -466,10 +472,37 @@ public open class SplitPackage(
 	)
 
 	private class SortedProvider(private val sortedSplitPackage: SortedSplitPackage) : Provider {
-		override fun get(cancelToken: CancelToken) = sortedSplitPackage
+		override fun getAsync(): ListenableFuture<SplitPackage> = CompletedListenableFuture(sortedSplitPackage)
 	}
 
 	private class FilteredProvider(private val filteredSplitPackage: FilteredSplitPackage) : Provider {
-		override fun get(cancelToken: CancelToken) = filteredSplitPackage
+		override fun getAsync(): ListenableFuture<SplitPackage> = CompletedListenableFuture(filteredSplitPackage)
+	}
+}
+
+private object ExecutorPlugin : AckpinePlugin {
+
+	lateinit var executor: Executor
+		private set
+
+	init {
+		AckpinePluginRegistry.register(this)
+	}
+
+	override fun setExecutor(executor: Executor) {
+		this.executor = executor
+	}
+}
+
+@Suppress("FunctionName")
+private inline fun SplitPackageProvider(
+	crossinline block: (CallbackToFutureAdapter.Completer<SplitPackage>) -> Unit
+) = Provider {
+	CallbackToFutureAdapter.getFuture { completer ->
+		try {
+			block(completer)
+		} catch (exception: Exception) {
+			completer.setException(exception)
+		}
 	}
 }
