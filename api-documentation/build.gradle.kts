@@ -33,6 +33,7 @@ dependencies {
 	dokka(projects.ackpineCore)
 	dokka(projects.ackpineKtx)
 	dokka(projects.ackpineSplits)
+	dokka(projects.ackpineSplitsKtx)
 	dokka(projects.ackpineAssets)
 	dokka(projects.ackpineResources)
 }
