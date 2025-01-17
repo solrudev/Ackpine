@@ -36,10 +36,13 @@ public object ZippedApkSplits {
 
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped [file] (such as APKS, APKM, XAPK, ZIP).
+	 * This sequence supports cancellation when used with [SplitPackage] API and [ApkSplits] transformations.
 	 *
 	 * **Attention:** iteration of this sequence is blocking due to I/O operations.
 	 *
 	 * The returned sequence is constrained to be iterated only once.
+	 *
+	 * @return [CloseableSequence]
 	 */
 	@JvmStatic
 	public fun getApksForFile(file: File): CloseableSequence<Apk> = closeableSequence {
@@ -49,12 +52,15 @@ public object ZippedApkSplits {
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at
 	 * provided [uri].
+	 * This sequence supports cancellation when used with [SplitPackage] API.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
 	 * **Attention:** iteration of this sequence is blocking due to I/O operations.
 	 *
 	 * The returned sequence is constrained to be iterated only once.
+	 *
+	 * @return [CloseableSequence]
 	 */
 	@JvmStatic
 	public fun getApksForUri(uri: Uri, context: Context): CloseableSequence<Apk> {

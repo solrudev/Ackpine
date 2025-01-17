@@ -157,8 +157,7 @@ public open class SplitPackage(
 		/**
 		 * Creates a [SplitPackage] with transformations applied via this provider.
 		 *
-		 * This future may be cancelled if the split package source supports it (such as sequences created with
-		 * [ZippedApkSplits]).
+		 * This future may be cancelled if the split package source supports it (such as [CloseableSequence]).
 		 */
 		public fun getAsync(): ListenableFuture<SplitPackage>
 
@@ -229,8 +228,7 @@ public open class SplitPackage(
 		 * Creates a [SplitPackage] with transformations applied via this provider and returns a new list populated with
 		 * all [APK splits][Apk] contained in this package.
 		 *
-		 * This future may be cancelled if the split package source supports it (such as sequences created with
-		 * [ZippedApkSplits]).
+		 * This future may be cancelled if the split package source supports it (such as [CloseableSequence]).
 		 */
 		public fun toListAsync(): ListenableFuture<List<Apk>> {
 			return getAsync().map { splitPackage ->

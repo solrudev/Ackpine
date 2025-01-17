@@ -25,6 +25,9 @@ import kotlin.coroutines.RestrictsSuspension
 
 /**
  * A [Sequence] which has [AutoCloseable] resources. Constrained to be iterated only once.
+ *
+ * When iteration is completed or interrupted with exception originating from this sequence, all resources are
+ * automatically closed.
  */
 public interface CloseableSequence<T> : Sequence<T>, AutoCloseable {
 

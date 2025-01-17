@@ -37,7 +37,8 @@ import kotlin.math.abs
 public object ApkSplits {
 
 	/**
-	 * Returns a sequence which throws [SplitPackageException] on iteration if the split package is invalid.
+	 * Returns a sequence which throws [SplitPackageException] on iteration if the split package is invalid and closes
+	 * all I/O resources opened in the upstream sequence if it's [supported][CloseableSequence].
 	 *
 	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
 	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
@@ -48,10 +49,11 @@ public object ApkSplits {
 	 *
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 *
-	 * To correctly close I/O resources and skip unnecessary I/O operations, it's best to apply this operation
-	 * immediately after creating the sequence with [ZippedApkSplits] factories.
+	 * This sequence supports cancellation when used with [SplitPackage] API.
 	 *
 	 * The operation is _intermediate_ and _stateful_.
+	 *
+	 * @return [CloseableSequence]
 	 */
 	@JvmStatic
 	public fun Sequence<Apk>.validate(): CloseableSequence<Apk> {

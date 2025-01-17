@@ -21,7 +21,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 
 /**
- * A suspending variant of [get][SplitPackage.Provider.getAsync].
+ * A suspending variant of [getAsync][SplitPackage.Provider.getAsync].
  *
  * This suspending function is cancellable.
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
@@ -32,7 +32,7 @@ public suspend fun SplitPackage.Provider.get(): SplitPackage {
 }
 
 /**
- * A suspending variant of [toList][SplitPackage.Provider.toListAsync].
+ * A suspending variant of [toListAsync][SplitPackage.Provider.toListAsync].
  *
  * This suspending function is cancellable.
  * If the [Job] of the current coroutine is cancelled or completed while this suspending function is waiting, this
