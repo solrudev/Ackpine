@@ -46,6 +46,10 @@ public class DokkaConventionPlugin : Plugin<Project> {
 			externalDocumentationLinks.register("kotlinx.coroutines") {
 				url = URI("https://kotlinlang.org/api/kotlinx.coroutines/")
 			}
+			externalDocumentationLinks.register("guava") {
+				url = URI("https://guava.dev/releases/snapshot/api/docs/")
+				packageListUrl = URI("https://guava.dev/releases/snapshot/api/docs/element-list")
+			}
 		}
 	}
 }
