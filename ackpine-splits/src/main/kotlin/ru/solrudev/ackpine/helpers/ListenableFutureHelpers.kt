@@ -17,10 +17,13 @@
 package ru.solrudev.ackpine.helpers
 
 import android.annotation.SuppressLint
+import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.DirectExecutor
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import java.util.concurrent.Executor
+import java.util.concurrent.TimeUnit
 
 @SuppressLint("RestrictedApi")
 @JvmSynthetic
@@ -44,4 +47,14 @@ internal inline fun <V, R> ListenableFuture<V>.map(crossinline transform: (V) ->
 @JvmSynthetic
 internal fun <V> CallbackToFutureAdapter.Completer<V>.onCancellation(block: () -> Unit) {
 	addCancellationListener(block, DirectExecutor.INSTANCE)
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal class ImmediateListenableFuture<V>(private val value: V) : ListenableFuture<V> {
+	override fun cancel(mayInterruptIfRunning: Boolean) = false
+	override fun isCancelled() = false
+	override fun isDone() = true
+	override fun get() = value
+	override fun get(timeout: Long, unit: TimeUnit?) = value
+	override fun addListener(listener: Runnable, executor: Executor) = listener.run()
 }

@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.helpers.ImmediateListenableFuture
 import ru.solrudev.ackpine.helpers.map
 import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.plugin.AckpinePlugin
@@ -317,7 +318,7 @@ public open class SplitPackage(
 
 	private object EmptyProvider : Provider {
 		override fun getAsync(): ListenableFuture<SplitPackage> {
-			return CallbackToFutureAdapter.getFuture { completer -> completer.set(EmptySplitPackage) }
+			return ImmediateListenableFuture(EmptySplitPackage)
 		}
 	}
 
