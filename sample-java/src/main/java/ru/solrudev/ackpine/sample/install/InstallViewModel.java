@@ -53,7 +53,6 @@ import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
-import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.SplitPackage;
 
 public final class InstallViewModel extends ViewModel {

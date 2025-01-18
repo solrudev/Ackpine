@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.CompletedListenableFuture
 import ru.solrudev.ackpine.helpers.map
 import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.plugin.AckpinePlugin
@@ -108,6 +107,26 @@ public open class SplitPackage(
 	)
 
 	/**
+	 * Returns a [SplitPackage] containing only [APK splits][Apk] which are the most preferred for the device by
+	 * examining every [entry's][Entry] [isPreferred][Entry.isPreferred] flag.
+	 */
+	public fun filterPreferred(): SplitPackage {
+		if (this is FilteredSplitPackage) {
+			return this
+		}
+		val libs = libs.filter { it.isPreferred }
+		val density = screenDensity.filter { it.isPreferred }
+		val localization = localization.filter { it.isPreferred }
+		val features = dynamicFeatures.map { feature ->
+			val featureLibs = feature.libs.filter { it.isPreferred }
+			val featureDensity = feature.screenDensity.filter { it.isPreferred }
+			val featureLocalization = feature.localization.filter { it.isPreferred }
+			DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+		}
+		return FilteredSplitPackage(base, libs, density, localization, other, features)
+	}
+
+	/**
 	 * Returns a new list populated with all [APK splits][Apk] contained in this split package.
 	 */
 	public fun toList(): List<Entry<*>> {
@@ -176,40 +195,21 @@ public open class SplitPackage(
 		public fun getAsync(): ListenableFuture<SplitPackage>
 
 		/**
-		 * Returns a [Provider] giving out only [APK splits][Apk] which are the most compatible with the device.
+		 * Returns a [Provider] giving out only [APK splits][Apk] which are the most compatible with the device by
+		 * applying [sortedByCompatibility] operation and calling [filterPreferred] on the resulting [SplitPackage].
 		 *
 		 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 		 * matching split is chosen.
 		 *
 		 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
-		 *
-		 * This operation is equivalent to `sortedByCompatibility(context).filterPreferred()`.
 		 */
 		public fun filterCompatible(context: Context): Provider {
 			return when (this) {
 				EmptyProvider,
-				is FilteringProvider,
-				is FilteredProvider -> this
+				is FilteringProvider -> this
 
-				is SortingProvider,
-				is SortedProvider -> FilteringProvider(provider = this)
-
+				is SortingProvider -> FilteringProvider(provider = this)
 				else -> FilteringProvider(SortingProvider(provider = this, context.applicationContext))
-			}
-		}
-
-		/**
-		 * Returns a [Provider] giving out only [APK splits][Apk] which are the most preferred for the device.
-		 *
-		 * If compatibility evaluation wasn't performed through [sortedByCompatibility], this will return the
-		 * original [Provider] unchanged.
-		 */
-		public fun filterPreferred(): Provider {
-			return when (this) {
-				is SortingProvider,
-				is SortedProvider -> FilteringProvider(provider = this)
-
-				else -> this
 			}
 		}
 
@@ -230,9 +230,7 @@ public open class SplitPackage(
 			return when (this) {
 				EmptyProvider,
 				is SortingProvider,
-				is SortedProvider,
-				is FilteringProvider,
-				is FilteredProvider -> this
+				is FilteringProvider -> this
 
 				else -> SortingProvider(provider = this, context.applicationContext)
 			}
@@ -240,23 +238,8 @@ public open class SplitPackage(
 	}
 
 	private class FilteringProvider(private val provider: Provider) : Provider {
-
 		override fun getAsync(): ListenableFuture<SplitPackage> {
-			return provider.getAsync().map { splitPackage ->
-				if (splitPackage is FilteredSplitPackage) {
-					return@map splitPackage
-				}
-				val libs = splitPackage.libs.filter { it.isPreferred }
-				val density = splitPackage.screenDensity.filter { it.isPreferred }
-				val localization = splitPackage.localization.filter { it.isPreferred }
-				val features = splitPackage.dynamicFeatures.map { feature ->
-					val featureLibs = feature.libs.filter { it.isPreferred }
-					val featureDensity = feature.screenDensity.filter { it.isPreferred }
-					val featureLocalization = feature.localization.filter { it.isPreferred }
-					DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
-				}
-				FilteredSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
-			}
+			return provider.getAsync().map { splitPackage -> splitPackage.filterPreferred() }
 		}
 	}
 
@@ -448,14 +431,6 @@ public open class SplitPackage(
 	private object EmptySplitPackage : SplitPackage(
 		emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
 	)
-
-	private class SortedProvider(private val sortedSplitPackage: SortedSplitPackage) : Provider {
-		override fun getAsync(): ListenableFuture<SplitPackage> = CompletedListenableFuture(sortedSplitPackage)
-	}
-
-	private class FilteredProvider(private val filteredSplitPackage: FilteredSplitPackage) : Provider {
-		override fun getAsync(): ListenableFuture<SplitPackage> = CompletedListenableFuture(filteredSplitPackage)
-	}
 }
 
 private object ExecutorPlugin : AckpinePlugin {
