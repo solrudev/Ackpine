@@ -116,8 +116,8 @@ Then you can apply different operations to it, and when you're done, materialize
 === "Kotlin"
 
     ```kotlin
-    val compatibleSplits = splits.filterCompatible(context)
-    val splitPackage = compatibleSplits.get() // <- suspending, cancellable
+    val sortedSplits = splits.sortedByCompatibility(context)
+    val splitPackage = sortedSplits.get() // <- suspending, cancellable
     // print SplitPackage entries for libs APKs
     println(splitPackage.libs)
     ```
@@ -125,8 +125,8 @@ Then you can apply different operations to it, and when you're done, materialize
 === "Java"
 
     ```java
-    var compatibleSplits = splits.filterCompatible(context);
-    var splitPackageFuture = compatibleSplits.getAsync(); // cancellable
+    var sortedSplits = splits.sortedByCompatibility(context);
+    var splitPackageFuture = sortedSplits.getAsync(); // cancellable
     // using Guava
     Futures.addCallback(splitPackageFuture, new FutureCallback<>() {
         @Override
@@ -145,18 +145,32 @@ The `get()` is cancellable if split package source supports cancellation (such a
 
 `libs` in the previous example is a `List<SplitPackage.Entry<Apk.Libs>>`.
 
-Each entry in APK lists inside of `SplitPackage` has `isPreferred` and `apk` properties:
+Each entry in APK lists inside of `SplitPackage` (such as `libs`, `localization` etc.) has `isPreferred` and `apk` properties:
 
 - `isPreferred` — indicates whether the APK is the most preferred for the device among all splits of the same type. By default it is `true`. When an operation which checks compatibility is applied, this flag is updated accordingly;
 - `apk` — `Apk` object.
+
+`SplitPackage` can be flattened to a plain list of entries by calling `toList()`. Also you can filter out all entries where `isPreferred=false` with `filterPreferred()`:
+
+=== "Kotlin"
+
+    ```kotlin
+    val splitsList = splitPackage.toList()
+    val compatibleSplits = splitPackage.filterPreferred()
+    ```
+
+=== "Java"
+
+    ```java
+    var splitsList = splitPackage.toList();
+    var compatibleSplits = splitPackage.filterPreferred();
+    ```
 
 List of available `SplitPackage.Provider` operations:
 
 - `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one.
 
-- `filterPreferred()` operation filters out the splits which are not the most preferred for the device by examining the entries' `isPreferred` flag. If `sortedByCompatibility()` operation wasn't applied, it will do nothing.
-
-- `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device. It acts the same as `sortedByCompatibility(context).filterPreferred()`.
+- `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device. It acts the same as applying `sortedByCompatibility(context)` to the provider and calling `filterPreferred()` for the resulting `SplitPackage`.
 
 Full example of a pipeline:
 
@@ -175,6 +189,7 @@ Full example of a pipeline:
     }
     println(sortedSplits.libs)   // prints SplitPackage entries for libs APKs,
                                  // ordered by their compatibility with the device
+    val splitsToInstall = sortedSplits.filterPreferred()
     sortedSplits
         .toList()
         .filterNot { entry -> entry.isPreferred }
@@ -197,6 +212,7 @@ Full example of a pipeline:
             // prints SplitPackage entries for libs APKs,
             // ordered by their compatibility with the device
             System.out.println(sortedSplits.getLibs());
+            var splitsToInstall = sortedSplits.filterPreferred();
             for (var entry : sortedSplits.toList()) {
                 if (!entry.isPreferred()) {
                     System.out.println(entry.getApk()); // prints incompatible APKs
