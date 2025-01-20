@@ -41,7 +41,7 @@ import kotlin.coroutines.resumeWithException
 public suspend fun <F : Failure> Session<F>.await(): Session.State.Completed<F> {
 	return suspendCancellableCoroutine { continuation ->
 		val subscriptionContainer = DisposableSubscriptionContainer()
-		addStateListener(subscriptionContainer, AwaitCompletedSessionStateListener(this, continuation))
+		addStateListener(subscriptionContainer, AwaitSessionStateListener(this, continuation))
 		continuation.invokeOnCancellation {
 			subscriptionContainer.dispose()
 			cancel()
@@ -49,7 +49,7 @@ public suspend fun <F : Failure> Session<F>.await(): Session.State.Completed<F> 
 	}
 }
 
-private class AwaitCompletedSessionStateListener<F : Failure>(
+private class AwaitSessionStateListener<F : Failure>(
 	private val session: Session<F>,
 	private val continuation: CancellableContinuation<Session.State.Completed<F>>
 ) : Session.StateListener<F> {
