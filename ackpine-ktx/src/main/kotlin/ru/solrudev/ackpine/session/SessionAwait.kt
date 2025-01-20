@@ -35,6 +35,9 @@ import kotlin.coroutines.resumeWithException
  *
  * This function handles session's lifecycle appropriately, like [Session.TerminalStateListener].
  *
+ * [Failure.Exceptional] is never delivered as a result value of this function. Exception contained in the failure is
+ * always thrown.
+ *
  * @return [Session.State.Completed]
  */
 @JvmName("awaitCompletedState")
