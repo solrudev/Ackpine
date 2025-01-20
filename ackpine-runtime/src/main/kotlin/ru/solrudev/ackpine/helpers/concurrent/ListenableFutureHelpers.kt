@@ -41,6 +41,7 @@ public inline fun <V> ListenableFuture<V>.handleResult(
 }
 
 @PublishedApi
+@JvmSynthetic
 internal fun <V> ListenableFuture<V>.getAndUnwrapException(): V {
 	val value = try {
 		get()
