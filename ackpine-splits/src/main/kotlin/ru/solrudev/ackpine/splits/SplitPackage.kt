@@ -240,7 +240,7 @@ public open class SplitPackage(
 
 	private class FilteringProvider(private val provider: Provider) : Provider {
 		override fun getAsync(): ListenableFuture<SplitPackage> {
-			return provider.getAsync().map { splitPackage -> splitPackage.filterPreferred() }
+			return provider.getAsync().map(SplitPackage::filterPreferred)
 		}
 	}
 
@@ -250,47 +250,49 @@ public open class SplitPackage(
 	) : Provider {
 
 		override fun getAsync(): ListenableFuture<SplitPackage> {
-			return provider.getAsync().map { splitPackage ->
-				if (splitPackage is SortedSplitPackage || splitPackage is FilteredSplitPackage) {
-					return@map splitPackage
-				}
-				val deviceDensity = context.resources.displayMetrics.densityDpi
-				val deviceLanguages = deviceLocales(context).map { it.language }
-				val libs = splitPackage
+			return provider.getAsync().map(::sortedByCompatibility)
+		}
+
+		private fun sortedByCompatibility(splitPackage: SplitPackage): SplitPackage {
+			if (splitPackage is SortedSplitPackage || splitPackage is FilteredSplitPackage) {
+				return splitPackage
+			}
+			val deviceDensity = context.resources.displayMetrics.densityDpi
+			val deviceLanguages = deviceLocales(context).map { it.language }
+			val libs = splitPackage
+				.libs
+				.sortedByCompatibility(
+					isCompatible = { apk -> apk.abi in Abi.deviceAbis },
+					selector = ::libsIndex
+				)
+			val density = splitPackage
+				.screenDensity
+				.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
+			val localization = splitPackage
+				.localization
+				.sortedByCompatibility(
+					isCompatible = { apk -> apk.locale.language in deviceLanguages },
+					selector = { apk -> localizationIndex(apk, deviceLanguages) }
+				)
+			val features = splitPackage.dynamicFeatures.map { feature ->
+				val featureLibs = feature
 					.libs
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.abi in Abi.deviceAbis },
 						selector = ::libsIndex
 					)
-				val density = splitPackage
+				val featureDensity = feature
 					.screenDensity
 					.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
-				val localization = splitPackage
+				val featureLocalization = feature
 					.localization
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.locale.language in deviceLanguages },
 						selector = { apk -> localizationIndex(apk, deviceLanguages) }
 					)
-				val features = splitPackage.dynamicFeatures.map { feature ->
-					val featureLibs = feature
-						.libs
-						.sortedByCompatibility(
-							isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-							selector = ::libsIndex
-						)
-					val featureDensity = feature
-						.screenDensity
-						.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
-					val featureLocalization = feature
-						.localization
-						.sortedByCompatibility(
-							isCompatible = { apk -> apk.locale.language in deviceLanguages },
-							selector = { apk -> localizationIndex(apk, deviceLanguages) }
-						)
-					DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
-				}
-				SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
+				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
 			}
+			return SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 		}
 
 		private inline fun <T : Apk, R : Comparable<R>> List<Entry<T>>.sortedByCompatibility(
