@@ -22,7 +22,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
-@JvmSynthetic
 public inline fun <V> ListenableFuture<V>.handleResult(
 	crossinline onException: (Exception) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
