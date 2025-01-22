@@ -23,19 +23,19 @@ import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
 public inline fun <V> ListenableFuture<V>.handleResult(
-	crossinline onException: (Throwable) -> Unit = { throw it },
+	crossinline onException: (Exception) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
 ) {
 	if (isDone) {
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure(onException)
+			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
 		return
 	}
 	addListener({
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure(onException)
+			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
 	}, DirectExecutor.INSTANCE)
 }
 
