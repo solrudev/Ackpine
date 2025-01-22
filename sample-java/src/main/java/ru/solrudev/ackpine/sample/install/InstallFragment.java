@@ -194,7 +194,7 @@ public final class InstallFragment extends Fragment {
 	private SplitPackage.Provider getApksFromUri(@NonNull Uri uri, @NonNull String name) {
 		final var extensionIndex = name.lastIndexOf('.') + 1;
 		final var extension = extensionIndex != 0 ? name.substring(extensionIndex).toLowerCase() : "";
-		final var context = requireContext().getApplicationContext();
+		final var context = requireContext();
 		return switch (extension) {
 			case "apk" -> SplitPackage.from(new SingletonApkSequence(uri, context));
 			case "zip", "apks", "xapk", "apkm" -> SplitPackage

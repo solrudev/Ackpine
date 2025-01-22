@@ -41,7 +41,6 @@ import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
 import ru.solrudev.ackpine.sample.util.getDisplayName
-import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.ApkSplits.validate
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
@@ -163,9 +162,9 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 
 	private fun getApksFromUri(uri: Uri, name: String): SplitPackage.Provider {
 		val extension = name.substringAfterLast('.', "").lowercase()
-		val context = requireContext().applicationContext
+		val context = requireContext()
 		return when (extension) {
-			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.toSplitPackage()
+			"apk" -> SingletonApkSequence(uri, context).toSplitPackage()
 			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, context)
 				.validate()
 				.toSplitPackage()
