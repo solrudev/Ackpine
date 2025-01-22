@@ -25,11 +25,10 @@ import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
 
-@SuppressLint("RestrictedApi")
 @JvmSynthetic
 internal inline fun <V, R> ListenableFuture<V>.map(crossinline transform: (V) -> R): ListenableFuture<R> {
 	return CallbackToFutureAdapter.getFuture { completer ->
-		completer.addCancellationListener({ cancel(false) }, DirectExecutor.INSTANCE)
+		completer.onCancellation { cancel(false) }
 		handleResult(
 			onException = completer::setException,
 			block = { result ->
