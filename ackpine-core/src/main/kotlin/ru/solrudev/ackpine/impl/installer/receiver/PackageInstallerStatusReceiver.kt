@@ -59,22 +59,17 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		val pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
-		try {
-			packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
-				onException = { exception ->
-					pendingResult.finish()
-					Log.e("InstallerStatusReceiver", null, exception)
-				},
-				block = { session ->
-					handlePackageInstallerStatus(
-						session as? CompletableSession<InstallFailure>,
-						ackpineSessionId, intent, context, pendingResult
-					)
-				})
-		} catch (t: Throwable) {
-			pendingResult.finish()
-			Log.e("InstallerStatusReceiver", null, t)
-		}
+		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
+			onException = { exception ->
+				pendingResult.finish()
+				Log.e("InstallerStatusReceiver", null, exception)
+			},
+			block = { session ->
+				handlePackageInstallerStatus(
+					session as? CompletableSession<InstallFailure>,
+					ackpineSessionId, intent, context, pendingResult
+				)
+			})
 	}
 
 	private fun handlePackageInstallerStatus(

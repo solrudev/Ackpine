@@ -23,29 +23,28 @@ import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
 public inline fun <V> ListenableFuture<V>.handleResult(
-	crossinline onException: (Exception) -> Unit = { throw it },
+	crossinline onException: (Throwable) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
 ) {
 	if (isDone) {
-		block(getAndUnwrapException())
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure(onException)
 		return
 	}
 	addListener({
-		try {
-			block(getAndUnwrapException())
-		} catch (exception: Exception) {
-			onException(exception)
-		}
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure(onException)
 	}, DirectExecutor.INSTANCE)
 }
 
 @PublishedApi
 @JvmSynthetic
-internal fun <V> ListenableFuture<V>.getAndUnwrapException(): V {
-	val value = try {
-		get()
+internal fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
+	return try {
+		Result.success(get())
 	} catch (exception: ExecutionException) {
-		throw exception.cause ?: exception
+		Result.failure(exception.cause ?: exception)
 	}
-	return value
 }

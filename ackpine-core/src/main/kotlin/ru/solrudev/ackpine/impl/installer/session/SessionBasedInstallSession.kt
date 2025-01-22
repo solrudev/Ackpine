@@ -181,13 +181,7 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 		}
 		executor.execute {
-			try {
-				writeApksToSession(nativeSessionId)
-			} catch (_: OperationCanceledException) {
-				cancel()
-			} catch (exception: Exception) {
-				completeExceptionally(exception)
-			}
+			writeApksToSession(nativeSessionId)
 		}
 	}
 
