@@ -24,7 +24,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import by.kirich1409.viewbindingdelegate.viewBinding
+import dev.androidbroadcast.vbpd.viewBinding
 import dev.chrisbanes.insetter.applyInsetter
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.AssetFileProvider
@@ -38,8 +38,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main) {
 	private val viewModel: MainViewModel by viewModels { MainViewModel.Factory }
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
+		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
 		applyInsets()
 		setSupportActionBar(binding.toolbarMain)

@@ -27,7 +27,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.navOptions
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
-import by.kirich1409.viewbindingdelegate.viewBinding
+import dev.androidbroadcast.vbpd.viewBinding
 import dev.chrisbanes.insetter.applyInsetter
 import ru.solrudev.ackpine.sample.databinding.NavHostBinding
 import ru.solrudev.ackpine.sample.install.InstallFragment
@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 		get() = binding.contentNavHost.getFragment<NavHostFragment>().navController
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
 		enableEdgeToEdge()
+		super.onCreate(savedInstanceState)
 		setContentView(binding.root)
 		applyInsets()
 		val navController = navController
