@@ -86,8 +86,8 @@ public final class InstallViewModel extends ViewModel {
 				if (exception instanceof CancellationException) {
 					return;
 				}
-				if (exception instanceof SplitPackageException) {
-					handleSplitPackageException((SplitPackageException) exception);
+				if (exception instanceof SplitPackageException e) {
+					handleSplitPackageException(e);
 					return;
 				}
 				final var message = exception.getMessage() != null ? exception.getMessage() : "";
