@@ -38,6 +38,8 @@ public open class SplitPackage(
 
 	/**
 	 * A list of all [base][Apk.Base] APKs inside of the split package.
+	 *
+	 * If there's more than one base APK, split package is invalid.
 	 */
 	public val base: List<Entry<Apk.Base>>,
 
