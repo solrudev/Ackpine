@@ -189,10 +189,11 @@ public object ApkSplits {
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
 				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
-				"next minor release. An equivalent for an already sorted split package would be filterPreferred().",
+				"next minor release. An equivalent for an already sorted SplitPackage would be " +
+				"SplitPackage.filterPreferred().",
 		level = DeprecationLevel.WARNING,
 		replaceWith = ReplaceWith(
-			expression = "this.toSplitPackage().sortedByCompatibility(context).filterPreferred()",
+			expression = "this.toSplitPackage().filterCompatible(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
 		)
 	)
@@ -237,7 +238,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function was meant to allow duplicating of one-time APK sequences for processing of grouped " +
-				"APK splits after. Existing API were not a good solution for that use case, so SplitPackage API " +
+				"APK splits after. Existing APIs were not a good solution for that use case, so SplitPackage API " +
 				"was introduced which you should migrate to if you were using addAllTo(). " +
 				"Usage of this function will become an error in the next minor release.",
 		level = DeprecationLevel.WARNING,

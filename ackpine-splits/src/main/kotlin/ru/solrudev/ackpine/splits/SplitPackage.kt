@@ -219,7 +219,7 @@ public open class SplitPackage(
 		/**
 		 * Returns a [Provider] giving out [APK splits][Apk] sorted according to their compatibility with the device.
 		 *
-		 * This sort is _stable_ for each APK splits type.
+		 * This sort is _stable_ for each APK split type.
 		 *
 		 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
 		 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
@@ -265,32 +265,32 @@ public open class SplitPackage(
 				.libs
 				.sortedByCompatibility(
 					isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-					selector = ::libsIndex
+					selector = ::libsComparator
 				)
 			val density = splitPackage
 				.screenDensity
-				.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
+				.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
 			val localization = splitPackage
 				.localization
 				.sortedByCompatibility(
 					isCompatible = { apk -> apk.locale.language in deviceLanguages },
-					selector = { apk -> localizationIndex(apk, deviceLanguages) }
+					selector = { apk -> localizationComparator(apk, deviceLanguages) }
 				)
 			val features = splitPackage.dynamicFeatures.map { feature ->
 				val featureLibs = feature
 					.libs
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-						selector = ::libsIndex
+						selector = ::libsComparator
 					)
 				val featureDensity = feature
 					.screenDensity
-					.sortedByCompatibility { apk -> densityIndex(apk, deviceDensity) }
+					.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
 				val featureLocalization = feature
 					.localization
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.locale.language in deviceLanguages },
-						selector = { apk -> localizationIndex(apk, deviceLanguages) }
+						selector = { apk -> localizationComparator(apk, deviceLanguages) }
 					)
 				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
 			}
@@ -305,17 +305,17 @@ public open class SplitPackage(
 				Entry(isPreferred = index == 0 && isCompatible(entry.apk), entry.apk)
 			}
 
-		private fun libsIndex(apk: Apk.Libs): Int {
+		private fun libsComparator(apk: Apk.Libs): Int {
 			val index = Abi.deviceAbis.indexOf(apk.abi)
 			return if (index == -1) Int.MAX_VALUE else index
 		}
 
-		private fun localizationIndex(apk: Apk.Localization, deviceLanguages: List<String>): Int {
+		private fun localizationComparator(apk: Apk.Localization, deviceLanguages: List<String>): Int {
 			val index = deviceLanguages.indexOf(apk.locale.language)
 			return if (index == -1) Int.MAX_VALUE else index
 		}
 
-		private fun densityIndex(apk: Apk.ScreenDensity, deviceDensity: Int): Int {
+		private fun densityComparator(apk: Apk.ScreenDensity, deviceDensity: Int): Int {
 			return abs(deviceDensity - apk.dpi.density)
 		}
 	}
