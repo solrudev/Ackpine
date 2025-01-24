@@ -146,9 +146,12 @@ internal class NotificationDismissalReceiver : BroadcastReceiver() {
 		context.showNotification(pendingIntent, notificationData, notificationTag, notificationId)
 	}
 
-	companion object {
-		const val TAG = "NotificationDismissalReceiver"
+	internal companion object {
+
+		@JvmSynthetic
 		const val EXTRA_NOTIFICATION_TAG = "ru.solrudev.ackpine.extra.NOTIFICATION_TAG"
+
+		private const val TAG = "NotificationDismissalReceiver"
 	}
 }
 
