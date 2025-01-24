@@ -78,6 +78,7 @@ public final class InstallViewModel extends ViewModel {
 
 	public void installPackage(@NonNull SplitPackage.Provider splitPackageProvider, @NonNull String fileName) {
 		final var splitPackageFuture = splitPackageProvider.getAsync();
+		splitPackageFuture.addListener(() -> futures.remove(splitPackageFuture), MoreExecutors.directExecutor());
 		futures.add(splitPackageFuture);
 		Futures.addCallback(splitPackageFuture, new FutureCallback<>() {
 			@Override
