@@ -52,7 +52,7 @@ public object ZippedApkSplits {
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at
 	 * provided [uri].
-	 * This sequence supports cancellation when used with [SplitPackage] API.
+	 * This sequence supports cancellation when used with [SplitPackage] API and [ApkSplits] transformations.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
