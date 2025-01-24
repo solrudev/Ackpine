@@ -28,7 +28,7 @@ Version 0.10.0 (2025-01-24)
 - Added `Apk.fromUri()` overload accepting `CancellationSignal` in `ackpine-splits`.
 - Added `ApkSplits.validate()` in `ackpine-splits`.
 - Exposed `CloseableSequence` interface in `ackpine-splits`.
-- Deprecated with warning `ApkSplits.throwOnInvalidSplitPackage()`, `ApkSplits.sortedByCompatibility()`, `ApkSplits.filterCompaible()` and `ApkSplits.addAllTo()` methods in `ackpine-splits`.
+- Deprecated with warning `ApkSplits.throwOnInvalidSplitPackage()`, `ApkSplits.sortedByCompatibility()`, `ApkSplits.filterCompatible()` and `ApkSplits.addAllTo()` methods in `ackpine-splits`.
 - Changed return type of `ZippedApkSplits.getApksForFile()` and `ZippedApkSplits.getApksForUri()` to `CloseableSequence<Apk>` in `ackpine-splits`.
 - Removed deprecated `SessionResult` and `Session.await()` overload in `ackpine-ktx`.
 
