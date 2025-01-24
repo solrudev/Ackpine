@@ -395,7 +395,7 @@ private class SplitPackageSequence(
 
 		override fun next(): Apk {
 			if (isClosed) {
-				throw CancellationException()
+				throw CancellationException("The sequence was closed")
 			}
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
