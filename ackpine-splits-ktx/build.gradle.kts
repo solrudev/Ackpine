@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,24 @@
  * limitations under the License.
  */
 
+description = "Kotlin extensions for Ackpine Splits"
+
 plugins {
-	id("ru.solrudev.ackpine.project")
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
+}
+
+ackpine {
+	id = "splits-ktx"
+	minSdk = 21
+	artifact {
+		name = "Ackpine Splits Kotlin Extensions"
+	}
 }
 
 dependencies {
-	// task :buildAckpine
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits)
-	library(projects.ackpineSplitsKtx)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
-
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
+	api(projects.ackpineSplits)
+	api(kotlinx.coroutines.core)
+	implementation(androidx.concurrent.futures.ktx)
 }

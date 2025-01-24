@@ -46,12 +46,10 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Objects;
 
-import kotlin.sequences.Sequence;
-import kotlin.sequences.SequencesKt;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
-import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.ApkSplits;
+import ru.solrudev.ackpine.splits.SplitPackage;
 import ru.solrudev.ackpine.splits.ZippedApkSplits;
 
 public final class InstallFragment extends Fragment {
@@ -193,15 +191,16 @@ public final class InstallFragment extends Fragment {
 	}
 
 	@NonNull
-	private Sequence<Apk> getApksFromUri(@NonNull Uri uri, @NonNull String name) {
+	private SplitPackage.Provider getApksFromUri(@NonNull Uri uri, @NonNull String name) {
 		final var extensionIndex = name.lastIndexOf('.') + 1;
 		final var extension = extensionIndex != 0 ? name.substring(extensionIndex).toLowerCase() : "";
+		final var context = requireContext();
 		return switch (extension) {
-			case "apk" -> new SingletonApkSequence(uri, requireContext());
-			case "zip", "apks", "xapk", "apkm" -> ApkSplits.filterCompatible(
-					ApkSplits.throwOnInvalidSplitPackage(ZippedApkSplits.getApksForUri(uri, requireContext())),
-					requireContext());
-			default -> SequencesKt.emptySequence();
+			case "apk" -> SplitPackage.from(new SingletonApkSequence(uri, context));
+			case "zip", "apks", "xapk", "apkm" -> SplitPackage
+					.from(ApkSplits.validate(ZippedApkSplits.getApksForUri(uri, context)))
+					.filterCompatible(context);
+			default -> SplitPackage.empty();
 		};
 	}
 

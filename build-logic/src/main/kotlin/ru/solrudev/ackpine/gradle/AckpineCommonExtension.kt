@@ -38,7 +38,7 @@ public abstract class AckpineCommonExtension(
 		get() = _id
 		set(value) {
 			_id = value
-			commonExtension.namespace = "$packageName.$value"
+			commonExtension.namespace = "$packageName.${value.replace('-', '.')}"
 			for (listener in idListeners) {
 				listener(value)
 			}

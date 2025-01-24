@@ -26,6 +26,7 @@ import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
+import java.net.URI
 
 public class DokkaConventionPlugin : Plugin<Project> {
 
@@ -40,6 +41,15 @@ public class DokkaConventionPlugin : Plugin<Project> {
 			customAssets.from(isolated.rootProject.projectDirectory.file("docs/images/logo-icon.svg"))
 			customStyleSheets.from(isolated.rootProject.projectDirectory.file("docs/css/logo-styles.css"))
 			footerMessage = "© Ilya Fomichev"
+		}
+		dokkaSourceSets.configureEach {
+			externalDocumentationLinks.register("kotlinx.coroutines") {
+				url = URI("https://kotlinlang.org/api/kotlinx.coroutines/")
+			}
+			externalDocumentationLinks.register("guava") {
+				url = URI("https://guava.dev/releases/snapshot/api/docs/")
+				packageListUrl = URI("https://guava.dev/releases/snapshot/api/docs/element-list")
+			}
 		}
 	}
 }

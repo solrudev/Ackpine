@@ -84,6 +84,7 @@ public abstract class ru/solrudev/ackpine/splits/Apk {
 	public synthetic fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public static final fun fromFile (Ljava/io/File;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
 	public static final fun fromUri (Landroid/net/Uri;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+	public static final fun fromUri (Landroid/net/Uri;Landroid/content/Context;Landroid/os/CancellationSignal;)Lru/solrudev/ackpine/splits/Apk;
 	public fun getDescription ()Ljava/lang/String;
 	public fun getName ()Ljava/lang/String;
 	public fun getPackageName ()Ljava/lang/String;
@@ -118,6 +119,8 @@ public final class ru/solrudev/ackpine/splits/Apk$Base : ru/solrudev/ackpine/spl
 public final class ru/solrudev/ackpine/splits/Apk$Companion {
 	public final fun fromFile (Ljava/io/File;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
 	public final fun fromUri (Landroid/net/Uri;Landroid/content/Context;)Lru/solrudev/ackpine/splits/Apk;
+	public final fun fromUri (Landroid/net/Uri;Landroid/content/Context;Landroid/os/CancellationSignal;)Lru/solrudev/ackpine/splits/Apk;
+	public static synthetic fun fromUri$default (Lru/solrudev/ackpine/splits/Apk$Companion;Landroid/net/Uri;Landroid/content/Context;Landroid/os/CancellationSignal;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk;
 }
 
 public abstract interface class ru/solrudev/ackpine/splits/Apk$ConfigSplit {
@@ -273,6 +276,12 @@ public final class ru/solrudev/ackpine/splits/ApkSplits {
 	public static final fun sortedByCompatibility (Lkotlin/sequences/Sequence;Landroid/content/Context;)Lkotlin/sequences/Sequence;
 	public static final fun throwOnInvalidSplitPackage (Ljava/lang/Iterable;)Ljava/util/List;
 	public static final fun throwOnInvalidSplitPackage (Lkotlin/sequences/Sequence;)Lkotlin/sequences/Sequence;
+	public static final fun validate (Ljava/lang/Iterable;)Ljava/util/List;
+	public static final fun validate (Lkotlin/sequences/Sequence;)Lru/solrudev/ackpine/splits/CloseableSequence;
+}
+
+public abstract interface class ru/solrudev/ackpine/splits/CloseableSequence : java/lang/AutoCloseable, kotlin/sequences/Sequence {
+	public abstract fun isClosed ()Z
 }
 
 public final class ru/solrudev/ackpine/splits/Dpi : java/lang/Enum {
@@ -295,9 +304,70 @@ public final class ru/solrudev/ackpine/splits/Dpi$Companion {
 	public final fun fromContext (Landroid/content/Context;)Lru/solrudev/ackpine/splits/Dpi;
 }
 
+public class ru/solrudev/ackpine/splits/SplitPackage {
+	public static final field Companion Lru/solrudev/ackpine/splits/SplitPackage$Companion;
+	public fun <init> (Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public static final fun empty ()Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun filterPreferred ()Lru/solrudev/ackpine/splits/SplitPackage;
+	public static final fun from (Ljava/lang/Iterable;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public static final fun from (Lkotlin/sequences/Sequence;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public final fun getBase ()Ljava/util/List;
+	public final fun getDynamicFeatures ()Ljava/util/List;
+	public final fun getLibs ()Ljava/util/List;
+	public final fun getLocalization ()Ljava/util/List;
+	public final fun getOther ()Ljava/util/List;
+	public final fun getScreenDensity ()Ljava/util/List;
+	public fun hashCode ()I
+	public final fun toList ()Ljava/util/List;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/SplitPackage$Companion {
+	public final fun empty ()Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public final fun from (Ljava/lang/Iterable;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public final fun from (Lkotlin/sequences/Sequence;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+}
+
+public final class ru/solrudev/ackpine/splits/SplitPackage$DynamicFeature {
+	public fun <init> (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public final fun component1 ()Lru/solrudev/ackpine/splits/Apk$Feature;
+	public final fun component2 ()Ljava/util/List;
+	public final fun component3 ()Ljava/util/List;
+	public final fun component4 ()Ljava/util/List;
+	public final fun copy (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFeature ()Lru/solrudev/ackpine/splits/Apk$Feature;
+	public final fun getLibs ()Ljava/util/List;
+	public final fun getLocalization ()Ljava/util/List;
+	public final fun getScreenDensity ()Ljava/util/List;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/splits/SplitPackage$Entry {
+	public fun <init> (ZLru/solrudev/ackpine/splits/Apk;)V
+	public final fun component1 ()Z
+	public final fun component2 ()Lru/solrudev/ackpine/splits/Apk;
+	public final fun copy (ZLru/solrudev/ackpine/splits/Apk;)Lru/solrudev/ackpine/splits/SplitPackage$Entry;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/SplitPackage$Entry;ZLru/solrudev/ackpine/splits/Apk;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/SplitPackage$Entry;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getApk ()Lru/solrudev/ackpine/splits/Apk;
+	public fun hashCode ()I
+	public final fun isPreferred ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class ru/solrudev/ackpine/splits/SplitPackage$Provider {
+	public fun filterCompatible (Landroid/content/Context;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+	public abstract fun getAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public fun sortedByCompatibility (Landroid/content/Context;)Lru/solrudev/ackpine/splits/SplitPackage$Provider;
+}
+
 public final class ru/solrudev/ackpine/splits/ZippedApkSplits {
 	public static final field INSTANCE Lru/solrudev/ackpine/splits/ZippedApkSplits;
-	public static final fun getApksForFile (Ljava/io/File;)Lkotlin/sequences/Sequence;
-	public static final fun getApksForUri (Landroid/net/Uri;Landroid/content/Context;)Lkotlin/sequences/Sequence;
+	public static final fun getApksForFile (Ljava/io/File;)Lru/solrudev/ackpine/splits/CloseableSequence;
+	public static final fun getApksForUri (Landroid/net/Uri;Landroid/content/Context;)Lru/solrudev/ackpine/splits/CloseableSequence;
 }
 

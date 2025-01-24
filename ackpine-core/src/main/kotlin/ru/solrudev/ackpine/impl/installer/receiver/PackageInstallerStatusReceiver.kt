@@ -26,20 +26,17 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.helpers.NotificationIntents
+import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
-import ru.solrudev.ackpine.impl.session.helpers.CANCEL_CURRENT_FLAGS
-import ru.solrudev.ackpine.impl.session.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
-import ru.solrudev.ackpine.session.parameters.DrawableId
-import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -59,22 +56,17 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		val pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getInstance(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
-		try {
-			packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
-				onException = { exception ->
-					pendingResult.finish()
-					Log.e("InstallerStatusReceiver", null, exception)
-				},
-				block = { session ->
-					handlePackageInstallerStatus(
-						session as? CompletableSession<InstallFailure>,
-						ackpineSessionId, intent, context, pendingResult
-					)
-				})
-		} catch (t: Throwable) {
-			pendingResult.finish()
-			Log.e("InstallerStatusReceiver", null, t)
-		}
+		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
+			onException = { exception ->
+				pendingResult.finish()
+				Log.e("InstallerStatusReceiver", null, exception)
+			},
+			block = { session ->
+				handlePackageInstallerStatus(
+					session as? CompletableSession<InstallFailure>,
+					ackpineSessionId, intent, context, pendingResult
+				)
+			})
 	}
 
 	private fun handlePackageInstallerStatus(
@@ -175,8 +167,8 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		context: Context,
 		ackpineSessionId: UUID
 	) {
-		val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0)
-		val notificationData = getNotificationData(intent)
+		val notificationId = intent.getIntExtra(NotificationIntents.EXTRA_NOTIFICATION_ID, 0)
+		val notificationData = NotificationIntents.getNotificationData(intent, TAG)
 		context.showConfirmationNotification(
 			confirmationIntent,
 			notificationData,
@@ -184,24 +176,6 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			generateRequestCode(),
 			CANCEL_CURRENT_FLAGS
 		)
-	}
-
-	private fun getNotificationData(intent: Intent): NotificationData {
-		val bundle = intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)!!
-		val notificationTitle = requireNotNull(
-			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
-		) { "$TAG: notificationTitle was null." }
-		val notificationMessage = requireNotNull(
-			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_MESSAGE)
-		) { "$TAG: notificationMessage was null." }
-		val notificationIcon = requireNotNull(
-			bundle.getSerializableCompat<DrawableId>(EXTRA_NOTIFICATION_ICON)
-		) { "$TAG: notificationIcon was null." }
-		return NotificationData.Builder()
-			.setTitle(notificationTitle)
-			.setContentText(notificationMessage)
-			.setIcon(notificationIcon)
-			.build()
 	}
 
 	private fun isPreapproval(intent: Intent) = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
@@ -219,21 +193,6 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
-
-		@JvmSynthetic
-		internal const val EXTRA_NOTIFICATION_BUNDLE = "ru.solrudev.ackpine.extra.NOTIFICATION_BUNDLE"
-
-		@JvmSynthetic
-		internal const val EXTRA_NOTIFICATION_ID = "ru.solrudev.ackpine.extra.NOTIFICATION_ID"
-
-		@JvmSynthetic
-		internal const val EXTRA_NOTIFICATION_TITLE = "ru.solrudev.ackpine.extra.NOTIFICATION_TITLE"
-
-		@JvmSynthetic
-		internal const val EXTRA_NOTIFICATION_MESSAGE = "ru.solrudev.ackpine.extra.NOTIFICATION_MESSAGE"
-
-		@JvmSynthetic
-		internal const val EXTRA_NOTIFICATION_ICON = "ru.solrudev.ackpine.extra.NOTIFICATION_ICON"
 
 		@JvmSynthetic
 		internal const val EXTRA_CONFIRMATION = "ru.solrudev.ackpine.extra.CONFIRMATION"

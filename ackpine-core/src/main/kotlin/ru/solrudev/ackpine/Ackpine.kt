@@ -39,6 +39,8 @@ public object Ackpine {
 
 	private val configurationChangesCallback = object : ComponentCallbacks {
 		override fun onConfigurationChanged(newConfig: Configuration) = createNotificationChannel()
+
+		@Deprecated("Deprecated in Java")
 		override fun onLowMemory() { /* no-op */ }
 	}
 

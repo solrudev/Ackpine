@@ -25,7 +25,6 @@ import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -37,7 +36,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runInterruptible
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
 import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
@@ -55,7 +53,8 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
-import ru.solrudev.ackpine.splits.Apk
+import ru.solrudev.ackpine.splits.SplitPackage
+import ru.solrudev.ackpine.splits.get
 import java.util.UUID
 
 class InstallViewModel(
@@ -74,8 +73,8 @@ class InstallViewModel(
 		.onStart { awaitSessionsFromSavedState() }
 		.stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
 
-	fun installPackage(apks: Sequence<Apk>, fileName: String) = viewModelScope.launch {
-		val uris = runInterruptible(Dispatchers.IO) { apks.toUrisList() }
+	fun installPackage(splitPackage: SplitPackage.Provider, fileName: String) = viewModelScope.launch {
+		val uris = getApkUris(splitPackage)
 		if (uris.isEmpty()) {
 			return@launch
 		}
@@ -141,9 +140,12 @@ class InstallViewModel(
 		sessionDataRepository.setError(sessionId, error)
 	}
 
-	private fun Sequence<Apk>.toUrisList(): List<Uri> {
+	private suspend inline fun getApkUris(splitPackage: SplitPackage.Provider): List<Uri> {
 		try {
-			return map { it.uri }.toList()
+			return splitPackage
+				.get()
+				.toList()
+				.map { it.apk.uri }
 		} catch (exception: SplitPackageException) {
 			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)
@@ -164,6 +166,8 @@ class InstallViewModel(
 				)
 			}
 			return emptyList()
+		} catch (cancellationException: CancellationException) {
+			throw cancellationException
 		} catch (exception: Exception) {
 			error.value = ResolvableString.raw(exception.message.orEmpty())
 			Log.e("InstallViewModel", null, exception)

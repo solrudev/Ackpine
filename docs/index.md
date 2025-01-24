@@ -27,7 +27,7 @@ Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.9.4"
+    val ackpineVersion = "0.10.0"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
@@ -35,6 +35,9 @@ dependencies {
 
     // optional - utilities for working with split APKs
     implementation("ru.solrudev.ackpine:ackpine-splits:$ackpineVersion")
+
+    // optional - Kotlin extensions and Coroutines support for ackpine-splits
+    implementation("ru.solrudev.ackpine:ackpine-splits-ktx:$ackpineVersion")
 
     // optional - support for asset files inside of application's package
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")

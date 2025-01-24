@@ -34,16 +34,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import by.kirich1409.viewbindingdelegate.viewBinding
 import com.google.android.material.snackbar.Snackbar
+import dev.androidbroadcast.vbpd.viewBinding
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
 import ru.solrudev.ackpine.sample.util.getDisplayName
-import ru.solrudev.ackpine.splits.Apk
-import ru.solrudev.ackpine.splits.ApkSplits.filterCompatible
-import ru.solrudev.ackpine.splits.ApkSplits.throwOnInvalidSplitPackage
+import ru.solrudev.ackpine.splits.ApkSplits.validate
+import ru.solrudev.ackpine.splits.SplitPackage
+import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
 
 class InstallFragment : Fragment(R.layout.fragment_install) {
@@ -160,16 +160,17 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		viewModel.installPackage(apks, name)
 	}
 
-	private fun getApksFromUri(uri: Uri, name: String): Sequence<Apk> {
+	private fun getApksFromUri(uri: Uri, name: String): SplitPackage.Provider {
 		val extension = name.substringAfterLast('.', "").lowercase()
-		val context = requireContext().applicationContext
+		val context = requireContext()
 		return when (extension) {
-			"apk" -> sequence { Apk.fromUri(uri, context)?.let { yield(it) } }.constrainOnce()
+			"apk" -> SingletonApkSequence(uri, context).toSplitPackage()
 			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, context)
-				.throwOnInvalidSplitPackage()
+				.validate()
+				.toSplitPackage()
 				.filterCompatible(context)
 
-			else -> emptySequence()
+			else -> SplitPackage.empty()
 		}
 	}
 

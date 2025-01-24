@@ -26,7 +26,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import by.kirich1409.viewbindingdelegate.viewBinding
+import dev.androidbroadcast.vbpd.viewBinding
 import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.FragmentUninstallBinding

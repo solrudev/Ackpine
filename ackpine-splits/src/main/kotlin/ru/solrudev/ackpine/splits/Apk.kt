@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.splits
 
 import android.content.Context
 import android.net.Uri
+import android.os.CancellationSignal
+import android.os.OperationCanceledException
 import androidx.core.content.FileProvider
 import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
@@ -262,33 +264,44 @@ public sealed class Apk(
 		 * Reads file at provided [uri], parses it and creates an [APK split][Apk] instance.
 		 *
 		 * Returns `null` if provided file is not an APK.
+		 *
+		 * @param cancellationSignal a signal to cancel the operation in progress, or `null` if none. If the operation
+		 * is cancelled, then [OperationCanceledException] will be thrown.
 		 */
+		@JvmOverloads
 		@JvmStatic
-		public fun fromUri(uri: Uri, context: Context): Apk? {
-			val file = context.getFileFromUri(uri)
+		public fun fromUri(uri: Uri, context: Context, cancellationSignal: CancellationSignal? = null): Apk? {
+			val file = context.getFileFromUri(uri, cancellationSignal)
 			if (file.canRead()) {
 				return fromFile(file, uri)
 			}
 			if (!uri.isApk(context)) {
 				return null
 			}
-			val (displayName, size) = uri.displayNameAndSize(context)
+			val (displayName, size) = uri.displayNameAndSize(context, cancellationSignal)
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
 			val androidManifest = ZipEntryStream
-				.open(uri, ANDROID_MANIFEST_FILE_NAME, context)
+				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, cancellationSignal)
 				?.use(InputStream::toByteBuffer) ?: return null
 			return createApkSplit(androidManifest, name, uri, size)
 		}
 
 		@JvmSynthetic
-		internal fun fromZipEntry(zipPath: String, zipEntry: ZipEntry, inputStream: InputStream): Apk? {
+		internal fun fromZipEntry(
+			zipPath: String,
+			zipEntry: ZipEntry,
+			inputStream: InputStream,
+			scope: CloseableSequenceScope<Apk>
+		): Apk? {
 			if (!zipEntry.isApk) {
 				return null
 			}
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
 			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { zipInputStream ->
-				zipInputStream.entries().firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+				zipInputStream.entries()
+					.filterNot { scope.isClosed }
+					.firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
 				zipInputStream.toByteBuffer()
 			}
 			return createApkSplit(androidManifest, name, uri, zipEntry.size)

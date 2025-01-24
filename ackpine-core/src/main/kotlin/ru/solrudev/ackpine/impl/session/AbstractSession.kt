@@ -32,7 +32,6 @@ import ru.solrudev.ackpine.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
-import ru.solrudev.ackpine.impl.session.helpers.launchConfirmation
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Active

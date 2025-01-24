@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package ru.solrudev.ackpine.splits
 
 import android.content.Context
@@ -26,12 +28,67 @@ import ru.solrudev.ackpine.exceptions.SplitPackageException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.abs
 
 /**
  * Utilities for [sequences][Sequence] of [APK splits][Apk].
  */
 public object ApkSplits {
+
+	/**
+	 * Returns a sequence which throws [SplitPackageException] on iteration if the split package is invalid and closes
+	 * all I/O resources opened in the upstream sequence if it's [supported][CloseableSequence].
+	 *
+	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
+	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
+	 * be thrown.
+	 *
+	 * If there is more than one base APK in the sequence, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the sequence, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 *
+	 * This sequence supports cancellation when used with [SplitPackage] API.
+	 *
+	 * The operation is _intermediate_ and _stateful_.
+	 *
+	 * @return [CloseableSequence]
+	 */
+	@JvmStatic
+	public fun Sequence<Apk>.validate(): CloseableSequence<Apk> {
+		if (this is SplitPackageSequence) {
+			return this
+		}
+		return SplitPackageSequence(
+			source = this,
+			ApkPropertyChecker(
+				propertySelector = Apk::packageName,
+				conflictingPropertyExceptionInitializer = ::ConflictingPackageNameException
+			),
+			ApkPropertyChecker(
+				propertySelector = Apk::versionCode,
+				conflictingPropertyExceptionInitializer = ::ConflictingVersionCodeException
+			)
+		)
+	}
+
+	/**
+	 * Returns a list of [APK splits][Apk] and throws [SplitPackageException] if the split package is invalid.
+	 *
+	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
+	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
+	 * be thrown.
+	 *
+	 * If there is more than one base APK in the iterable, [ConflictingBaseApkException] will be thrown. If there is no
+	 * base APK in the iterable, [NoBaseApkException] will be thrown.
+	 *
+	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
+	 */
+	@JvmStatic
+	public fun Iterable<Apk>.validate(): List<Apk> {
+		return asSequence().validate().toList()
+	}
 
 	/**
 	 * Returns a sequence that yields [APK splits][Apk] sorted according to their compatibility with the device.
@@ -45,6 +102,16 @@ public object ApkSplits {
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages and proper " +
+				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().sortedByCompatibility(context)",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Sequence<Apk>.sortedByCompatibility(context: Context): Sequence<ApkCompatibility> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
@@ -97,6 +164,16 @@ public object ApkSplits {
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages and proper " +
+				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().filterCompatible(context)",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Sequence<Apk>.filterCompatible(context: Context): Sequence<Apk> {
 		return sortedByCompatibility(context)
@@ -109,6 +186,17 @@ public object ApkSplits {
 	 *
 	 * The operation is _intermediate_ and _stateless_.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages and proper " +
+				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"next minor release. An equivalent for an already sorted SplitPackage would be " +
+				"SplitPackage.filterPreferred().",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().filterCompatible(context)",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Sequence<ApkCompatibility>.filterCompatible(): Sequence<Apk> {
 		return filter { it.isPreferred }
@@ -132,29 +220,30 @@ public object ApkSplits {
 	 *
 	 * The operation is _intermediate_ and _stateful_.
 	 */
-	@JvmStatic
-	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> {
-		if (this is SplitPackageSequence) {
-			return this
-		}
-		return SplitPackageSequence(
-			source = this,
-			ApkPropertyChecker(
-				propertySelector = Apk::packageName,
-				conflictingPropertyExceptionInitializer = ::ConflictingPackageNameException
-			),
-			ApkPropertyChecker(
-				propertySelector = Apk::versionCode,
-				conflictingPropertyExceptionInitializer = ::ConflictingVersionCodeException
-			)
+	@Deprecated(
+		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.validate()",
+			imports = ["ru.solrudev.ackpine.splits.ApkSplits.validate"]
 		)
-	}
+	)
+	@JvmStatic
+	public fun Sequence<Apk>.throwOnInvalidSplitPackage(): Sequence<Apk> = validate()
 
 	/**
 	 * Returns a sequence which adds all elements to the [destination] list as they pass through.
 	 *
 	 * This operation is _intermediate_ and _stateless_.
 	 */
+	@Deprecated(
+		message = "This function was meant to allow duplicating of one-time APK sequences for processing of grouped " +
+				"APK splits after. Existing APIs were not a good solution for that use case, so SplitPackage API " +
+				"was introduced which you should migrate to if you were using addAllTo(). " +
+				"Usage of this function will become an error in the next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith("this.onEach { destination += it }")
+	)
 	@JvmStatic
 	public fun Sequence<ApkCompatibility>.addAllTo(
 		destination: MutableList<ApkCompatibility>
@@ -172,6 +261,15 @@ public object ApkSplits {
 	 *
 	 * This operation is equivalent to `sortedByCompatibility(context).filterCompatible()`.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages. " +
+				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().filterCompatible(context)",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Iterable<Apk>.filterCompatible(context: Context): List<Apk> {
 		return asSequence().filterCompatible(context).toList()
@@ -187,6 +285,15 @@ public object ApkSplits {
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages. " +
+				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().sortedByCompatibility(context)",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Iterable<Apk>.sortedByCompatibility(context: Context): List<ApkCompatibility> {
 		return asSequence().sortedByCompatibility(context).toList()
@@ -195,6 +302,16 @@ public object ApkSplits {
 	/**
 	 * Returns a list containing only [APK splits][Apk] which are the most compatible with the device.
 	 */
+	@Deprecated(
+		message = "This function cannot provide adequate grouped structures of split packages. " +
+				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release. " +
+				"An equivalent for an already sorted split package would be filterPreferred().",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.toSplitPackage().sortedByCompatibility(context).filterPreferred()",
+			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
+		)
+	)
 	@JvmStatic
 	public fun Iterable<ApkCompatibility>.filterCompatible(): List<Apk> {
 		return asSequence().filterCompatible().toList()
@@ -212,10 +329,16 @@ public object ApkSplits {
 	 *
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 */
+	@Deprecated(
+		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
+		level = DeprecationLevel.WARNING,
+		replaceWith = ReplaceWith(
+			expression = "this.validate()",
+			imports = ["ru.solrudev.ackpine.splits.ApkSplits.validate"]
+		)
+	)
 	@JvmStatic
-	public fun Iterable<Apk>.throwOnInvalidSplitPackage(): List<Apk> {
-		return asSequence().throwOnInvalidSplitPackage().toList()
-	}
+	public fun Iterable<Apk>.throwOnInvalidSplitPackage(): List<Apk> = validate()
 
 	private inline fun <reified SplitType : Apk> Sequence<Apk>.addSplitsOfTypeTo(
 		splits: MutableList<SplitType>
@@ -257,7 +380,10 @@ public object ApkSplits {
 private class SplitPackageSequence(
 	private val source: Sequence<Apk>,
 	private vararg val propertyCheckers: ApkPropertyChecker<*>
-) : Sequence<Apk> {
+) : CloseableSequence<Apk> {
+
+	@Volatile
+	override var isClosed = false
 
 	override fun iterator() = object : Iterator<Apk> {
 
@@ -268,6 +394,9 @@ private class SplitPackageSequence(
 		override fun hasNext() = iterator.hasNext()
 
 		override fun next(): Apk {
+			if (isClosed) {
+				throw CancellationException("The sequence was closed")
+			}
 			val apk = iterator.next()
 			if (!splitNames.add(apk.name)) {
 				closeSource(ConflictingSplitNameException(apk.name))
@@ -285,6 +414,13 @@ private class SplitPackageSequence(
 				closeSource(NoBaseApkException())
 			}
 			return apk
+		}
+	}
+
+	override fun close() {
+		isClosed = true
+		if (source is CloseableSequence) {
+			source.close()
 		}
 	}
 

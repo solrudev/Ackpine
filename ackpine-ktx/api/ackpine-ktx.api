@@ -140,33 +140,11 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalKt
 }
 
 public final class ru/solrudev/ackpine/session/SessionAwaitKt {
-	public static final synthetic fun await (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun awaitCompletedState (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
 public final class ru/solrudev/ackpine/session/SessionProgressKt {
 	public static final fun getProgress (Lru/solrudev/ackpine/session/ProgressSession;)Lkotlinx/coroutines/flow/Flow;
-}
-
-public abstract interface class ru/solrudev/ackpine/session/SessionResult {
-}
-
-public final class ru/solrudev/ackpine/session/SessionResult$Error : ru/solrudev/ackpine/session/SessionResult {
-	public fun <init> (Lru/solrudev/ackpine/session/Failure;)V
-	public final fun component1 ()Lru/solrudev/ackpine/session/Failure;
-	public final fun copy (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/session/SessionResult$Error;
-	public static synthetic fun copy$default (Lru/solrudev/ackpine/session/SessionResult$Error;Lru/solrudev/ackpine/session/Failure;ILjava/lang/Object;)Lru/solrudev/ackpine/session/SessionResult$Error;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getCause ()Lru/solrudev/ackpine/session/Failure;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class ru/solrudev/ackpine/session/SessionResult$Success : ru/solrudev/ackpine/session/SessionResult {
-	public fun <init> ()V
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
 public final class ru/solrudev/ackpine/session/SessionStateKt {

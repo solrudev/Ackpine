@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,29 +22,29 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
-@JvmSynthetic
-internal inline fun <V> ListenableFuture<V>.handleResult(
+public inline fun <V> ListenableFuture<V>.handleResult(
 	crossinline onException: (Exception) -> Unit = { throw it },
 	crossinline block: (V) -> Unit
 ) {
 	if (isDone) {
-		block(getAndUnwrapException())
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
 		return
 	}
 	addListener({
-		try {
-			block(getAndUnwrapException())
-		} catch (e: Exception) {
-			onException(e)
-		}
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
 	}, DirectExecutor.INSTANCE)
 }
 
-private fun <V> ListenableFuture<V>.getAndUnwrapException(): V {
-	val value = try {
-		get()
-	} catch (e: ExecutionException) {
-		throw e.cause ?: e
+@PublishedApi
+@JvmSynthetic
+internal fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
+	return try {
+		Result.success(get())
+	} catch (exception: ExecutionException) {
+		Result.failure(exception.cause ?: exception)
 	}
-	return value
 }

@@ -36,28 +36,34 @@ public object ZippedApkSplits {
 
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped [file] (such as APKS, APKM, XAPK, ZIP).
+	 * This sequence supports cancellation when used with [SplitPackage] API and [ApkSplits] transformations.
 	 *
 	 * **Attention:** iteration of this sequence is blocking due to I/O operations.
 	 *
 	 * The returned sequence is constrained to be iterated only once.
+	 *
+	 * @return [CloseableSequence]
 	 */
 	@JvmStatic
-	public fun getApksForFile(file: File): Sequence<Apk> = closeableSequence {
+	public fun getApksForFile(file: File): CloseableSequence<Apk> = closeableSequence {
 		yieldAllUsingFile(file)
 	}
 
 	/**
 	 * Returns a lazy sequence of [APK splits][Apk] contained within zipped file (such as APKS, APKM, XAPK, ZIP) at
 	 * provided [uri].
+	 * This sequence supports cancellation when used with [SplitPackage] API and [ApkSplits] transformations.
 	 *
 	 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 	 *
 	 * **Attention:** iteration of this sequence is blocking due to I/O operations.
 	 *
 	 * The returned sequence is constrained to be iterated only once.
+	 *
+	 * @return [CloseableSequence]
 	 */
 	@JvmStatic
-	public fun getApksForUri(uri: Uri, context: Context): Sequence<Apk> {
+	public fun getApksForUri(uri: Uri, context: Context): CloseableSequence<Apk> {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
 			val file = applicationContext.getFileFromUri(uri)
@@ -78,7 +84,7 @@ public object ZippedApkSplits {
 			.mapNotNull { zipEntry ->
 				zipFile.getInputStream(zipEntry).use { entryStream ->
 					// java.util.zip.ZipFile closes all entry streams when closed, no need to apply .use()
-					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream)
+					Apk.fromZipEntry(file.absolutePath, zipEntry, entryStream, scope = this)
 				}
 			}
 			.forEach { yield(it) }
@@ -110,7 +116,7 @@ public object ZippedApkSplits {
 			.mapNotNull { zipEntry ->
 				zipFile.getInputStream(zipEntry).use { entryStream ->
 					entryStream.use()
-					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream)
+					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream, scope = this)
 				}
 			}
 			.forEach { yield(it) }
@@ -121,7 +127,7 @@ public object ZippedApkSplits {
 		val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri)).use()
 		zipStream.entries()
 			.filterNot { isClosed }
-			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream) }
+			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream, scope = this) }
 			.forEach { yield(it) }
 	}
 }

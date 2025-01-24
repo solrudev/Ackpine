@@ -63,7 +63,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 				publishJavadocJar = false
 			)
 		)
-		publishToMavenCentral(SonatypeHost.S01)
+		publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
 		signAllPublications()
 
 		pom {

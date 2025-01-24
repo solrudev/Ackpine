@@ -18,19 +18,22 @@ package ru.solrudev.ackpine.sample.install;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.CancellationSignal;
 
 import androidx.annotation.NonNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import kotlin.sequences.Sequence;
 import ru.solrudev.ackpine.splits.Apk;
+import ru.solrudev.ackpine.splits.CloseableSequence;
 
-public final class SingletonApkSequence implements Sequence<Apk> {
+public final class SingletonApkSequence implements CloseableSequence<Apk> {
 
 	private final Uri uri;
 	private final Context applicationContext;
+	private final CancellationSignal cancellationSignal = new CancellationSignal();
+	private volatile boolean isClosed = false;
 
 	public SingletonApkSequence(@NonNull Uri uri, @NonNull Context context) {
 		this.uri = uri;
@@ -42,7 +45,7 @@ public final class SingletonApkSequence implements Sequence<Apk> {
 	public Iterator<Apk> iterator() {
 		return new Iterator<>() {
 
-			private final Apk apk = Apk.fromUri(uri, applicationContext);
+			private final Apk apk = Apk.fromUri(uri, applicationContext, cancellationSignal);
 			private boolean isYielded = false;
 
 			@Override
@@ -59,5 +62,16 @@ public final class SingletonApkSequence implements Sequence<Apk> {
 				return apk;
 			}
 		};
+	}
+
+	@Override
+	public boolean isClosed() {
+		return isClosed;
+	}
+
+	@Override
+	public void close() {
+		isClosed = true;
+		cancellationSignal.cancel();
 	}
 }

@@ -69,6 +69,7 @@ dependencyResolutionManagement {
 include(":ackpine-core")
 include(":ackpine-ktx")
 include(":ackpine-splits")
+include(":ackpine-splits-ktx")
 include(":ackpine-assets")
 include(":ackpine-runtime")
 include(":ackpine-resources")
