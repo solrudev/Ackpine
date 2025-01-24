@@ -1,0 +1,4 @@
+public final class ru/solrudev/ackpine/splits/SplitPackageProviderKt {
+	public static final fun get (Lru/solrudev/ackpine/splits/SplitPackage$Provider;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+}
+
