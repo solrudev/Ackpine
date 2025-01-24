@@ -42,7 +42,6 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.edit
-import androidx.core.os.bundleOf
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -55,12 +54,13 @@ import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.helpers.NotificationIntents
+import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
-import ru.solrudev.ackpine.impl.session.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
@@ -285,15 +285,9 @@ internal class SessionBasedInstallSession internal constructor(
 			action = PackageInstallerStatusReceiver.getAction(context)
 			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ID, notificationId)
-			val notificationBundle = bundleOf(
-				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_TITLE to notificationData.title,
-				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_MESSAGE to notificationData.contentText,
-				PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_ICON to notificationData.icon,
-			)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_NOTIFICATION_BUNDLE, notificationBundle)
 			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 		}
+		NotificationIntents.putNotification(receiverIntent, notificationData, notificationId)
 		val receiverPendingIntent = PendingIntent.getBroadcast(
 			context,
 			generateRequestCode(),

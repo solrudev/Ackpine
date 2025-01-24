@@ -34,7 +34,8 @@
 		<activity
 			android:name="ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity"
 			android:exported="false"
-			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
+			tools:targetApi="35" />
 		<activity
 			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity"
 			android:exported="false"
@@ -42,11 +43,16 @@
 
 		<receiver
 			android:name="ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver"
-			android:exported="false">
+			android:exported="false"
+			tools:targetApi="35">
 			<intent-filter>
 				<action android:name="${applicationId}.PACKAGE_INSTALLER_STATUS" />
 			</intent-filter>
 		</receiver>
+		<receiver
+			android:name="ru.solrudev.ackpine.impl.helpers.NotificationDismissalReceiver"
+			android:exported="false"
+			tools:targetApi="35" />
 
 		<provider
 			android:name="androidx.startup.InitializationProvider"
