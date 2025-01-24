@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.ViewModelInitializer;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
@@ -61,6 +62,7 @@ public final class InstallViewModel extends ViewModel {
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
+	private final List<ListenableFuture<?>> futures = new ArrayList<>();
 
 	public InstallViewModel(@NonNull PackageInstaller packageInstaller,
 							@NonNull SessionDataRepository sessionDataRepository) {
@@ -75,7 +77,9 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void installPackage(@NonNull SplitPackage.Provider splitPackageProvider, @NonNull String fileName) {
-		Futures.addCallback(splitPackageProvider.getAsync(), new FutureCallback<>() {
+		final var splitPackageFuture = splitPackageProvider.getAsync();
+		futures.add(splitPackageFuture);
+		Futures.addCallback(splitPackageFuture, new FutureCallback<>() {
 			@Override
 			public void onSuccess(SplitPackage splitPackage) {
 				installPackage(splitPackage, fileName);
@@ -138,6 +142,10 @@ public final class InstallViewModel extends ViewModel {
 	@Override
 	protected void onCleared() {
 		subscriptions.clear();
+		for (final var future : futures) {
+			future.cancel(false);
+		}
+		futures.clear();
 		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
