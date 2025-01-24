@@ -1,6 +1,37 @@
 Change Log
 ==========
 
+Version 0.10.0 (2025-01-24)
+--------------------------
+
+### Dependencies
+
+- Updated Gradle wrapper to 8.12.
+- Updated Android Gradle Plugin to 8.8.0.
+- Updated `apksig` to 8.8.0.
+- Updated ViewBindingPropertyDelegate to 2.0.0 (sample apps dependency).
+- Added `api` dependency on Guava's `ListenableFuture` in `ackpine-splits`.
+- Added `implementation` dependency on `androidx.concurrent:concurrent-futures` in `ackpine-splits` and `ackpine-runtime`.
+- Changed `ackpine-spits` dependency to `ackpine-splits-ktx` in `sample-ktx`.
+
+### Bug fixes and improvements
+
+- Introduce `SplitPackage` API in `ackpine-splits`.
+- Deprecate some APIs for `Apk` sequences in `ackpine-splits`. Migrate to `SplitPackage` API.
+- Rename `ApkSplits.throwOnInvalidSplitPackage()` to `ApkSplits.validate()` in `ackpine-splits`.
+- Add support for cancellation in `Apk.fromUri()` in `ackpine-splits`.
+
+### Public API changes
+
+- Added `SplitPackage` and related APIs in `ackpine-splits`.
+- Added `ackpine-splits-ktx` module.
+- Added `Apk.fromUri()` overload accepting `CancellationSignal` in `ackpine-splits`.
+- Added `ApkSplits.validate()` in `ackpine-splits`.
+- Exposed `CloseableSequence` interface in `ackpine-splits`.
+- Deprecated with warning `ApkSplits.throwOnInvalidSplitPackage()`, `ApkSplits.sortedByCompatibility()`, `ApkSplits.filterCompaible()` and `ApkSplits.addAllTo()` methods in `ackpine-splits`.
+- Changed return type of `ZippedApkSplits.getApksForFile()` and `ZippedApkSplits.getApksForUri()` to `CloseableSequence<Apk>` in `ackpine-splits`.
+- Removed deprecated `SessionResult` and `Session.await()` overload in `ackpine-ktx`.
+
 Version 0.9.4 (2025-01-04)
 --------------------------
 
