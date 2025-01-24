@@ -16,6 +16,7 @@ Version 0.10.0 (2025-01-24)
 
 ### Bug fixes and improvements
 
+- Repeat displaying confirmation notification if it was dismissed on Android 14+ when session's confirmation is set to `DEFERRED`.
 - Introduce `SplitPackage` API in `ackpine-splits`.
 - Deprecate some APIs for `Apk` sequences in `ackpine-splits`. Migrate to `SplitPackage` API.
 - Rename `ApkSplits.throwOnInvalidSplitPackage()` to `ApkSplits.validate()` in `ackpine-splits`.
