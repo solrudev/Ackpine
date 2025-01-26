@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer.receiver.helpers
+package ru.solrudev.ackpine.helpers
 
 import android.content.Intent
 import android.os.Build

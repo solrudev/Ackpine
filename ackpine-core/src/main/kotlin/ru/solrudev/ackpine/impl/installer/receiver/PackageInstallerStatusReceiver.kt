@@ -25,13 +25,13 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import ru.solrudev.ackpine.helpers.getParcelableExtraCompat
+import ru.solrudev.ackpine.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
 import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
-import ru.solrudev.ackpine.impl.installer.receiver.helpers.getParcelableExtraCompat
-import ru.solrudev.ackpine.impl.installer.receiver.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
