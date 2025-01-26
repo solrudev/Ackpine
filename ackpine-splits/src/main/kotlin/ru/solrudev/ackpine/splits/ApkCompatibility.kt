@@ -19,6 +19,16 @@ package ru.solrudev.ackpine.splits
 /**
  * Represents a result of evaluation of [APK split][Apk] compatibility with a device.
  */
+@Deprecated(
+	message = "This class is used for deprecated APK sequence transformation APIs as an intermediate value holder. " +
+			"Migrate to SplitPackage which supports use cases for which this class was intended. Usage of this class " +
+			"will become an error in the next minor release.",
+	level = DeprecationLevel.WARNING,
+	replaceWith = ReplaceWith(
+		expression = "SplitPackage.Entry",
+		imports = ["ru.solrudev.ackpine.splits.SplitPackage"]
+	)
+)
 public data class ApkCompatibility(
 
 	/**
