@@ -38,6 +38,7 @@ import android.os.Handler
 import android.os.OperationCanceledException
 import android.os.Process
 import android.util.Log
+import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
@@ -214,6 +215,7 @@ internal class SessionBasedInstallSession internal constructor(
 		isPreapprovalActive = false
 	}
 
+	@ChecksSdkIntAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun shouldRequestPreapproval(): Boolean {
 		return !isPreapproved
 				&& preapproval != InstallPreapproval.NONE
@@ -248,6 +250,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
+	@ChecksSdkIntAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun shouldApplyInstallConstraints(): Boolean {
 		return constraints != InstallConstraints.NONE
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
