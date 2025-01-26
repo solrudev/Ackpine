@@ -31,22 +31,23 @@ internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 		if (parser.eventType != AndroidBinXmlParser.EVENT_START_ELEMENT) {
 			continue
 		}
-		if (parser.name == "manifest" && parser.namespace.isEmpty() && parser.depth == 1) {
-			if (seenManifestElement) {
-				return null
+		if (parser.name != "manifest" || parser.namespace.isNotEmpty() || parser.depth != 1) {
+			continue
+		}
+		if (seenManifestElement) {
+			return null
+		}
+		seenManifestElement = true
+		for (index in 0..<parser.attributeCount) {
+			if (parser.getAttributeName(index).isEmpty()) {
+				continue
 			}
-			seenManifestElement = true
-			for (index in 0..<parser.attributeCount) {
-				if (parser.getAttributeName(index).isEmpty()) {
-					continue
-				}
-				val namespace = parser.getAttributeNamespace(index)
-					.takeIf { it.isNotEmpty() }
-					?.plus(':')
-					.orEmpty()
-				val attribute = parser.getAttributeName(index)
-				manifest["$namespace$attribute"] = parser.getAttributeStringValue(index)
-			}
+			val namespace = parser.getAttributeNamespace(index)
+				.takeIf { it.isNotEmpty() }
+				?.plus(':')
+				.orEmpty()
+			val attribute = parser.getAttributeName(index)
+			manifest["$namespace$attribute"] = parser.getAttributeStringValue(index)
 		}
 	}
 	if (!seenManifestElement) {
