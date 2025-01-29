@@ -32,7 +32,7 @@ Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.10.0"
+    val ackpineVersion = "0.10.1"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
