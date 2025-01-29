@@ -41,6 +41,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity 
 	}
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+		super.onActivityResult(requestCode, resultCode, data)
 		if (requestCode != this.requestCode) {
 			return
 		}

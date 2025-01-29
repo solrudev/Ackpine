@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.activity
 
 import android.app.Activity
+import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -24,6 +25,7 @@ import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.widget.ProgressBar
+import androidx.annotation.CallSuper
 import androidx.annotation.RestrictTo
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
@@ -62,6 +64,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private val handler = Handler(Looper.getMainLooper())
 	private val handlerCallbacks = mutableListOf<Runnable>()
 	private var isLoading = false
+	private var isOnActivityResultCalled = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -84,7 +87,9 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	@Deprecated("Deprecated in Java")
 	@Suppress("DEPRECATION")
 	override fun onBackPressed() {
-		abortSession()
+		if (!isOnActivityResultCalled) {
+			abortSession()
+		}
 		super.onBackPressed()
 	}
 
@@ -93,6 +98,11 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
+	}
+
+	@CallSuper
+	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+		isOnActivityResultCalled = true
 	}
 
 	@JvmSynthetic
@@ -172,7 +182,9 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private fun registerOnBackInvokedCallback() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			onBackInvokedDispatcher.registerOnBackInvokedCallback(1000) {
-				abortSession()
+				if (!isOnActivityResultCalled) {
+					abortSession()
+				}
 			}
 		}
 	}
