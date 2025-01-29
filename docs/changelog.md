@@ -1,8 +1,19 @@
 Change Log
 ==========
 
+Version 0.10.1 (2025-01-29)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix a corner case when simultaneously pressing system Back button and Install while confirming installation may result in install session's failure (#104).
+
+### Public API changes
+
+- Deprecated with warning `ApkCompatibility` class in `ackpine-splits`.
+
 Version 0.10.0 (2025-01-24)
---------------------------
+---------------------------
 
 ### Dependencies
 
