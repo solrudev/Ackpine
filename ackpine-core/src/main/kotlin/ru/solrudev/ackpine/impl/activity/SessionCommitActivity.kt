@@ -47,7 +47,6 @@ private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<F : Failure> protected constructor(
 	private val tag: String,
-	private val startsActivity: Boolean,
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
@@ -198,9 +197,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	}
 
 	private fun finishWithLaunchedActivity() {
-		if (startsActivity) {
-			finishActivity(requestCode)
-		}
+		finishActivity(requestCode)
 		finish()
 	}
 

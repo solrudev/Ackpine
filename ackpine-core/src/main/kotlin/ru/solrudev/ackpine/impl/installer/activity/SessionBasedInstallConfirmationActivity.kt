@@ -43,7 +43,7 @@ private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
 private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, startsActivity = true) {
+internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) {
 		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
