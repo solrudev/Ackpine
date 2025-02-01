@@ -37,7 +37,7 @@ public enum class Dpi(public val density: Int) {
 
 	public companion object {
 
-		private val dpis = Dpi.values().map { it.name.lowercase() }.toSet()
+		private val dpis = entries.map { it.name.lowercase() }.toSet()
 
 		/**
 		 * Returns device's screen density expressed as [Dpi] enum entry.
