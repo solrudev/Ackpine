@@ -32,7 +32,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.helpers.getSerializableCompat
+import ru.solrudev.ackpine.impl.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session

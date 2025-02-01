@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers.concurrent
+package ru.solrudev.ackpine.impl.helpers
 
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import java.util.concurrent.Executor
