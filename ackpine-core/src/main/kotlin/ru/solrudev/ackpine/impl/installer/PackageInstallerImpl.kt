@@ -90,27 +90,15 @@ internal class PackageInstallerImpl internal constructor(
 		"PackageInstallerImpl.getSessionAsync($sessionId)"
 	}
 
-	override fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		val tag = "PackageInstallerImpl.getSessionsAsync"
-		if (isSessionsMapInitialized) {
-			return CallbackToFutureAdapter.getFuture { completer ->
-				completer.set(sessions.values.toList())
-				tag
-			}
-		}
-		return initializeSessions(tag) { sessions -> sessions.toList() }
-	}
+	override fun getSessionsAsync() = getSessionsAsync(
+		caller = "PackageInstallerImpl.getSessionsAsync",
+		transform = { sessions -> sessions.toList() }
+	)
 
-	override fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>> {
-		val tag = "PackageInstallerImpl.getActiveSessionsAsync"
-		if (isSessionsMapInitialized) {
-			return CallbackToFutureAdapter.getFuture { completer ->
-				completer.set(sessions.values.filter { it.isActive })
-				tag
-			}
-		}
-		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
-	}
+	override fun getActiveSessionsAsync() = getSessionsAsync(
+		caller = "PackageInstallerImpl.getActiveSessionsAsync",
+		transform = { sessions -> sessions.filter { it.isActive } }
+	)
 
 	@SuppressLint("NewApi")
 	private fun initializeCommittedSessions() = executor.executeWithSemaphore(committedSessionsInitSemaphore) {
@@ -151,17 +139,25 @@ internal class PackageInstallerImpl internal constructor(
 		completer.set(null)
 	}
 
-	private inline fun initializeSessions(
+	private inline fun getSessionsAsync(
 		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	) = CallbackToFutureAdapter.getFuture { completer ->
-		executor.executeWithCompleter(completer) {
-			committedSessionsInitSemaphore.withPermit {
-				val sessions = initializeSessions()
-				completer.set(transform(sessions))
+	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+		if (isSessionsMapInitialized) {
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(transform(sessions.values))
+				caller
 			}
 		}
-		"$caller -> PackageInstallerImpl.initializeSessions"
+		return CallbackToFutureAdapter.getFuture { completer ->
+			executor.executeWithCompleter(completer) {
+				committedSessionsInitSemaphore.withPermit {
+					val sessions = initializeSessions()
+					completer.set(transform(sessions))
+				}
+			}
+			"$caller -> PackageInstallerImpl.initializeSessions"
+		}
 	}
 
 	private fun initializeSessions(): Collection<ProgressSession<InstallFailure>> {

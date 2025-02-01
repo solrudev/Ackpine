@@ -73,27 +73,15 @@ internal class PackageUninstallerImpl internal constructor(
 		"PackageUninstallerImpl.getSessionAsync($sessionId)"
 	}
 
-	override fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
-		val tag = "PackageUninstallerImpl.getSessionsAsync"
-		if (isSessionsMapInitialized) {
-			return CallbackToFutureAdapter.getFuture { completer ->
-				completer.set(sessions.values.toList())
-				tag
-			}
-		}
-		return initializeSessions(tag) { sessions -> sessions.toList() }
-	}
+	override fun getSessionsAsync() = getSessionsAsync(
+		caller = "PackageUninstallerImpl.getSessionsAsync",
+		transform = { sessions -> sessions.toList() }
+	)
 
-	override fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>> {
-		val tag = "PackageUninstallerImpl.getActiveSessionsAsync"
-		if (isSessionsMapInitialized) {
-			return CallbackToFutureAdapter.getFuture { completer ->
-				completer.set(sessions.values.filter { it.isActive })
-				tag
-			}
-		}
-		return initializeSessions(tag) { sessions -> sessions.filter { it.isActive } }
-	}
+	override fun getActiveSessionsAsync() = getSessionsAsync(
+		caller = "PackageUninstallerImpl.getActiveSessionsAsync",
+		transform = { sessions -> sessions.filter { it.isActive } }
+	)
 
 	private fun getSessionFromDb(sessionId: UUID, completer: Completer<Session<UninstallFailure>?>) {
 		sessions[sessionId]?.let { session ->
@@ -105,15 +93,23 @@ internal class PackageUninstallerImpl internal constructor(
 		completer.set(uninstallSession)
 	}
 
-	private inline fun initializeSessions(
+	private inline fun getSessionsAsync(
 		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	) = CallbackToFutureAdapter.getFuture { completer ->
-		executor.executeWithCompleter(completer) {
-			val sessions = initializeSessions()
-			completer.set(transform(sessions))
+	): ListenableFuture<List<Session<UninstallFailure>>> {
+		if (isSessionsMapInitialized) {
+			return CallbackToFutureAdapter.getFuture { completer ->
+				completer.set(transform(sessions.values))
+				caller
+			}
 		}
-		"$caller -> PackageUninstallerImpl.initializeSessions"
+		return CallbackToFutureAdapter.getFuture { completer ->
+			executor.executeWithCompleter(completer) {
+				val sessions = initializeSessions()
+				completer.set(transform(sessions))
+			}
+			"$caller -> PackageUninstallerImpl.initializeSessions"
+		}
 	}
 
 	private fun initializeSessions(): Collection<Session<UninstallFailure>> {
