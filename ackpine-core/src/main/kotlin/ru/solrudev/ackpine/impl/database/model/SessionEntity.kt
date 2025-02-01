@@ -30,26 +30,36 @@ import ru.solrudev.ackpine.session.parameters.DrawableId
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
-internal data class SessionEntity internal constructor(
+internal class SessionEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "id")
 	val id: String,
+	@JvmField
 	@ColumnInfo(name = "type", index = true)
 	val type: Type,
+	@JvmField
 	@ColumnInfo(name = "state", index = true)
 	val state: State,
+	@JvmField
 	@ColumnInfo(name = "confirmation")
 	val confirmation: Confirmation,
+	@JvmField
 	@ColumnInfo(name = "notification_title")
 	val notificationTitle: ResolvableString,
+	@JvmField
 	@ColumnInfo(name = "notification_text")
 	val notificationText: ResolvableString,
+	@JvmField
 	@ColumnInfo(name = "notification_icon")
 	val notificationIcon: DrawableId,
+	@JvmField
 	@ColumnInfo(name = "require_user_action", defaultValue = "true")
 	val requireUserAction: Boolean,
+	@JvmField
 	@ColumnInfo(name = "last_launch_timestamp", defaultValue = "0", index = true)
 	val lastLaunchTimestamp: Long = 0,
+	@JvmField
 	@ColumnInfo(name = "last_commit_timestamp", defaultValue = "0", index = true)
 	val lastCommitTimestamp: Long = 0
 ) {
@@ -72,9 +82,11 @@ internal data class SessionEntity internal constructor(
 	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal data class InstallSession internal constructor(
+	internal class InstallSession internal constructor(
+		@JvmField
 		@Embedded
 		val session: SessionEntity,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -82,6 +94,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["installer_type"]
 		)
 		val installerType: InstallerType,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -89,6 +102,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["uri"]
 		)
 		val uris: List<String>,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -96,6 +110,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["name"]
 		)
 		val name: String?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -103,11 +118,13 @@ internal data class SessionEntity internal constructor(
 			projection = ["notification_id"]
 		)
 		val notificationId: Int?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
 		val installMode: InstallModeEntity?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -115,6 +132,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["package_name"]
 		)
 		val packageName: String?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -122,16 +140,19 @@ internal data class SessionEntity internal constructor(
 			projection = ["last_update_timestamp"]
 		)
 		val lastUpdateTimestamp: Long?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
 		val preapproval: InstallPreapprovalEntity?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
 		val constraints: InstallConstraintsEntity?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -139,6 +160,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["request_update_ownership"]
 		)
 		val requestUpdateOwnership: Boolean?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -146,6 +168,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["package_source"]
 		)
 		val packageSource: PackageSource?,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -156,9 +179,11 @@ internal data class SessionEntity internal constructor(
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal data class UninstallSession internal constructor(
+	internal class UninstallSession internal constructor(
+		@JvmField
 		@Embedded
 		val session: SessionEntity,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
@@ -166,6 +191,7 @@ internal data class SessionEntity internal constructor(
 			projection = ["package_name"]
 		)
 		val packageName: String,
+		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",

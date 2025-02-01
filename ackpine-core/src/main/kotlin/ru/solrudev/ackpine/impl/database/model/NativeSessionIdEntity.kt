@@ -33,10 +33,12 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class NativeSessionIdEntity internal constructor(
+internal class NativeSessionIdEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "native_session_id")
 	val nativeSessionId: Int
 )

@@ -33,18 +33,24 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallPreapprovalEntity(
+internal class InstallPreapprovalEntity(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "package_name")
 	val packageName: String,
+	@JvmField
 	@ColumnInfo(name = "label")
 	val label: String,
+	@JvmField
 	@ColumnInfo(name = "locale")
 	val locale: String,
+	@JvmField
 	@ColumnInfo(name = "icon")
 	val icon: String,
+	@JvmField
 	@ColumnInfo(name = "is_preapproved")
 	val isPreapproved: Boolean = false
 )

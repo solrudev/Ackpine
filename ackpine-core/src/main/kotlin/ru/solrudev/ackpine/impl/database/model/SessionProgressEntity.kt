@@ -33,12 +33,15 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class SessionProgressEntity internal constructor(
+internal class SessionProgressEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "progress", defaultValue = "0")
 	val progress: Int,
+	@JvmField
 	@ColumnInfo(name = "max", defaultValue = "100")
 	val max: Int
 )

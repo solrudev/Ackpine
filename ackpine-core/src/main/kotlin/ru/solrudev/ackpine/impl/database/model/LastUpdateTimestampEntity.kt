@@ -33,10 +33,12 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class LastUpdateTimestampEntity internal constructor(
+internal class LastUpdateTimestampEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "last_update_timestamp")
 	val lastUpdateTimestamp: Long
 )

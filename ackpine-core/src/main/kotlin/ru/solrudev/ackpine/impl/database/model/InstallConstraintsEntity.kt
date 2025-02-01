@@ -34,24 +34,33 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrate
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallConstraintsEntity(
+internal class InstallConstraintsEntity(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "is_app_not_foreground_required")
 	val isAppNotForegroundRequired: Boolean,
+	@JvmField
 	@ColumnInfo(name = "is_app_not_interacting_required")
 	val isAppNotInteractingRequired: Boolean,
+	@JvmField
 	@ColumnInfo(name = "is_app_not_top_visible_required")
 	val isAppNotTopVisibleRequired: Boolean,
+	@JvmField
 	@ColumnInfo(name = "is_device_idle_required")
 	val isDeviceIdleRequired: Boolean,
+	@JvmField
 	@ColumnInfo(name = "is_not_in_call_required")
 	val isNotInCallRequired: Boolean,
+	@JvmField
 	@ColumnInfo(name = "timeout_millis")
 	val timeoutMillis: Long,
+	@JvmField
 	@ColumnInfo(name = "timeout_strategy")
 	val timeoutStrategy: TimeoutStrategy,
+	@JvmField
 	@ColumnInfo(name = "commit_attempts_count")
 	val commitAttemptsCount: Int = 0
 )
