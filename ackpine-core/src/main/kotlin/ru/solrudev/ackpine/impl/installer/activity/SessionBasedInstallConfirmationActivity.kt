@@ -171,12 +171,9 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return false
 		}
-		return this::class.java.name == getSystemService<ActivityManager>()
-			?.appTasks
-			?.firstOrNull()
-			?.taskInfo
-			?.topActivity
-			?.className
+		val activityManager = getSystemService<ActivityManager>() ?: return false
+		val appTask = activityManager.appTasks.firstOrNull() ?: return false
+		return this::class.java.name == appTask.taskInfo.topActivity?.className
 	}
 
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
