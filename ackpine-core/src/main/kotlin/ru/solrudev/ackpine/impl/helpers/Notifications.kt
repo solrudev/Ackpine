@@ -29,8 +29,8 @@ import androidx.core.content.getSystemService
 import androidx.core.os.bundleOf
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.getParcelableExtraCompat
+import ru.solrudev.ackpine.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.DrawableId

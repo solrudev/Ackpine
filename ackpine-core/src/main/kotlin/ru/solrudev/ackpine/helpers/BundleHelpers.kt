@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer.activity.helpers
+package ru.solrudev.ackpine.helpers
 
 import android.os.Build
 import android.os.Bundle

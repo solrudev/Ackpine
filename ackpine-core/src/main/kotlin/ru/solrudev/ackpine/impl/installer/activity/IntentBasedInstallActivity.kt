@@ -20,7 +20,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
+import ru.solrudev.ackpine.helpers.getParcelableCompat
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 

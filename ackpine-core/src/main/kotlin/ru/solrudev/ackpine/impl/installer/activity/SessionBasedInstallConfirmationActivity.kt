@@ -31,7 +31,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
+import ru.solrudev.ackpine.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
