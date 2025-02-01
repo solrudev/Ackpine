@@ -108,7 +108,7 @@ internal class PackageUninstallerImpl internal constructor(
 				val sessions = initializeSessions()
 				completer.set(transform(sessions))
 			}
-			"$caller -> PackageUninstallerImpl.initializeSessions"
+			"$caller -> initializing sessions"
 		}
 	}
 

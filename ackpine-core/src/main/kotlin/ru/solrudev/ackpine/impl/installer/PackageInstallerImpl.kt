@@ -156,7 +156,7 @@ internal class PackageInstallerImpl internal constructor(
 					completer.set(transform(sessions))
 				}
 			}
-			"$caller -> PackageInstallerImpl.initializeSessions"
+			"$caller -> initializing sessions"
 		}
 	}
 
