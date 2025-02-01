@@ -16,10 +16,15 @@
 
 package ru.solrudev.ackpine.impl.database.converters
 
-import java.io.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 
+@Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-internal inline fun <reified T : Serializable> ByteArray.deserialize(): T {
+internal fun <T : Serializable> ByteArray.deserialize(): T {
 	ByteArrayInputStream(this).use { byteArrayInputStream ->
 		ObjectInputStream(byteArrayInputStream).use { objectInputStream ->
 			return objectInputStream.readObject() as T
@@ -28,7 +33,7 @@ internal inline fun <reified T : Serializable> ByteArray.deserialize(): T {
 }
 
 @JvmSynthetic
-internal inline fun <reified T : Serializable> T.serialize(): ByteArray =
+internal fun <T : Serializable> T.serialize(): ByteArray =
 	ByteArrayOutputStream().use { byteArrayOutputStream ->
 		ObjectOutputStream(byteArrayOutputStream).use { objectOutputStream ->
 			objectOutputStream.writeObject(this)
