@@ -191,14 +191,10 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
 		session?.addStateListener(subscriptions) { _, state ->
 			if (state.isTerminal) {
-				finishWithLaunchedActivity()
+				finishActivity(requestCode)
+				finish()
 			}
 		}
-	}
-
-	private fun finishWithLaunchedActivity() {
-		finishActivity(requestCode)
-		finish()
 	}
 
 	internal companion object {
