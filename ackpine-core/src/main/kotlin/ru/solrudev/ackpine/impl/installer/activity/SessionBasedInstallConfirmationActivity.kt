@@ -101,7 +101,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			// Activity is freshly created, skip.
 			isFirstResume -> isFirstResume = false
 			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			!isOnActivityResultCalled && wasOnTopOnStart -> abortSession()
+			!isOnActivityResultCalled && wasOnTopOnStart && isSessionStuck() -> abortSession()
 		}
 	}
 
@@ -128,7 +128,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
 		val isSessionAlive = sessionInfo != null
-		val isSessionStuck = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
+		val isSessionStuck = isSessionStuck(sessionInfo)
 		val previousCanInstallPackagesValue = canInstallPackages
 		canInstallPackages = canInstallPackages()
 		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
@@ -166,6 +166,10 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
 	}
+
+	private fun isSessionStuck(
+		sessionInfo: PackageInstaller.SessionInfo? = packageInstaller.getSessionInfo(sessionId)
+	) = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
 
 	private fun isOnTop(): Boolean {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
