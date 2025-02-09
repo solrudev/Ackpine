@@ -140,9 +140,9 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
-			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
-			// gets updated almost like the installation was confirmed even though it wasn't and no result is received
-			// from PackageInstallerStatusReceiver.
+			// outside of confirmation dialog, session will stay stuck, unfortunately, because session progress doesn't
+			// get updated after successful confirmation, so we have absolutely no way to differentiate between success
+			// and stuck session.
 			isSessionAlive && !isSessionStuck -> finish()
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
