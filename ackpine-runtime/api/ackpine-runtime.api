@@ -18,9 +18,8 @@ public final class ru/solrudev/ackpine/helpers/CloseableHelpersKt {
 }
 
 public final class ru/solrudev/ackpine/helpers/concurrent/ListenableFutureHelpersKt {
-	public static final synthetic fun getAndUnwrapException (Lcom/google/common/util/concurrent/ListenableFuture;)Ljava/lang/Object;
+	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;)V
 	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-	public static synthetic fun handleResult$default (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
 public abstract interface class ru/solrudev/ackpine/plugin/AckpinePlugin {
