@@ -462,5 +462,6 @@ private inline fun SplitPackageProvider(
 		} catch (exception: Exception) {
 			completer.setException(exception)
 		}
+		"SplitPackageProvider"
 	}
 }

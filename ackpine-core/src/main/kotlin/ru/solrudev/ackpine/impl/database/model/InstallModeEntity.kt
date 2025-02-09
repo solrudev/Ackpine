@@ -33,12 +33,15 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallModeEntity internal constructor(
+internal class InstallModeEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "install_mode")
 	val installMode: InstallMode,
+	@JvmField
 	@ColumnInfo(name = "dont_kill_app", defaultValue = "false")
 	val dontKillApp: Boolean
 ) {

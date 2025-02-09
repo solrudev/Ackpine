@@ -30,12 +30,15 @@ import androidx.room.*
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallUriEntity internal constructor(
+internal class InstallUriEntity internal constructor(
+	@JvmField
 	@PrimaryKey(autoGenerate = true)
 	@ColumnInfo(name = "id")
 	val id: Int = 0,
+	@JvmField
 	@ColumnInfo(name = "session_id", index = true)
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "uri")
 	val uri: String
 )

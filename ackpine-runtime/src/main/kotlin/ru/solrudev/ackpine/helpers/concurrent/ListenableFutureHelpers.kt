@@ -22,9 +22,24 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
 
 @SuppressLint("RestrictedApi")
-public inline fun <V> ListenableFuture<V>.handleResult(
-	crossinline onException: (Exception) -> Unit = { throw it },
-	crossinline block: (V) -> Unit
+public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
+	if (isDone) {
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure { throw it }
+		return
+	}
+	addListener({
+		getAndUnwrapException()
+			.onSuccess(block)
+			.onFailure { throw it }
+	}, DirectExecutor.INSTANCE)
+}
+
+@SuppressLint("RestrictedApi")
+public fun <V> ListenableFuture<V>.handleResult(
+	onException: (Exception) -> Unit,
+	block: (V) -> Unit
 ) {
 	if (isDone) {
 		getAndUnwrapException()
@@ -39,9 +54,7 @@ public inline fun <V> ListenableFuture<V>.handleResult(
 	}, DirectExecutor.INSTANCE)
 }
 
-@PublishedApi
-@JvmSynthetic
-internal fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
+private fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
 	return try {
 		Result.success(get())
 	} catch (exception: ExecutionException) {

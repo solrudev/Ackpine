@@ -24,11 +24,9 @@ import ru.solrudev.ackpine.installer.PackageInstaller
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class InstallActivity protected constructor(
-	tag: String,
-	startsActivity: Boolean
+	tag: String
 ) : SessionCommitActivity<InstallFailure>(
-	tag, startsActivity,
-	abortedStateFailureFactory = InstallFailure::Aborted
+	tag, abortedStateFailureFactory = InstallFailure::Aborted
 ) {
 
 	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {

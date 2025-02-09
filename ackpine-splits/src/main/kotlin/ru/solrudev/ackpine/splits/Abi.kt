@@ -39,7 +39,7 @@ public enum class Abi {
 			Build.SUPPORTED_ABIS.map { valueOf(it.replace(oldChar = '-', newChar = '_').uppercase()) }
 		}
 
-		private val abis = Abi.values().map { it.name.lowercase() }.toSet()
+		private val abis = entries.map { it.name.lowercase() }.toSet()
 
 		@JvmSynthetic
 		internal fun fromSplitName(name: String): Abi? {

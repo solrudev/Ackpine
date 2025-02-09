@@ -32,7 +32,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getSerializableCompat
+import ru.solrudev.ackpine.impl.helpers.getSerializableCompat
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
@@ -47,7 +47,6 @@ private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<F : Failure> protected constructor(
 	private val tag: String,
-	private val startsActivity: Boolean,
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
@@ -192,16 +191,10 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
 		session?.addStateListener(subscriptions) { _, state ->
 			if (state.isTerminal) {
-				finishWithLaunchedActivity()
+				finishActivity(requestCode)
+				finish()
 			}
 		}
-	}
-
-	private fun finishWithLaunchedActivity() {
-		if (startsActivity) {
-			finishActivity(requestCode)
-		}
-		finish()
 	}
 
 	internal companion object {

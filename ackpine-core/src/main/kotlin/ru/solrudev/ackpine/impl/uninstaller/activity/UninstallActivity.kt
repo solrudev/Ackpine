@@ -27,8 +27,7 @@ private const val TAG = "UninstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
-	TAG, startsActivity = true,
-	abortedStateFailureFactory = UninstallFailure::Aborted
+	TAG, abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
 
 	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {

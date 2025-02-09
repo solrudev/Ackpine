@@ -34,10 +34,12 @@ import ru.solrudev.ackpine.installer.InstallFailure
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class InstallFailureEntity internal constructor(
+internal class InstallFailureEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "failure")
 	val failure: InstallFailure
 )

@@ -34,10 +34,12 @@ import ru.solrudev.ackpine.installer.parameters.PackageSource
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class PackageSourceEntity internal constructor(
+internal class PackageSourceEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "package_source")
 	val packageSource: PackageSource
 )

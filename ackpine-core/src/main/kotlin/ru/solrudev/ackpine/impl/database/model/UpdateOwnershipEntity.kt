@@ -33,10 +33,12 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class UpdateOwnershipEntity(
+internal class UpdateOwnershipEntity(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "request_update_ownership")
 	val requestUpdateOwnership: Boolean
 )

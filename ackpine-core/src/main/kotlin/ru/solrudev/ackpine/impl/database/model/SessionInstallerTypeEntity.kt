@@ -34,10 +34,12 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class SessionInstallerTypeEntity internal constructor(
+internal class SessionInstallerTypeEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "installer_type")
 	val installerType: InstallerType
 )

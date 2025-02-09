@@ -34,10 +34,12 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal data class UninstallFailureEntity internal constructor(
+internal class UninstallFailureEntity internal constructor(
+	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")
 	val sessionId: String,
+	@JvmField
 	@ColumnInfo(name = "failure")
 	val failure: UninstallFailure
 )

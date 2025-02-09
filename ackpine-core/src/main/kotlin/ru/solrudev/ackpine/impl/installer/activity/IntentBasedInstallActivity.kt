@@ -20,14 +20,14 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
 private const val TAG = "IntentBasedInstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class IntentBasedInstallActivity : InstallActivity(TAG, startsActivity = true) {
+internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 
 	private val apkUri by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getParcelableCompat<Uri>(APK_URI_KEY)

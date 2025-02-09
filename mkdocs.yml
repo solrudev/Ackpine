@@ -1,7 +1,7 @@
 # Information
 site_name: Ackpine
 site_description: A library providing consistent APIs for installing and uninstalling apps on an Android device
-site_author: 2023-2024 Ilya Fomichev
+site_author: 2023-2025 Ilya Fomichev
 site_url: 'https://ackpine.solrudev.ru'
 remote_branch: gh-pages
 edit_uri: ""

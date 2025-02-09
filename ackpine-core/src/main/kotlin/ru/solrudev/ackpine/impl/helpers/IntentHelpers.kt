@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer.activity.helpers
+package ru.solrudev.ackpine.impl.helpers
 
+import android.content.Intent
 import android.os.Build
-import android.os.Bundle
 import android.os.Parcelable
 import java.io.Serializable
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
-internal inline fun <reified T : Parcelable> Bundle.getParcelableCompat(name: String): T? {
+internal inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(name: String): T? {
 	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		getParcelable(name, T::class.java)
+		getParcelableExtra(name, T::class.java)
 	} else {
-		getParcelable(name)
+		getParcelableExtra(name)
 	}
 }
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
-internal inline fun <reified T : Serializable> Bundle.getSerializableCompat(name: String): T? {
+internal inline fun <reified T : Serializable> Intent.getSerializableExtraCompat(name: String): T? {
 	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		getSerializable(name, T::class.java)
+		getSerializableExtra(name, T::class.java)
 	} else {
-		getSerializable(name) as? T
+		getSerializableExtra(name) as? T
 	}
 }

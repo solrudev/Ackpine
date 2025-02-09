@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,29 +14,29 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.helpers
+package ru.solrudev.ackpine.impl.helpers
 
-import android.content.Intent
 import android.os.Build
+import android.os.Bundle
 import android.os.Parcelable
 import java.io.Serializable
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
-internal inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(name: String): T? {
+internal inline fun <reified T : Parcelable> Bundle.getParcelableCompat(name: String): T? {
 	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		getParcelableExtra(name, T::class.java)
+		getParcelable(name, T::class.java)
 	} else {
-		getParcelableExtra(name)
+		getParcelable(name)
 	}
 }
 
 @Suppress("DEPRECATION")
 @JvmSynthetic
-internal inline fun <reified T : Serializable> Intent.getSerializableExtraCompat(name: String): T? {
+internal inline fun <reified T : Serializable> Bundle.getSerializableCompat(name: String): T? {
 	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-		getSerializableExtra(name, T::class.java)
+		getSerializable(name, T::class.java)
 	} else {
-		getSerializableExtra(name) as? T
+		getSerializable(name) as? T
 	}
 }

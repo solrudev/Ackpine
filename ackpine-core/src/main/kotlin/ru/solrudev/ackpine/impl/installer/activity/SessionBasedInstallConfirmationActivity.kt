@@ -31,7 +31,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import ru.solrudev.ackpine.impl.installer.activity.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -43,7 +43,7 @@ private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
 private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, startsActivity = true) {
+internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) {
 		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
@@ -101,7 +101,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 			// Activity is freshly created, skip.
 			isFirstResume -> isFirstResume = false
 			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			!isOnActivityResultCalled && wasOnTopOnStart -> abortSession()
+			!isOnActivityResultCalled && wasOnTopOnStart && isSessionStuck() -> abortSession()
 		}
 	}
 
@@ -128,7 +128,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
 		val isSessionAlive = sessionInfo != null
-		val isSessionStuck = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
+		val isSessionStuck = isSessionStuck(sessionInfo)
 		val previousCanInstallPackagesValue = canInstallPackages
 		canInstallPackages = canInstallPackages()
 		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
@@ -140,9 +140,9 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
-			// outside of confirmation dialog, session will stay stuck, unfortunately, because for some reason progress
-			// gets updated almost like the installation was confirmed even though it wasn't and no result is received
-			// from PackageInstallerStatusReceiver.
+			// outside of confirmation dialog, session will stay stuck, unfortunately, because session progress doesn't
+			// get updated after successful confirmation, so we have absolutely no way to differentiate between success
+			// and stuck session.
 			isSessionAlive && !isSessionStuck -> finish()
 			// User has cancelled install permission request or hasn't granted permission.
 			!canInstallPackages -> abortSession("Install permission denied")
@@ -167,16 +167,17 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG, st
 			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
 	}
 
+	private fun isSessionStuck(
+		sessionInfo: PackageInstaller.SessionInfo? = packageInstaller.getSessionInfo(sessionId)
+	) = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
+
 	private fun isOnTop(): Boolean {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return false
 		}
-		return this::class.java.name == getSystemService<ActivityManager>()
-			?.appTasks
-			?.firstOrNull()
-			?.taskInfo
-			?.topActivity
-			?.className
+		val activityManager = getSystemService<ActivityManager>() ?: return false
+		val appTask = activityManager.appTasks.firstOrNull() ?: return false
+		return this::class.java.name == appTask.taskInfo.topActivity?.className
 	}
 
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
