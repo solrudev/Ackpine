@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.10.2 (2025-02-09)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix `SessionBasedInstallConfirmationActivity was finished by user` failure after granting permission and confirming installation on some devices with Android 12-13 (#108).
+
 Version 0.10.1 (2025-01-29)
 ---------------------------
 
