@@ -49,6 +49,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
 		if (sessionId == null) {
 			completeSessionExceptionally(IllegalStateException("$TAG: sessionId was null."))
+			finish()
 		}
 		sessionId ?: -1
 	}
