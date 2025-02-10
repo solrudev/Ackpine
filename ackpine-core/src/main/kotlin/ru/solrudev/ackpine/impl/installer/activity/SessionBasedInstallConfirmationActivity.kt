@@ -82,9 +82,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				(session as PreapprovalListener).onPreapproval()
 			}
 		}
-		if (savedInstanceState == null) {
-			launchInstallActivity()
-		} else {
+		if (savedInstanceState != null) {
 			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
 			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
 			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
@@ -120,11 +118,14 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != this.requestCode) {
-			return
-		}
+	override fun startCommitActivity() {
+		canInstallPackages = canInstallPackages()
+		intent.extras
+			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
+			?.let(::startActivityForResult)
+	}
+
+	override fun onActivityResult(resultCode: Int) {
 		isOnActivityResultCalled = true
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
@@ -138,7 +139,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			// Confirmation is a preapproval on API >= 34.
 			isPreapproval -> finish()
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
+			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> startCommitActivity()
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
 			// outside of confirmation dialog, session will stay stuck, unfortunately, because session progress doesn't
@@ -160,13 +161,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 	}
 
 	override fun shouldNotifyWhenCommitted() = !isPreapproval
-
-	private fun launchInstallActivity() {
-		canInstallPackages = canInstallPackages()
-		intent.extras
-			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
-			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
-	}
 
 	private fun isSessionStuck(
 		sessionInfo: PackageInstaller.SessionInfo? = packageInstaller.getSessionInfo(sessionId)
