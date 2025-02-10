@@ -25,7 +25,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.widget.ProgressBar
-import androidx.annotation.CallSuper
 import androidx.annotation.RestrictTo
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
@@ -56,12 +55,10 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		intent.extras?.getSerializableCompat<UUID>(EXTRA_ACKPINE_SESSION_ID) ?: error("ackpineSessionId was null")
 	}
 
-	protected var requestCode = -1
-		private set
-
 	private val subscriptions = DisposableSubscriptionContainer()
 	private val handler = Handler(Looper.getMainLooper())
 	private val handlerCallbacks = mutableListOf<Runnable>()
+	private var requestCode = -1
 	private var isLoading = false
 	private var isOnActivityResultCalled = false
 
@@ -99,10 +96,18 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
 	}
 
-	@CallSuper
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		isOnActivityResultCalled = true
+		if (requestCode != this.requestCode) {
+			return
+		}
+		onActivityResult(resultCode)
 	}
+
+	protected open fun onActivityResult(resultCode: Int) { // no-op by default
+	}
+
+	protected fun startActivityForResult(intent: Intent) = startActivityForResult(intent, requestCode)
 
 	protected fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
 		session?.complete(state)

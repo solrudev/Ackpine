@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
@@ -35,39 +34,32 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId)
 	}
 
-	private val packageNameToUninstall by lazy(LazyThreadSafetyMode.NONE) {
-		intent.extras?.getString(PACKAGE_NAME_KEY)
-	}
-
 	private lateinit var ackpinePackageUninstaller: PackageUninstallerImpl
 	private lateinit var uninstallPackageContract: UninstallContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		ackpinePackageUninstaller = PackageUninstaller.getImpl(this)
 		super.onCreate(savedInstanceState)
+		val packageNameToUninstall = intent.extras?.getString(PACKAGE_NAME_KEY)
 		if (packageNameToUninstall == null) {
 			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
 			finish()
 			return
 		}
-		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall!!)
+		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
 		}
 	}
 
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != this.requestCode) {
-			return
-		}
+	override fun onActivityResult(resultCode: Int) {
 		val result = uninstallPackageContract.parseResult(this, resultCode)
 		completeSession(result)
 	}
 
 	private fun launchUninstallActivity() {
 		val intent = uninstallPackageContract.createIntent(this)
-		startActivityForResult(intent, requestCode)
+		startActivityForResult(intent)
 	}
 
 	internal companion object {

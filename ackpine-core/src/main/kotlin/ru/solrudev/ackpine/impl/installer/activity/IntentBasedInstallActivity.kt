@@ -29,10 +29,6 @@ private const val TAG = "IntentBasedInstallActivity"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 
-	private val apkUri by lazy(LazyThreadSafetyMode.NONE) {
-		intent.extras?.getParcelableCompat<Uri>(APK_URI_KEY)
-	}
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
@@ -40,20 +36,15 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 		}
 	}
 
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != this.requestCode) {
-			return
-		}
-		when (resultCode) {
-			RESULT_CANCELED -> abortSession("Session was cancelled")
-			RESULT_OK -> completeSession(Session.State.Succeeded)
-			else -> completeSession(Session.State.Failed(InstallFailure.Generic()))
-		}
+	override fun onActivityResult(resultCode: Int) = when (resultCode) {
+		RESULT_CANCELED -> abortSession("Session was cancelled")
+		RESULT_OK -> completeSession(Session.State.Succeeded)
+		else -> completeSession(Session.State.Failed(InstallFailure.Generic()))
 	}
 
 	@Suppress("DEPRECATION")
 	private fun launchInstallActivity() {
+		val apkUri = intent.extras?.getParcelableCompat<Uri>(APK_URI_KEY)
 		if (apkUri == null) {
 			completeSessionExceptionally(IllegalStateException("$TAG: apkUri was null."))
 			return
@@ -66,7 +57,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 			putExtra(Intent.EXTRA_RETURN_RESULT, true)
 			putExtra(Intent.EXTRA_INSTALLER_PACKAGE_NAME, packageName)
 		}
-		startActivityForResult(intent, requestCode)
+		startActivityForResult(intent)
 	}
 
 	internal companion object {
