@@ -104,13 +104,11 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		isOnActivityResultCalled = true
 	}
 
-	@JvmSynthetic
-	internal fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
+	protected fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
 		session?.complete(state)
 	}
 
-	@JvmSynthetic
-	internal fun completeSessionExceptionally(exception: Exception) = withCompletableSession { session ->
+	protected fun completeSessionExceptionally(exception: Exception) = withCompletableSession { session ->
 		session?.completeExceptionally(exception)
 	}
 
