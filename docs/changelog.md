@@ -30,7 +30,7 @@ Version 0.10.0 (2025-01-24)
 - Updated ViewBindingPropertyDelegate to 2.0.0 (sample apps dependency).
 - Added `api` dependency on Guava's `ListenableFuture` in `ackpine-splits`.
 - Added `implementation` dependency on `androidx.concurrent:concurrent-futures` in `ackpine-splits` and `ackpine-runtime`.
-- Changed `ackpine-spits` dependency to `ackpine-splits-ktx` in `sample-ktx`.
+- Changed `ackpine-splits` dependency to `ackpine-splits-ktx` in `sample-ktx`.
 
 ### Bug fixes and improvements
 
