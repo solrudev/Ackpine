@@ -198,6 +198,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	internal companion object {
 
 		@JvmSynthetic
-		internal const val EXTRA_ACKPINE_SESSION_ID = "ACKPINE_SESSION_ID"
+		internal const val EXTRA_ACKPINE_SESSION_ID = "ru.solrudev.ackpine.extra.ACKPINE_SESSION_ID"
 	}
 }
