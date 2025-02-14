@@ -23,7 +23,7 @@ public object Constants {
 	public const val JDK_VERSION: Int = 17
 	public const val MIN_SDK: Int = 16
 	public const val COMPILE_SDK: Int = 35
-	public const val BUILD_TOOLS_VERSION: String = "35.0.0"
+	public const val BUILD_TOOLS_VERSION: String = "35.0.1"
 }
 
 public object SampleConstants {
