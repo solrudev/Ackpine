@@ -30,5 +30,5 @@ public object SampleConstants {
 	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine.sample"
 	public const val MIN_SDK: Int = 21
 	public const val TARGET_SDK: Int = 35
-	public val JAVA_VERSION: JavaVersion = JavaVersion.VERSION_17
+	public val JAVA_VERSION: JavaVersion = JavaVersion.VERSION_21
 }
