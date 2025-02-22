@@ -20,6 +20,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
@@ -38,11 +39,11 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 		intent.extras?.getString(PACKAGE_NAME_KEY)
 	}
 
-	private lateinit var ackpinePackageUninstaller: PackageUninstaller
+	private lateinit var ackpinePackageUninstaller: PackageUninstallerImpl
 	private lateinit var uninstallPackageContract: UninstallContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		ackpinePackageUninstaller = PackageUninstaller.getInstance(this)
+		ackpinePackageUninstaller = PackageUninstaller.getImpl(this)
 		super.onCreate(savedInstanceState)
 		if (packageNameToUninstall == null) {
 			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))

@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.installer.activity
 import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 
@@ -33,10 +34,10 @@ internal abstract class InstallActivity protected constructor(
 		ackpinePackageInstaller.getSessionAsync(ackpineSessionId)
 	}
 
-	private lateinit var ackpinePackageInstaller: PackageInstaller
+	private lateinit var ackpinePackageInstaller: PackageInstallerImpl
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		ackpinePackageInstaller = PackageInstaller.getInstance(this)
+		ackpinePackageInstaller = PackageInstaller.getImpl(this)
 		super.onCreate(savedInstanceState)
 	}
 }

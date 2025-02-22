@@ -118,8 +118,9 @@ Handling process death is not any different with Ackpine as with any other persi
     // after process restart
     UUID id = savedStateHandle.get(SESSION_ID_KEY);
     if (id != null) {
+        final var future = packageInstaller.getSessionAsync(id);
         // using Guava
-        Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
+        Futures.addCallback(future, new FutureCallback<ProgressSession<InstallFailure>>() {
             @Override
             public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
                 if (session != null) {

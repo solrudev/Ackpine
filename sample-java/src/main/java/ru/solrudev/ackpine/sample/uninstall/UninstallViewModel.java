@@ -120,7 +120,8 @@ public final class UninstallViewModel extends ViewModel {
 	}
 
 	private void cancelSession(@NonNull UUID id) {
-		Futures.addCallback(packageUninstaller.getSessionAsync(id), new FutureCallback<>() {
+		final var future = packageUninstaller.getSessionAsync(id);
+		Futures.addCallback(future, new FutureCallback<Session<UninstallFailure>>() {
 			@Override
 			public void onSuccess(@Nullable Session<UninstallFailure> session) {
 				if (session != null) {
@@ -135,7 +136,8 @@ public final class UninstallViewModel extends ViewModel {
 	}
 
 	private void addSessionListener(@NonNull UUID id) {
-		Futures.addCallback(packageUninstaller.getSessionAsync(id), new FutureCallback<>() {
+		final var future = packageUninstaller.getSessionAsync(id);
+		Futures.addCallback(future, new FutureCallback<Session<UninstallFailure>>() {
 			@Override
 			public void onSuccess(@Nullable Session<UninstallFailure> session) {
 				if (session != null) {

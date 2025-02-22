@@ -39,13 +39,13 @@ import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
+import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Committed
 import ru.solrudev.ackpine.session.Session.State.Succeeded
@@ -62,13 +62,13 @@ internal interface InstallSessionFactory {
 		id: UUID,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
-	): ProgressSession<InstallFailure>
+	): CompletableProgressSession<InstallFailure>
 
 	@WorkerThread
 	fun create(
 		session: SessionEntity.InstallSession,
 		completeIfSucceeded: Boolean = false
-	): ProgressSession<InstallFailure>
+	): CompletableProgressSession<InstallFailure>
 
 	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
 }
@@ -93,7 +93,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		id: UUID,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
-	): ProgressSession<InstallFailure> = when (parameters.installerType) {
+	): CompletableProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
 			applicationContext,
 			apk = parameters.apks.toList().singleOrNull() ?: throw SplitPackagesNotSupportedException(),
@@ -132,7 +132,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 	override fun create(
 		session: SessionEntity.InstallSession,
 		completeIfSucceeded: Boolean
-	): ProgressSession<InstallFailure> = when (session.installerType) {
+	): CompletableProgressSession<InstallFailure> = when (session.installerType) {
 		InstallerType.INTENT_BASED -> createIntentBasedInstallSession(session, completeIfSucceeded)
 		InstallerType.SESSION_BASED -> createSessionBasedInstallSession(session, completeIfSucceeded)
 	}

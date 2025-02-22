@@ -50,7 +50,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
-	protected abstract val ackpineSessionFuture: ListenableFuture<out Session<F>?>
+	protected abstract val ackpineSessionFuture: ListenableFuture<out CompletableSession<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getSerializableCompat<UUID>(EXTRA_ACKPINE_SESSION_ID) ?: error("ackpineSessionId was null")
@@ -136,11 +136,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		)
 	}
 
-	protected inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult { session ->
-			val completableSession = session as? CompletableSession<F>
-			block(completableSession)
-		}
+	protected fun withCompletableSession(block: (CompletableSession<F>?) -> Unit) {
+		ackpineSessionFuture.handleResult(block)
 	}
 
 	private fun notifySessionCommitted() {

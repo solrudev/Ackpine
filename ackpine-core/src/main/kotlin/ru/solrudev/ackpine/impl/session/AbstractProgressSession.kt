@@ -58,7 +58,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	context, id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
-), ProgressSession<F> {
+), CompletableProgressSession<F> {
 
 	private val progressListeners = Collections.newSetFromMap(
 		ConcurrentHashMap<ProgressSession.ProgressListener, Boolean>()

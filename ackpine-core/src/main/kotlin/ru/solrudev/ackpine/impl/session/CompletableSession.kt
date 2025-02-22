@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.impl.session
 
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.session.Failure
+import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 
 /**
@@ -41,3 +42,9 @@ internal interface CompletableSession<F : Failure> : Session<F> {
 	 */
 	fun notifyCommitted()
 }
+
+/**
+ * A [ProgressSession] which can be completed.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface CompletableProgressSession<F : Failure> : CompletableSession<F>, ProgressSession<F>

@@ -48,13 +48,12 @@ private const val TAG = "PackageInstallerStatusReceiver"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
-	@Suppress("UNCHECKED_CAST")
 	override fun onReceive(context: Context, intent: Intent) {
 		if (intent.action != getAction(context)) {
 			return
 		}
 		val pendingResult = goAsync()
-		val packageInstaller = AckpinePackageInstaller.getInstance(context)
+		val packageInstaller = AckpinePackageInstaller.getImpl(context)
 		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
 		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
 			onException = { exception ->
@@ -62,10 +61,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 				Log.e("InstallerStatusReceiver", null, exception)
 			},
 			block = { session ->
-				handlePackageInstallerStatus(
-					session as? CompletableSession<InstallFailure>,
-					ackpineSessionId, intent, context, pendingResult
-				)
+				handlePackageInstallerStatus(session, ackpineSessionId, intent, context, pendingResult)
 			})
 	}
 

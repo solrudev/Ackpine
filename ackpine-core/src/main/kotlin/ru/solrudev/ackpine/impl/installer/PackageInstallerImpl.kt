@@ -27,19 +27,19 @@ import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
+import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
-import ru.solrudev.ackpine.session.ProgressSession
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 private typealias SessionsCollectionTransformer =
-			(Collection<ProgressSession<InstallFailure>>) -> List<ProgressSession<InstallFailure>>
+			(Collection<CompletableProgressSession<InstallFailure>>) -> List<CompletableProgressSession<InstallFailure>>
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageInstallerImpl internal constructor(
@@ -50,7 +50,7 @@ internal class PackageInstallerImpl internal constructor(
 	private val notificationIdFactory: () -> Int
 ) : PackageInstaller {
 
-	private val sessions = ConcurrentHashMap<UUID, ProgressSession<InstallFailure>>()
+	private val sessions = ConcurrentHashMap<UUID, CompletableProgressSession<InstallFailure>>()
 	private val committedSessionsInitSemaphore = BinarySemaphore()
 
 	@Volatile
@@ -67,7 +67,7 @@ internal class PackageInstallerImpl internal constructor(
 		initializeCommittedSessions()
 	}
 
-	override fun createSession(parameters: InstallParameters): ProgressSession<InstallFailure> {
+	override fun createSession(parameters: InstallParameters): CompletableProgressSession<InstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
 		val dbWriteSemaphore = BinarySemaphore()
@@ -124,7 +124,7 @@ internal class PackageInstallerImpl internal constructor(
 
 	private fun getSessionFromDb(
 		sessionId: UUID,
-		completer: Completer<ProgressSession<InstallFailure>?>
+		completer: Completer<CompletableProgressSession<InstallFailure>?>
 	) {
 		sessions[sessionId]?.let { session ->
 			completer.set(session)
@@ -142,7 +142,7 @@ internal class PackageInstallerImpl internal constructor(
 	private inline fun getSessionsAsync(
 		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	): ListenableFuture<List<ProgressSession<InstallFailure>>> {
+	): ListenableFuture<List<CompletableProgressSession<InstallFailure>>> {
 		if (isSessionsMapInitialized) {
 			return CallbackToFutureAdapter.getFuture { completer ->
 				completer.set(transform(sessions.values))
@@ -160,7 +160,7 @@ internal class PackageInstallerImpl internal constructor(
 		}
 	}
 
-	private fun initializeSessions(): Collection<ProgressSession<InstallFailure>> {
+	private fun initializeSessions(): Collection<CompletableProgressSession<InstallFailure>> {
 		if (isSessionsMapInitialized) {
 			return sessions.values
 		}
