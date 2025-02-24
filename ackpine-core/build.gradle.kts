@@ -29,17 +29,7 @@ ackpine {
 	artifact {
 		name = "Ackpine Core"
 	}
-}
-
-dokka {
-	dokkaSourceSets.configureEach {
-		val implementationSources = sourceRoots.asFileTree.matching { include("**/impl/**") }
-		suppressedFiles.from(implementationSources)
-	}
-}
-
-apiValidation {
-	ignoredPackages += "ru.solrudev.ackpine.impl"
+	internalPackages("ru.solrudev.ackpine.impl")
 }
 
 room {

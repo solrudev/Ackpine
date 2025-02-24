@@ -17,18 +17,46 @@
 package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.LibraryExtension
+import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.property
+import org.gradle.kotlin.dsl.setProperty
 import javax.inject.Inject
+
+private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+\$")
 
 /**
  * Extension for Ackpine `library` plugin.
  */
 public abstract class AckpineLibraryExtension @Inject constructor(
-	libraryExtension: LibraryExtension
-) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware
+	libraryExtension: LibraryExtension,
+	private val apiValidationExtension: ApiValidationExtension,
+	objectFactory: ObjectFactory
+) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware {
+
+	private val _internalPackages = objectFactory.setProperty<String>()
+
+	/**
+	 * Ignored packages. They will not appear in resulting public API dumps and documentation.
+	 */
+	public val internalPackages: Provider<Set<String>>
+		get() = _internalPackages
+
+	/**
+	 * Adds [packageNames] to ignored packages. They will not appear in resulting public API dumps and documentation.
+	 */
+	public fun internalPackages(vararg packageNames: String) {
+		for (packageName in packageNames) {
+			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
+		}
+		_internalPackages = packageNames.toSet()
+		apiValidationExtension.ignoredPackages += packageNames
+	}
+}
 
 /**
  * Extension for Ackpine `library-publish` plugin.

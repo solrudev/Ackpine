@@ -20,6 +20,7 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
+import kotlinx.validation.ApiValidationExtension
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -51,7 +52,8 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 		configureKotlin()
 		val libraryExtension = extensions.getByType<LibraryExtension>()
-		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension)
+		val apiValidationExtension = extensions.getByType<ApiValidationExtension>()
+		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension, apiValidationExtension)
 		configureAndroid()
 		registerConsumableLibraryConfiguration()
 	}
