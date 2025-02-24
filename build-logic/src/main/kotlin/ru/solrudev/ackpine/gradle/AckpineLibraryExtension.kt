@@ -23,8 +23,6 @@ import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.property
 import javax.inject.Inject
 
-internal typealias IdListener = (id: String) -> Unit
-
 /**
  * Extension for Ackpine `library` plugin.
  */

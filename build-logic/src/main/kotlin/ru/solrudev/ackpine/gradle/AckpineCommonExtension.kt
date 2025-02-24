@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.CommonExtension
 
+internal typealias IdListener = (id: String) -> Unit
+
 /**
  * Common extension properties for Ackpine `library` and `sample` plugins.
  */
