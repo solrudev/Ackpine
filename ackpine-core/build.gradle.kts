@@ -38,6 +38,10 @@ dokka {
 	}
 }
 
+apiValidation {
+	ignoredPackages += "ru.solrudev.ackpine.impl"
+}
+
 room {
 	schemaDirectory("$projectDir/schemas")
 }
