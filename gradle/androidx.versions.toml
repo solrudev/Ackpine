@@ -26,3 +26,6 @@ swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout"
 [bundles]
 lifecycle = ["lifecycle-livedata", "lifecycle-viewmodel"]
 navigation = ["navigation-fragment", "navigation-ui"]
+
+[plugins]
+room = { id = "androidx.room", version.ref = "room" }

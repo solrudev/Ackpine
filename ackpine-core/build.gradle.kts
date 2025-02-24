@@ -21,6 +21,7 @@ plugins {
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
 	alias(libs.plugins.kotlin.ksp)
+	alias(androidx.plugins.room)
 }
 
 ackpine {
@@ -37,6 +38,10 @@ dokka {
 	}
 }
 
+room {
+	schemaDirectory("$projectDir/schemas")
+}
+
 dependencies {
 	ksp(androidx.room.compiler)
 	api(androidx.annotation)
@@ -47,8 +52,4 @@ dependencies {
 	implementation(androidx.concurrent.futures.core)
 	implementation(androidx.core.ktx)
 	implementation(androidx.room.runtime)
-}
-
-ksp {
-	arg("room.schemaLocation", File(projectDir, "schemas").path)
 }
