@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION_ERROR")
 
 package ru.solrudev.ackpine.splits
 
@@ -106,7 +106,7 @@ public object ApkSplits {
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
 				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
 				"next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().sortedByCompatibility(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -168,7 +168,7 @@ public object ApkSplits {
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
 				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
 				"next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().filterCompatible(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -191,7 +191,7 @@ public object ApkSplits {
 				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
 				"next minor release. An equivalent for an already sorted SplitPackage would be " +
 				"SplitPackage.filterPreferred().",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().filterCompatible(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -222,7 +222,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.validate()",
 			imports = ["ru.solrudev.ackpine.splits.ApkSplits.validate"]
@@ -241,7 +241,7 @@ public object ApkSplits {
 				"APK splits after. Existing APIs were not a good solution for that use case, so SplitPackage API " +
 				"was introduced which you should migrate to if you were using addAllTo(). " +
 				"Usage of this function will become an error in the next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith("this.onEach { destination += it }")
 	)
 	@JvmStatic
@@ -264,7 +264,7 @@ public object ApkSplits {
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages. " +
 				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().filterCompatible(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -288,7 +288,7 @@ public object ApkSplits {
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages. " +
 				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().sortedByCompatibility(context)",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -306,7 +306,7 @@ public object ApkSplits {
 		message = "This function cannot provide adequate grouped structures of split packages. " +
 				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release. " +
 				"An equivalent for an already sorted split package would be filterPreferred().",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().sortedByCompatibility(context).filterPreferred()",
 			imports = ["ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage"]
@@ -331,7 +331,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
-		level = DeprecationLevel.WARNING,
+		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.validate()",
 			imports = ["ru.solrudev.ackpine.splits.ApkSplits.validate"]
