@@ -35,7 +35,6 @@ public abstract class AckpineCommonExtension(
 	 * Ackpine library ID used in namespace of the generated R and BuildConfig classes, in artifact ID
 	 * and in application ID.
 	 */
-	@Suppress("MemberVisibilityCanBePrivate")
 	public open var id: String
 		get() = _id
 		set(value) {
