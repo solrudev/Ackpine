@@ -33,10 +33,9 @@ An example of creating a session with custom parameters:
         preapproval(
             packageName = "com.example.package",
             label = "Sample App",
-            locale = ULocale.US
-        ) {
+            locale = ULocale.US,
             icon = iconUri
-        }
+        )
         constraints(timeout = 1.minutes) {
             timeoutStrategy = TimeoutStrategy.CommitEagerly
             isAppNotForegroundRequired = true

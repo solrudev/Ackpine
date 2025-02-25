@@ -259,3 +259,53 @@ public inline fun InstallParametersDsl.preapproval(
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, configure)
 }
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param languageTag the locale of the app label being used. Represented by IETF BCP 47 language tag.
+ * @param icon the icon representing the app to be installed.
+ */
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	languageTag: String,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, languageTag, icon)
+}
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: ULocale,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, icon)
+}
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: Locale,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, icon)
+}

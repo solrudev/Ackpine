@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.installer.parameters
 
 import android.icu.util.ULocale
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import java.util.Locale
@@ -66,4 +67,54 @@ public inline fun InstallPreapproval(
 	configure: InstallPreapprovalDsl.() -> Unit = {}
 ): InstallPreapproval {
 	return InstallPreapprovalDslBuilder(packageName, label, locale).apply(configure).build()
+}
+
+/**
+ * Constructs a new instance of [InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param languageTag the locale of the app label being installed. Represented by IETF BCP 47 language tag.
+ * @param icon the icon representing the app to be installed.
+ */
+public fun InstallPreapproval(
+	packageName: String,
+	label: String,
+	languageTag: String,
+	icon: Uri
+): InstallPreapproval {
+	return InstallPreapproval.Builder(packageName, label, languageTag).setIcon(icon).build()
+}
+
+/**
+ * Constructs a new instance of [InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being installed.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+public fun InstallPreapproval(
+	packageName: String,
+	label: String,
+	locale: ULocale,
+	icon: Uri
+): InstallPreapproval {
+	return InstallPreapproval.Builder(packageName, label, locale).setIcon(icon).build()
+}
+
+/**
+ * Constructs a new instance of [InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being installed.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public fun InstallPreapproval(
+	packageName: String,
+	label: String,
+	locale: Locale,
+	icon: Uri
+): InstallPreapproval {
+	return InstallPreapproval.Builder(packageName, label, locale).setIcon(icon).build()
 }
