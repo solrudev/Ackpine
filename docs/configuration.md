@@ -233,6 +233,29 @@ Installer waits for constraints to be satisfied, so to configure them, timeout d
 - `CommitEagerly` - installer commits session immediately after timeout even if constraints are not met.
 - `Retry` - installer retries waiting for constraints to be satisfied with the same timeout if constraints were not met after the first attempt. Requires `retries` parameter to be provided when created.
 
+There's a preset for gentle updates which can be used like this:
+
+=== "Kotlin"
+
+    ```kotlin
+    val session = packageInstaller.createSession(apkUri) {
+        constraints = InstallConstraints.gentleUpdate(
+            timeout = 1.minutes,
+            timeoutStrategy = TimeoutStrategy.CommitEagerly // optional
+        )
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var constraints = InstallConstraints.gentleUpdate(60000L,
+            /* optional */ TimeoutStrategy.COMMIT_EAGERLY);
+    var session = packageInstaller.createSession(new InstallParameters.Builder(apkUri)
+            .setConstraints(constraints)
+            .build());
+    ```
+
 Update ownership
 ----------------
 
