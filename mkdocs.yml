@@ -20,6 +20,7 @@ theme:
   logo: images/logo-white.svg
   features:
     - content.code.copy
+    - content.tabs.link
     - navigation.footer
   icon:
     repo: fontawesome/brands/github
