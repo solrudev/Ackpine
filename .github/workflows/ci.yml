@@ -109,7 +109,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11.4
+          python-version: 3.13.2
 
       - name: Prepare API docs
         run: |
