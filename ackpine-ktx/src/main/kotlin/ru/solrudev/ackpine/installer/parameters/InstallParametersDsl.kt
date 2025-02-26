@@ -21,6 +21,7 @@ import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -61,11 +62,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= [34][Build.VERSION_CODES.S] with
+	 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
 	 * [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * This is a **delicate** API. This option is unstable for use on different Android versions from different vendors.
+	 * It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most
+	 * notably from Chinese vendors.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
+	@set:DelicateAckpineApi
 	public var requireUserAction: Boolean
 
 	/**
@@ -163,6 +169,7 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setName(value)
 		}
 
+	@set:DelicateAckpineApi
 	override var requireUserAction: Boolean
 		get() = builder.requireUserAction
 		set(value) {
