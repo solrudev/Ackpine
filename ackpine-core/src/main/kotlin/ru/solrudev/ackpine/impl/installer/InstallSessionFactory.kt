@@ -20,6 +20,7 @@ package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import androidx.annotation.RestrictTo
 import androidx.annotation.WorkerThread
@@ -224,8 +225,13 @@ internal class InstallSessionFactoryImpl internal constructor(
 			return session
 		}
 		val progressThreshold = (applicationContext.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()
-		if (initialProgress.progress >= progressThreshold) {
-			// means that actual installation is ongoing or is completed
+		val isInstallationOngoingOrCompleted = initialProgress.progress >= progressThreshold
+		// We can't rely on session's progress on API 31-32 with requireUserAction == false, so we don't block clients
+		// from committing on these versions if user's confirmation was already launched previously.
+		val shouldBlockCommitIfIsOngoing = installSession.session.requireUserAction
+				|| Build.VERSION.SDK_INT !in 31..32
+				|| installSession.wasConfirmationLaunched != true
+		if (shouldBlockCommitIfIsOngoing && isInstallationOngoingOrCompleted) {
 			session.notifyCommitted() // block clients from committing
 		}
 		// If app is killed while installing but system installer activity remains visible,

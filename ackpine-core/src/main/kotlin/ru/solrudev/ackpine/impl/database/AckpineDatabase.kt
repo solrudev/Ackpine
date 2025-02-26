@@ -32,6 +32,7 @@ import ru.solrudev.ackpine.impl.database.converters.PackageSourceConverters
 import ru.solrudev.ackpine.impl.database.converters.ResolvableStringConverters
 import ru.solrudev.ackpine.impl.database.converters.TimeoutStrategyConverters
 import ru.solrudev.ackpine.impl.database.converters.UninstallFailureConverters
+import ru.solrudev.ackpine.impl.database.dao.ConfirmationLaunchDao
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
@@ -42,6 +43,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionNameDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
+import ru.solrudev.ackpine.impl.database.model.ConfirmationLaunchEntity
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
@@ -83,7 +85,8 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		InstallPreapprovalEntity::class,
 		InstallConstraintsEntity::class,
 		UpdateOwnershipEntity::class,
-		PackageSourceEntity::class
+		PackageSourceEntity::class,
+		ConfirmationLaunchEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
@@ -91,9 +94,10 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 3, to = 4),
 		AutoMigration(from = 5, to = 6),
 		AutoMigration(from = 6, to = 7),
-		AutoMigration(from = 8, to = 9)
+		AutoMigration(from = 8, to = 9),
+		AutoMigration(from = 9, to = 10)
 	],
-	version = 9,
+	version = 10,
 	exportSchema = true
 )
 @TypeConverters(
@@ -118,6 +122,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
 	abstract fun installPreapprovalDao(): InstallPreapprovalDao
 	abstract fun installConstraintsDao(): InstallConstraintsDao
+	abstract fun confirmationLaunchDao(): ConfirmationLaunchDao
 
 	internal companion object {
 

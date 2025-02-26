@@ -26,6 +26,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
 import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
@@ -35,9 +36,12 @@ import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmati
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.plugin.AckpinePlugin
+import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import java.util.UUID
+import java.util.concurrent.Executor
 import kotlin.random.Random
 import kotlin.random.nextInt
 import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
@@ -85,6 +89,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 							IllegalArgumentException("$TAG: confirmationIntent was null.")
 						)
 						return
+					}
+					if (Build.VERSION.SDK_INT in 31..32 && !getRequireUserAction(intent)) {
+						setConfirmationLaunched(context, ackpineSessionId)
 					}
 					handleConfirmation(
 						context, intent, confirmationIntent, ackpineSessionId, sessionId, isPreapproval
@@ -174,8 +181,17 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		)
 	}
 
+	private fun setConfirmationLaunched(context: Context, ackpineSessionId: UUID) = executor.execute {
+		AckpineDatabase
+			.getInstance(context, executor)
+			.confirmationLaunchDao()
+			.setConfirmationLaunched(ackpineSessionId.toString())
+	}
+
 	private fun isPreapproval(intent: Intent) = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 			&& intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
+
+	private fun getRequireUserAction(intent: Intent) = intent.getBooleanExtra(EXTRA_REQUIRE_USER_ACTION, true)
 
 	private fun InstallFailure.Companion.fromIntent(intent: Intent, status: Int, message: String?): InstallFailure {
 		val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
@@ -185,12 +201,27 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 
-	internal companion object {
+	@RestrictTo(RestrictTo.Scope.LIBRARY)
+	internal companion object : AckpinePlugin {
+
+		private lateinit var executor: Executor
+
+		init {
+			AckpinePluginRegistry.register(this)
+		}
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
 
 		@JvmSynthetic
 		internal const val EXTRA_CONFIRMATION = "ru.solrudev.ackpine.extra.CONFIRMATION"
+
+		@JvmSynthetic
+		internal const val EXTRA_REQUIRE_USER_ACTION = "ru.solrudev.ackpine.extra.REQUIRE_USER_ACTION"
+
+		@JvmSynthetic
+		override fun setExecutor(executor: Executor) {
+			this.executor = executor
+		}
 	}
 }
