@@ -103,8 +103,11 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDslKt {
 	public static final fun constraints-8Mi8wO0 (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;JLkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Landroid/net/Uri;)V
 	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;)V
 	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Landroid/net/Uri;)V
 	public static final fun preapproval (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun preapproval$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 	public static synthetic fun preapproval$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
@@ -131,8 +134,11 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDs
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalKt {
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public static final fun InstallPreapproval (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Landroid/icu/util/ULocale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;

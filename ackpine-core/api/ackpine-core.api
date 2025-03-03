@@ -10,6 +10,9 @@ public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Ini
 	public fun dependencies ()Ljava/util/List;
 }
 
+public abstract interface annotation class ru/solrudev/ackpine/DelicateAckpineApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface class ru/solrudev/ackpine/DisposableSubscription {
 	public abstract fun dispose ()V
 	public abstract fun isDisposed ()Z
