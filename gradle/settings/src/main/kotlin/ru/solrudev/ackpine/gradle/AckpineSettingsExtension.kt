@@ -21,6 +21,8 @@ import org.gradle.api.file.FileTree
 import org.gradle.api.initialization.Settings
 import javax.inject.Inject
 
+private val SANITIZING_REGEX = Regex("\\W+")
+
 /**
  * Extension for Ackpine `settings` plugin.
  */
@@ -52,10 +54,13 @@ public abstract class AckpineSettingsExtension @Inject constructor(private val s
 	 * Finds a version catalog of a given [name] in `gradle` directory and registers it to the build.
 	 *
 	 * This function will traverse up to 2 levels up if the version catalog is not found.
+	 *
+	 * Provided [name] will be sanitized before usage.
 	 */
 	public fun versionCatalog(name: String): Unit = settings.dependencyResolutionManagement {
-		versionCatalogs.register(name) {
-			val versionCatalog = findFile(settings.layout.rootDirectory, "gradle/$name.versions.toml")
+		val sanitizedName = name.replace(SANITIZING_REGEX, "")
+		versionCatalogs.register(sanitizedName) {
+			val versionCatalog = findFile(settings.layout.rootDirectory, "gradle/$sanitizedName.versions.toml")
 			from(settings.layout.rootDirectory.files(versionCatalog))
 		}
 	}
