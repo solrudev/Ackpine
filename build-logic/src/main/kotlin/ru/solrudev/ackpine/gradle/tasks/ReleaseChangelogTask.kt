@@ -36,19 +36,12 @@ internal abstract class ReleaseChangelogTask : DefaultTask() {
 	@TaskAction
 	internal fun writeReleaseChangelog() {
 		val changelog = changelogFile.get().asFile.useLines { lines ->
-			buildString {
-				lines
-					.dropWhile { !it.startsWith("###") }
-					.takeWhile { !it.startsWith("Version") }
-					.forEach { line ->
-						append(line)
-						append('\n')
-					}
-				val lastDotIndex = lastIndexOf(".")
-				if (lastDotIndex < length - 1) {
-					delete(lastDotIndex + 1, length)
-				}
-			}
+			lines
+				.dropWhile { !it.startsWith("### ") }
+				.takeWhile { !it.startsWith("Version") }
+				.toList()
+				.dropLastWhile { it.isEmpty() }
+				.joinToString("\n")
 		}
 		outputFile.get().asFile.writeText(changelog)
 	}
