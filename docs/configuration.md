@@ -155,6 +155,8 @@ A strategy for handling user's confirmation of installation or uninstallation. C
 
 It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
+`requireUserAction` is a **delicate** API. This option is unstable for use on different Android versions from different vendors. It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most notably from Chinese vendors, unless your app is privileged for silent installs.
+
 If `DEFERRED` confirmation is never used in the app, it's possible to remove Ackpine's notification channel from the app's notification settings, which is used for posting confirmation notifications and is set up automatically. For this, disable automatic Ackpine initialization by adding the following lines to the app's `AndroidManifest.xml`:
 ```xml
 <provider

@@ -67,7 +67,7 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 *
 	 * This is a **delicate** API. This option is unstable for use on different Android versions from different vendors.
 	 * It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most
-	 * notably from Chinese vendors.
+	 * notably from Chinese vendors, unless your app is privileged for silent installs.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */

@@ -368,7 +368,7 @@ public class InstallParameters private constructor(
 		 *
 		 * This is a **delicate** API. This option is unstable for use on different Android versions from different
 		 * vendors. It's recommended to avoid using it on API level < 33 and on devices with modified OS package
-		 * installer, most notably from Chinese vendors.
+		 * installer, most notably from Chinese vendors, unless your app is privileged for silent installs.
 		 */
 		@DelicateAckpineApi
 		public fun setRequireUserAction(requireUserAction: Boolean): Builder = apply {
