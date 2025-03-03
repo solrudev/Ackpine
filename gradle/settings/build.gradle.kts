@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,28 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
-
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
-
 plugins {
-	id("ru.solrudev.ackpine.settings")
+	`kotlin-dsl`
 }
 
-ackpine {
-	versionCatalog("libs")
+kotlin {
+	jvmToolchain(21)
+	explicitApi()
+}
+
+gradlePlugin {
+	plugins {
+		register("ackpine-settings") {
+			id = "ru.solrudev.ackpine.settings"
+			implementationClass = "ru.solrudev.ackpine.gradle.AckpineSettingsPlugin"
+		}
+	}
+}
+
+dependencies {
+	implementation(
+		group = "org.gradle.toolchains.foojay-resolver-convention",
+		name = "org.gradle.toolchains.foojay-resolver-convention.gradle.plugin",
+		version = "0.9.0"
+	)
 }

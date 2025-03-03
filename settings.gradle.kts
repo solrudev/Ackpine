@@ -16,64 +16,18 @@
 
 rootProject.name = "Ackpine"
 
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
-
 pluginManagement {
 	includeBuild("build-logic")
-
-	repositories {
-		google {
-			content {
-				includeGroupAndSubgroups("androidx")
-				includeGroupAndSubgroups("com.android")
-				includeGroupAndSubgroups("com.google")
-				includeGroup("com.google.testing.platform")
-			}
-		}
-		mavenCentral()
-		gradlePluginPortal()
-	}
+	includeBuild("/gradle/settings")
 }
 
 plugins {
-	id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+	id("ru.solrudev.ackpine.settings")
 }
 
-dependencyResolutionManagement {
-	repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
-
-	repositories {
-		google {
-			content {
-				includeGroupAndSubgroups("androidx")
-				includeGroupAndSubgroups("com.android")
-				includeGroupAndSubgroups("com.google")
-				includeGroup("com.google.testing.platform")
-			}
-		}
-		mavenCentral()
-		gradlePluginPortal()
-	}
-
-	versionCatalogs {
-		register("androidx") {
-			from(files("gradle/androidx.versions.toml"))
-		}
-		register("kotlinx") {
-			from(files("gradle/kotlinx.versions.toml"))
-		}
-	}
+ackpine {
+	configurePluginRepositories()
+	includeSubprojects()
+	versionCatalog("androidx")
+	versionCatalog("kotlinx")
 }
-
-include(":ackpine-core")
-include(":ackpine-ktx")
-include(":ackpine-splits")
-include(":ackpine-splits-ktx")
-include(":ackpine-assets")
-include(":ackpine-runtime")
-include(":ackpine-resources")
-include(":sample-java")
-include(":sample-ktx")
-include(":sample-api34")
-include(":api-documentation")
