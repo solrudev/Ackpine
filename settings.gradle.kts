@@ -18,7 +18,7 @@ rootProject.name = "Ackpine"
 
 pluginManagement {
 	includeBuild("build-logic")
-	includeBuild("/gradle/settings")
+	includeBuild("gradle/settings")
 }
 
 plugins {
