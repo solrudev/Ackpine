@@ -49,6 +49,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
 		if (sessionId == null) {
 			completeSessionExceptionally(IllegalStateException("$TAG: sessionId was null."))
+			finish()
 		}
 		sessionId ?: -1
 	}
@@ -119,11 +120,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode != this.requestCode) {
-			return
-		}
+	override fun onActivityResult(resultCode: Int) {
 		isOnActivityResultCalled = true
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
@@ -164,7 +161,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		canInstallPackages = canInstallPackages()
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
-			?.let { confirmationIntent -> startActivityForResult(confirmationIntent, requestCode) }
+			?.let(::startActivityForResult)
 	}
 
 	private fun isSessionStuck(

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
+package ru.solrudev.ackpine.impl.database.dao
 
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
+import androidx.annotation.RestrictTo
+import androidx.room.Dao
+import androidx.room.Query
 
-plugins {
-	id("ru.solrudev.ackpine.settings")
-}
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+@Dao
+internal interface ConfirmationLaunchDao {
 
-ackpine {
-	versionCatalog("libs")
+	@Query(
+		"INSERT OR IGNORE INTO sessions_confirmation_launches(session_id, was_confirmation_launched) " +
+				"VALUES (:sessionId, 1)"
+	)
+	fun setConfirmationLaunched(sessionId: String)
 }

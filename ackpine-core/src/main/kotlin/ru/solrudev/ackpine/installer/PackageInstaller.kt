@@ -55,7 +55,7 @@ public interface PackageInstaller {
 	 *
 	 * @return [ListenableFuture] of [ProgressSession].
 	 */
-	public fun getSessionAsync(sessionId: UUID): ListenableFuture<ProgressSession<InstallFailure>?>
+	public fun getSessionAsync(sessionId: UUID): ListenableFuture<out ProgressSession<InstallFailure>?>
 
 	/**
 	 * Returns all [install sessions][ProgressSession] tracked by this [PackageInstaller],
@@ -65,7 +65,7 @@ public interface PackageInstaller {
 	 *
 	 * @return [ListenableFuture] of [ProgressSessions][ProgressSession] list.
 	 */
-	public fun getSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
+	public fun getSessionsAsync(): ListenableFuture<out List<ProgressSession<InstallFailure>>>
 
 	/**
 	 * Returns all [active][ProgressSession.isActive] [install sessions][ProgressSession] tracked by this
@@ -75,14 +75,14 @@ public interface PackageInstaller {
 	 *
 	 * @return [ListenableFuture] of [ProgressSessions][ProgressSession] list.
 	 */
-	public fun getActiveSessionsAsync(): ListenableFuture<List<ProgressSession<InstallFailure>>>
+	public fun getActiveSessionsAsync(): ListenableFuture<out List<ProgressSession<InstallFailure>>>
 
 	public companion object {
 
 		private val lock = Any()
 
 		@Volatile
-		private var packageInstaller: PackageInstaller? = null
+		private var packageInstaller: PackageInstallerImpl? = null
 
 		/**
 		 * Retrieves the default singleton instance of [PackageInstaller].
@@ -92,6 +92,11 @@ public interface PackageInstaller {
 		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageInstaller {
+			return getImpl(context)
+		}
+
+		@JvmSynthetic
+		internal fun getImpl(context: Context): PackageInstallerImpl {
 			var instance = packageInstaller
 			if (instance != null) {
 				return instance
@@ -106,7 +111,7 @@ public interface PackageInstaller {
 			return instance!!
 		}
 
-		private fun create(context: Context): PackageInstaller {
+		private fun create(context: Context): PackageInstallerImpl {
 			AckpinePluginRegistry.register(PackageInstallerPlugin)
 			val database = AckpineDatabase.getInstance(context.applicationContext, PackageInstallerPlugin.executor)
 			return PackageInstallerImpl(

@@ -122,7 +122,8 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void cancelSession(@NonNull UUID id) {
-		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
+		final var future = packageInstaller.getSessionAsync(id);
+		Futures.addCallback(future, new FutureCallback<ProgressSession<InstallFailure>>() {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
@@ -190,7 +191,8 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	private void addSessionListeners(@NonNull UUID id) {
-		Futures.addCallback(packageInstaller.getSessionAsync(id), new FutureCallback<>() {
+		final var future = packageInstaller.getSessionAsync(id);
+		Futures.addCallback(future, new FutureCallback<ProgressSession<InstallFailure>>() {
 			@Override
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {

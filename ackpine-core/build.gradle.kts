@@ -21,6 +21,7 @@ plugins {
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
 	alias(libs.plugins.kotlin.ksp)
+	alias(androidx.plugins.room)
 }
 
 ackpine {
@@ -28,13 +29,11 @@ ackpine {
 	artifact {
 		name = "Ackpine Core"
 	}
+	internalPackages("ru.solrudev.ackpine.impl")
 }
 
-dokka {
-	dokkaSourceSets.configureEach {
-		val implementationSources = sourceRoots.asFileTree.matching { include("**/impl/**") }
-		suppressedFiles.from(implementationSources)
-	}
+room {
+	schemaDirectory("$projectDir/schemas")
 }
 
 dependencies {
@@ -47,8 +46,4 @@ dependencies {
 	implementation(androidx.concurrent.futures.core)
 	implementation(androidx.core.ktx)
 	implementation(androidx.room.runtime)
-}
-
-ksp {
-	arg("room.schemaLocation", File(projectDir, "schemas").path)
 }

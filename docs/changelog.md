@@ -1,6 +1,40 @@
 Change Log
 ==========
 
+Version 0.11.0 (2025-03-04)
+---------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.1.10.
+- Updated `apksig` to 8.8.2.
+
+### Bug fixes and improvements
+
+- Mark `ListenableFuture` result types as covariant in public API. This change is source-incompatible for Java consumers:
+
+    ```java
+    // Using Guava
+    var future = packageInstaller.getSessionAsync(id);
+    Futures.addCallback(future, new FutureCallback<ProgressSession<InstallFailure>>() {
+    //            Add explicit type here if absent ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // ...    
+    }, MoreExecutors.directExecutor());
+    ```
+
+- Fix `SESSION_BASED` installer sessions not committing after process restart on API level 31-32 if `requireUserAction` is `false` and user's confirmation for this session was already requested previously nevertheless.
+- Add overloads accepting icon for `preapproval` `InstallParameters` DSL in `ackpine-ktx`.
+- Mark `requireUserAction` setters as delicate API, as this option is unstable for use on different Android versions. Check documentation for more details.
+- Raise `ackpine-splits` APIs deprecation level to error.
+
+### Public API changes
+
+- Marked `ListenableFuture` result types as covariant in `PackageInstaller` and `PackageUninstaller`.
+- Raised deprecation level to error for `ApkSplits.throwOnInvalidSplitPackage()`, `ApkSplits.sortedByCompatibility()`, `ApkSplits.filterCompatible()`, `ApkSplits.addAllTo()` methods and `ApkCompatibility` class in `ackpine-splits`.
+- Marked `requireUserAction` setter in `InstallParametersDsl` and `InstallParameters.Builder.setRequireUserAction()` as delicate APIs.
+- Added `InstallParametersDsl.preapproval()` overloads accepting `Uri` of an icon.
+- Added `InstallPreapproval` factory function overloads accepting `Uri` of an icon.
+
 Version 0.10.2 (2025-02-09)
 ---------------------------
 
@@ -30,7 +64,7 @@ Version 0.10.0 (2025-01-24)
 - Updated ViewBindingPropertyDelegate to 2.0.0 (sample apps dependency).
 - Added `api` dependency on Guava's `ListenableFuture` in `ackpine-splits`.
 - Added `implementation` dependency on `androidx.concurrent:concurrent-futures` in `ackpine-splits` and `ackpine-runtime`.
-- Changed `ackpine-spits` dependency to `ackpine-splits-ktx` in `sample-ktx`.
+- Changed `ackpine-splits` dependency to `ackpine-splits-ktx` in `sample-ktx`.
 
 ### Bug fixes and improvements
 

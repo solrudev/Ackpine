@@ -22,7 +22,6 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
-import ru.solrudev.ackpine.gradle.Constants
 
 public class AckpineKotlinSamplePlugin : Plugin<Project> {
 
@@ -35,7 +34,6 @@ public class AckpineKotlinSamplePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidProjectExtension> {
-		jvmToolchain(Constants.JDK_VERSION)
 		compilerOptions {
 			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}

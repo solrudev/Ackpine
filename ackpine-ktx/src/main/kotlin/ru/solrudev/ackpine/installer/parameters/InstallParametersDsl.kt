@@ -21,6 +21,7 @@ import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -61,11 +62,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	/**
 	 * Indicate whether user action should be required when the session is committed. By default equals to `true`.
 	 *
-	 * Applying this option is best-effort. It takes effect only on API level >= [34][Build.VERSION_CODES.S] with
+	 * Applying this option is best-effort. It takes effect only on API level >= [31][Build.VERSION_CODES.S] with
 	 * [InstallerType.SESSION_BASED] installer type.
+	 *
+	 * This is a **delicate** API. This option is unstable for use on different Android versions from different vendors.
+	 * It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most
+	 * notably from Chinese vendors, unless your app is privileged for silent installs.
 	 *
 	 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 	 */
+	@set:DelicateAckpineApi
 	public var requireUserAction: Boolean
 
 	/**
@@ -163,6 +169,7 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setName(value)
 		}
 
+	@set:DelicateAckpineApi
 	override var requireUserAction: Boolean
 		get() = builder.requireUserAction
 		set(value) {
@@ -258,4 +265,54 @@ public inline fun InstallParametersDsl.preapproval(
 	configure: InstallPreapprovalDsl.() -> Unit = {}
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, configure)
+}
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param languageTag the locale of the app label being used. Represented by IETF BCP 47 language tag.
+ * @param icon the icon representing the app to be installed.
+ */
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	languageTag: String,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, languageTag, icon)
+}
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.N)
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: ULocale,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, icon)
+}
+
+/**
+ * Configures [pre-commit install approval][InstallPreapproval].
+ * @param packageName the package name of the app to be installed.
+ * @param label the label representing the app to be installed.
+ * @param locale the locale of the app label being used.
+ * @param icon the icon representing the app to be installed.
+ */
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public fun InstallParametersDsl.preapproval(
+	packageName: String,
+	label: String,
+	locale: Locale,
+	icon: Uri
+) {
+	preapproval = InstallPreapproval(packageName, label, locale, icon)
 }

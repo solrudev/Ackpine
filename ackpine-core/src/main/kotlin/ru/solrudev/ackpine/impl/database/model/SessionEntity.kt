@@ -175,7 +175,15 @@ internal class SessionEntity internal constructor(
 			entity = NativeSessionIdEntity::class,
 			projection = ["native_session_id"]
 		)
-		val nativeSessionId: Int? = -1
+		val nativeSessionId: Int? = -1,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = ConfirmationLaunchEntity::class,
+			projection = ["was_confirmation_launched"]
+		)
+		val wasConfirmationLaunched: Boolean? = false
 	)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)

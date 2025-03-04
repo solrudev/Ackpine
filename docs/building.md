@@ -22,7 +22,6 @@ To serve documentation website on localhost, execute this command (requires Pyth
 ```
 mkdocs serve
 ```
-Documentation website styling is optimized for Material for MkDocs v9.3.2 and lower.
 
 To build release versions of sample apps you'll need to provide a keystore. For this, create a `keystore.properties` file in the root directory with the following contents:
 ```properties

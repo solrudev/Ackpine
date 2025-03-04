@@ -288,6 +288,7 @@ internal class SessionBasedInstallSession internal constructor(
 			action = PackageInstallerStatusReceiver.getAction(context)
 			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
+			putExtra(PackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
 			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 		}
 		NotificationIntents.putNotification(receiverIntent, notificationData, notificationId)

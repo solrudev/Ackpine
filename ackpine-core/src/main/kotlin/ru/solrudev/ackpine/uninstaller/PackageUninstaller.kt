@@ -53,7 +53,7 @@ public interface PackageUninstaller {
 	 *
 	 * @return [ListenableFuture] of [Session].
 	 */
-	public fun getSessionAsync(sessionId: UUID): ListenableFuture<Session<UninstallFailure>?>
+	public fun getSessionAsync(sessionId: UUID): ListenableFuture<out Session<UninstallFailure>?>
 
 	/**
 	 * Returns all [uninstall sessions][Session] tracked by this [PackageUninstaller], [active][Session.isActive] or
@@ -63,7 +63,7 @@ public interface PackageUninstaller {
 	 *
 	 * @return [ListenableFuture] of [Sessions][Session] list.
 	 */
-	public fun getSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
+	public fun getSessionsAsync(): ListenableFuture<out List<Session<UninstallFailure>>>
 
 	/**
 	 * Returns all [active][Session.isActive] [uninstall sessions][Session] tracked by this [PackageUninstaller].
@@ -72,14 +72,14 @@ public interface PackageUninstaller {
 	 *
 	 * @return [ListenableFuture] of [Sessions][Session] list.
 	 */
-	public fun getActiveSessionsAsync(): ListenableFuture<List<Session<UninstallFailure>>>
+	public fun getActiveSessionsAsync(): ListenableFuture<out List<Session<UninstallFailure>>>
 
 	public companion object {
 
 		private val lock = Any()
 
 		@Volatile
-		private var packageUninstaller: PackageUninstaller? = null
+		private var packageUninstaller: PackageUninstallerImpl? = null
 
 		/**
 		 * Retrieves the default singleton instance of [PackageUninstaller].
@@ -89,6 +89,11 @@ public interface PackageUninstaller {
 		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageUninstaller {
+			return getImpl(context)
+		}
+
+		@JvmSynthetic
+		internal fun getImpl(context: Context): PackageUninstallerImpl {
 			var instance = packageUninstaller
 			if (instance != null) {
 				return instance
@@ -103,7 +108,7 @@ public interface PackageUninstaller {
 			return instance!!
 		}
 
-		private fun create(context: Context): PackageUninstaller {
+		private fun create(context: Context): PackageUninstallerImpl {
 			AckpinePluginRegistry.register(PackageUninstallerPlugin)
 			val database = AckpineDatabase.getInstance(context.applicationContext, PackageUninstallerPlugin.executor)
 			return PackageUninstallerImpl(

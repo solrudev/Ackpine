@@ -33,7 +33,7 @@ internal fun <T : Serializable> ByteArray.deserialize(): T {
 }
 
 @JvmSynthetic
-internal fun <T : Serializable> T.serialize(): ByteArray =
+internal fun Serializable.serialize(): ByteArray =
 	ByteArrayOutputStream().use { byteArrayOutputStream ->
 		ObjectOutputStream(byteArrayOutputStream).use { objectOutputStream ->
 			objectOutputStream.writeObject(this)

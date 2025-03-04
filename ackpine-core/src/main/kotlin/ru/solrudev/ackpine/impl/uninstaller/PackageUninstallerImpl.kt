@@ -25,6 +25,7 @@ import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
+import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -36,7 +37,7 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 private typealias SessionsCollectionTransformer =
-			(Collection<Session<UninstallFailure>>) -> List<Session<UninstallFailure>>
+			(Collection<CompletableSession<UninstallFailure>>) -> List<CompletableSession<UninstallFailure>>
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class PackageUninstallerImpl internal constructor(
@@ -47,12 +48,12 @@ internal class PackageUninstallerImpl internal constructor(
 	private val notificationIdFactory: () -> Int
 ) : PackageUninstaller {
 
-	private val sessions = ConcurrentHashMap<UUID, Session<UninstallFailure>>()
+	private val sessions = ConcurrentHashMap<UUID, CompletableSession<UninstallFailure>>()
 
 	@Volatile
 	private var isSessionsMapInitialized = false
 
-	override fun createSession(parameters: UninstallParameters): Session<UninstallFailure> {
+	override fun createSession(parameters: UninstallParameters): CompletableSession<UninstallFailure> {
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
 		val dbWriteSemaphore = BinarySemaphore()
@@ -83,7 +84,7 @@ internal class PackageUninstallerImpl internal constructor(
 		transform = { sessions -> sessions.filter { it.isActive } }
 	)
 
-	private fun getSessionFromDb(sessionId: UUID, completer: Completer<Session<UninstallFailure>?>) {
+	private fun getSessionFromDb(sessionId: UUID, completer: Completer<CompletableSession<UninstallFailure>?>) {
 		sessions[sessionId]?.let { session ->
 			completer.set(session)
 			return
@@ -96,7 +97,7 @@ internal class PackageUninstallerImpl internal constructor(
 	private inline fun getSessionsAsync(
 		caller: String,
 		crossinline transform: SessionsCollectionTransformer
-	): ListenableFuture<List<Session<UninstallFailure>>> {
+	): ListenableFuture<List<CompletableSession<UninstallFailure>>> {
 		if (isSessionsMapInitialized) {
 			return CallbackToFutureAdapter.getFuture { completer ->
 				completer.set(transform(sessions.values))
@@ -112,7 +113,7 @@ internal class PackageUninstallerImpl internal constructor(
 		}
 	}
 
-	private fun initializeSessions(): Collection<Session<UninstallFailure>> {
+	private fun initializeSessions(): Collection<CompletableSession<UninstallFailure>> {
 		if (isSessionsMapInitialized) {
 			return sessions.values
 		}
@@ -157,7 +158,7 @@ internal class PackageUninstallerImpl internal constructor(
 		)
 	}
 
-	private fun SessionEntity.UninstallSession.toUninstallSession(): Session<UninstallFailure> {
+	private fun SessionEntity.UninstallSession.toUninstallSession(): CompletableSession<UninstallFailure> {
 		val parameters = UninstallParameters.Builder(packageName)
 			.setConfirmation(session.confirmation)
 			.setNotificationData(

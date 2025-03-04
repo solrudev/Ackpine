@@ -25,6 +25,7 @@ import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
+import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
 import ru.solrudev.ackpine.impl.uninstaller.session.UninstallSession
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -45,7 +46,7 @@ internal interface UninstallSessionFactory {
 		initialState: Session.State<UninstallFailure>,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
-	): Session<UninstallFailure>
+	): CompletableSession<UninstallFailure>
 
 	fun resolveNotificationData(notificationData: NotificationData, packageName: String): NotificationData
 }
@@ -65,7 +66,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		initialState: Session.State<UninstallFailure>,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
-	): Session<UninstallFailure> {
+	): CompletableSession<UninstallFailure> {
 		return UninstallSession(
 			applicationContext,
 			parameters.packageName,

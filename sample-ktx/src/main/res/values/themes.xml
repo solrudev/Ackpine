@@ -68,6 +68,8 @@
     <style name="Base.Theme.Ackpine" parent="Base.V21.Theme.Ackpine" />
 
     <style name="Theme.Ackpine" parent="Base.Theme.Ackpine">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="linearProgressIndicatorStyle">@style/Widget.Ackpine.LinearProgressIndicator</item>
     </style>
 

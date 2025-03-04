@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
+package ru.solrudev.ackpine.gradle
 
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
+import org.gradle.api.artifacts.dsl.RepositoryHandler
 
-plugins {
-	id("ru.solrudev.ackpine.settings")
-}
-
-ackpine {
-	versionCatalog("libs")
+internal fun RepositoryHandler.configureRepositories() {
+	google {
+		content {
+			includeGroupAndSubgroups("androidx")
+			includeGroupAndSubgroups("com.android")
+			includeGroupAndSubgroups("com.google")
+		}
+	}
+	mavenCentral()
 }

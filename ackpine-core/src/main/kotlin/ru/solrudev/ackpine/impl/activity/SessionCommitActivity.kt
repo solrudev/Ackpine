@@ -25,7 +25,6 @@ import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
 import android.widget.ProgressBar
-import androidx.annotation.CallSuper
 import androidx.annotation.RestrictTo
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
@@ -50,18 +49,16 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
 
-	protected abstract val ackpineSessionFuture: ListenableFuture<out Session<F>?>
+	protected abstract val ackpineSessionFuture: ListenableFuture<out CompletableSession<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
 		intent.extras?.getSerializableCompat<UUID>(EXTRA_ACKPINE_SESSION_ID) ?: error("ackpineSessionId was null")
 	}
 
-	protected var requestCode = -1
-		private set
-
 	private val subscriptions = DisposableSubscriptionContainer()
 	private val handler = Handler(Looper.getMainLooper())
 	private val handlerCallbacks = mutableListOf<Runnable>()
+	private var requestCode = -1
 	private var isLoading = false
 	private var isOnActivityResultCalled = false
 
@@ -99,18 +96,24 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
 	}
 
-	@CallSuper
-	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		isOnActivityResultCalled = true
+		if (requestCode != this.requestCode) {
+			return
+		}
+		onActivityResult(resultCode)
 	}
 
-	@JvmSynthetic
-	internal fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
+	protected open fun onActivityResult(resultCode: Int) { // no-op by default
+	}
+
+	protected fun startActivityForResult(intent: Intent) = startActivityForResult(intent, requestCode)
+
+	protected fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
 		session?.complete(state)
 	}
 
-	@JvmSynthetic
-	internal fun completeSessionExceptionally(exception: Exception) = withCompletableSession { session ->
+	protected fun completeSessionExceptionally(exception: Exception) = withCompletableSession { session ->
 		session?.completeExceptionally(exception)
 	}
 
@@ -138,11 +141,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		)
 	}
 
-	protected inline fun withCompletableSession(crossinline block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult { session ->
-			val completableSession = session as? CompletableSession<F>
-			block(completableSession)
-		}
+	protected fun withCompletableSession(block: (CompletableSession<F>?) -> Unit) {
+		ackpineSessionFuture.handleResult(block)
 	}
 
 	private fun notifySessionCommitted() {
@@ -200,6 +200,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	internal companion object {
 
 		@JvmSynthetic
-		internal const val EXTRA_ACKPINE_SESSION_ID = "ACKPINE_SESSION_ID"
+		internal const val EXTRA_ACKPINE_SESSION_ID = "ru.solrudev.ackpine.extra.ACKPINE_SESSION_ID"
 	}
 }

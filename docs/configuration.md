@@ -33,10 +33,9 @@ An example of creating a session with custom parameters:
         preapproval(
             packageName = "com.example.package",
             label = "Sample App",
-            locale = ULocale.US
-        ) {
+            locale = ULocale.US,
             icon = iconUri
-        }
+        )
         constraints(timeout = 1.minutes) {
             timeoutStrategy = TimeoutStrategy.CommitEagerly
             isAppNotForegroundRequired = true
@@ -156,6 +155,8 @@ A strategy for handling user's confirmation of installation or uninstallation. C
 
 It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
+`requireUserAction` is a **delicate** API. This option is unstable for use on different Android versions from different vendors. It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most notably from Chinese vendors, unless your app is privileged for silent installs.
+
 If `DEFERRED` confirmation is never used in the app, it's possible to remove Ackpine's notification channel from the app's notification settings, which is used for posting confirmation notifications and is set up automatically. For this, disable automatic Ackpine initialization by adding the following lines to the app's `AndroidManifest.xml`:
 ```xml
 <provider
@@ -233,6 +234,29 @@ Installer waits for constraints to be satisfied, so to configure them, timeout d
 - `Fail` (default) - installer reports failure on timeout if constraints are not met.
 - `CommitEagerly` - installer commits session immediately after timeout even if constraints are not met.
 - `Retry` - installer retries waiting for constraints to be satisfied with the same timeout if constraints were not met after the first attempt. Requires `retries` parameter to be provided when created.
+
+There's a preset for gentle updates which can be used like this:
+
+=== "Kotlin"
+
+    ```kotlin
+    val session = packageInstaller.createSession(apkUri) {
+        constraints = InstallConstraints.gentleUpdate(
+            timeout = 1.minutes,
+            timeoutStrategy = TimeoutStrategy.CommitEagerly // optional
+        )
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var constraints = InstallConstraints.gentleUpdate(60000L,
+            /* optional */ TimeoutStrategy.COMMIT_EAGERLY);
+    var session = packageInstaller.createSession(new InstallParameters.Builder(apkUri)
+            .setConstraints(constraints)
+            .build());
+    ```
 
 Update ownership
 ----------------
