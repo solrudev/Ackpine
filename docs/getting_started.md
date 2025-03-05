@@ -56,7 +56,7 @@ Launching an install or uninstall session with default parameters and getting it
     	    if (failure instanceof Failure.Exceptional f) {
     	        System.out.println(f.getException());
     	    } else {
-                System.out.println(failure.getCause().getMessage());
+                System.out.println(failure.getMessage());
     	    }
         }
         
