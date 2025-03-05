@@ -21,8 +21,8 @@ package ru.solrudev.ackpine.splits
  */
 @Deprecated(
 	message = "This class is used for deprecated APK sequence transformation APIs as an intermediate value holder. " +
-			"Migrate to SplitPackage which supports use cases for which this class was intended. Usage of this class " +
-			"will become an error in the next minor release.",
+			"Migrate to SplitPackage which supports use cases for which this class was intended. This class " +
+			"will be removed in the next minor release.",
 	level = DeprecationLevel.ERROR,
 	replaceWith = ReplaceWith(
 		expression = "SplitPackage.Entry",
