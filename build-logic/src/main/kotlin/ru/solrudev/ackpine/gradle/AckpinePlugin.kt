@@ -35,7 +35,9 @@ public class AckpinePlugin : Plugin<Project> {
 		get() = layout.projectDirectory.file("changelog.txt")
 
 	override fun apply(target: Project): Unit = target.run {
-		require(this == rootProject) { "Plugin must be applied to the root project but was applied to $path" }
+		require(isolated == isolated.rootProject) {
+			"Plugin must be applied to the root project but was applied to $path"
+		}
 		group = Constants.PACKAGE_NAME
 		version = versionNumber.get().toString()
 		registerBuildAckpineTask()
