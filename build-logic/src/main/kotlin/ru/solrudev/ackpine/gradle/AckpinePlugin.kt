@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
@@ -26,14 +25,12 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
+import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
 public class AckpinePlugin : Plugin<Project> {
-
-	private val Project.releaseChangelogFile
-		get() = layout.projectDirectory.file("changelog.txt")
 
 	override fun apply(target: Project): Unit = target.run {
 		require(isolated == isolated.rootProject) {
@@ -50,9 +47,7 @@ public class AckpinePlugin : Plugin<Project> {
 	private fun Project.registerBuildAckpineTask() {
 		val library = configurations.register("library") {
 			resolvable()
-			attributes {
-				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
-			}
+			libraryElements(objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
 		}
 		tasks.register("buildAckpine") {
 			group = "build"
@@ -65,9 +60,7 @@ public class AckpinePlugin : Plugin<Project> {
 		val releaseDir = layout.projectDirectory.dir("release")
 		val sample = configurations.register("sample") {
 			resolvable()
-			attributes {
-				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
-			}
+			libraryElements(objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
 		}
 		return tasks.register<Sync>("buildSamples") {
 			group = "build"
@@ -78,6 +71,7 @@ public class AckpinePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
+		val releaseChangelogFile = layout.projectDirectory.file("changelog.txt")
 		return tasks.register<ReleaseChangelogTask>("releaseChangelog") {
 			changelogFile = layout.projectDirectory.file("docs/changelog.md")
 			outputFile = releaseChangelogFile

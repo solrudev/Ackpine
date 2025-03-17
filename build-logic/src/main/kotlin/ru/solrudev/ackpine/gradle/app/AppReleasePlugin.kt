@@ -20,11 +20,8 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
@@ -36,6 +33,7 @@ import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
+import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import java.io.File
@@ -112,13 +110,9 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerConsumableAppConfiguration(): NamedDomainObjectProvider<Configuration> {
-		return configurations.register("app") {
-			consumable()
-			attributes {
-				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
-			}
-		}
+	private fun Project.registerConsumableAppConfiguration() = configurations.register("app") {
+		consumable()
+		libraryElements(objects.named(LIBRARY_ELEMENTS))
 	}
 
 	private fun Project.configureCleanTask(deleteTarget: Any) {
