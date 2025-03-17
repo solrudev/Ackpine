@@ -26,8 +26,8 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
@@ -53,7 +53,7 @@ public class AppReleasePlugin : Plugin<Project> {
 			error("Applying app-release plugin requires the Android application plugin to be applied")
 		}
 		configureSigning()
-		registerCopyReleaseArtifactsTasks()
+		registerProduceReleaseArtifactsTasks()
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
@@ -69,13 +69,13 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerCopyReleaseArtifactsTasks() {
+	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			val appConfiguration = registerConsumableAppConfiguration()
 			onVariants(withReleaseBuildType()) { variant ->
-				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
-				appConfiguration.addOutgoingArtifact(copyArtifactsTask)
-				configureCleanTask(copyArtifactsTask)
+				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
+				appConfiguration.addOutgoingArtifact(produceArtifactsTask)
+				configureCleanTask(produceArtifactsTask)
 			}
 		}
 	}
@@ -95,13 +95,13 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
-		val releaseDir = isolated.rootProject.projectDirectory.dir("release")
+	private fun Project.registerProduceArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
+		val releaseDir = layout.projectDirectory.dir("release")
 		val apks = variant.artifacts.get(SingleArtifact.APK)
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
 		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
-		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
-		return tasks.register<Copy>(taskName) {
+		val taskName = variant.computeTaskName(action = "produce", subject = "artifacts")
+		return tasks.register<Sync>(taskName) {
 			from(apks) {
 				include("*.apk")
 			}
