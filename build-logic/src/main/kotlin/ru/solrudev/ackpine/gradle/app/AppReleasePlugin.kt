@@ -96,7 +96,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerProduceArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
-		val releaseDir = layout.projectDirectory.dir("release")
+		val releaseDir = layout.projectDirectory.dir(variant.name)
 		val apks = variant.artifacts.get(SingleArtifact.APK)
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
 		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
