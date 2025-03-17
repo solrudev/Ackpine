@@ -83,7 +83,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	private fun ApplicationExtension.releaseSigningConfigProvider(
 		fileConfigProvider: Provider<Map<String, String>>,
 		environmentConfigProvider: Provider<Map<String, String>>
-	) = signingConfigs.register("releaseSigningConfig") {
+	) = signingConfigs.register("release") {
 		initWith(signingConfigs["debug"])
 		val config = fileConfigProvider.get().ifEmpty { environmentConfigProvider.get() }
 		if (config.isNotEmpty()) {
