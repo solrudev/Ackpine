@@ -28,7 +28,6 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
