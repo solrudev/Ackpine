@@ -26,6 +26,7 @@ ackpine {
 	id = "resources"
 	artifact {
 		name = "Ackpine Resources"
+		inceptionYear = "2024"
 	}
 }
 

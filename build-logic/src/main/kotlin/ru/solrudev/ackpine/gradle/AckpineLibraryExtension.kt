@@ -67,4 +67,9 @@ public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFacto
 	 * Name of the published artifact.
 	 */
 	public val name: Property<String> = objectFactory.property<String>().convention("")
+
+	/**
+	 * Inception year of the published artifact.
+	 */
+	public val inceptionYear: Property<String> = objectFactory.property<String>().convention("2023")
 }
