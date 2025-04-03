@@ -14,9 +14,9 @@ Other useful tasks provided by third-party Gradle plugins:
 - `apiDump`: dumps public API surface of the library projects;
 - `publishAndReleaseToMavenCentral`: publishes the library projects to Maven Central repository. For further information see [plugin's documentation](https://vanniktech.github.io/gradle-maven-publish-plugin/central/#secrets).
 
-Projects are added to `:buildAckpine` and `:buildSamples` tasks through `dependencies` block in root `build.gradle.kts`.
+Projects are added to `:buildAckpine` and `:buildSamples` tasks through `dependencies` block in root `build.gradle.kts`. Library project should have `ru.solrudev.ackpine.library` Gradle plugin applied, and sample app project should have `ru.solrudev.ackpine.app-release` Gradle plugin applied.
 
-Projects are added to `:api-documentation:dokkaGenerate` task through `dependencies` block in `build.gradle.kts` of `api-documentation` project.
+Projects are added to `:api-documentation:dokkaGenerate` task through `dependencies` block in `build.gradle.kts` of `api-documentation` project. Documented project should have `ru.solrudev.ackpine.dokka` Gradle plugin applied.
 
 To serve documentation website on localhost, execute this command (requires Python 3 and Material for MkDocs to be installed):
 ```
