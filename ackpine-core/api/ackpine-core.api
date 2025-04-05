@@ -516,11 +516,36 @@ public abstract interface class ru/solrudev/ackpine/session/Session$StateListene
 }
 
 public abstract class ru/solrudev/ackpine/session/Session$TerminalStateListener : ru/solrudev/ackpine/session/Session$StateListener {
+	public static final field Companion Lru/solrudev/ackpine/session/Session$TerminalStateListener$Companion;
 	public fun <init> (Lru/solrudev/ackpine/session/Session;)V
+	public static final fun attach (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
 	public fun onCancelled (Ljava/util/UUID;)V
 	public fun onFailure (Ljava/util/UUID;Lru/solrudev/ackpine/session/Failure;)V
 	public final fun onStateChanged (Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
 	public fun onSuccess (Ljava/util/UUID;)V
+}
+
+public final class ru/solrudev/ackpine/session/Session$TerminalStateListener$Binder {
+	public synthetic fun <init> (Lru/solrudev/ackpine/session/Session;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun addOnCancelListener (Lru/solrudev/ackpine/session/Session$TerminalStateListener$OnCancelListener;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+	public final fun addOnFailureListener (Lru/solrudev/ackpine/session/Session$TerminalStateListener$OnFailureListener;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+	public final fun addOnSuccessListener (Lru/solrudev/ackpine/session/Session$TerminalStateListener$OnSuccessListener;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+}
+
+public final class ru/solrudev/ackpine/session/Session$TerminalStateListener$Companion {
+	public final fun attach (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+}
+
+public abstract interface class ru/solrudev/ackpine/session/Session$TerminalStateListener$OnCancelListener {
+	public abstract fun onCancelled (Ljava/util/UUID;)V
+}
+
+public abstract interface class ru/solrudev/ackpine/session/Session$TerminalStateListener$OnFailureListener {
+	public abstract fun onFailure (Ljava/util/UUID;Lru/solrudev/ackpine/session/Failure;)V
+}
+
+public abstract interface class ru/solrudev/ackpine/session/Session$TerminalStateListener$OnSuccessListener {
+	public abstract fun onSuccess (Ljava/util/UUID;)V
 }
 
 public final class ru/solrudev/ackpine/session/parameters/Confirmation : java/lang/Enum {
