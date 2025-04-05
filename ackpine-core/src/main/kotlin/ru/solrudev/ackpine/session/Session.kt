@@ -200,7 +200,7 @@ public interface Session<out F : Failure> {
 	 *
 	 * Adding this listener to a session launches it if it's not already.
 	 *
-	 * Consider using [TerminalStateListener.attach] instead of subclassing [TerminalStateListener].
+	 * Consider using [TerminalStateListener.bind] instead of subclassing [TerminalStateListener].
 	 *
 	 * It's recommended to use this class with [Session.addStateListener] for listening to [terminal][State.isTerminal]
 	 * state updates instead of bare [StateListener], because this class handles session's lifecycle appropriately.
@@ -244,23 +244,23 @@ public interface Session<out F : Failure> {
 		public companion object {
 
 			/**
-			 * Launches the [session] and handles its lifecycle. Returns a [Binder] to attach
-			 * [terminal][State.isTerminal] state listeners to the session.
+			 * Launches the [session] and handles its lifecycle. Returns a [Binder] to bind [terminal][State.isTerminal]
+			 * state listeners to the session.
 			 *
 			 * If you don't want to receive terminal state updates, but instead just to launch the session, you can use
 			 * the function like this:
 			 *
 			 * ```
-			 * Session.TerminalStateListener.attach(session, subscriptions);
+			 * Session.TerminalStateListener.bind(session, subscriptions);
 			 * ```
 			 *
-			 * @param session a [Session] to attach listeners to.
+			 * @param session a [Session] to bind listeners to.
 			 * @param subscriptionContainer a [subscription][DisposableSubscription] bag, session state subscription
 			 * will be added to it.
 			 * @return [Binder]
 			 */
 			@JvmStatic
-			public fun <F : Failure> attach(
+			public fun <F : Failure> bind(
 				session: Session<F>,
 				subscriptionContainer: DisposableSubscriptionContainer
 			): Binder<F> {

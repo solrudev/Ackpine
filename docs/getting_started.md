@@ -46,7 +46,7 @@ Launching an install or uninstall session with default parameters and getting it
     var subscriptions = new DisposableSubscriptionContainer();
     var parameters = new InstallParameters.Builder(apkUri).build();
     var session = packageInstaller.createSession(parameters);
-    Session.TerminalStateListener.attach(session, subscriptions)
+    Session.TerminalStateListener.bind(session, subscriptions)
             .addOnCancelListener(sessionId -> System.out.println("Cancelled"))
             .addOnSuccessListener(sessionId -> System.out.println("Success"))
             .addOnFailureListener((sessionId, failure) -> {
@@ -58,7 +58,7 @@ Launching an install or uninstall session with default parameters and getting it
             });
     ```
 
-    Session launches when `TerminalStateListener.attach()` is called.
+    Session launches when `TerminalStateListener.bind()` is called.
 
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
@@ -76,7 +76,7 @@ If you're launching a session inside of a long-living service which is not expec
     ```java
     var subscriptions = new DisposableSubscriptionContainer();
     var session = packageInstaller.createSession(...);
-    Session.TerminalStateListener.attach(session, subscriptions)
+    Session.TerminalStateListener.bind(session, subscriptions)
             .addOnSuccessListener(...)
             .addOnFailureListener(...);
     
@@ -117,7 +117,7 @@ Handling process death is not any different with Ackpine as with any other persi
             @Override
             public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
                 if (session != null) {
-                    Session.TerminalStateListener.attach(session, subscriptions)
+                    Session.TerminalStateListener.bind(session, subscriptions)
                             .addOnSuccessListener(...)
                             .addOnFailureListener(...);
                     // or anything else you want to do with the session

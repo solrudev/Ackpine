@@ -518,7 +518,7 @@ public abstract interface class ru/solrudev/ackpine/session/Session$StateListene
 public abstract class ru/solrudev/ackpine/session/Session$TerminalStateListener : ru/solrudev/ackpine/session/Session$StateListener {
 	public static final field Companion Lru/solrudev/ackpine/session/Session$TerminalStateListener$Companion;
 	public fun <init> (Lru/solrudev/ackpine/session/Session;)V
-	public static final fun attach (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+	public static final fun bind (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
 	public fun onCancelled (Ljava/util/UUID;)V
 	public fun onFailure (Ljava/util/UUID;Lru/solrudev/ackpine/session/Failure;)V
 	public final fun onStateChanged (Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
@@ -533,7 +533,7 @@ public final class ru/solrudev/ackpine/session/Session$TerminalStateListener$Bin
 }
 
 public final class ru/solrudev/ackpine/session/Session$TerminalStateListener$Companion {
-	public final fun attach (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
+	public final fun bind (Lru/solrudev/ackpine/session/Session;Lru/solrudev/ackpine/DisposableSubscriptionContainer;)Lru/solrudev/ackpine/session/Session$TerminalStateListener$Binder;
 }
 
 public abstract interface class ru/solrudev/ackpine/session/Session$TerminalStateListener$OnCancelListener {

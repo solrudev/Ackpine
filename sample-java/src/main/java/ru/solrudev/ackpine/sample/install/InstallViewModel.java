@@ -207,7 +207,7 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	private void addSessionListeners(@NonNull ProgressSession<InstallFailure> session) {
-		Session.TerminalStateListener.attach(session, subscriptions)
+		Session.TerminalStateListener.bind(session, subscriptions)
 				.addOnCancelListener(sessionDataRepository::removeSessionData)
 				.addOnSuccessListener(sessionDataRepository::removeSessionData)
 				.addOnFailureListener((sessionId, failure) -> {

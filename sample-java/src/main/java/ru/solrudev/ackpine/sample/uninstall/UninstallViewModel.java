@@ -152,7 +152,7 @@ public final class UninstallViewModel extends ViewModel {
 	}
 
 	private void attachSessionStateListener(@NonNull Session<UninstallFailure> session) {
-		Session.TerminalStateListener.attach(session, subscriptions)
+		Session.TerminalStateListener.bind(session, subscriptions)
 				.addOnCancelListener(sessionId -> clearSavedState())
 				.addOnSuccessListener(sessionId -> {
 					final String packageName = savedStateHandle.get(PACKAGE_NAME_KEY);
