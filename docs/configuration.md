@@ -66,29 +66,34 @@ An example of creating a session with custom parameters:
 === "Java"
 
     ```java
-    var session = packageInstaller.createSession(new InstallParameters.Builder(baseApkUri)
+    var installMode = new InstallMode.InheritExisting("com.example.package", true);
+    var notificationData = new NotificationData.Builder()
+            .setTitle(Resources.INSTALL_MESSAGE_TITLE)
+            .setContentText(new Resources.InstallMessage(fileName))
+            .setIcon(Resources.INSTALL_ICON)
+            .build();
+    var preapproval = new InstallPreapproval.Builder("com.example.package", "Sample App", ULocale.US)
+            .setIcon(iconUri)
+            .build();
+    var constraints = new InstallConstraints.Builder(60000L)
+            .setTimeoutStrategy(TimeoutStrategy.COMMIT_EAGERLY)
+            .setAppNotForegroundRequired(true)
+            .setAppNotInteractingRequired(true)
+            .build();
+    var parameters = new InstallParameters.Builder(baseApkUri)
             .addApks(apkSplitsUris)
             .setConfirmation(Confirmation.DEFERRED)
             .setInstallerType(InstallerType.SESSION_BASED)
-            .setInstallMode(new InstallMode.InheritExisting("com.example.package", true))
+            .setInstallMode(installMode)
             .setName(fileName)
             .setRequireUserAction(true)
             .setRequestUpdateOwnership(true)
             .setPackageSource(PackageSource.STORE)
-            .setNotificationData(new NotificationData.Builder()
-                    .setTitle(Resources.INSTALL_MESSAGE_TITLE)
-                    .setContentText(new Resources.InstallMessage(fileName))
-                    .setIcon(Resources.INSTALL_ICON)
-                    .build())
-            .setPreapproval(new InstallPreapproval.Builder("com.example.package", "Sample App", ULocale.US)
-                    .setIcon(iconUri)
-                    .build())
-            .setConstraints(new InstallConstraints.Builder(60000L)
-                    .setTimeoutStrategy(TimeoutStrategy.COMMIT_EAGERLY)
-                    .setAppNotForegroundRequired(true)
-                    .setAppNotInteractingRequired(true)
-                    .build())
-            .build());
+            .setNotificationData(notificationData)
+            .setPreapproval(preapproval)
+            .setConstraints(constraints)
+            .build();
+    var session = packageInstaller.createSession(parameters);
     
     public abstract class Resources {
     
