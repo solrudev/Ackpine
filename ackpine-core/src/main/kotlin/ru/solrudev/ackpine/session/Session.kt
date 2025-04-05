@@ -279,7 +279,7 @@ public interface Session<out F : Failure> {
 			private var onFailureListener: OnFailureListener<F>? = null
 			private var onCancelListener: OnCancelListener? = null
 
-			@JvmSynthetic
+			@get:JvmSynthetic
 			internal val terminalStateListener = object : TerminalStateListener<F>(session) {
 
 				override fun onSuccess(sessionId: UUID) {
