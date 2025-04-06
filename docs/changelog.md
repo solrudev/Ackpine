@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+Version 0.11.1 (2025-04-06)
+---------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.1.20.
+- Updated `apksig` to 8.9.1.
+- Updated `kotlinx.coroutines` to 1.10.1.
+
+### Bug fixes and improvements
+
+- Add builder-like API for attaching `TerminalStateListener` to a session instead of subclassing it. Refer to updated documentation for usage example.
+- Fix documentation for deprecated `ackpine-splits` APIs.
+
+### Public API changes
+
+- Added `Session.TerminalStateListener.bind()` static method.
+- Added `Session.TerminalStateListener.Binder` class, `Session.TerminalStateListener.OnSuccessListener`, `Session.TerminalStateListener.OnFailureListener`, `Session.TerminalStateListener.OnCancelListener` functional interfaces.
+
 Version 0.11.0 (2025-03-04)
 ---------------------------
 
