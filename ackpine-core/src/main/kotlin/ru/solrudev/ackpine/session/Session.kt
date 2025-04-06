@@ -27,7 +27,6 @@ import ru.solrudev.ackpine.session.Session.State.Committed
 import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Pending
 import ru.solrudev.ackpine.session.Session.State.Succeeded
-import ru.solrudev.ackpine.session.Session.TerminalStateListener
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
@@ -201,8 +200,10 @@ public interface Session<out F : Failure> {
 	 *
 	 * Adding this listener to a session launches it if it's not already.
 	 *
-	 * It's recommended to use this class for listening to [terminal][State.isTerminal] state updates instead of bare
-	 * [StateListener], because this class handles session's lifecycle appropriately.
+	 * Consider using [TerminalStateListener.bind] instead of subclassing [TerminalStateListener].
+	 *
+	 * It's recommended to use this class with [Session.addStateListener] for listening to [terminal][State.isTerminal]
+	 * state updates instead of bare [StateListener], because this class handles session's lifecycle appropriately.
 	 */
 	public abstract class TerminalStateListener<in F : Failure>(private val session: Session<F>) : StateListener<F> {
 
@@ -238,6 +239,136 @@ public interface Session<out F : Failure> {
 				Succeeded -> onSuccess(sessionId)
 				is Failed -> onFailure(sessionId, state.failure)
 			}
+		}
+
+		public companion object {
+
+			/**
+			 * Launches the [session] and handles its lifecycle. Returns a [Binder] to bind [terminal][State.isTerminal]
+			 * state listeners to the session.
+			 *
+			 * If you don't want to receive terminal state updates, but instead just to launch the session, you can use
+			 * the function like this:
+			 *
+			 * ```
+			 * Session.TerminalStateListener.bind(session, subscriptions);
+			 * ```
+			 *
+			 * @param session a [Session] to bind listeners to.
+			 * @param subscriptionContainer a [subscription][DisposableSubscription] bag, session state subscription
+			 * will be added to it.
+			 * @return [Binder]
+			 */
+			@JvmStatic
+			public fun <F : Failure> bind(
+				session: Session<F>,
+				subscriptionContainer: DisposableSubscriptionContainer
+			): Binder<F> {
+				val binder = Binder.create(session)
+				session.addStateListener(subscriptionContainer, binder.terminalStateListener)
+				return binder
+			}
+		}
+
+		/**
+		 * Allows to add terminal state listeners to a [Session].
+		 */
+		public class Binder<F : Failure> private constructor(session: Session<F>) {
+
+			private var onSuccessListener: OnSuccessListener? = null
+			private var onFailureListener: OnFailureListener<F>? = null
+			private var onCancelListener: OnCancelListener? = null
+
+			@get:JvmSynthetic
+			internal val terminalStateListener = object : TerminalStateListener<F>(session) {
+
+				override fun onSuccess(sessionId: UUID) {
+					onSuccessListener?.onSuccess(sessionId)
+				}
+
+				override fun onFailure(sessionId: UUID, failure: F) {
+					onFailureListener?.onFailure(sessionId, failure)
+				}
+
+				override fun onCancelled(sessionId: UUID) {
+					onCancelListener?.onCancelled(sessionId)
+				}
+			}
+
+			/**
+			 * Adds a [listener] which will be invoked when a [Session] succeeds.
+			 *
+			 * Replaces previously added [OnSuccessListener].
+			 *
+			 * @return this [Binder] to allow chaining.
+			 */
+			public fun addOnSuccessListener(listener: OnSuccessListener): Binder<F> = apply {
+				onSuccessListener = listener
+			}
+
+			/**
+			 * Adds a [listener] which will be invoked when a [Session] fails.
+			 *
+			 * Replaces previously added [OnFailureListener].
+			 *
+			 * @return this [Binder] to allow chaining.
+			 */
+			public fun addOnFailureListener(listener: OnFailureListener<F>): Binder<F> = apply {
+				onFailureListener = listener
+			}
+
+			/**
+			 * Adds a [listener] which will be invoked when a [Session] is cancelled.
+			 *
+			 * Replaces previously added [OnCancelListener].
+			 *
+			 * @return this [Binder] to allow chaining.
+			 */
+			public fun addOnCancelListener(listener: OnCancelListener): Binder<F> = apply {
+				onCancelListener = listener
+			}
+
+			internal companion object {
+				@JvmSynthetic
+				internal fun <F : Failure> create(session: Session<F>) = Binder(session)
+			}
+		}
+
+		/**
+		 * A listener which is invoked when a [Session] completes successfully.
+		 */
+		public fun interface OnSuccessListener {
+
+			/**
+			 * Invoked when a [Session] completes successfully.
+			 * @param sessionId ID of the session which had its state updated.
+			 */
+			public fun onSuccess(sessionId: UUID)
+		}
+
+		/**
+		 * A listener which is invoked when a [Session] completes with failure.
+		 */
+		public fun interface OnFailureListener<in F : Failure> {
+
+			/**
+			 * Invoked when a [Session] completes with failure.
+			 * @param sessionId ID of the session which had its state updated.
+			 * @param failure session's failure cause.
+			 */
+			public fun onFailure(sessionId: UUID, failure: F)
+		}
+
+		/**
+		 * A listener which is invoked when a [Session] is cancelled.
+		 */
+		public fun interface OnCancelListener {
+
+			/**
+			 * Invoked when a [Session] is cancelled.
+			 * @param sessionId ID of the session which had its state updated.
+			 */
+			public fun onCancelled(sessionId: UUID)
 		}
 	}
 }

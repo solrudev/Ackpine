@@ -20,14 +20,11 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.Variant
-import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.Delete
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
@@ -36,6 +33,7 @@ import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
+import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import java.io.File
@@ -53,7 +51,7 @@ public class AppReleasePlugin : Plugin<Project> {
 			error("Applying app-release plugin requires the Android application plugin to be applied")
 		}
 		configureSigning()
-		registerCopyReleaseArtifactsTasks()
+		registerProduceReleaseArtifactsTasks()
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
@@ -69,13 +67,13 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerCopyReleaseArtifactsTasks() {
+	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			val appConfiguration = registerConsumableAppConfiguration()
 			onVariants(withReleaseBuildType()) { variant ->
-				val copyArtifactsTask = registerCopyArtifactsTaskForVariant(variant)
-				appConfiguration.addOutgoingArtifact(copyArtifactsTask)
-				configureCleanTask(copyArtifactsTask)
+				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
+				appConfiguration.addOutgoingArtifact(produceArtifactsTask)
+				configureCleanTask(produceArtifactsTask)
 			}
 		}
 	}
@@ -83,7 +81,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	private fun ApplicationExtension.releaseSigningConfigProvider(
 		fileConfigProvider: Provider<Map<String, String>>,
 		environmentConfigProvider: Provider<Map<String, String>>
-	) = signingConfigs.register("releaseSigningConfig") {
+	) = signingConfigs.register("release") {
 		initWith(signingConfigs["debug"])
 		val config = fileConfigProvider.get().ifEmpty { environmentConfigProvider.get() }
 		if (config.isNotEmpty()) {
@@ -95,13 +93,13 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private fun Project.registerCopyArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
-		val releaseDir = isolated.rootProject.projectDirectory.dir("release")
+	private fun Project.registerProduceArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
+		val releaseDir = layout.projectDirectory.dir(variant.name)
 		val apks = variant.artifacts.get(SingleArtifact.APK)
 		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
 		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
-		val taskName = variant.computeTaskName(action = "copy", subject = "artifacts")
-		return tasks.register<Copy>(taskName) {
+		val taskName = variant.computeTaskName(action = "produce", subject = "artifacts")
+		return tasks.register<Sync>(taskName) {
 			from(apks) {
 				include("*.apk")
 			}
@@ -112,13 +110,9 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.registerConsumableAppConfiguration(): NamedDomainObjectProvider<Configuration> {
-		return configurations.register("app") {
-			consumable()
-			attributes {
-				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
-			}
-		}
+	private fun Project.registerConsumableAppConfiguration() = configurations.register("app") {
+		consumable()
+		libraryElements(objects.named(LIBRARY_ELEMENTS))
 	}
 
 	private fun Project.configureCleanTask(deleteTarget: Any) {

@@ -44,30 +44,21 @@ Launching an install or uninstall session with default parameters and getting it
 
     ```java
     var subscriptions = new DisposableSubscriptionContainer();
-    var session = packageInstaller.createSession(new InstallParameters.Builder(apkUri).build());
-    session.addStateListener(subscriptions, new Session.TerminalStateListener<>(session) {
-        @Override
-        public void onSuccess(@NonNull UUID sessionId) {
-            System.out.println("Success");
-        }
-        
-        @Override
-        public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
-    	    if (failure instanceof Failure.Exceptional f) {
-    	        System.out.println(f.getException());
-    	    } else {
-                System.out.println(failure.getMessage());
-    	    }
-        }
-        
-        @Override
-        public void onCancelled(@NonNull UUID sessionId) {
-            System.out.println("Cancelled");
-        }
-    });
+    var parameters = new InstallParameters.Builder(apkUri).build();
+    var session = packageInstaller.createSession(parameters);
+    Session.TerminalStateListener.bind(session, subscriptions)
+            .addOnCancelListener(sessionId -> System.out.println("Cancelled"))
+            .addOnSuccessListener(sessionId -> System.out.println("Success"))
+            .addOnFailureListener((sessionId, failure) -> {
+                if (failure instanceof Failure.Exceptional f) {
+                    System.out.println(f.getException());
+                } else {
+                    System.out.println(failure.getMessage());
+                }
+            });
     ```
 
-    Session launches when `TerminalStateListener` is added to it.
+    Session launches when `TerminalStateListener.bind()` is called.
 
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
@@ -85,7 +76,9 @@ If you're launching a session inside of a long-living service which is not expec
     ```java
     var subscriptions = new DisposableSubscriptionContainer();
     var session = packageInstaller.createSession(...);
-    session.addStateListener(subscriptions, ...);
+    Session.TerminalStateListener.bind(session, subscriptions)
+            .addOnSuccessListener(...)
+            .addOnFailureListener(...);
     
     // when lifecycle is destroyed
     subscriptions.clear();
@@ -124,7 +117,9 @@ Handling process death is not any different with Ackpine as with any other persi
             @Override
             public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
                 if (session != null) {
-                    session.addStateListener(subscriptions, ...);
+                    Session.TerminalStateListener.bind(session, subscriptions)
+                            .addOnSuccessListener(...)
+                            .addOnFailureListener(...);
                     // or anything else you want to do with the session
                 }
             }

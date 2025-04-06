@@ -44,7 +44,7 @@
 		android:supportsRtl="true"
 		android:theme="@style/Theme.Ackpine"
 		android:usesCleartextTraffic="false"
-		tools:targetApi="34">
+		tools:targetApi="35">
 
 		<activity
 			android:name=".MainActivity"

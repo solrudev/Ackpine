@@ -20,10 +20,8 @@ import com.android.build.api.dsl.LibraryExtension
 import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
-import org.gradle.kotlin.dsl.property
 import org.gradle.kotlin.dsl.setProperty
 import javax.inject.Inject
 
@@ -56,15 +54,4 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 		_internalPackages = packageNames.toSet()
 		apiValidationExtension.ignoredPackages += packageNames
 	}
-}
-
-/**
- * Extension for Ackpine `library-publish` plugin.
- */
-public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFactory) {
-
-	/**
-	 * Name of the published artifact.
-	 */
-	public val name: Property<String> = objectFactory.property<String>().convention("")
 }

@@ -28,7 +28,6 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import ru.solrudev.ackpine.gradle.AckpineArtifact
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
@@ -45,7 +44,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 			}
 		}
 		val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
-		configurePublishing(artifact.name, provider { description })
+		configurePublishing(artifact.name, provider { description }, artifact.inceptionYear)
 	}
 
 	private fun Project.configureArtifactCoordinates(id: String) = extensions.configure<MavenPublishBaseExtension> {
@@ -54,7 +53,8 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	private fun Project.configurePublishing(
 		artifactName: Provider<String>,
-		artifactDescription: Provider<String>
+		artifactDescription: Provider<String>,
+		artifactInceptionYear: Provider<String>
 	) = extensions.configure<MavenPublishBaseExtension> {
 		configure(
 			AndroidMultiVariantLibrary(
@@ -69,7 +69,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 		pom {
 			name = artifactName
 			description = artifactDescription
-			inceptionYear = "2023"
+			inceptionYear = artifactInceptionYear
 			url = "https://ackpine.solrudev.ru"
 
 			licenses {

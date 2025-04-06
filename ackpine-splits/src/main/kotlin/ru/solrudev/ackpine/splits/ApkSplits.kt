@@ -104,7 +104,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
-				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"cancellation support. Migrate to SplitPackage. This function will be removed in the " +
 				"next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
@@ -166,7 +166,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
-				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"cancellation support. Migrate to SplitPackage. This function will be removed in the " +
 				"next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
@@ -188,7 +188,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages and proper " +
-				"cancellation support. Migrate to SplitPackage. Usage of this function will become an error in the " +
+				"cancellation support. Migrate to SplitPackage. This function will be removed in the " +
 				"next minor release. An equivalent for an already sorted SplitPackage would be " +
 				"SplitPackage.filterPreferred().",
 		level = DeprecationLevel.ERROR,
@@ -221,7 +221,7 @@ public object ApkSplits {
 	 * The operation is _intermediate_ and _stateful_.
 	 */
 	@Deprecated(
-		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
+		message = "Renamed to validate(). This function will be removed in the next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.validate()",
@@ -240,7 +240,7 @@ public object ApkSplits {
 		message = "This function was meant to allow duplicating of one-time APK sequences for processing of grouped " +
 				"APK splits after. Existing APIs were not a good solution for that use case, so SplitPackage API " +
 				"was introduced which you should migrate to if you were using addAllTo(). " +
-				"Usage of this function will become an error in the next minor release.",
+				"This function will be removed in the next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith("this.onEach { destination += it }")
 	)
@@ -263,7 +263,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages. " +
-				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
+				"Migrate to SplitPackage. This function will be removed in the next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().filterCompatible(context)",
@@ -287,7 +287,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages. " +
-				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release.",
+				"Migrate to SplitPackage. This function will be removed in the next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.toSplitPackage().sortedByCompatibility(context)",
@@ -304,7 +304,7 @@ public object ApkSplits {
 	 */
 	@Deprecated(
 		message = "This function cannot provide adequate grouped structures of split packages. " +
-				"Migrate to SplitPackage. Usage of this function will become an error in the next minor release. " +
+				"Migrate to SplitPackage. This function will be removed in the next minor release. " +
 				"An equivalent for an already sorted split package would be filterPreferred().",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
@@ -330,7 +330,7 @@ public object ApkSplits {
 	 * If there are conflicting split names, [ConflictingSplitNameException] will be thrown.
 	 */
 	@Deprecated(
-		message = "Renamed to validate(). Usage of this function will become an error in the next minor release.",
+		message = "Renamed to validate(). This function will be removed in the next minor release.",
 		level = DeprecationLevel.ERROR,
 		replaceWith = ReplaceWith(
 			expression = "this.validate()",

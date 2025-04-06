@@ -207,7 +207,19 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	private void addSessionListeners(@NonNull ProgressSession<InstallFailure> session) {
-		session.addStateListener(subscriptions, new SessionStateListener(session));
+		Session.TerminalStateListener.bind(session, subscriptions)
+				.addOnCancelListener(sessionDataRepository::removeSessionData)
+				.addOnSuccessListener(sessionDataRepository::removeSessionData)
+				.addOnFailureListener((sessionId, failure) -> {
+					final var message = failure.getMessage();
+					final var error = message != null
+							? ResolvableString.transientResource(R.string.session_error_with_reason, message)
+							: ResolvableString.transientResource(R.string.session_error);
+					sessionDataRepository.setError(sessionId, error);
+					if (failure instanceof Failure.Exceptional f) {
+						Log.e("InstallViewModel", null, f.getException());
+					}
+				});
 		session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
 		session.addStateListener(subscriptions, (sessionId, state) -> {
 			if (state instanceof Session.State.Committed) {
@@ -218,35 +230,6 @@ public final class InstallViewModel extends ViewModel {
 
 	private List<SessionData> getSessionsSnapshot() {
 		return sessionDataRepository.getSessions().getValue();
-	}
-
-	private final class SessionStateListener extends Session.TerminalStateListener<InstallFailure> {
-
-		public SessionStateListener(@NonNull Session<? extends InstallFailure> session) {
-			super(session);
-		}
-
-		@Override
-		public void onCancelled(@NonNull UUID sessionId) {
-			sessionDataRepository.removeSessionData(sessionId);
-		}
-
-		@Override
-		public void onSuccess(@NonNull UUID sessionId) {
-			sessionDataRepository.removeSessionData(sessionId);
-		}
-
-		@Override
-		public void onFailure(@NonNull UUID sessionId, @NonNull InstallFailure failure) {
-			final var message = failure.getMessage();
-			final var error = message != null
-					? ResolvableString.transientResource(R.string.session_error_with_reason, message)
-					: ResolvableString.transientResource(R.string.session_error);
-			sessionDataRepository.setError(sessionId, error);
-			if (failure instanceof Failure.Exceptional f) {
-				Log.e("InstallViewModel", null, f.getException());
-			}
-		}
 	}
 
 	static final ViewModelInitializer<InstallViewModel> initializer = new ViewModelInitializer<>(

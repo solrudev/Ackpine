@@ -27,6 +27,7 @@ ackpine {
 	minSdk = 21
 	artifact {
 		name = "Ackpine Splits Kotlin Extensions"
+		inceptionYear = "2025"
 	}
 }
 

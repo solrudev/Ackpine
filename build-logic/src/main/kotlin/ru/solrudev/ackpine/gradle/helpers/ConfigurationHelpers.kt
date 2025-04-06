@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.gradle.helpers
 
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.LibraryElements
+import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 
 /**
  * Mark this [Configuration] as one that will be consumed by other subprojects.
@@ -45,5 +47,14 @@ internal fun Configuration.resolvable() {
 internal fun NamedDomainObjectProvider<Configuration>.addOutgoingArtifact(artifact: Any) {
 	configure {
 		outgoing.artifact(artifact)
+	}
+}
+
+/**
+ * Sets a [LIBRARY_ELEMENTS_ATTRIBUTE] attribute value.
+ */
+internal fun Configuration.libraryElements(value: LibraryElements) {
+	attributes {
+		attribute(LIBRARY_ELEMENTS_ATTRIBUTE, value)
 	}
 }

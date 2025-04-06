@@ -112,7 +112,7 @@ public final class UninstallViewModel extends ViewModel {
 						.build());
 		savedStateHandle.set(SESSION_ID_KEY, session.getId());
 		savedStateHandle.set(PACKAGE_NAME_KEY, packageName);
-		session.addStateListener(subscriptions, new SessionStateListener(session));
+		attachSessionStateListener(session);
 	}
 
 	private UUID getSessionId() {
@@ -141,7 +141,7 @@ public final class UninstallViewModel extends ViewModel {
 			@Override
 			public void onSuccess(@Nullable Session<UninstallFailure> session) {
 				if (session != null) {
-					session.addStateListener(subscriptions, new SessionStateListener(session));
+					attachSessionStateListener(session);
 				}
 			}
 
@@ -149,6 +149,24 @@ public final class UninstallViewModel extends ViewModel {
 			public void onFailure(@NonNull Throwable t) { // no-op
 			}
 		}, MoreExecutors.directExecutor());
+	}
+
+	private void attachSessionStateListener(@NonNull Session<UninstallFailure> session) {
+		Session.TerminalStateListener.bind(session, subscriptions)
+				.addOnCancelListener(sessionId -> clearSavedState())
+				.addOnSuccessListener(sessionId -> {
+					final String packageName = savedStateHandle.get(PACKAGE_NAME_KEY);
+					if (packageName != null) {
+						removeApplication(packageName);
+					}
+					clearSavedState();
+				})
+				.addOnFailureListener((sessionId, failure) -> {
+					clearSavedState();
+					if (failure instanceof Failure.Exceptional f) {
+						Log.e("UninstallViewModel", null, f.getException());
+					}
+				});
 	}
 
 	@NonNull
@@ -161,6 +179,15 @@ public final class UninstallViewModel extends ViewModel {
 		savedStateHandle.remove(PACKAGE_NAME_KEY);
 	}
 
+	private void removeApplication(@NonNull String packageName) {
+		final var currentApplications = getCurrentApplications();
+		final var applicationDataIndex = getApplicationIndexByPackageName(currentApplications, packageName);
+		if (applicationDataIndex != -1) {
+			currentApplications.remove(applicationDataIndex);
+		}
+		applications.setValue(currentApplications);
+	}
+
 	private static int getApplicationIndexByPackageName(@NonNull List<ApplicationData> applications,
 														@NonNull String packageName) {
 		for (var i = 0; i < applications.size(); i++) {
@@ -170,44 +197,6 @@ public final class UninstallViewModel extends ViewModel {
 			}
 		}
 		return -1;
-	}
-
-	private final class SessionStateListener extends Session.TerminalStateListener<UninstallFailure> {
-
-		public SessionStateListener(@NonNull Session<? extends UninstallFailure> session) {
-			super(session);
-		}
-
-		@Override
-		public void onSuccess(@NonNull UUID sessionId) {
-			final String packageName = savedStateHandle.get(PACKAGE_NAME_KEY);
-			if (packageName != null) {
-				removeApplication(packageName);
-			}
-			clearSavedState();
-		}
-
-		@Override
-		public void onFailure(@NonNull UUID sessionId, @NonNull UninstallFailure failure) {
-			clearSavedState();
-			if (failure instanceof Failure.Exceptional f) {
-				Log.e("UninstallViewModel", null, f.getException());
-			}
-		}
-
-		@Override
-		public void onCancelled(@NonNull UUID sessionId) {
-			clearSavedState();
-		}
-
-		private void removeApplication(@NonNull String packageName) {
-			final var currentApplications = getCurrentApplications();
-			final var applicationDataIndex = getApplicationIndexByPackageName(currentApplications, packageName);
-			if (applicationDataIndex != -1) {
-				currentApplications.remove(applicationDataIndex);
-			}
-			applications.setValue(currentApplications);
-		}
 	}
 
 	static final ViewModelInitializer<UninstallViewModel> initializer = new ViewModelInitializer<>(

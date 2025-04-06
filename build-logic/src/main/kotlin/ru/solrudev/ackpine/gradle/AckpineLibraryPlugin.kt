@@ -25,7 +25,6 @@ import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
@@ -37,6 +36,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.consumable
+import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
@@ -93,9 +93,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	private fun Project.registerConsumableLibraryConfiguration() {
 		val library = configurations.register("library") {
 			consumable()
-			attributes {
-				attribute(LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LIBRARY_ELEMENTS))
-			}
+			libraryElements(objects.named(LIBRARY_ELEMENTS))
 		}
 		extensions.configure<LibraryAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
