@@ -165,7 +165,9 @@ internal object NotificationIntents {
 
 	@JvmSynthetic
 	internal fun getNotificationData(intent: Intent, tag: String): NotificationData {
-		val bundle = intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)!!
+		val bundle = requireNotNull(
+			intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)
+		) { "$tag: notificationBundle was null" }
 		val notificationTitle = requireNotNull(
 			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
 		) { "$tag: notificationTitle was null." }
