@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Ilya Fomichev
+ * Copyright (C) 2024-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 @file:Suppress("ConstPropertyName", "Unused")
 
-package ru.solrudev.ackpine.helpers.concurrent
+package ru.solrudev.ackpine.impl.helpers.concurrent
 
 import androidx.annotation.RestrictTo
 import java.util.concurrent.Semaphore

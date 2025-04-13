@@ -19,10 +19,10 @@ package ru.solrudev.ackpine.impl.uninstaller.session
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
+import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.session.AbstractSession
 import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
