@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.installer
 import android.content.Context
 import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.globalNotificationId
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
@@ -130,7 +130,7 @@ public interface PackageInstaller {
 					Handler(context.mainLooper)
 				),
 				uuidFactory = UUID::randomUUID,
-				notificationIdFactory = globalNotificationId::incrementAndGet
+				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
 			)
 		}
 	}

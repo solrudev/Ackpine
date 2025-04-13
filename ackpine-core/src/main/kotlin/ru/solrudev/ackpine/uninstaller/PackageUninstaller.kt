@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.uninstaller
 import android.content.Context
 import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.globalNotificationId
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.impl.uninstaller.UninstallSessionFactoryImpl
@@ -122,7 +122,7 @@ public interface PackageUninstaller {
 					Handler(context.mainLooper)
 				),
 				uuidFactory = UUID::randomUUID,
-				notificationIdFactory = globalNotificationId::incrementAndGet
+				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
 			)
 		}
 	}
