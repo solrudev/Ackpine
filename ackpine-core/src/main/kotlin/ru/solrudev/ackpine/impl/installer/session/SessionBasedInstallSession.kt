@@ -46,7 +46,6 @@ import androidx.core.content.edit
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.use
-import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
@@ -54,6 +53,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
+import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
@@ -286,11 +286,11 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
 		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
 			action = PackageInstallerStatusReceiver.getAction(context)
-			putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, id)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
 			putExtra(PackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
 			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 		}
+		SessionIdIntents.putSessionId(receiverIntent, id)
 		NotificationIntents.putNotification(receiverIntent, notificationData, notificationId)
 		val receiverPendingIntent = PendingIntent.getBroadcast(
 			context,

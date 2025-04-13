@@ -25,12 +25,11 @@ import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
+import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
-import ru.solrudev.ackpine.impl.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
@@ -58,7 +57,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		}
 		val pendingResult = goAsync()
 		val packageInstaller = AckpinePackageInstaller.getImpl(context)
-		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
+		val ackpineSessionId = SessionIdIntents.getSessionId(intent)
 		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
 			onException = { exception ->
 				pendingResult.finish()
@@ -119,9 +118,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
 		]
 		val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
-			.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, ackpineSessionId)
 			.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 			.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+		SessionIdIntents.putSessionId(wrapperIntent, ackpineSessionId)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			wrapperIntent.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, isPreapproval)
 		}

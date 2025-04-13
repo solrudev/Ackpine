@@ -64,9 +64,8 @@ internal inline fun <reified T : SessionCommitActivity<*>> Context.launchConfirm
 	flags: Int,
 	putExtra: (Intent) -> Unit
 ) {
-	val intent = Intent(this, T::class.java)
-		.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, sessionId)
-		.also(putExtra)
+	val intent = Intent(this, T::class.java).also(putExtra)
+	SessionIdIntents.putSessionId(intent, sessionId)
 	when (confirmation) {
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 		Confirmation.DEFERRED -> showConfirmationNotification(
