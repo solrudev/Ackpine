@@ -24,6 +24,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
@@ -80,10 +81,10 @@ internal class PackageInstallerImpl internal constructor(
 	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
 		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
 			if (areCommittedSessionsInitialized) {
-				getSessionFromDb(sessionId, completer)
+				getSession(sessionId, completer)
 			} else {
 				committedSessionsInitSemaphore.withPermit {
-					getSessionFromDb(sessionId, completer)
+					getSession(sessionId, completer)
 				}
 			}
 		}
@@ -122,21 +123,13 @@ internal class PackageInstallerImpl internal constructor(
 		areCommittedSessionsInitialized = true
 	}
 
-	private fun getSessionFromDb(
-		sessionId: UUID,
-		completer: Completer<CompletableProgressSession<InstallFailure>?>
-	) {
-		sessions[sessionId]?.let { session ->
-			completer.set(session)
-			return
+	private fun getSession(sessionId: UUID, completer: Completer<CompletableProgressSession<InstallFailure>?>) {
+		val session = sessions.computeIfAbsentCompat(sessionId) {
+			installSessionDao
+				.getInstallSession(sessionId.toString())
+				?.let(installSessionFactory::create)
 		}
-		val session = installSessionDao.getInstallSession(sessionId.toString())
-		if (session != null) {
-			val installSession = installSessionFactory.create(session)
-			completer.set(sessions.putIfAbsent(sessionId, installSession) ?: installSession)
-			return
-		}
-		completer.set(null)
+		completer.set(session)
 	}
 
 	private inline fun getSessionsAsync(
@@ -170,8 +163,8 @@ internal class PackageInstallerImpl internal constructor(
 				sessions.containsKey(UUID.fromString(session.session.id))
 			}
 			.forEach { session ->
-				val installSession = installSessionFactory.create(session)
-				sessions.putIfAbsent(installSession.id, installSession)
+				val id = UUID.fromString(session.session.id)
+				sessions.computeIfAbsentCompat(id) { installSessionFactory.create(session) }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values

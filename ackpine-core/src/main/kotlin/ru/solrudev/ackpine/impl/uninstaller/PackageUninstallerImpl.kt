@@ -23,6 +23,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.impl.session.CompletableSession
@@ -69,7 +70,7 @@ internal class PackageUninstallerImpl internal constructor(
 
 	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
 		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
-			getSessionFromDb(sessionId, completer)
+			getSession(sessionId, completer)
 		}
 		"PackageUninstallerImpl.getSessionAsync($sessionId)"
 	}
@@ -84,14 +85,13 @@ internal class PackageUninstallerImpl internal constructor(
 		transform = { sessions -> sessions.filter { it.isActive } }
 	)
 
-	private fun getSessionFromDb(sessionId: UUID, completer: Completer<CompletableSession<UninstallFailure>?>) {
-		sessions[sessionId]?.let { session ->
-			completer.set(session)
-			return
+	private fun getSession(sessionId: UUID, completer: Completer<CompletableSession<UninstallFailure>?>) {
+		val session = sessions.computeIfAbsentCompat(sessionId) {
+			uninstallSessionDao
+				.getUninstallSession(sessionId.toString())
+				?.toUninstallSession()
 		}
-		val session = uninstallSessionDao.getUninstallSession(sessionId.toString())
-		val uninstallSession = session?.toUninstallSession()?.let { sessions.putIfAbsent(sessionId, it) ?: it }
-		completer.set(uninstallSession)
+		completer.set(session)
 	}
 
 	private inline fun getSessionsAsync(
@@ -123,8 +123,8 @@ internal class PackageUninstallerImpl internal constructor(
 				sessions.containsKey(UUID.fromString(session.session.id))
 			}
 			.forEach { session ->
-				val uninstallSession = session.toUninstallSession()
-				sessions.putIfAbsent(uninstallSession.id, uninstallSession)
+				val id = UUID.fromString(session.session.id)
+				sessions.computeIfAbsentCompat(id) { session.toUninstallSession() }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values
