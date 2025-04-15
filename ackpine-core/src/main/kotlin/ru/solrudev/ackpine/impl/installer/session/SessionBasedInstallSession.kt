@@ -197,9 +197,10 @@ internal class SessionBasedInstallSession internal constructor(
 			notifyAwaiting()
 			return false
 		}
-		if (constraints.timeoutStrategy is TimeoutStrategy.Retry) {
+		val timeoutStrategy = constraints.timeoutStrategy
+		if (timeoutStrategy is TimeoutStrategy.Retry) {
 			val currentAttempt = attempts.get()
-			val shouldRetry = currentAttempt <= constraints.timeoutStrategy.retries
+			val shouldRetry = currentAttempt <= timeoutStrategy.retries
 			if (shouldRetry) {
 				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
 				notifyAwaiting()

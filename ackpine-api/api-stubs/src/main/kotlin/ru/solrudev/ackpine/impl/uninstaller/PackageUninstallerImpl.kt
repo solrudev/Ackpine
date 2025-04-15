@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,18 @@
  * limitations under the License.
  */
 
-plugins {
-	id("ru.solrudev.ackpine.project")
-}
+package ru.solrudev.ackpine.impl.uninstaller
 
-dependencies {
-	// task :buildAckpine
-	library(projects.ackpineApi)
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits)
-	library(projects.ackpineSplitsKtx)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
+import android.content.Context
+import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
+/**
+ * Stub for `PackageUninstallerImpl` from `ackpine-core`.
+ */
+public interface PackageUninstallerImpl : PackageUninstaller {
+	public companion object {
+		public fun getInstance(context: Context): PackageUninstallerImpl {
+			throw NotImplementedError()
+		}
+	}
 }

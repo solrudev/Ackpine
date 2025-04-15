@@ -17,18 +17,11 @@
 package ru.solrudev.ackpine.uninstaller
 
 import android.content.Context
-import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.Ackpine
-import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
-import ru.solrudev.ackpine.impl.uninstaller.UninstallSessionFactoryImpl
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import java.util.UUID
-import java.util.concurrent.Executor
 
 /**
  * Provides the ability to uninstall applications from the device.
@@ -76,11 +69,6 @@ public interface PackageUninstaller {
 
 	public companion object {
 
-		private val lock = Any()
-
-		@Volatile
-		private var packageUninstaller: PackageUninstallerImpl? = null
-
 		/**
 		 * Retrieves the default singleton instance of [PackageUninstaller].
 		 *
@@ -89,51 +77,14 @@ public interface PackageUninstaller {
 		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageUninstaller {
-			return getImpl(context)
-		}
-
-		@JvmSynthetic
-		internal fun getImpl(context: Context): PackageUninstallerImpl {
-			var instance = packageUninstaller
-			if (instance != null) {
-				return instance
+			try {
+				return PackageUninstallerImpl.getInstance(context)
+			} catch (_: NoClassDefFoundError) {
+				throw NoClassDefFoundError(
+					"Class ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl was not found. " +
+							"Make sure you have configured a dependency on ackpine-core module."
+				)
 			}
-			synchronized(lock) {
-				instance = packageUninstaller
-				if (instance == null) {
-					instance = create(context)
-					packageUninstaller = instance
-				}
-			}
-			return instance!!
 		}
-
-		private fun create(context: Context): PackageUninstallerImpl {
-			AckpinePluginRegistry.register(PackageUninstallerPlugin)
-			val database = AckpineDatabase.getInstance(context.applicationContext, PackageUninstallerPlugin.executor)
-			return PackageUninstallerImpl(
-				database.uninstallSessionDao(),
-				PackageUninstallerPlugin.executor,
-				UninstallSessionFactoryImpl(
-					context.applicationContext,
-					database.sessionDao(),
-					database.uninstallSessionDao(),
-					PackageUninstallerPlugin.executor,
-					Handler(context.mainLooper)
-				),
-				uuidFactory = UUID::randomUUID,
-				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
-			)
-		}
-	}
-}
-
-private object PackageUninstallerPlugin : AckpinePlugin {
-
-	lateinit var executor: Executor
-		private set
-
-	override fun setExecutor(executor: Executor) {
-		this.executor = executor
 	}
 }

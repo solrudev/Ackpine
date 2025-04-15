@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine.installer.parameters
 
+import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.installer.parameters.PackageSource.Companion.LOCAL_FILE
 import ru.solrudev.ackpine.installer.parameters.PackageSource.DownloadedFile
 import ru.solrudev.ackpine.installer.parameters.PackageSource.LocalFile
 import ru.solrudev.ackpine.installer.parameters.PackageSource.Other
@@ -28,10 +30,7 @@ import ru.solrudev.ackpine.installer.parameters.PackageSource.Unspecified
  *
  * Default value is [Unspecified].
  */
-public sealed class PackageSource(
-	@get:JvmSynthetic
-	internal val ordinal: Int
-) {
+public sealed class PackageSource(public val ordinal: Int) {
 
 	/**
 	 * The installer did not specify the package source. Default value.
@@ -100,6 +99,13 @@ public sealed class PackageSource(
 	}
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @JvmSynthetic
 @JvmField
-internal val packageSources = arrayOf(Unspecified, Store, LocalFile, DownloadedFile, Other)
+public val packageSources: List<PackageSource> = listOf(
+	Unspecified,
+	Store,
+	LocalFile,
+	DownloadedFile,
+	Other
+)

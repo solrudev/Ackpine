@@ -17,8 +17,6 @@
 package ru.solrudev.ackpine.installer.parameters
 
 import android.os.Build
-import ru.solrudev.ackpine.installer.parameters.InstallMode.Full
-import ru.solrudev.ackpine.installer.parameters.InstallMode.InheritExisting
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 
 /**

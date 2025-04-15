@@ -20,7 +20,6 @@ import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
-import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 private const val TAG = "UninstallActivity"
@@ -38,7 +37,7 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 	private lateinit var uninstallPackageContract: UninstallContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
-		ackpinePackageUninstaller = PackageUninstaller.getImpl(this)
+		ackpinePackageUninstaller = PackageUninstallerImpl.getInstance(this)
 		super.onCreate(savedInstanceState)
 		val packageNameToUninstall = intent.extras?.getString(PACKAGE_NAME_KEY)
 		if (packageNameToUninstall == null) {

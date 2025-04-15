@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,20 @@
  * limitations under the License.
  */
 
+description = "Ackpine API stubs"
+
 plugins {
-	id("ru.solrudev.ackpine.project")
+	id("ru.solrudev.ackpine.library.base")
 }
 
-dependencies {
-	// task :buildAckpine
-	library(projects.ackpineApi)
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits)
-	library(projects.ackpineSplitsKtx)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
+ackpine {
+	id = "api-stubs"
+}
 
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
+android {
+	buildFeatures {
+		androidResources = false
+		resValues = false
+		shaders = false
+	}
 }

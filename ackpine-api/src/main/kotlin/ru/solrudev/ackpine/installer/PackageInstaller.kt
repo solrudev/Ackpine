@@ -17,19 +17,12 @@
 package ru.solrudev.ackpine.installer
 
 import android.content.Context
-import android.os.Handler
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.Ackpine
-import ru.solrudev.ackpine.impl.database.AckpineDatabase
-import ru.solrudev.ackpine.impl.installer.InstallSessionFactoryImpl
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
-import java.util.concurrent.Executor
 
 /**
  * Provides the ability to install applications on the device.
@@ -79,11 +72,6 @@ public interface PackageInstaller {
 
 	public companion object {
 
-		private val lock = Any()
-
-		@Volatile
-		private var packageInstaller: PackageInstallerImpl? = null
-
 		/**
 		 * Retrieves the default singleton instance of [PackageInstaller].
 		 *
@@ -92,56 +80,14 @@ public interface PackageInstaller {
 		 */
 		@JvmStatic
 		public fun getInstance(context: Context): PackageInstaller {
-			return getImpl(context)
-		}
-
-		@JvmSynthetic
-		internal fun getImpl(context: Context): PackageInstallerImpl {
-			var instance = packageInstaller
-			if (instance != null) {
-				return instance
+			try {
+				return PackageInstallerImpl.getInstance(context)
+			} catch (_: NoClassDefFoundError) {
+				throw NoClassDefFoundError(
+					"Class ru.solrudev.ackpine.impl.installer.PackageInstallerImpl was not found. " +
+							"Make sure you have configured a dependency on ackpine-core module."
+				)
 			}
-			synchronized(lock) {
-				instance = packageInstaller
-				if (instance == null) {
-					instance = create(context)
-					packageInstaller = instance
-				}
-			}
-			return instance!!
 		}
-
-		private fun create(context: Context): PackageInstallerImpl {
-			AckpinePluginRegistry.register(PackageInstallerPlugin)
-			val database = AckpineDatabase.getInstance(context.applicationContext, PackageInstallerPlugin.executor)
-			return PackageInstallerImpl(
-				database.installSessionDao(),
-				PackageInstallerPlugin.executor,
-				InstallSessionFactoryImpl(
-					context.applicationContext,
-					database.lastUpdateTimestampDao(),
-					database.installSessionDao(),
-					database.sessionDao(),
-					database.sessionProgressDao(),
-					database.nativeSessionIdDao(),
-					database.installPreapprovalDao(),
-					database.installConstraintsDao(),
-					PackageInstallerPlugin.executor,
-					Handler(context.mainLooper)
-				),
-				uuidFactory = UUID::randomUUID,
-				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
-			)
-		}
-	}
-}
-
-private object PackageInstallerPlugin : AckpinePlugin {
-
-	lateinit var executor: Executor
-		private set
-
-	override fun setExecutor(executor: Executor) {
-		this.executor = executor
 	}
 }

@@ -18,16 +18,6 @@
 
 package ru.solrudev.ackpine.installer
 
-import android.content.pm.PackageInstaller
-import ru.solrudev.ackpine.installer.InstallFailure.Aborted
-import ru.solrudev.ackpine.installer.InstallFailure.Blocked
-import ru.solrudev.ackpine.installer.InstallFailure.Conflict
-import ru.solrudev.ackpine.installer.InstallFailure.Exceptional
-import ru.solrudev.ackpine.installer.InstallFailure.Generic
-import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
-import ru.solrudev.ackpine.installer.InstallFailure.Invalid
-import ru.solrudev.ackpine.installer.InstallFailure.Storage
-import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.session.Failure
 import java.io.Serializable
 
@@ -153,31 +143,5 @@ public sealed class InstallFailure(public open val message: String?) : Failure, 
 	private data object NonExhaustiveWhenGuard : InstallFailure(message = null) {
 		private const val serialVersionUID = 5505702817232605632L
 		private fun readResolve(): Any = NonExhaustiveWhenGuard
-	}
-
-	internal companion object {
-
-		private const val serialVersionUID = -4122677617329666142L
-
-		/**
-		 * Converts Android's [PackageInstaller] failure status code to [InstallFailure] object.
-		 */
-		@JvmSynthetic
-		internal fun fromStatusCode(
-			statusCode: Int,
-			message: String? = null,
-			otherPackageName: String? = null,
-			storagePath: String? = null
-		): InstallFailure = when (statusCode) {
-			PackageInstaller.STATUS_FAILURE -> Generic(message)
-			PackageInstaller.STATUS_FAILURE_ABORTED -> Aborted(message)
-			PackageInstaller.STATUS_FAILURE_BLOCKED -> Blocked(message, otherPackageName)
-			PackageInstaller.STATUS_FAILURE_CONFLICT -> Conflict(message, otherPackageName)
-			PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> Incompatible(message)
-			PackageInstaller.STATUS_FAILURE_INVALID -> Invalid(message)
-			PackageInstaller.STATUS_FAILURE_STORAGE -> Storage(message, storagePath)
-			PackageInstaller.STATUS_FAILURE_TIMEOUT -> Timeout(message)
-			else -> Generic()
-		}
 	}
 }

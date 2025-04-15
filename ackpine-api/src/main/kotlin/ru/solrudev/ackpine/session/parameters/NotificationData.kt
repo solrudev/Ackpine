@@ -173,7 +173,7 @@ private data object DefaultNotificationIcon : DrawableId {
 	private fun readResolve(): Any = DefaultNotificationIcon
 }
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @JvmSynthetic
 @JvmField
-internal val DEFAULT_NOTIFICATION_STRING = ResolvableString.raw("ACKPINE_DEFAULT_NOTIFICATION_STRING")
+public val DEFAULT_NOTIFICATION_STRING: ResolvableString = ResolvableString.raw("ACKPINE_DEFAULT_NOTIFICATION_STRING")

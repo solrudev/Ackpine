@@ -1,33 +1,9 @@
-public final class ru/solrudev/ackpine/AckpineFileProvider : androidx/core/content/FileProvider {
-	public static final field Companion Lru/solrudev/ackpine/AckpineFileProvider$Companion;
-	public fun <init> ()V
-	public fun attachInfo (Landroid/content/Context;Landroid/content/pm/ProviderInfo;)V
-}
-
 public final class ru/solrudev/ackpine/AckpineFileProvider$Companion {
 	public final fun getAuthority ()Ljava/lang/String;
-}
-
-public final class ru/solrudev/ackpine/helpers/AssetFileDescriptorHelpersKt {
-	public static final fun use (Landroid/content/res/AssetFileDescriptor;Lkotlin/jvm/functions/Function1;)Ljava/lang/Object;
-}
-
-public final class ru/solrudev/ackpine/helpers/CloseableHelpersKt {
-	public static final fun closeWithException (Ljava/io/Closeable;Ljava/lang/Throwable;)V
-	public static final fun closeWithException (Ljava/lang/AutoCloseable;Ljava/lang/Throwable;)V
 }
 
 public final class ru/solrudev/ackpine/helpers/concurrent/ListenableFutureHelpersKt {
 	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;)V
 	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-}
-
-public abstract interface class ru/solrudev/ackpine/plugin/AckpinePlugin {
-	public abstract fun setExecutor (Ljava/util/concurrent/Executor;)V
-}
-
-public final class ru/solrudev/ackpine/plugin/AckpinePluginRegistry {
-	public static final field INSTANCE Lru/solrudev/ackpine/plugin/AckpinePluginRegistry;
-	public final fun register (Lru/solrudev/ackpine/plugin/AckpinePlugin;)V
 }
 

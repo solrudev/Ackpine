@@ -72,8 +72,8 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	}
 }
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-internal data object DummyDisposableSubscription : DisposableSubscription {
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+public data object DummyDisposableSubscription : DisposableSubscription {
 	override val isDisposed: Boolean = true
 	override fun dispose() { /* no-op */ }
 }

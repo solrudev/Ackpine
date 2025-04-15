@@ -20,7 +20,6 @@ package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
 import android.os.Build
-import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
 import java.io.Serializable
 import kotlin.time.Duration
 
