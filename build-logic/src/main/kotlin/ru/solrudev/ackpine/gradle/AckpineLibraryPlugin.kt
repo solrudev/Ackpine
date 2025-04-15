@@ -16,15 +16,20 @@
 
 package ru.solrudev.ackpine.gradle
 
+import kotlinx.validation.ApiValidationExtension
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.configure
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(AckpineLibraryBasePlugin::class)
 		pluginManager.apply(BinaryCompatibilityValidatorPlugin::class)
+		extensions.configure<ApiValidationExtension> {
+			nonPublicMarkers += "androidx.annotation.RestrictTo"
+		}
 	}
 }
