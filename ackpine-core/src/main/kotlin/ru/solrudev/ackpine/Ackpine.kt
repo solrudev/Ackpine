@@ -36,7 +36,7 @@ import kotlin.random.nextInt
 public object Ackpine {
 
 	@get:JvmSynthetic
-	internal val globalNotificationId = AtomicInteger(Random.Default.nextInt(10000..1000000))
+	internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
 	@Volatile
 	private var applicationContext: Context? = null
