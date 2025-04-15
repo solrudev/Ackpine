@@ -2,8 +2,3 @@ public final class ru/solrudev/ackpine/AckpineFileProvider$Companion {
 	public final fun getAuthority ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/helpers/concurrent/ListenableFutureHelpersKt {
-	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;)V
-	public static final fun handleResult (Lcom/google/common/util/concurrent/ListenableFuture;Lkotlin/jvm/functions/Function1;Lkotlin/jvm/functions/Function1;)V
-}
-

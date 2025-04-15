@@ -17,10 +17,12 @@
 package ru.solrudev.ackpine.helpers.concurrent
 
 import android.annotation.SuppressLint
+import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.DirectExecutor
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
 	if (isDone) {
@@ -36,6 +38,7 @@ public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
 	}, DirectExecutor.INSTANCE)
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 public fun <V> ListenableFuture<V>.handleResult(
 	onException: (Exception) -> Unit,
