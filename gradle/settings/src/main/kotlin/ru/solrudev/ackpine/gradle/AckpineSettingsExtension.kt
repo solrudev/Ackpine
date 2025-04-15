@@ -22,6 +22,7 @@ import org.gradle.api.initialization.Settings
 import javax.inject.Inject
 
 private val SANITIZING_REGEX = Regex("\\W+")
+private val FILE_SEPARATOR_REGEX = Regex("[/\\\\]")
 
 /**
  * Extension for Ackpine `settings` plugin.
@@ -36,18 +37,27 @@ public abstract class AckpineSettingsExtension @Inject constructor(private val s
 	}
 
 	/**
-	 * Finds all direct subprojects and adds them to the build.
+	 * Finds all subprojects and adds them to the build.
 	 */
 	public fun includeSubprojects() {
-		for (file in settings.rootDir.listFiles() ?: return) {
-			if (
-				file.isDirectory
-				&& file.resolve("build.gradle.kts").exists()
-				&& !file.resolve("settings.gradle.kts").exists()
-			) {
-				settings.include(":${file.name}")
+		val rootDir = settings.rootDir
+		val rootDirPath = rootDir.toPath()
+		rootDir
+			.walkTopDown()
+			.onEnter { file ->
+				file == rootDir
+						|| (file.isDirectory()
+						&& file.resolve("build.gradle.kts").exists()
+						&& !file.resolve("settings.gradle.kts").exists())
 			}
-		}
+			.filter { file -> file.isDirectory && file != rootDir }
+			.forEach { dir ->
+				val projectPath = rootDirPath
+					.relativize(dir.toPath())
+					.toString()
+					.replace(FILE_SEPARATOR_REGEX, ":")
+				settings.include(":$projectPath")
+			}
 	}
 
 	/**
