@@ -40,54 +40,44 @@ internal object DrawableIdConverters {
 internal object ResolvableStringConverters {
 
 	@TypeConverter
-	@JvmStatic
 	internal fun fromByteArray(byteArray: ByteArray): ResolvableString = byteArray.deserialize()
 
 	@TypeConverter
-	@JvmStatic
 	internal fun toByteArray(resolvableString: ResolvableString): ByteArray = resolvableString.serialize()
 }
 
 internal object InstallFailureConverters {
 
 	@TypeConverter
-	@JvmStatic
 	internal fun fromByteArray(byteArray: ByteArray): InstallFailure = byteArray.deserialize()
 
 	@TypeConverter
-	@JvmStatic
 	internal fun toByteArray(installFailure: InstallFailure): ByteArray = installFailure.serialize()
 }
 
 internal object UninstallFailureConverters {
 
 	@TypeConverter
-	@JvmStatic
 	internal fun fromByteArray(byteArray: ByteArray): UninstallFailure = byteArray.deserialize()
 
 	@TypeConverter
-	@JvmStatic
 	internal fun toByteArray(uninstallFailure: UninstallFailure): ByteArray = uninstallFailure.serialize()
 }
 
 internal object TimeoutStrategyConverters {
 
 	@TypeConverter
-	@JvmStatic
 	internal fun fromByteArray(byteArray: ByteArray): TimeoutStrategy = byteArray.deserialize()
 
 	@TypeConverter
-	@JvmStatic
 	internal fun toByteArray(timeoutStrategy: TimeoutStrategy): ByteArray = timeoutStrategy.serialize()
 }
 
 internal object PackageSourceConverters {
 
 	@TypeConverter
-	@JvmStatic
-	internal fun fromOrdinal(ordinal: Int): PackageSource = packageSources.getOrNull(ordinal) ?: Unspecified
+	internal fun fromOrdinal(ordinal: Int) = packageSources.getOrNull(ordinal) ?: Unspecified
 
 	@TypeConverter
-	@JvmStatic
-	internal fun toByteArray(packageSource: PackageSource): Int = packageSource.ordinal
+	internal fun toByteArray(packageSource: PackageSource) = packageSource.ordinal
 }
