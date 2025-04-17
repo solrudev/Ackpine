@@ -49,24 +49,25 @@ public data class Version(
 	}
 
 	private fun computeVersionCode(): Int {
-		val majorInt = majorVersion * 100000000
-		val minorInt = minorVersion * 1000000
-		val patchInt = patchVersion * 10000
-		val suffixBaseInt = when {
+		val suffixBase = when {
 			suffix.startsWith("dev") -> 0
-			suffix.startsWith("alpha") -> 1000
-			suffix.startsWith("beta") -> 2000
-			suffix.startsWith("rc") -> 8000
-			suffix.isEmpty() -> 9000
+			suffix.startsWith("alpha") -> 1
+			suffix.startsWith("beta") -> 2
+			suffix.startsWith("rc") -> 8
+			suffix.isEmpty() -> 9
 			else -> error("Unknown version suffix")
 		}
 		val suffixVersionIndex = suffix.indexOfFirst { it.isDigit() }
 		if (suffix.isNotEmpty() && suffixVersionIndex == -1) {
 			error("No suffix version found")
 		}
-		val suffixVersionInt = if (suffixVersionIndex != -1) suffix.substring(suffixVersionIndex).toInt() * 10 else 0
-		val suffixInt = suffixBaseInt + suffixVersionInt
-		val snapshotInt = if (isSnapshot) 0 else 1
-		return majorInt + minorInt + patchInt + suffixInt + snapshotInt
+		val suffixVersion = if (suffixVersionIndex != -1) suffix.substring(suffixVersionIndex).toInt() else 0
+		val snapshot = if (isSnapshot) 0 else 1
+		return (majorVersion * 100000000 +
+				minorVersion * 1000000 +
+				patchVersion * 10000 +
+				suffixBase * 1000 +
+				suffixVersion * 10 +
+				snapshot)
 	}
 }
