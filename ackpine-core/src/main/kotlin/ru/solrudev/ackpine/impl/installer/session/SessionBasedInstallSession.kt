@@ -326,7 +326,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun writeCommitProgressIfAbsent() {
 		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
 		if (!preferences.contains(SESSION_COMMIT_PROGRESS_VALUE)) {
-			preferences.edit {
+			preferences.edit(commit = true) {
 				putFloat(
 					SESSION_COMMIT_PROGRESS_VALUE,
 					packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
