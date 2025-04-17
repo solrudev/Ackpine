@@ -21,7 +21,6 @@ package ru.solrudev.ackpine.impl.installer.session
 import android.annotation.SuppressLint
 import android.app.PendingIntent
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
@@ -42,7 +41,6 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
-import androidx.core.content.edit
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.use
@@ -57,6 +55,7 @@ import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
@@ -81,8 +80,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-private const val ACKPINE_SESSION_BASED_INSTALLER = "ackpine_session_based_installer"
-private const val SESSION_COMMIT_PROGRESS_VALUE = "session_commit_progress_value"
 private const val TAG = "SessionBasedInstallSession"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -323,16 +320,8 @@ internal class SessionBasedInstallSession internal constructor(
 		return builder.build()
 	}
 
-	private fun writeCommitProgressIfAbsent() {
-		val preferences = context.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
-		if (!preferences.contains(SESSION_COMMIT_PROGRESS_VALUE)) {
-			preferences.edit(commit = true) {
-				putFloat(
-					SESSION_COMMIT_PROGRESS_VALUE,
-					packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
-				)
-			}
-		}
+	private fun writeCommitProgressIfAbsent() = CommitProgressValueHolder.putIfAbsent(context) {
+		packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
 	}
 
 	private fun getSessionId(): Int {
@@ -495,12 +484,6 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
-}
-
-@JvmSynthetic
-internal fun Context.getSessionBasedSessionCommitProgressValue(): Float {
-	return getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
-		.getFloat(SESSION_COMMIT_PROGRESS_VALUE, 1f)
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)
