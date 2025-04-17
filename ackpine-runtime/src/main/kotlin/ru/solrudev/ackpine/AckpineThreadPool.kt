@@ -27,6 +27,7 @@ import kotlin.math.roundToInt
 public object AckpineThreadPool {
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	@JvmField
 	public val executor: ExecutorService = Executors.newFixedThreadPool(
 		(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
 		object : ThreadFactory {
