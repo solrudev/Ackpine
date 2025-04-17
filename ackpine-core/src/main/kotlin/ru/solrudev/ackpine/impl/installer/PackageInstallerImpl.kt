@@ -24,6 +24,7 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.Ackpine
+import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -39,8 +40,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -239,11 +238,10 @@ internal class PackageInstallerImpl internal constructor(
 		}
 
 		private fun create(context: Context): PackageInstallerImpl {
-			AckpinePluginRegistry.register(PackageInstallerPlugin)
-			val database = AckpineDatabase.getInstance(context.applicationContext, PackageInstallerPlugin.executor)
+			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool.executor)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
-				PackageInstallerPlugin.executor,
+				AckpineThreadPool.executor,
 				InstallSessionFactoryImpl(
 					context.applicationContext,
 					database.lastUpdateTimestampDao(),
@@ -253,22 +251,12 @@ internal class PackageInstallerImpl internal constructor(
 					database.nativeSessionIdDao(),
 					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
-					PackageInstallerPlugin.executor,
+					AckpineThreadPool.executor,
 					Handler(context.mainLooper)
 				),
 				uuidFactory = UUID::randomUUID,
 				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
 			)
 		}
-	}
-}
-
-private object PackageInstallerPlugin : AckpinePlugin {
-
-	lateinit var executor: Executor
-		private set
-
-	override fun setExecutor(executor: Executor) {
-		this.executor = executor
 	}
 }

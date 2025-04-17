@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.plugin
+package ru.solrudev.ackpine
 
 import androidx.annotation.RestrictTo
+import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.roundToInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public object AckpinePluginRegistry {
+public object AckpineThreadPool {
 
-	private val executor = Executors.newFixedThreadPool(
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public val executor: ExecutorService = Executors.newFixedThreadPool(
 		(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
 		object : ThreadFactory {
 			private val threadCount = AtomicInteger(0)
@@ -35,8 +37,4 @@ public object AckpinePluginRegistry {
 			}
 		}
 	)
-
-	public fun register(plugin: AckpinePlugin) {
-		plugin.setExecutor(executor)
-	}
 }

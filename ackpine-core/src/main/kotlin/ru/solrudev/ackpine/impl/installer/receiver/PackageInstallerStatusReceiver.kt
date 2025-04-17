@@ -24,6 +24,7 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
@@ -44,12 +45,9 @@ import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
 import ru.solrudev.ackpine.installer.InstallFailure.Invalid
 import ru.solrudev.ackpine.installer.InstallFailure.Storage
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import java.util.UUID
-import java.util.concurrent.Executor
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -188,9 +186,12 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		)
 	}
 
-	private fun setConfirmationLaunched(context: Context, ackpineSessionId: UUID) = executor.execute {
+	private fun setConfirmationLaunched(
+		context: Context,
+		ackpineSessionId: UUID
+	) = AckpineThreadPool.executor.execute {
 		AckpineDatabase
-			.getInstance(context, executor)
+			.getInstance(context, AckpineThreadPool.executor)
 			.confirmationLaunchDao()
 			.setConfirmationLaunched(ackpineSessionId.toString())
 	}
@@ -219,13 +220,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal companion object : AckpinePlugin {
-
-		private lateinit var executor: Executor
-
-		init {
-			AckpinePluginRegistry.register(this)
-		}
+	internal companion object {
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
@@ -235,10 +230,5 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 		@JvmSynthetic
 		internal const val EXTRA_REQUIRE_USER_ACTION = "ru.solrudev.ackpine.extra.REQUIRE_USER_ACTION"
-
-		@JvmSynthetic
-		override fun setExecutor(executor: Executor) {
-			this.executor = executor
-		}
 	}
 }
