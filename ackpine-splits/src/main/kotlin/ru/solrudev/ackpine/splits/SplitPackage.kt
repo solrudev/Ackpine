@@ -21,7 +21,7 @@ import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.ImmediateListenableFuture
-import ru.solrudev.ackpine.helpers.map
+import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
 import ru.solrudev.ackpine.splits.helpers.deviceLocales

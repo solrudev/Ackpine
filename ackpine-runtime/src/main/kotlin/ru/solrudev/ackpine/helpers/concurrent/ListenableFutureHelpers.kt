@@ -18,9 +18,11 @@ package ru.solrudev.ackpine.helpers.concurrent
 
 import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
+import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.DirectExecutor
 import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
+import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
@@ -40,7 +42,9 @@ public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
+@JvmOverloads
 public fun <V> ListenableFuture<V>.handleResult(
+	executor: Executor = DirectExecutor.INSTANCE,
 	onException: (Exception) -> Unit,
 	block: (V) -> Unit
 ) {
@@ -54,7 +58,35 @@ public fun <V> ListenableFuture<V>.handleResult(
 		getAndUnwrapException()
 			.onSuccess(block)
 			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
-	}, DirectExecutor.INSTANCE)
+	}, executor)
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@SuppressLint("RestrictedApi")
+public fun <V, R> ListenableFuture<V>.map(
+	executor: Executor,
+	transform: (V) -> R
+): ListenableFuture<R> {
+	return CallbackToFutureAdapter.getFuture { completer ->
+		completer.addCancellationListener({ cancel(false) }, DirectExecutor.INSTANCE)
+		handleResult(
+			executor,
+			onException = completer::setException,
+			block = { result ->
+				try {
+					completer.set(transform(result))
+				} catch (exception: Exception) {
+					completer.setException(exception)
+				}
+			}
+		)
+	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@SuppressLint("RestrictedApi")
+public fun <V, R> ListenableFuture<V>.map(transform: (V) -> R): ListenableFuture<R> {
+	return map(DirectExecutor.INSTANCE, transform)
 }
 
 private fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
