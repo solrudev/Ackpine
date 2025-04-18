@@ -47,7 +47,7 @@ public class AckpinePlugin : Plugin<Project> {
 	private fun Project.registerBuildAckpineTask() {
 		val library = configurations.register("library") {
 			resolvable()
-			libraryElements(objects.named(AckpineLibraryBasePlugin.LIBRARY_ELEMENTS))
+			libraryElements(objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
 		}
 		tasks.register("buildAckpine") {
 			group = "build"

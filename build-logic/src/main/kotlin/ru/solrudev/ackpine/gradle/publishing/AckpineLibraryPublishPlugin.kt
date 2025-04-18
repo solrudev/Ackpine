@@ -28,13 +28,13 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
-import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
+import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		if (!pluginManager.hasPlugin(AckpineLibraryBasePlugin.PLUGIN_ID)) {
+		if (!pluginManager.hasPlugin(AckpineLibraryPlugin.PLUGIN_ID)) {
 			error("Applying library-publish plugin requires the library plugin to be applied")
 		}
 		pluginManager.apply(MavenPublishBasePlugin::class)

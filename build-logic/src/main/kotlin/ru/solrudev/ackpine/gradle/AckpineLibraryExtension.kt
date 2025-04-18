@@ -32,7 +32,7 @@ private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+\$")
  */
 public abstract class AckpineLibraryExtension @Inject constructor(
 	libraryExtension: LibraryExtension,
-	private val apiValidationExtensionProvider: () -> ApiValidationExtension?,
+	private val apiValidationExtension: ApiValidationExtension,
 	objectFactory: ObjectFactory
 ) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware {
 
@@ -52,7 +52,6 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
 		}
 		_internalPackages = packageNames.toSet()
-		val apiValidationExtension = apiValidationExtensionProvider() ?: return
 		apiValidationExtension.ignoredPackages += packageNames
 	}
 }

@@ -14,15 +14,9 @@
  * limitations under the License.
  */
 
-import ru.solrudev.ackpine.gradle.Constants
+package android.content
 
-description = "Ackpine API stubs"
-
-plugins {
-	kotlin("jvm")
-}
-
-kotlin {
-	jvmToolchain(Constants.JDK_VERSION)
-	explicitApi()
-}
+/**
+ * Stub for `android.content.Context`.
+ */
+public abstract class Context
