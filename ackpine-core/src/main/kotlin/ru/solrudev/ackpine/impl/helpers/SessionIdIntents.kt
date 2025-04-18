@@ -21,11 +21,18 @@ import java.util.UUID
 
 internal object SessionIdIntents {
 
+	private const val EXTRA_SESSION_ID = "ru.solrudev.ackpine.extra.ACKPINE_SESSION_ID"
 	private const val EXTRA_SESSION_ID_MOST_SIG_BITS = "ru.solrudev.ackpine.extra.SESSION_ID_MOST_SIG_BITS"
 	private const val EXTRA_SESSION_ID_LEAST_SIG_BITS = "ru.solrudev.ackpine.extra.SESSION_ID_LEAST_SIG_BITS"
+	private const val EXTRA_LEGACY_SESSION_ID = "ACKPINE_SESSION_ID"
 
 	@JvmSynthetic
 	internal fun getSessionId(intent: Intent): UUID {
+		val sessionId = intent.getSerializableExtraCompat<UUID>(EXTRA_SESSION_ID)
+			?: intent.getSerializableExtraCompat(EXTRA_LEGACY_SESSION_ID)
+		if (sessionId != null) {
+			return sessionId
+		}
 		val mostSigBits = intent.getLongExtra(EXTRA_SESSION_ID_MOST_SIG_BITS, 0)
 		val leastSigBits = intent.getLongExtra(EXTRA_SESSION_ID_LEAST_SIG_BITS, 0)
 		return UUID(mostSigBits, leastSigBits)
