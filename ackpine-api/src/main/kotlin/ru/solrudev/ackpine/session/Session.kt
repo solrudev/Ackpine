@@ -318,6 +318,9 @@ public interface Session<out F : Failure> {
 			 *
 			 * Replaces previously added [OnSuccessListener].
 			 *
+			 * If session has already succeeded by the time this function is called, the listener will be invoked
+			 * immediately in the calling thread.
+			 *
 			 * @return this [Binder] to allow chaining.
 			 */
 			public fun addOnSuccessListener(listener: OnSuccessListener): Binder<F> {
@@ -337,6 +340,9 @@ public interface Session<out F : Failure> {
 			 * Adds a [listener] which will be invoked when a [Session] fails.
 			 *
 			 * Replaces previously added [OnFailureListener].
+			 *
+			 * If session has already failed by the time this function is called, the listener will be invoked
+			 * immediately in the calling thread.
 			 *
 			 * @return this [Binder] to allow chaining.
 			 */
@@ -358,6 +364,9 @@ public interface Session<out F : Failure> {
 			 * Adds a [listener] which will be invoked when a [Session] is cancelled.
 			 *
 			 * Replaces previously added [OnCancelListener].
+			 *
+			 * If session was already cancelled by the time this function is called, the listener will be invoked
+			 * immediately in the calling thread.
 			 *
 			 * @return this [Binder] to allow chaining.
 			 */
