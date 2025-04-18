@@ -276,9 +276,17 @@ public interface Session<out F : Failure> {
 		public class Binder<F : Failure> private constructor(session: Session<F>) {
 
 			private val sessionId = session.id
+
+			@Volatile
 			private var onSuccessListener: OnSuccessListener? = null
+
+			@Volatile
 			private var onFailureListener: OnFailureListener<F>? = null
+
+			@Volatile
 			private var onCancelListener: OnCancelListener? = null
+
+			@Volatile
 			private var cachedTerminalState: State.Terminal? = null
 
 			@get:JvmSynthetic
