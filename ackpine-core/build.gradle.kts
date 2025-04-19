@@ -38,7 +38,6 @@ room {
 
 dependencies {
 	ksp(androidx.room.compiler)
-	api(androidx.annotation)
 	api(androidx.startup)
 	api(projects.ackpineApi)
 	implementation(projects.ackpineRuntime)
