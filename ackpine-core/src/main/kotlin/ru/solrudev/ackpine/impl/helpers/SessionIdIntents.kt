@@ -28,14 +28,13 @@ internal object SessionIdIntents {
 
 	@JvmSynthetic
 	internal fun getSessionId(intent: Intent): UUID {
-		val sessionId = intent.getSerializableExtraCompat<UUID>(EXTRA_SESSION_ID)
-			?: intent.getSerializableExtraCompat(EXTRA_LEGACY_SESSION_ID)
-		if (sessionId != null) {
-			return sessionId
+		val mostSigBits = intent.getLongExtra(EXTRA_SESSION_ID_MOST_SIG_BITS, -1L)
+		val leastSigBits = intent.getLongExtra(EXTRA_SESSION_ID_LEAST_SIG_BITS, -1L)
+		if (mostSigBits != -1L && leastSigBits != -1L) {
+			return UUID(mostSigBits, leastSigBits)
 		}
-		val mostSigBits = intent.getLongExtra(EXTRA_SESSION_ID_MOST_SIG_BITS, 0)
-		val leastSigBits = intent.getLongExtra(EXTRA_SESSION_ID_LEAST_SIG_BITS, 0)
-		return UUID(mostSigBits, leastSigBits)
+		return intent.getSerializableExtraCompat<UUID>(EXTRA_SESSION_ID)
+			?: intent.getSerializableExtraCompat(EXTRA_LEGACY_SESSION_ID)!!
 	}
 
 	@JvmSynthetic
