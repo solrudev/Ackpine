@@ -51,7 +51,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	protected abstract val ackpineSessionFuture: ListenableFuture<out CompletableSession<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
-		SessionIdIntents.getSessionId(intent)
+		SessionIdIntents.getSessionId(intent, tag)
 	}
 
 	private val subscriptions = DisposableSubscriptionContainer()

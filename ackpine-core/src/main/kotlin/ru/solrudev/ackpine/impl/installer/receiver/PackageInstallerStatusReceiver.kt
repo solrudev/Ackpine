@@ -63,7 +63,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		}
 		val pendingResult = goAsync()
 		val packageInstaller = PackageInstallerImpl.getInstance(context)
-		val ackpineSessionId = SessionIdIntents.getSessionId(intent)
+		val ackpineSessionId = SessionIdIntents.getSessionId(intent, TAG)
 		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
 			onException = { exception ->
 				pendingResult.finish()
