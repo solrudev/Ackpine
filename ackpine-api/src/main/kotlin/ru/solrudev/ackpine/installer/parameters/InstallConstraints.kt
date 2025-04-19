@@ -329,10 +329,7 @@ public class InstallConstraints private constructor(
 		@RequiresApi(Build.VERSION_CODES.O)
 		@JvmStatic
 		public fun gentleUpdate(timeout: java.time.Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
-			return Builder(timeout)
-				.setAppNotInteractingRequired(true)
-				.setTimeoutStrategy(timeoutStrategy)
-				.build()
+			return gentleUpdate(timeout.toMillis(), timeoutStrategy)
 		}
 
 		/**
@@ -341,9 +338,7 @@ public class InstallConstraints private constructor(
 		@RequiresApi(Build.VERSION_CODES.O)
 		@JvmStatic
 		public fun gentleUpdate(timeout: java.time.Duration): InstallConstraints {
-			return Builder(timeout)
-				.setAppNotInteractingRequired(true)
-				.build()
+			return gentleUpdate(timeout.toMillis())
 		}
 
 		/**
@@ -351,10 +346,7 @@ public class InstallConstraints private constructor(
 		 */
 		@JvmSynthetic
 		public fun gentleUpdate(timeout: Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
-			return Builder(timeout.inWholeMilliseconds)
-				.setAppNotInteractingRequired(true)
-				.setTimeoutStrategy(timeoutStrategy)
-				.build()
+			return gentleUpdate(timeout.inWholeMilliseconds, timeoutStrategy)
 		}
 
 		/**
@@ -362,9 +354,7 @@ public class InstallConstraints private constructor(
 		 */
 		@JvmSynthetic
 		public fun gentleUpdate(timeout: Duration): InstallConstraints {
-			return Builder(timeout.inWholeMilliseconds)
-				.setAppNotInteractingRequired(true)
-				.build()
+			return gentleUpdate(timeout.inWholeMilliseconds)
 		}
 	}
 }
