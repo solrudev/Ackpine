@@ -1,6 +1,26 @@
 Change Log
 ==========
 
+Version 0.11.2 (2025-04-19)
+---------------------------
+
+### Dependencies
+
+- Extracted `ackpine-api` artifact, which is now depended upon by `ackpine-core` and `ackpine-ktx`.
+
+### Bug fixes and improvements
+
+- Extract `ackpine-api` artifact. If you had a dependency on `ackpine-ktx`, but didn't have an explicit dependency on `ackpine-core`, you have to add it. No API changes were introduced.
+- Fix NPE causing `Unable to start receiver ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver` when self-updating if Ackpine version was < `0.11.0` (#106).
+- Fix listeners added through `TerminalStateListener.Binder` not invoking if session was already in terminal state.
+- Make status bar and navigation bar fully transparent on all Android versions for session confirmation dialog Activity.
+- Allow to configure install constraints timeout with `java.time.Duration`.
+
+### Public API changes
+
+- Added `InstallConstraints.Builder` constructor overload accepting `java.time.Duration`.
+- Added `InstallConstraints.gentleUpdate()` static method overloads accepting `java.time.Duration`.
+
 Version 0.11.1 (2025-04-06)
 ---------------------------
 
