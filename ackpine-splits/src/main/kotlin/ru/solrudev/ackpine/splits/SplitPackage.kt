@@ -19,16 +19,13 @@ package ru.solrudev.ackpine.splits
 import android.content.Context
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.ImmediateListenableFuture
-import ru.solrudev.ackpine.helpers.map
+import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.helpers.onCancellation
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
-import ru.solrudev.ackpine.splits.SplitPackage.DynamicFeature
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
-import java.util.concurrent.Executor
 import kotlin.math.abs
 
 /**
@@ -353,7 +350,7 @@ public open class SplitPackage(
 						source.close()
 					}
 				}
-				ExecutorPlugin.executor.execute {
+				AckpineThreadPool.execute {
 					try {
 						completer.set(createSplitPackage(source))
 					} catch (exception: Exception) {
@@ -436,20 +433,6 @@ public open class SplitPackage(
 	private object EmptySplitPackage : SplitPackage(
 		emptyList(), emptyList(), emptyList(), emptyList(), emptyList(), emptyList()
 	)
-}
-
-private object ExecutorPlugin : AckpinePlugin {
-
-	lateinit var executor: Executor
-		private set
-
-	init {
-		AckpinePluginRegistry.register(this)
-	}
-
-	override fun setExecutor(executor: Executor) {
-		this.executor = executor
-	}
 }
 
 @Suppress("FunctionName")

@@ -64,9 +64,8 @@ internal inline fun <reified T : SessionCommitActivity<*>> Context.launchConfirm
 	flags: Int,
 	putExtra: (Intent) -> Unit
 ) {
-	val intent = Intent(this, T::class.java)
-		.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, sessionId)
-		.also(putExtra)
+	val intent = Intent(this, T::class.java).also(putExtra)
+	SessionIdIntents.putSessionId(intent, sessionId)
 	when (confirmation) {
 		Confirmation.IMMEDIATE -> startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
 		Confirmation.DEFERRED -> showConfirmationNotification(
@@ -165,7 +164,9 @@ internal object NotificationIntents {
 
 	@JvmSynthetic
 	internal fun getNotificationData(intent: Intent, tag: String): NotificationData {
-		val bundle = intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)!!
+		val bundle = requireNotNull(
+			intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)
+		) { "$tag: notificationBundle was null" }
 		val notificationTitle = requireNotNull(
 			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
 		) { "$tag: notificationTitle was null." }

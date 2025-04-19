@@ -20,6 +20,7 @@ plugins {
 
 dependencies {
 	// task :buildAckpine
+	library(projects.ackpineApi)
 	library(projects.ackpineCore)
 	library(projects.ackpineKtx)
 	library(projects.ackpineSplits)

@@ -24,27 +24,32 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
+import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
-import ru.solrudev.ackpine.impl.helpers.getSerializableExtraCompat
 import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
+import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
+import ru.solrudev.ackpine.installer.InstallFailure.Aborted
+import ru.solrudev.ackpine.installer.InstallFailure.Blocked
+import ru.solrudev.ackpine.installer.InstallFailure.Conflict
+import ru.solrudev.ackpine.installer.InstallFailure.Generic
+import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
+import ru.solrudev.ackpine.installer.InstallFailure.Invalid
+import ru.solrudev.ackpine.installer.InstallFailure.Storage
+import ru.solrudev.ackpine.installer.InstallFailure.Timeout
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import java.util.UUID
-import java.util.concurrent.Executor
 import kotlin.random.Random
 import kotlin.random.nextInt
-import ru.solrudev.ackpine.installer.PackageInstaller as AckpinePackageInstaller
 
 private const val TAG = "PackageInstallerStatusReceiver"
 
@@ -57,8 +62,8 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			return
 		}
 		val pendingResult = goAsync()
-		val packageInstaller = AckpinePackageInstaller.getImpl(context)
-		val ackpineSessionId = intent.getSerializableExtraCompat<UUID>(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID)!!
+		val packageInstaller = PackageInstallerImpl.getInstance(context)
+		val ackpineSessionId = SessionIdIntents.getSessionId(intent, TAG)
 		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
 			onException = { exception ->
 				pendingResult.finish()
@@ -119,9 +124,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
 		]
 		val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
-			.putExtra(SessionCommitActivity.EXTRA_ACKPINE_SESSION_ID, ackpineSessionId)
 			.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 			.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+		SessionIdIntents.putSessionId(wrapperIntent, ackpineSessionId)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			wrapperIntent.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, isPreapproval)
 		}
@@ -144,7 +149,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	) {
 		val result = when (status) {
 			PackageInstaller.STATUS_SUCCESS -> Session.State.Succeeded
-			else -> Session.State.Failed(InstallFailure.fromIntent(intent, status, message))
+			else -> Session.State.Failed(getInstallFailure(intent, status, message))
 		}
 		session?.complete(result)
 	}
@@ -159,7 +164,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		when (status) {
 			PackageInstaller.STATUS_SUCCESS -> session.onPreapproved()
 			else -> session.complete(
-				Session.State.Failed(InstallFailure.fromIntent(intent, status, message))
+				Session.State.Failed(getInstallFailure(intent, status, message))
 			)
 		}
 	}
@@ -181,9 +186,12 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		)
 	}
 
-	private fun setConfirmationLaunched(context: Context, ackpineSessionId: UUID) = executor.execute {
+	private fun setConfirmationLaunched(
+		context: Context,
+		ackpineSessionId: UUID
+	) = AckpineThreadPool.execute {
 		AckpineDatabase
-			.getInstance(context, executor)
+			.getInstance(context, AckpineThreadPool)
 			.confirmationLaunchDao()
 			.setConfirmationLaunched(ackpineSessionId.toString())
 	}
@@ -193,22 +201,26 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 	private fun getRequireUserAction(intent: Intent) = intent.getBooleanExtra(EXTRA_REQUIRE_USER_ACTION, true)
 
-	private fun InstallFailure.Companion.fromIntent(intent: Intent, status: Int, message: String?): InstallFailure {
+	private fun getInstallFailure(intent: Intent, status: Int, message: String?): InstallFailure {
 		val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
 		val storagePath = intent.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH)
-		return fromStatusCode(status, message, otherPackageName, storagePath)
+		return when (status) {
+			PackageInstaller.STATUS_FAILURE -> Generic(message)
+			PackageInstaller.STATUS_FAILURE_ABORTED -> Aborted(message)
+			PackageInstaller.STATUS_FAILURE_BLOCKED -> Blocked(message, otherPackageName)
+			PackageInstaller.STATUS_FAILURE_CONFLICT -> Conflict(message, otherPackageName)
+			PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> Incompatible(message)
+			PackageInstaller.STATUS_FAILURE_INVALID -> Invalid(message)
+			PackageInstaller.STATUS_FAILURE_STORAGE -> Storage(message, storagePath)
+			PackageInstaller.STATUS_FAILURE_TIMEOUT -> Timeout(message)
+			else -> Generic()
+		}
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
-	internal companion object : AckpinePlugin {
-
-		private lateinit var executor: Executor
-
-		init {
-			AckpinePluginRegistry.register(this)
-		}
+	internal companion object {
 
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
@@ -218,10 +230,5 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 		@JvmSynthetic
 		internal const val EXTRA_REQUIRE_USER_ACTION = "ru.solrudev.ackpine.extra.REQUIRE_USER_ACTION"
-
-		@JvmSynthetic
-		override fun setExecutor(executor: Executor) {
-			this.executor = executor
-		}
 	}
 }

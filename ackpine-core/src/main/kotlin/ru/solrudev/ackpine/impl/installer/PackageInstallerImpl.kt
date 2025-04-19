@@ -17,14 +17,20 @@
 package ru.solrudev.ackpine.impl.installer
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.os.Handler
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
-import ru.solrudev.ackpine.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.Ackpine
+import ru.solrudev.ackpine.AckpineThreadPool
+import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
+import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
@@ -80,10 +86,10 @@ internal class PackageInstallerImpl internal constructor(
 	override fun getSessionAsync(sessionId: UUID) = CallbackToFutureAdapter.getFuture { completer ->
 		sessions[sessionId]?.let(completer::set) ?: executor.executeWithCompleter(completer) {
 			if (areCommittedSessionsInitialized) {
-				getSessionFromDb(sessionId, completer)
+				getSession(sessionId, completer)
 			} else {
 				committedSessionsInitSemaphore.withPermit {
-					getSessionFromDb(sessionId, completer)
+					getSession(sessionId, completer)
 				}
 			}
 		}
@@ -122,21 +128,13 @@ internal class PackageInstallerImpl internal constructor(
 		areCommittedSessionsInitialized = true
 	}
 
-	private fun getSessionFromDb(
-		sessionId: UUID,
-		completer: Completer<CompletableProgressSession<InstallFailure>?>
-	) {
-		sessions[sessionId]?.let { session ->
-			completer.set(session)
-			return
+	private fun getSession(sessionId: UUID, completer: Completer<CompletableProgressSession<InstallFailure>?>) {
+		val session = sessions.computeIfAbsentCompat(sessionId) {
+			installSessionDao
+				.getInstallSession(sessionId.toString())
+				?.let(installSessionFactory::create)
 		}
-		val session = installSessionDao.getInstallSession(sessionId.toString())
-		if (session != null) {
-			val installSession = installSessionFactory.create(session)
-			completer.set(sessions.putIfAbsent(sessionId, installSession) ?: installSession)
-			return
-		}
-		completer.set(null)
+		completer.set(session)
 	}
 
 	private inline fun getSessionsAsync(
@@ -170,8 +168,8 @@ internal class PackageInstallerImpl internal constructor(
 				sessions.containsKey(UUID.fromString(session.session.id))
 			}
 			.forEach { session ->
-				val installSession = installSessionFactory.create(session)
-				sessions.putIfAbsent(installSession.id, installSession)
+				val id = UUID.fromString(session.session.id)
+				sessions.computeIfAbsentCompat(id) { installSessionFactory.create(session) }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values
@@ -213,5 +211,52 @@ internal class PackageInstallerImpl internal constructor(
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
+	}
+
+	internal companion object {
+
+		private val lock = Any()
+
+		@Volatile
+		private var packageInstaller: PackageInstallerImpl? = null
+
+		@JvmName("getInstance")
+		@JvmSynthetic
+		internal fun getInstance(context: Context): PackageInstallerImpl {
+			var instance = packageInstaller
+			if (instance != null) {
+				return instance
+			}
+			synchronized(lock) {
+				instance = packageInstaller
+				if (instance == null) {
+					instance = create(context)
+					packageInstaller = instance
+				}
+			}
+			return instance!!
+		}
+
+		private fun create(context: Context): PackageInstallerImpl {
+			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool)
+			return PackageInstallerImpl(
+				database.installSessionDao(),
+				AckpineThreadPool,
+				InstallSessionFactoryImpl(
+					context.applicationContext,
+					database.lastUpdateTimestampDao(),
+					database.installSessionDao(),
+					database.sessionDao(),
+					database.sessionProgressDao(),
+					database.nativeSessionIdDao(),
+					database.installPreapprovalDao(),
+					database.installConstraintsDao(),
+					AckpineThreadPool,
+					Handler(context.mainLooper)
+				),
+				uuidFactory = UUID::randomUUID,
+				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
+			)
+		}
 	}
 }

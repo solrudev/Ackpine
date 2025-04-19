@@ -33,15 +33,12 @@ import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.io.ZipEntryStream
-import ru.solrudev.ackpine.plugin.AckpinePlugin
-import ru.solrudev.ackpine.plugin.AckpinePluginRegistry
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.concurrent.Executor
 
 /**
  * [ContentProvider] which allows to open files inside of ZIP archives.
@@ -56,7 +53,6 @@ public class ZippedFileProvider : ContentProvider() {
 	}
 
 	override fun onCreate(): Boolean {
-		AckpinePluginRegistry.register(ZippedFileProviderPlugin)
 		return true
 	}
 
@@ -182,7 +178,7 @@ public class ZippedFileProvider : ContentProvider() {
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
 		val zipStream = openZipEntryStream(uri, signal)
 		val size = zipStream.size
-		ZippedFileProviderPlugin.executor.execute {
+		AckpineThreadPool.execute {
 			outputFd.safeWrite { outputStream ->
 				zipStream.buffered().use { zipStream ->
 					zipStream.copyTo(outputStream, signal)
@@ -314,15 +310,5 @@ public class ZippedFileProvider : ContentProvider() {
 		public fun getUriForZipEntry(uri: Uri, zipEntryName: String): Uri {
 			return getUriForZipEntry(uri.toString(), zipEntryName)
 		}
-	}
-}
-
-private object ZippedFileProviderPlugin : AckpinePlugin {
-
-	lateinit var executor: Executor
-		private set
-
-	override fun setExecutor(executor: Executor) {
-		this.executor = executor
 	}
 }

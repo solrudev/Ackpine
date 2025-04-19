@@ -52,7 +52,9 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		}
 		configureKotlin()
 		val libraryExtension = extensions.getByType<LibraryExtension>()
-		val apiValidationExtension = extensions.getByType<ApiValidationExtension>()
+		val apiValidationExtension = extensions.getByType<ApiValidationExtension>().apply {
+			nonPublicMarkers += "androidx.annotation.RestrictTo"
+		}
 		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension, apiValidationExtension)
 		configureAndroid()
 		registerConsumableLibraryConfiguration()

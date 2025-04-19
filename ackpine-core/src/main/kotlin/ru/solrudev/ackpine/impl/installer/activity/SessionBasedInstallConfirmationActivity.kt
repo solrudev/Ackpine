@@ -31,9 +31,12 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
+import androidx.core.os.ExecutorCompat
+import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
-import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
 
@@ -59,6 +62,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				&& intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
 
 	private val handler = Handler(Looper.getMainLooper())
+	private val executor = ExecutorCompat.create(handler)
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
@@ -74,6 +78,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			)
 		)
 	}
+
+	override fun shouldNotifyWhenCommitted() = !isPreapproval
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -98,11 +104,17 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	override fun onResume() {
 		super.onResume()
-		when {
+		if (isFirstResume) {
 			// Activity is freshly created, skip.
-			isFirstResume -> isFirstResume = false
-			// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-			!isOnActivityResultCalled && wasOnTopOnStart && isSessionStuck() -> abortSession()
+			isFirstResume = false
+			return
+		}
+		val isConfirmationDismissed = !isOnActivityResultCalled && wasOnTopOnStart
+		isSessionStuck().handleResult(executor) { isSessionStuck ->
+			if (isConfirmationDismissed && isSessionStuck) {
+				// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
+				abortSession()
+			}
 		}
 	}
 
@@ -123,12 +135,27 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 	override fun onActivityResult(resultCode: Int) {
 		isOnActivityResultCalled = true
 		val isActivityCancelled = resultCode == RESULT_CANCELED
-		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
-		val isSessionAlive = sessionInfo != null
-		val isSessionStuck = isSessionStuck(sessionInfo)
 		val previousCanInstallPackagesValue = canInstallPackages
 		canInstallPackages = canInstallPackages()
 		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
+		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
+		val isSessionAlive = sessionInfo != null
+		isSessionStuck(sessionInfo).handleResult(executor) { isSessionStuck ->
+			onInstallConfirmationFinished(
+				isSessionStuck,
+				isInstallPermissionStatusChanged,
+				isSessionAlive,
+				isActivityCancelled
+			)
+		}
+	}
+
+	private fun onInstallConfirmationFinished(
+		isSessionStuck: Boolean,
+		isInstallPermissionStatusChanged: Boolean,
+		isSessionAlive: Boolean,
+		isActivityCancelled: Boolean
+	) {
 		// Order of checks is important.
 		when {
 			// Confirmation is a preapproval on API >= 34.
@@ -155,8 +182,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		}
 	}
 
-	override fun shouldNotifyWhenCommitted() = !isPreapproval
-
 	private fun launchInstallActivity() {
 		canInstallPackages = canInstallPackages()
 		intent.extras
@@ -166,7 +191,9 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	private fun isSessionStuck(
 		sessionInfo: PackageInstaller.SessionInfo? = packageInstaller.getSessionInfo(sessionId)
-	) = sessionInfo != null && sessionInfo.progress < getSessionBasedSessionCommitProgressValue()
+	) = CommitProgressValueHolder
+		.getAsync(this)
+		.map { value -> sessionInfo != null && sessionInfo.progress < value }
 
 	private fun isOnTop(): Boolean {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {

@@ -27,7 +27,6 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
-import ru.solrudev.ackpine.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
@@ -36,9 +35,9 @@ import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
-import ru.solrudev.ackpine.impl.installer.session.getSessionBasedSessionCommitProgressValue
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -224,7 +223,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		if (!completeIfSucceeded || initialState.isTerminal) {
 			return session
 		}
-		val progressThreshold = (applicationContext.getSessionBasedSessionCommitProgressValue() * PROGRESS_MAX).toInt()
+		val commitProgressValue = CommitProgressValueHolder.get(applicationContext)
+		val progressThreshold = (commitProgressValue * PROGRESS_MAX).toInt()
 		val isInstallationOngoingOrCompleted = initialProgress.progress >= progressThreshold
 		// We can't rely on session's progress on API 31-32 with requireUserAction == false, so we don't block clients
 		// from committing on these versions if user's confirmation was already launched previously.

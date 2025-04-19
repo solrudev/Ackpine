@@ -38,10 +38,8 @@ room {
 
 dependencies {
 	ksp(androidx.room.compiler)
-	api(androidx.annotation)
 	api(androidx.startup)
-	api(libs.listenablefuture)
-	api(projects.ackpineResources)
+	api(projects.ackpineApi)
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.concurrent.futures.core)
 	implementation(androidx.core.ktx)

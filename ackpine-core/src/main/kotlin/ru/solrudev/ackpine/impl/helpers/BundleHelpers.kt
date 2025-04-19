@@ -24,7 +24,8 @@ import java.io.Serializable
 @Suppress("DEPRECATION")
 @JvmSynthetic
 internal inline fun <reified T : Parcelable> Bundle.getParcelableCompat(name: String): T? {
-	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+	// https://issuetracker.google.com/issues/240585930#comment6
+	return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 		getParcelable(name, T::class.java)
 	} else {
 		getParcelable(name)
@@ -34,7 +35,8 @@ internal inline fun <reified T : Parcelable> Bundle.getParcelableCompat(name: St
 @Suppress("DEPRECATION")
 @JvmSynthetic
 internal inline fun <reified T : Serializable> Bundle.getSerializableCompat(name: String): T? {
-	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+	// https://issuetracker.google.com/issues/240585930#comment6
+	return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 		getSerializable(name, T::class.java)
 	} else {
 		getSerializable(name) as? T

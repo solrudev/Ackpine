@@ -21,26 +21,8 @@ import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.DirectExecutor
 import com.google.common.util.concurrent.ListenableFuture
-import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
-
-@JvmSynthetic
-internal inline fun <V, R> ListenableFuture<V>.map(crossinline transform: (V) -> R): ListenableFuture<R> {
-	return CallbackToFutureAdapter.getFuture { completer ->
-		completer.onCancellation { cancel(false) }
-		handleResult(
-			onException = completer::setException,
-			block = { result ->
-				try {
-					completer.set(transform(result))
-				} catch (exception: Exception) {
-					completer.setException(exception)
-				}
-			}
-		)
-	}
-}
 
 @SuppressLint("RestrictedApi")
 @JvmSynthetic

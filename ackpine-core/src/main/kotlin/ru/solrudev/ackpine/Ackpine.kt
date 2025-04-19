@@ -26,11 +26,17 @@ import androidx.core.app.NotificationManagerCompat
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
 import ru.solrudev.ackpine.session.parameters.Confirmation.DEFERRED
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.random.Random
+import kotlin.random.nextInt
 
 /**
  * A library providing consistent APIs for installing and uninstalling apps on an Android device.
  */
 public object Ackpine {
+
+	@get:JvmSynthetic
+	internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
 	@Volatile
 	private var applicationContext: Context? = null

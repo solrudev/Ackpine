@@ -27,6 +27,7 @@ ackpine {
 }
 
 dependencies {
+	implementation(projects.ackpineCore)
 	implementation(projects.ackpineKtx)
 	implementation(projects.ackpineAssets)
 	implementation(projects.ackpineResources)

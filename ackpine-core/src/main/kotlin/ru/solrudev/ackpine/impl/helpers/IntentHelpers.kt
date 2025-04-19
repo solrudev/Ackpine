@@ -24,7 +24,8 @@ import java.io.Serializable
 @Suppress("DEPRECATION")
 @JvmSynthetic
 internal inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(name: String): T? {
-	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+	// https://issuetracker.google.com/issues/240585930#comment6
+	return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 		getParcelableExtra(name, T::class.java)
 	} else {
 		getParcelableExtra(name)
@@ -34,7 +35,8 @@ internal inline fun <reified T : Parcelable> Intent.getParcelableExtraCompat(nam
 @Suppress("DEPRECATION")
 @JvmSynthetic
 internal inline fun <reified T : Serializable> Intent.getSerializableExtraCompat(name: String): T? {
-	return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+	// https://issuetracker.google.com/issues/240585930#comment6
+	return if (Build.VERSION.SDK_INT > Build.VERSION_CODES.TIRAMISU) {
 		getSerializableExtra(name, T::class.java)
 	} else {
 		getSerializableExtra(name) as? T

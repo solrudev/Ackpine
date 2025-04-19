@@ -67,7 +67,7 @@ public interface InstallConstraintsDsl {
 	 *
 	 * Default strategy is [TimeoutStrategy.Fail].
 	 */
-	public var timeoutStrategy: InstallConstraints.TimeoutStrategy
+	public var timeoutStrategy: TimeoutStrategy
 }
 
 @PublishedApi
@@ -105,7 +105,7 @@ internal class InstallConstraintsDslBuilder(timeout: Duration) : InstallConstrai
 			builder.setNotInCallRequired(value)
 		}
 
-	override var timeoutStrategy: InstallConstraints.TimeoutStrategy
+	override var timeoutStrategy: TimeoutStrategy
 		get() = builder.timeoutStrategy
 		set(value) {
 			builder.setTimeoutStrategy(value)

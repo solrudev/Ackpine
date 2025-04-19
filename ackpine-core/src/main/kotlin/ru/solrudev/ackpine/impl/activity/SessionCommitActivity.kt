@@ -31,11 +31,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
-import ru.solrudev.ackpine.impl.helpers.getSerializableCompat
+import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
-import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextInt
 
@@ -52,7 +51,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	protected abstract val ackpineSessionFuture: ListenableFuture<out CompletableSession<F>?>
 
 	protected val ackpineSessionId by lazy(LazyThreadSafetyMode.NONE) {
-		intent.extras?.getSerializableCompat<UUID>(EXTRA_ACKPINE_SESSION_ID) ?: error("ackpineSessionId was null")
+		SessionIdIntents.getSessionId(intent, tag)
 	}
 
 	private val subscriptions = DisposableSubscriptionContainer()
@@ -195,11 +194,5 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				finish()
 			}
 		}
-	}
-
-	internal companion object {
-
-		@JvmSynthetic
-		internal const val EXTRA_ACKPINE_SESSION_ID = "ru.solrudev.ackpine.extra.ACKPINE_SESSION_ID"
 	}
 }
