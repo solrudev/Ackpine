@@ -75,7 +75,9 @@ An example of creating a session with custom parameters:
     var preapproval = new InstallPreapproval.Builder("com.example.package", "Sample App", ULocale.US)
             .setIcon(iconUri)
             .build();
-    var constraints = new InstallConstraints.Builder(60000L)
+    var timeout = Duration.ofMinutes(1);
+    // Or use raw millis value on older Android versions, e.g. 60000L
+    var constraints = new InstallConstraints.Builder(timeout)
             .setTimeoutStrategy(TimeoutStrategy.COMMIT_EAGERLY)
             .setAppNotForegroundRequired(true)
             .setAppNotInteractingRequired(true)

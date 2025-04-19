@@ -165,6 +165,8 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallConstraints {
 	public fun equals (Ljava/lang/Object;)Z
 	public static final fun gentleUpdate (J)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public static final fun gentleUpdate (JLru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public static final fun gentleUpdate (Ljava/time/Duration;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public static final fun gentleUpdate (Ljava/time/Duration;Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public final fun getTimeoutMillis ()J
 	public final fun getTimeoutStrategy ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;
 	public fun hashCode ()I
@@ -178,6 +180,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallConstraints {
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallConstraints$Builder {
 	public fun <init> (J)V
+	public fun <init> (Ljava/time/Duration;)V
 	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public final fun getTimeoutStrategy ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;
 	public final fun isAppNotForegroundRequired ()Z
@@ -196,6 +199,8 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallConstraints$B
 public final class ru/solrudev/ackpine/installer/parameters/InstallConstraints$Companion {
 	public final fun gentleUpdate (J)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public final fun gentleUpdate (JLru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public final fun gentleUpdate (Ljava/time/Duration;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
+	public final fun gentleUpdate (Ljava/time/Duration;Lru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public final synthetic fun gentleUpdate-LRDsOJo (J)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public final synthetic fun gentleUpdate-VtjQ1oo (JLru/solrudev/ackpine/installer/parameters/InstallConstraints$TimeoutStrategy;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 }

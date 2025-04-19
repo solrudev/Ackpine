@@ -20,6 +20,7 @@ package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
 import android.os.Build
+import androidx.annotation.RequiresApi
 import java.io.Serializable
 import kotlin.time.Duration
 
@@ -185,6 +186,9 @@ public class InstallConstraints private constructor(
 	 */
 	public class Builder(private val timeoutMillis: Long) {
 
+		@RequiresApi(Build.VERSION_CODES.O)
+		public constructor(timeout: java.time.Duration) : this(timeout.toMillis())
+
 		/**
 		 * This constraint requires the app in question is not in the foreground.
 		 */
@@ -315,6 +319,29 @@ public class InstallConstraints private constructor(
 		@JvmStatic
 		public fun gentleUpdate(timeoutMillis: Long): InstallConstraints {
 			return Builder(timeoutMillis)
+				.setAppNotInteractingRequired(true)
+				.build()
+		}
+
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
+		@RequiresApi(Build.VERSION_CODES.O)
+		@JvmStatic
+		public fun gentleUpdate(timeout: java.time.Duration, timeoutStrategy: TimeoutStrategy): InstallConstraints {
+			return Builder(timeout)
+				.setAppNotInteractingRequired(true)
+				.setTimeoutStrategy(timeoutStrategy)
+				.build()
+		}
+
+		/**
+		 * Preset constraints suitable for gentle update.
+		 */
+		@RequiresApi(Build.VERSION_CODES.O)
+		@JvmStatic
+		public fun gentleUpdate(timeout: java.time.Duration): InstallConstraints {
+			return Builder(timeout)
 				.setAppNotInteractingRequired(true)
 				.build()
 		}
