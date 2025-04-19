@@ -65,7 +65,7 @@ internal object CommitProgressValueHolder {
 		return CallbackToFutureAdapter.getFuture { completer ->
 			val cachedValue = commitProgressValue
 			if (cachedValue < 0) {
-				AckpineThreadPool.executor.execute {
+				AckpineThreadPool.execute {
 					val value = getValue(applicationContext)
 					commitProgressValue = value
 					completer.set(value)

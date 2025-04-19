@@ -24,18 +24,13 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.roundToInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public object AckpineThreadPool {
+public object AckpineThreadPool : ExecutorService by Executors.newFixedThreadPool(
+	(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
+	object : ThreadFactory {
+		private val threadCount = AtomicInteger(0)
 
-	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-	@JvmField
-	public val executor: ExecutorService = Executors.newFixedThreadPool(
-		(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
-		object : ThreadFactory {
-			private val threadCount = AtomicInteger(0)
-
-			override fun newThread(runnable: Runnable?): Thread {
-				return Thread(runnable, "ackpine.pool-${threadCount.incrementAndGet()}")
-			}
+		override fun newThread(runnable: Runnable?): Thread {
+			return Thread(runnable, "ackpine.pool-${threadCount.incrementAndGet()}")
 		}
-	)
-}
+	}
+)

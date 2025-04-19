@@ -238,10 +238,10 @@ internal class PackageInstallerImpl internal constructor(
 		}
 
 		private fun create(context: Context): PackageInstallerImpl {
-			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool.executor)
+			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
-				AckpineThreadPool.executor,
+				AckpineThreadPool,
 				InstallSessionFactoryImpl(
 					context.applicationContext,
 					database.lastUpdateTimestampDao(),
@@ -251,7 +251,7 @@ internal class PackageInstallerImpl internal constructor(
 					database.nativeSessionIdDao(),
 					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
-					AckpineThreadPool.executor,
+					AckpineThreadPool,
 					Handler(context.mainLooper)
 				),
 				uuidFactory = UUID::randomUUID,

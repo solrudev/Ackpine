@@ -189,9 +189,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	private fun setConfirmationLaunched(
 		context: Context,
 		ackpineSessionId: UUID
-	) = AckpineThreadPool.executor.execute {
+	) = AckpineThreadPool.execute {
 		AckpineDatabase
-			.getInstance(context, AckpineThreadPool.executor)
+			.getInstance(context, AckpineThreadPool)
 			.confirmationLaunchDao()
 			.setConfirmationLaunched(ackpineSessionId.toString())
 	}

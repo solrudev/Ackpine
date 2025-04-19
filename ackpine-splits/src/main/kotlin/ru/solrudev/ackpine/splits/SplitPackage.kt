@@ -350,7 +350,7 @@ public open class SplitPackage(
 						source.close()
 					}
 				}
-				AckpineThreadPool.executor.execute {
+				AckpineThreadPool.execute {
 					try {
 						completer.set(createSplitPackage(source))
 					} catch (exception: Exception) {

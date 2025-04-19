@@ -178,7 +178,7 @@ public class ZippedFileProvider : ContentProvider() {
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
 		val zipStream = openZipEntryStream(uri, signal)
 		val size = zipStream.size
-		AckpineThreadPool.executor.execute {
+		AckpineThreadPool.execute {
 			outputFd.safeWrite { outputStream ->
 				zipStream.buffered().use { zipStream ->
 					zipStream.copyTo(outputStream, signal)

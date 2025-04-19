@@ -207,15 +207,15 @@ internal class PackageUninstallerImpl internal constructor(
 		}
 
 		private fun create(context: Context): PackageUninstallerImpl {
-			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool.executor)
+			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool)
 			return PackageUninstallerImpl(
 				database.uninstallSessionDao(),
-				AckpineThreadPool.executor,
+				AckpineThreadPool,
 				UninstallSessionFactoryImpl(
 					context.applicationContext,
 					database.sessionDao(),
 					database.uninstallSessionDao(),
-					AckpineThreadPool.executor,
+					AckpineThreadPool,
 					Handler(context.mainLooper)
 				),
 				uuidFactory = UUID::randomUUID,
