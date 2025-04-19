@@ -109,8 +109,9 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			isFirstResume = false
 			return
 		}
+		val isConfirmationDismissed = !isOnActivityResultCalled && wasOnTopOnStart
 		isSessionStuck().handleResult(executor) { isSessionStuck ->
-			if (!isOnActivityResultCalled && wasOnTopOnStart && isSessionStuck) {
+			if (isConfirmationDismissed && isSessionStuck) {
 				// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
 				abortSession()
 			}
