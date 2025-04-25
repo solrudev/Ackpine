@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,10 @@
 
 package ru.solrudev.ackpine.exceptions
 
-import android.os.Build
-
 /**
- * Thrown if installation of split packages is not supported when creating session with split package is attempted.
+ * Thrown if Ackpine initialization is attempted more than once.
  */
-public class SplitPackagesNotSupportedException : IllegalArgumentException(
-	"Split packages are not supported on current Android API level: ${Build.VERSION.SDK_INT}"
+public class AckpineReinitializeException : Exception(
+	"Attempt of Ackpine re-initialization. Make sure you're not initializing Ackpine manually without disabling " +
+			"automatic initialization."
 )

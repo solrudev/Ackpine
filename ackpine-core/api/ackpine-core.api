@@ -10,3 +10,7 @@ public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Ini
 	public fun dependencies ()Ljava/util/List;
 }
 
+public final class ru/solrudev/ackpine/exceptions/AckpineReinitializeException : java/lang/Exception {
+	public fun <init> ()V
+}
+
