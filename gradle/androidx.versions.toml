@@ -28,4 +28,4 @@ lifecycle = ["lifecycle-livedata", "lifecycle-viewmodel"]
 navigation = ["navigation-fragment", "navigation-ui"]
 
 [plugins]
-room = { id = "androidx.room", version = "2.7.0-rc02" }
+room = { id = "androidx.room", version = "2.7.0" }

@@ -14,10 +14,6 @@ public final class ru/solrudev/ackpine/DisposableSubscriptionContainer : ru/solr
 	public fun isDisposed ()Z
 }
 
-public final class ru/solrudev/ackpine/exceptions/AckpineReinitializeException : java/lang/Exception {
-	public fun <init> ()V
-}
-
 public final class ru/solrudev/ackpine/exceptions/SplitPackagesNotSupportedException : java/lang/IllegalArgumentException {
 	public fun <init> ()V
 }

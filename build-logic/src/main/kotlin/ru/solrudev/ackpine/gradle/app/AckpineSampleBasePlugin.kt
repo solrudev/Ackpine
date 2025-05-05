@@ -74,5 +74,9 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 		buildFeatures {
 			viewBinding = true
 		}
+
+		lint {
+			checkReleaseBuilds = false
+		}
 	}
 }
