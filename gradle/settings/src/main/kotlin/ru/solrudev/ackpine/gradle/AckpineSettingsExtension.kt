@@ -46,7 +46,7 @@ public abstract class AckpineSettingsExtension @Inject constructor(private val s
 			.walkTopDown()
 			.onEnter { file ->
 				file == rootDir
-						|| (file.isDirectory()
+						|| (file.isDirectory
 						&& file.resolve("build.gradle.kts").exists()
 						&& !file.resolve("settings.gradle.kts").exists())
 			}
