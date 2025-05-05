@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 0.12.0 (2025-05-05)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 8.9.2.
+- Updated `kotlinx.coroutines` to 1.10.2.
+
+### Public API changes
+
+- Removed deprecated APIs from `ackpine-splits`.
+- Moved `AckpineReinitializeException` from `ackpine-api` to `ackpine-core`.
+
 Version 0.11.2 (2025-04-19)
 ---------------------------
 
