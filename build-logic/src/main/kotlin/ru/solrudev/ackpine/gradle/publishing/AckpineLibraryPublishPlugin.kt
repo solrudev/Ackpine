@@ -27,24 +27,23 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.the
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		if (!pluginManager.hasPlugin(AckpineLibraryPlugin.PLUGIN_ID)) {
-			error("Applying library-publish plugin requires the library plugin to be applied")
-		}
-		pluginManager.apply(MavenPublishBasePlugin::class)
-		val ackpineLibraryExtension = extensions.getByType<AckpineLibraryExtension>().apply {
-			addIdListener { id ->
-				configureArtifactCoordinates(id)
+		pluginManager.withPlugin(AckpineLibraryPlugin.PLUGIN_ID) {
+			pluginManager.apply(MavenPublishBasePlugin::class)
+			val ackpineLibraryExtension = the<AckpineLibraryExtension>().apply {
+				addIdListener { id ->
+					configureArtifactCoordinates(id)
+				}
 			}
+			val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
+			configurePublishing(artifact.name, provider { description }, artifact.inceptionYear)
 		}
-		val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
-		configurePublishing(artifact.name, provider { description }, artifact.inceptionYear)
 	}
 
 	private fun Project.configureArtifactCoordinates(id: String) = extensions.configure<MavenPublishBaseExtension> {

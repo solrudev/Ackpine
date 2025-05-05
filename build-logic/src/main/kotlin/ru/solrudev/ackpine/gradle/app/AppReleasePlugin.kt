@@ -47,11 +47,10 @@ private const val APP_SIGNING_PREFIX = "APP_SIGNING_"
 public class AppReleasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		if (!pluginManager.hasPlugin("com.android.application")) {
-			error("Applying app-release plugin requires the Android application plugin to be applied")
+		pluginManager.withPlugin("com.android.application") {
+			configureSigning()
+			registerProduceReleaseArtifactsTasks()
 		}
-		configureSigning()
-		registerProduceReleaseArtifactsTasks()
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
