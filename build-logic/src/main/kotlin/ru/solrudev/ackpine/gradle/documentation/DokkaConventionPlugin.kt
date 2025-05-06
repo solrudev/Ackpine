@@ -22,12 +22,13 @@ import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.the
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
+import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 import java.net.URI
 
@@ -35,15 +36,14 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(DokkaPlugin::class)
-		val internalPackages = extensions
-			.findByType<AckpineLibraryExtension>()
-			?.internalPackages ?: provider { emptySet() }
-		configureDokka(internalPackages)
+		configureDokka()
+		pluginManager.withPlugin(AckpineLibraryPlugin.PLUGIN_ID) {
+			val internalPackages = the<AckpineLibraryExtension>().internalPackages
+			configureDokkaSuppressedFiles(internalPackages)
+		}
 	}
 
-	private fun Project.configureDokka(
-		internalPackages: Provider<Set<String>>
-	) = extensions.configure<DokkaExtension> {
+	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
 		moduleVersion = versionNumber.get().toString()
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
 			customAssets.from(isolated.rootProject.projectDirectory.file("docs/images/logo-icon.svg"))
@@ -58,6 +58,13 @@ public class DokkaConventionPlugin : Plugin<Project> {
 				url = URI("https://guava.dev/releases/snapshot/api/docs/")
 				packageListUrl = URI("https://guava.dev/releases/snapshot/api/docs/element-list")
 			}
+		}
+	}
+
+	private fun Project.configureDokkaSuppressedFiles(
+		internalPackages: Provider<Set<String>>
+	) = extensions.configure<DokkaExtension> {
+		dokkaSourceSets.configureEach {
 			val suppressedPackages = internalPackages.get()
 			if (suppressedPackages.isNotEmpty()) {
 				val internalSources = sourceRoots.asFileTree.matching {

@@ -28,7 +28,43 @@ Download
 
 Ackpine is available on `mavenCentral()`.
 
-Ackpine depends on Jetpack libraries, so it's necessary to declare the `google()` Maven repository.
+Ackpine depends on Jetpack libraries, so it's also necessary to add the `google()` Maven repository.
+
+<details open>
+  <summary>Gradle version catalog</summary>
+
+```toml
+[versions]
+ackpine = "0.12.0"
+
+[libraries]
+ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
+
+# optional - Kotlin extensions and Coroutines support
+ackpine-ktx = { module = "ru.solrudev.ackpine:ackpine-ktx", version.ref = "ackpine" }
+
+# optional - utilities for working with split APKs
+ackpine-splits = { module = "ru.solrudev.ackpine:ackpine-splits", version.ref = "ackpine" }
+
+# optional - Kotlin extensions and Coroutines support for ackpine-splits
+ackpine-splits-ktx = { module = "ru.solrudev.ackpine:ackpine-splits-ktx", version.ref = "ackpine" }
+
+# optional - support for asset files inside of application's package
+ackpine-assets = { module = "ru.solrudev.ackpine:ackpine-assets", version.ref = "ackpine" }
+
+[bundles]
+ackpine = [
+    "ackpine-core",
+    "ackpine-ktx",
+    "ackpine-splits",
+    "ackpine-splits-ktx",
+    "ackpine-assets"
+]
+```
+</details>
+
+<details>
+  <summary>build.gradle.kts</summary>
 
 ```kotlin
 dependencies {
@@ -48,6 +84,7 @@ dependencies {
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
 }
 ```
+</details>
 
 License
 -------

@@ -29,8 +29,8 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
-import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
@@ -51,8 +51,8 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			apply(BinaryCompatibilityValidatorPlugin::class)
 		}
 		configureKotlin()
-		val libraryExtension = extensions.getByType<LibraryExtension>()
-		val apiValidationExtension = extensions.getByType<ApiValidationExtension>().apply {
+		val libraryExtension = the<LibraryExtension>()
+		val apiValidationExtension = the<ApiValidationExtension>().apply {
 			nonPublicMarkers += "androidx.annotation.RestrictTo"
 		}
 		extensions.create<AckpineLibraryExtension>("ackpine", libraryExtension, apiValidationExtension)
