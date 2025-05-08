@@ -20,7 +20,7 @@ import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
 
-private val FILE_SEPARATOR_REGEX = Regex("[/\\\\]")
+private val FILE_SEPARATOR_REGEX = Regex("""[/\\]""")
 
 internal abstract class AckpineProjectsValueSource : ValueSource<List<String>, AckpineProjectsValueSource.Parameters> {
 

@@ -23,7 +23,7 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.of
 import javax.inject.Inject
 
-private val SANITIZING_REGEX = Regex("\\W+")
+private val SANITIZING_REGEX = Regex("""\W+""")
 
 /**
  * Extension for Ackpine `settings` plugin.
