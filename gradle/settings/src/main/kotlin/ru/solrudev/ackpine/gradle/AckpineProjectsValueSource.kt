@@ -19,8 +19,7 @@ package ru.solrudev.ackpine.gradle
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.ValueSource
 import org.gradle.api.provider.ValueSourceParameters
-
-private val FILE_SEPARATOR_REGEX = Regex("""[/\\]""")
+import java.io.File
 
 internal abstract class AckpineProjectsValueSource : ValueSource<List<String>, AckpineProjectsValueSource.Parameters> {
 
@@ -40,7 +39,7 @@ internal abstract class AckpineProjectsValueSource : ValueSource<List<String>, A
 				rootDirPath
 					.relativize(dir.toPath())
 					.toString()
-					.replace(FILE_SEPARATOR_REGEX, ":")
+					.replace(File.separatorChar, ':')
 			}
 			.toList()
 	}
