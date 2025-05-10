@@ -95,8 +95,7 @@ jobs:
           ./gradlew :releaseChangelog
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: changelog.txt
-          files: |
-            release/*
+        run: |
+          gh release create ${{ github.ref_name }} release/* --notes-file changelog.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
