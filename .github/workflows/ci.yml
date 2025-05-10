@@ -13,36 +13,8 @@ jobs:
     name: Build Ackpine
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Copy gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: adopt
-          java-version: 21
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Cache build logic
-        uses: actions/cache@v4
-        with:
-          path: |
-            build-logic/build
-            gradle/settings/build
-          key: ${{ runner.os }}-build-logic-${{ hashFiles('build-logic/*.gradle*', 'build-logic/src/**', 'gradle/settings/*.gradle*', 'gradle/settings/src/**', 'gradle/*.versions.toml', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-build-logic-
+      - name: Checkout and setup environment
+        uses: ./.github/actions/checkout-setup-gradle-action
 
       - name: Validate binary compatibility
         run: |
@@ -59,36 +31,8 @@ jobs:
     needs: [ build ]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Copy gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: adopt
-          java-version: 21
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Cache build logic
-        uses: actions/cache@v4
-        with:
-          path: |
-            build-logic/build
-            gradle/settings/build
-          key: ${{ runner.os }}-build-logic-${{ hashFiles('build-logic/*.gradle*', 'build-logic/src/**', 'gradle/settings/*.gradle*', 'gradle/settings/src/**', 'gradle/*.versions.toml', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-build-logic-
+      - name: Checkout and setup environment
+        uses: ./.github/actions/checkout-setup-gradle-action
 
       - name: Publish
         run: |
@@ -110,37 +54,10 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout and setup environment
+        uses: ./.github/actions/checkout-setup-gradle-action
         with:
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Copy gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          distribution: adopt
-          java-version: 21
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Cache build logic
-        uses: actions/cache@v4
-        with:
-          path: |
-            build-logic/build
-            gradle/settings/build
-          key: ${{ runner.os }}-build-logic-${{ hashFiles('build-logic/*.gradle*', 'build-logic/src/**', 'gradle/settings/*.gradle*', 'gradle/settings/src/**', 'gradle/*.versions.toml', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-build-logic-
+          checkout-fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5

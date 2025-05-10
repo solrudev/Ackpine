@@ -1,0 +1,46 @@
+name: Checkout and setup Gradle
+description: Checks out the repo, sets up JDK and Gradle with caching
+
+inputs:
+  checkout-fetch-depth:
+    description: |
+      Number of commits to fetch. 0 indicates all history for all branches and tags. Default: 1
+    required: false
+    default: '1'
+
+runs:
+  using: composite
+
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: ${{ inputs.checkout-fetch-depth }}
+
+    - name: Copy gradle.properties
+      shell: bash
+      run: |
+        mkdir -p ~/.gradle
+        cp .github/ci-gradle.properties ~/.gradle/gradle.properties
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: adopt
+        java-version: 21
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+      with:
+        cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+    - name: Cache build logic
+      uses: actions/cache@v4
+      with:
+        path: |
+          build-logic/build
+          gradle/settings/build
+        key: ${{ runner.os }}-build-logic-${{ hashFiles('build-logic/*.gradle*', 'build-logic/src/**', 'gradle/settings/*.gradle*', 'gradle/settings/src/**', 'gradle/*.versions.toml', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-build-logic-
