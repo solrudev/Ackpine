@@ -20,6 +20,8 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Validate binary compatibility
         run: |
@@ -43,6 +45,8 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Publish
         run: |
@@ -72,6 +76,8 @@ jobs:
 
       - name: Setup environment
         uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Set up Python
         uses: actions/setup-python@v5

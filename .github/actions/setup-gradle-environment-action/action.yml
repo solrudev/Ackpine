@@ -1,6 +1,11 @@
 name: Setup Gradle environment
 description: Sets up JDK and Gradle with caching
 
+inputs:
+  gradle-encryption-key:
+    description: Gradle configuration cache encryption key.
+    required: true
+
 runs:
   using: composite
 
@@ -20,7 +25,7 @@ runs:
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       with:
-        cache-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+        cache-encryption-key: ${{ inputs.gradle-encryption-key }}
 
     - name: Cache build logic
       uses: actions/cache@v4
