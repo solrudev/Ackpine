@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
+package ru.solrudev.ackpine.gradle.documentation
 
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
+import org.gradle.api.Project
 
-plugins {
-	id("ru.solrudev.ackpine.settings")
-}
-
-ackpine {
-	versionCatalog("libs")
-	versionCatalog("kotlinx")
-}
+internal fun Project.dokkaPlugin(name: String) = project(":dokka-plugins:$name")

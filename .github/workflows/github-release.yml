@@ -5,9 +5,6 @@ on:
     tags:
       - "[0-9]+.[0-9]+.[0-9]+*"
 
-env:
-  GRADLE_ENCRYPTION_KEY: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,20 +16,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Copy gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Validate Gradle wrapper
-        uses: gradle/actions/wrapper-validation@v4
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
         with:
-          distribution: adopt
-          java-version: 21
-          cache: gradle
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Validate binary compatibility
         run: |
@@ -56,17 +43,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Copy gradle.properties
-        run: |
-          mkdir -p ~/.gradle
-          cp .github/ci-gradle.properties ~/.gradle/gradle.properties
-
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
         with:
-          distribution: adopt
-          java-version: 21
-          cache: gradle
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
       - name: Decode key store
         run: |
@@ -90,8 +70,7 @@ jobs:
           ./gradlew :releaseChangelog
 
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          body_path: changelog.txt
-          files: |
-            release/*
+        run: |
+          gh release create ${{ github.ref_name }} release/* --notes-file changelog.txt
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

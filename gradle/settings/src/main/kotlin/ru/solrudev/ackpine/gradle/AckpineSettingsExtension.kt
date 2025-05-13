@@ -19,10 +19,11 @@ package ru.solrudev.ackpine.gradle
 import org.gradle.api.file.Directory
 import org.gradle.api.file.FileTree
 import org.gradle.api.initialization.Settings
+import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.of
 import javax.inject.Inject
 
-private val SANITIZING_REGEX = Regex("\\W+")
-private val FILE_SEPARATOR_REGEX = Regex("[/\\\\]")
+private val SANITIZING_REGEX = Regex("""\W+""")
 
 /**
  * Extension for Ackpine `settings` plugin.
@@ -40,24 +41,13 @@ public abstract class AckpineSettingsExtension @Inject constructor(private val s
 	 * Finds all subprojects and adds them to the build.
 	 */
 	public fun includeSubprojects() {
-		val rootDir = settings.rootDir
-		val rootDirPath = rootDir.toPath()
-		rootDir
-			.walkTopDown()
-			.onEnter { file ->
-				file == rootDir
-						|| (file.isDirectory
-						&& file.resolve("build.gradle.kts").exists()
-						&& !file.resolve("settings.gradle.kts").exists())
-			}
-			.filter { file -> file.isDirectory && file != rootDir }
-			.forEach { dir ->
-				val projectPath = rootDirPath
-					.relativize(dir.toPath())
-					.toString()
-					.replace(FILE_SEPARATOR_REGEX, ":")
-				settings.include(":$projectPath")
-			}
+		val rootDirectory = settings.layout.rootDirectory
+		val ackpineProjects = settings.providers.of(AckpineProjectsValueSource::class) {
+			parameters.rootDirectory = rootDirectory
+		}
+		for (project in ackpineProjects.get()) {
+			settings.include(project)
+		}
 	}
 
 	/**

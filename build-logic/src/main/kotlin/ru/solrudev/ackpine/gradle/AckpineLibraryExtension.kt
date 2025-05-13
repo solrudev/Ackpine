@@ -25,7 +25,7 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.setProperty
 import javax.inject.Inject
 
-private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+\$")
+private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
 
 /**
  * Extension for Ackpine `library` plugin.
