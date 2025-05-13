@@ -1,23 +1,10 @@
-name: Checkout and setup Gradle
-description: Checks out the repo, sets up JDK and Gradle with caching
-
-inputs:
-  checkout-fetch-depth:
-    description: |
-      Number of commits to fetch. 0 indicates all history for all branches and tags. Default: 1
-    required: false
-    default: '1'
+name: Setup Gradle environment
+description: Sets up JDK and Gradle with caching
 
 runs:
   using: composite
 
   steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      with:
-        persist-credentials: false
-        fetch-depth: ${{ inputs.checkout-fetch-depth }}
-
     - name: Copy gradle.properties
       shell: bash
       run: |

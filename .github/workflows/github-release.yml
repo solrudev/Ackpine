@@ -11,8 +11,13 @@ jobs:
     name: Build Ackpine
 
     steps:
-      - name: Checkout and setup environment
-        uses: ./.github/actions/checkout-setup-gradle-action
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
 
       - name: Validate binary compatibility
         run: |
@@ -31,8 +36,13 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout and setup environment
-        uses: ./.github/actions/checkout-setup-gradle-action
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
 
       - name: Decode key store
         run: |
