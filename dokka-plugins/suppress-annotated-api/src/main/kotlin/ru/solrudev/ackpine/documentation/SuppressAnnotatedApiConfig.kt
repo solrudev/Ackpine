@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
+package ru.solrudev.ackpine.documentation
 
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
+import kotlinx.serialization.Serializable
 
-plugins {
-	id("ru.solrudev.ackpine.settings")
-}
-
-ackpine {
-	versionCatalog("libs")
-	versionCatalog("kotlinx")
-}
+/**
+ * Configuration for [SuppressAnnotatedApiDokkaPlugin].
+ */
+@Serializable
+public data class SuppressAnnotatedApiConfig(
+	val annotatedWith: Set<String>
+)

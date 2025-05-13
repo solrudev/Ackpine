@@ -62,4 +62,5 @@ dependencies {
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
 	implementation(libs.plugin.binaryCompatibilityValidator)
+	implementation(kotlinx.serialization.json)
 }

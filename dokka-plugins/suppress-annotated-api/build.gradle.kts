@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,20 @@
  * limitations under the License.
  */
 
-rootProject.name = "build-logic"
-
-pluginManagement {
-	includeBuild("../gradle/settings")
-}
+import ru.solrudev.ackpine.gradle.Constants
 
 plugins {
-	id("ru.solrudev.ackpine.settings")
+	kotlin("jvm")
+	alias(libs.plugins.kotlin.serialization)
 }
 
-ackpine {
-	versionCatalog("libs")
-	versionCatalog("kotlinx")
+kotlin {
+	jvmToolchain(Constants.JDK_VERSION)
+	explicitApi()
+}
+
+dependencies {
+	compileOnly(libs.dokka.core)
+	implementation(libs.dokka.base)
+	implementation(kotlinx.serialization.json)
 }

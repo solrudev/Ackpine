@@ -23,6 +23,8 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.named
+import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.registerBinding
 import org.gradle.kotlin.dsl.the
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -36,6 +38,7 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(DokkaPlugin::class)
+		dependencies.add("dokkaPlugin", dokkaPlugin("suppress-annotated-api"))
 		configureDokka()
 		pluginManager.withPlugin(AckpineLibraryPlugin.PLUGIN_ID) {
 			val internalPackages = the<AckpineLibraryExtension>().internalPackages
@@ -45,6 +48,13 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
 		moduleVersion = versionNumber.get().toString()
+		pluginsConfiguration.registerBinding(
+			SuppressAnnotatedApiParameters::class,
+			SuppressAnnotatedApiParameters::class
+		)
+		pluginsConfiguration.register<SuppressAnnotatedApiParameters>("suppressAnnotatedApi") {
+			annotatedWith.add("androidx.annotation.RestrictTo")
+		}
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
 			customAssets.from(isolated.rootProject.projectDirectory.file("docs/images/logo-icon.svg"))
 			customStyleSheets.from(isolated.rootProject.projectDirectory.file("docs/css/logo-styles.css"))
