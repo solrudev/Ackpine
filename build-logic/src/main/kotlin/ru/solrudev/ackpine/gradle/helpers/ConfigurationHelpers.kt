@@ -22,29 +22,9 @@ import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE
 
 /**
- * Mark this [Configuration] as one that will be consumed by other subprojects.
- */
-internal fun Configuration.consumable() {
-	isCanBeResolved = false
-	isCanBeConsumed = true
-	isCanBeDeclared = false
-	isVisible = false
-}
-
-/**
- * Mark this [Configuration] as one that will consume artifacts from other subprojects.
- */
-internal fun Configuration.resolvable() {
-	isCanBeResolved = true
-	isCanBeConsumed = false
-	isCanBeDeclared = true
-	isVisible = false
-}
-
-/**
  * Adds an outgoing [artifact] to the configuration returned by this provider.
  */
-internal fun NamedDomainObjectProvider<Configuration>.addOutgoingArtifact(artifact: Any) {
+internal fun NamedDomainObjectProvider<out Configuration>.addOutgoingArtifact(artifact: Any) {
 	configure {
 		outgoing.artifact(artifact)
 	}

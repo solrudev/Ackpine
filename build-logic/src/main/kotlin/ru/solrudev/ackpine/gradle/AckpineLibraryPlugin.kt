@@ -35,7 +35,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
-import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
@@ -93,14 +92,13 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerConsumableLibraryConfiguration() {
-		val library = configurations.register("library") {
-			consumable()
+		val libraryElements = configurations.consumable("ackpineLibraryElements") {
 			libraryElements(objects.named(LIBRARY_ELEMENTS))
 		}
 		extensions.configure<LibraryAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
 				val aar = variant.artifacts.get(SingleArtifact.AAR)
-				library.addOutgoingArtifact(aar)
+				libraryElements.addOutgoingArtifact(aar)
 			}
 		}
 	}

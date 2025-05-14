@@ -26,7 +26,6 @@ import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
-import ru.solrudev.ackpine.gradle.helpers.resolvable
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 
@@ -45,27 +44,29 @@ public class AckpinePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildAckpineTask() {
-		val library = configurations.register("library") {
-			resolvable()
+		val library = configurations.dependencyScope("library")
+		val libraryArtifacts = configurations.resolvable("ackpineLibraryArtifacts") {
+			extendsFrom(library.get())
 			libraryElements(objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
 		}
 		tasks.register("buildAckpine") {
 			group = "build"
 			description = "Assembles all Ackpine library projects."
-			dependsOn(library)
+			dependsOn(libraryArtifacts)
 		}
 	}
 
 	private fun Project.registerBuildSamplesTask(): TaskProvider<*> {
 		val releaseDir = layout.projectDirectory.dir("release")
-		val sample = configurations.register("sample") {
-			resolvable()
+		val sample = configurations.dependencyScope("sample")
+		val sampleArtifacts = configurations.resolvable("ackpineSampleArtifacts") {
+			extendsFrom(sample.get())
 			libraryElements(objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
 		}
 		return tasks.register<Sync>("buildSamples") {
 			group = "build"
 			description = "Builds and gathers all Ackpine sample app APKs."
-			from(sample)
+			from(sampleArtifacts)
 			into(releaseDir)
 		}
 	}
