@@ -26,6 +26,9 @@ import org.jetbrains.dokka.gradle.engine.plugins.DokkaPluginParametersBaseSpec
 import org.jetbrains.dokka.gradle.internal.InternalDokkaGradlePluginApi
 import javax.inject.Inject
 
+/**
+ * Configuration for Dokka SuppressAnnotatedApi plugin.
+ */
 @OptIn(InternalDokkaGradlePluginApi::class)
 public abstract class SuppressAnnotatedApiParameters @Inject constructor(
 	name: String
@@ -34,6 +37,11 @@ public abstract class SuppressAnnotatedApiParameters @Inject constructor(
 	pluginFqn = "ru.solrudev.ackpine.documentation.SuppressAnnotatedApiDokkaPlugin"
 ) {
 
+	/**
+	 * Fully qualified names of annotation classes.
+	 *
+	 * Every declaration marked with any of these annotations will be hidden from resulting documentation.
+	 */
 	@get:Input
 	public abstract val annotatedWith: SetProperty<String>
 

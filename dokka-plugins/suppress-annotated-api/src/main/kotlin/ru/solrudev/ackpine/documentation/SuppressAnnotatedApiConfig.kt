@@ -23,5 +23,11 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 public data class SuppressAnnotatedApiConfig(
+
+	/**
+	 * Fully qualified names of annotation classes.
+	 *
+	 * Every declaration marked with any of these annotations will be hidden from resulting documentation.
+	 */
 	val annotatedWith: Set<String>
 )
