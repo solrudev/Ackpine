@@ -18,9 +18,7 @@ package ru.solrudev.ackpine.splits
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.ParcelFileDescriptor
-import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
@@ -67,15 +65,14 @@ public object ZippedApkSplits {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
 			val file = applicationContext.getFileFromUri(uri)
-			when {
-				file.canRead() -> yieldAllUsingFile(file)
-				Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> yieldAllApi26(applicationContext, uri)
-				else -> yieldAllUsingZipInputStream(applicationContext, uri)
+			if (file.canRead()) {
+				yieldAllUsingFile(file)
+			} else {
+				yieldAllUsingFileChannel(applicationContext, uri)
 			}
 		}
 	}
 
-	@Suppress("BlockingMethodInNonBlockingContext")
 	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFile(file: File) {
 		val zipFile = ZipFile(file).use()
 		zipFile.entries()
@@ -90,16 +87,15 @@ public object ZippedApkSplits {
 			.forEach { yield(it) }
 	}
 
-	@RequiresApi(Build.VERSION_CODES.O)
-	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllApi26(context: Context, uri: Uri) {
+	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingFileChannel(context: Context, uri: Uri) {
 		var fd: ParcelFileDescriptor? = null
 		var fileInputStream: FileInputStream? = null
-		val zipFile: org.apache.commons.compress.archivers.zip.ZipFile
+		val zipFile: ru.solrudev.ackpine.compress.archivers.zip.ZipFile
 		try {
 			fd = context.contentResolver.openFileDescriptor(uri, "r")?.use()
 				?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
 			fileInputStream = FileInputStream(fd.fileDescriptor).use()
-			zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
+			zipFile = ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
 				.setSeekableByteChannel(fileInputStream.channel)
 				.get()
 				.use()

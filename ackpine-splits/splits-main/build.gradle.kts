@@ -34,8 +34,8 @@ dependencies {
 	api(androidx.annotation)
 	api(libs.listenablefuture)
 	implementation(projects.ackpineRuntime)
+	implementation(projects.ackpineSplits.compressAndroid)
 	implementation(androidx.core.ktx)
 	implementation(androidx.concurrent.futures.core)
-	implementation(libs.apache.commons.compress)
 	implementation(libs.apksig)
 }

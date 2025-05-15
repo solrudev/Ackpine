@@ -18,10 +18,8 @@ package ru.solrudev.ackpine.io
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
-import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.helpers.closeAll
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.entries
@@ -88,11 +86,10 @@ internal class ZipEntryStream private constructor(
 			signal: CancellationSignal? = null
 		): ZipEntryStream? {
 			val file = context.getFileFromUri(uri, signal)
-			return when {
-				file.canRead() -> openUsingZipFile(file, zipEntryName)
-				Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> openApi26(uri, zipEntryName, context, signal)
-				else -> openUsingZipInputStream(uri, zipEntryName, context, signal)
+			if (file.canRead()) {
+				return openUsingZipFile(file, zipEntryName)
 			}
+			return openUsingFileChannel(uri, zipEntryName, context, signal)
 		}
 
 		private fun openUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
@@ -110,8 +107,7 @@ internal class ZipEntryStream private constructor(
 			}
 		}
 
-		@RequiresApi(Build.VERSION_CODES.O)
-		private fun openApi26(
+		private fun openUsingFileChannel(
 			uri: Uri,
 			zipEntryName: String,
 			context: Context,
@@ -119,12 +115,12 @@ internal class ZipEntryStream private constructor(
 		): ZipEntryStream? {
 			var fd: ParcelFileDescriptor? = null
 			var fileInputStream: FileInputStream? = null
-			val zipFile: org.apache.commons.compress.archivers.zip.ZipFile
+			val zipFile: ru.solrudev.ackpine.compress.archivers.zip.ZipFile
 			try {
 				fd = context.contentResolver.openFileDescriptor(uri, "r", signal)
 					?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
 				fileInputStream = FileInputStream(fd.fileDescriptor)
-				zipFile = org.apache.commons.compress.archivers.zip.ZipFile.builder()
+				zipFile = ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
 					.setSeekableByteChannel(fileInputStream.channel)
 					.get()
 			} catch (throwable: Throwable) {

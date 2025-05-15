@@ -25,8 +25,8 @@ import ru.solrudev.ackpine.AckpineFileProvider
 import ru.solrudev.ackpine.ZippedFileProvider
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
-import ru.solrudev.ackpine.io.NonClosingInputStream.Companion.nonClosing
 import ru.solrudev.ackpine.io.ZipEntryStream
+import ru.solrudev.ackpine.io.nonClosing
 import ru.solrudev.ackpine.io.toByteBuffer
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
