@@ -29,6 +29,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.project"
 			implementationClass = "ru.solrudev.ackpine.gradle.AckpinePlugin"
 		}
+		register("ackpine-library-base") {
+			id = "ru.solrudev.ackpine.library.base"
+			implementationClass = "ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin"
+		}
 		register("ackpine-library") {
 			id = "ru.solrudev.ackpine.library"
 			implementationClass = "ru.solrudev.ackpine.gradle.AckpineLibraryPlugin"

@@ -47,7 +47,7 @@ public class AckpinePlugin : Plugin<Project> {
 		val library = configurations.dependencyScope("library")
 		val libraryArtifacts = configurations.resolvable("ackpineLibraryArtifacts") {
 			extendsFrom(library.get())
-			libraryElements(objects.named(AckpineLibraryPlugin.LIBRARY_ELEMENTS))
+			libraryElements(objects.named(AckpineLibraryBasePlugin.LIBRARY_ELEMENTS))
 		}
 		tasks.register("buildAckpine") {
 			group = "build"

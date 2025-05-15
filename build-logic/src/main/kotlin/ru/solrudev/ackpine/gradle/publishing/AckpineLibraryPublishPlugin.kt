@@ -28,13 +28,13 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.the
+import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
-import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 
 public class AckpineLibraryPublishPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		pluginManager.withPlugin(AckpineLibraryPlugin.PLUGIN_ID) {
+		pluginManager.withPlugin(AckpineLibraryBasePlugin.PLUGIN_ID) {
 			pluginManager.apply(MavenPublishBasePlugin::class)
 			val ackpineLibraryExtension = the<AckpineLibraryExtension>().apply {
 				addIdListener { id ->
