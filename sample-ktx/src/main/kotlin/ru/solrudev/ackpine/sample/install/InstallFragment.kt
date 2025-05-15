@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.sample.install
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.content.ActivityNotFoundException
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -176,9 +175,6 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 
 	@RequiresApi(Build.VERSION_CODES.M)
 	private fun getRequiredPermissions() = buildSet {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-			add(READ_EXTERNAL_STORAGE)
-		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			add(POST_NOTIFICATIONS)
 		}
@@ -188,11 +184,8 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true
 		}
-		val readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-		val notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+		return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-		return readStorage && notifications
 	}
 
 	companion object {

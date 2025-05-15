@@ -21,9 +21,6 @@
 	<uses-permission
 		android:name="android.permission.QUERY_ALL_PACKAGES"
 		tools:ignore="QueryAllPackagesPermission" />
-	<uses-permission
-		android:name="android.permission.READ_EXTERNAL_STORAGE"
-		android:maxSdkVersion="25" />
 
 	<application
 		android:icon="@mipmap/ic_launcher"
