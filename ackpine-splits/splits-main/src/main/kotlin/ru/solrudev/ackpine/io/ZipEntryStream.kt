@@ -121,7 +121,7 @@ internal class ZipEntryStream private constructor(
 					?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
 				fileInputStream = FileInputStream(fd.fileDescriptor)
 				zipFile = ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
-					.setSeekableByteChannel(fileInputStream.channel)
+					.setFileChannel(fileInputStream.channel)
 					.get()
 			} catch (throwable: Throwable) {
 				fd?.closeWithException(throwable)

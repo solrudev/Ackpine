@@ -96,7 +96,7 @@ public object ZippedApkSplits {
 				?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
 			fileInputStream = FileInputStream(fd.fileDescriptor).use()
 			zipFile = ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
-				.setSeekableByteChannel(fileInputStream.channel)
+				.setFileChannel(fileInputStream.channel)
 				.get()
 				.use()
 		} catch (throwable: Throwable) {

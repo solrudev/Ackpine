@@ -112,11 +112,11 @@ public class ZipFile implements Closeable {
 
 		static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-		private FileChannel seekableByteChannel;
+		private FileChannel fileChannel;
 
 		public ZipFile get() throws IOException {
-			final FileChannel actualChannel = seekableByteChannel;
-			final String actualDescription = seekableByteChannel.getClass().getSimpleName();
+			final FileChannel actualChannel = fileChannel;
+			final String actualDescription = fileChannel.getClass().getSimpleName();
 			final boolean closeOnError = true;
 			final boolean useUnicodeExtraFields = true;
 			final boolean ignoreLocalFileHeader = false;
@@ -126,11 +126,11 @@ public class ZipFile implements Closeable {
 		/**
 		 * The actual channel, overrides any other input aspects like a File, Path, and so on.
 		 *
-		 * @param seekableByteChannel The actual channel.
+		 * @param fileChannel The actual channel.
 		 * @return {@code this} instance.
 		 */
-		public Builder setSeekableByteChannel(final FileChannel seekableByteChannel) {
-			this.seekableByteChannel = seekableByteChannel;
+		public Builder setFileChannel(final FileChannel fileChannel) {
+			this.fileChannel = fileChannel;
 			return this;
 		}
 
