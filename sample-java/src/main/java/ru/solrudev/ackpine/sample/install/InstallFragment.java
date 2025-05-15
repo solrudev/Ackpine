@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.sample.install;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-import static android.Manifest.permission.READ_EXTERNAL_STORAGE;
 
 import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
@@ -220,9 +219,6 @@ public final class InstallFragment extends Fragment {
 	@NonNull
 	private HashSet<String> getRequiredPermissions() {
 		final var permissions = new HashSet<String>();
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-			permissions.add(READ_EXTERNAL_STORAGE);
-		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			permissions.add(POST_NOTIFICATIONS);
 		}
@@ -233,10 +229,7 @@ public final class InstallFragment extends Fragment {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			return true;
 		}
-		final var readStorage = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-				|| requireContext().checkSelfPermission(READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
-		final var notifications = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+		return Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
 				|| requireContext().checkSelfPermission(POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED;
-		return readStorage && notifications;
 	}
 }

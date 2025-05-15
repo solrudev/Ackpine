@@ -31,7 +31,6 @@ import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
-import ru.solrudev.ackpine.gradle.helpers.consumable
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
@@ -68,10 +67,12 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
-			val appConfiguration = registerConsumableAppConfiguration()
+			val sampleElements = configurations.consumable("ackpineSampleElements") {
+				libraryElements(objects.named(LIBRARY_ELEMENTS))
+			}
 			onVariants(withReleaseBuildType()) { variant ->
 				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
-				appConfiguration.addOutgoingArtifact(produceArtifactsTask)
+				sampleElements.addOutgoingArtifact(produceArtifactsTask)
 				configureCleanTask(produceArtifactsTask)
 			}
 		}
@@ -107,11 +108,6 @@ public class AppReleasePlugin : Plugin<Project> {
 			}
 			into(releaseDir)
 		}
-	}
-
-	private fun Project.registerConsumableAppConfiguration() = configurations.register("app") {
-		consumable()
-		libraryElements(objects.named(LIBRARY_ELEMENTS))
 	}
 
 	private fun Project.configureCleanTask(deleteTarget: Any) {

@@ -30,11 +30,11 @@ dokka {
 }
 
 dependencies {
-	dokka(projects.ackpineApi)
+	dokka(projects.ackpineApi.apiMain)
 	dokka(projects.ackpineCore)
 	dokka(projects.ackpineKtx)
-	dokka(projects.ackpineSplits)
-	dokka(projects.ackpineSplitsKtx)
+	dokka(projects.ackpineSplits.splitsMain)
+	dokka(projects.ackpineSplits.splitsKtx)
 	dokka(projects.ackpineAssets)
 	dokka(projects.ackpineResources)
 }

@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.12.1 (2025-05-16)
+---------------------------
+
+### Dependencies
+
+- `ackpine-splits` now depends on `ackpine-compress-android` instead of Apache Commons Compress.
+
+### Bug fixes and improvements
+
+- Random access reading of zipped APK splits is now supported on API < 26 without `READ_EXTERNAL_STORAGE` permission (#83).
+
 Version 0.12.0 (2025-05-05)
 ---------------------------
 

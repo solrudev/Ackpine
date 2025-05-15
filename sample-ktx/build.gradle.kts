@@ -24,7 +24,7 @@ plugins {
 dependencies {
 	implementation(projects.ackpineCore)
 	implementation(projects.ackpineKtx)
-	implementation(projects.ackpineSplitsKtx)
+	implementation(projects.ackpineSplits.splitsKtx)
 	implementation(projects.ackpineResources)
 	implementation(androidx.activity)
 	implementation(androidx.appcompat)

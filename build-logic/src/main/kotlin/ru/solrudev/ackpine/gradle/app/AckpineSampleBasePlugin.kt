@@ -29,7 +29,7 @@ import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.SampleConstants
-import ru.solrudev.ackpine.gradle.versioning.versionNumber
+import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineSampleBasePlugin : Plugin<Project> {
 
@@ -56,8 +56,8 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 			applicationId = SampleConstants.PACKAGE_NAME
 			minSdk = SampleConstants.MIN_SDK
 			targetSdk = SampleConstants.TARGET_SDK
-			versionCode = versionNumber.get().versionCode
-			versionName = versionNumber.get().toString()
+			versionCode = ackpineVersion.get().versionCode
+			versionName = ackpineVersion.get().toString()
 		}
 
 		buildTypes.named("release") {
