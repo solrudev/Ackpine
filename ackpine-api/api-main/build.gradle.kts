@@ -30,10 +30,6 @@ ackpine {
 	}
 }
 
-dokka {
-	moduleName = "ackpine-api"
-}
-
 dependencies {
 	api(libs.listenablefuture)
 	api(androidx.annotation)

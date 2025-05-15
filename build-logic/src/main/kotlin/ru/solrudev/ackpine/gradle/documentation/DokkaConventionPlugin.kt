@@ -29,8 +29,8 @@ import org.gradle.kotlin.dsl.the
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
+import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
-import ru.solrudev.ackpine.gradle.AckpineLibraryPlugin
 import ru.solrudev.ackpine.gradle.versioning.versionNumber
 import java.net.URI
 
@@ -40,8 +40,10 @@ public class DokkaConventionPlugin : Plugin<Project> {
 		pluginManager.apply(DokkaPlugin::class)
 		dependencies.add("dokkaPlugin", dokkaPlugin("suppress-annotated-api"))
 		configureDokka()
-		pluginManager.withPlugin(AckpineLibraryPlugin.PLUGIN_ID) {
-			val internalPackages = the<AckpineLibraryExtension>().internalPackages
+		pluginManager.withPlugin(AckpineLibraryBasePlugin.PLUGIN_ID) {
+			val ackpineLibraryExtension = the<AckpineLibraryExtension>()
+			configureModuleName(ackpineLibraryExtension)
+			val internalPackages = ackpineLibraryExtension.internalPackages
 			configureDokkaSuppressedFiles(internalPackages)
 		}
 	}
@@ -68,6 +70,14 @@ public class DokkaConventionPlugin : Plugin<Project> {
 				url = URI("https://guava.dev/releases/snapshot/api/docs/")
 				packageListUrl = URI("https://guava.dev/releases/snapshot/api/docs/element-list")
 			}
+		}
+	}
+
+	private fun Project.configureModuleName(
+		ackpineLibraryExtension: AckpineLibraryExtension
+	) = extensions.configure<DokkaExtension> {
+		ackpineLibraryExtension.addIdListener { id ->
+			moduleName = "ackpine-$id"
 		}
 	}
 
