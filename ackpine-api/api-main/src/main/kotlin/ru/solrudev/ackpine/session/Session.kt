@@ -87,8 +87,7 @@ public interface Session<out F : Failure> {
 	 *
 	 * When committing/confirmation is finished, session is considered [completed][isCompleted].
 	 *
-	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
-	 * `await()` instead.
+	 * In general, this method should not be used directly, use [TerminalStateListener.bind] or `await()` instead.
 	 *
 	 * @return `true` if this session has been committed due to this invocation. `false` if committing/confirmation is
 	 * in progress or has been already finished, or [session preparations][launch] hasn't been done beforehand, or
