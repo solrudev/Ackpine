@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
+description = "API definitions for Ackpine"
+
 plugins {
-	id("ru.solrudev.ackpine.project")
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
+}
+
+ackpine {
+	id = "api"
+	artifact {
+		name = "Ackpine API"
+		inceptionYear = "2025"
+	}
+}
+
+dokka {
+	moduleName = "ackpine-api"
 }
 
 dependencies {
-	// task :buildAckpine
-	library(projects.ackpineApi.apiMain)
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits)
-	library(projects.ackpineSplitsKtx)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
-
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
+	api(libs.listenablefuture)
+	api(androidx.annotation)
+	api(projects.ackpineResources)
+	compileOnly(projects.ackpineApi.apiStubs)
 }
