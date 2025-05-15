@@ -31,7 +31,7 @@ import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
-import ru.solrudev.ackpine.gradle.versioning.versionNumber
+import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 import java.net.URI
 
 public class DokkaConventionPlugin : Plugin<Project> {
@@ -49,7 +49,7 @@ public class DokkaConventionPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
-		moduleVersion = versionNumber.get().toString()
+		moduleVersion = ackpineVersion.get().toString()
 		pluginsConfiguration.registerBinding(
 			SuppressAnnotatedApiParameters::class,
 			SuppressAnnotatedApiParameters::class

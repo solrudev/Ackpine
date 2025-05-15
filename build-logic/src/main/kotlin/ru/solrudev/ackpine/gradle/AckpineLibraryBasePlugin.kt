@@ -35,13 +35,13 @@ import org.gradle.kotlin.dsl.the
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
-import ru.solrudev.ackpine.gradle.versioning.versionNumber
+import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		group = Constants.PACKAGE_NAME
-		version = versionNumber.get().toString()
+		version = ackpineVersion.get().toString()
 		pluginManager.run {
 			apply(LibraryPlugin::class)
 		}

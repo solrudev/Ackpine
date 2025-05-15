@@ -24,7 +24,7 @@ import org.gradle.kotlin.dsl.registerIfAbsent
 /**
  * Returns a provider of a [Version] object parsed from `version.properties` file in root project directory.
  */
-public val Project.versionNumber: Provider<Version>
+public val Project.ackpineVersion: Provider<Version>
 	get() = gradle
 		.sharedServices
 		.registerIfAbsent("versioning", VersioningService::class) {

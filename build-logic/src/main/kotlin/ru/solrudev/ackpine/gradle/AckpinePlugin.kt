@@ -27,7 +27,7 @@ import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
-import ru.solrudev.ackpine.gradle.versioning.versionNumber
+import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpinePlugin : Plugin<Project> {
 
@@ -36,7 +36,7 @@ public class AckpinePlugin : Plugin<Project> {
 			"Plugin must be applied to the root project but was applied to $path"
 		}
 		group = Constants.PACKAGE_NAME
-		version = versionNumber.get().toString()
+		version = ackpineVersion.get().toString()
 		registerBuildAckpineTask()
 		val buildSamplesTask = registerBuildSamplesTask()
 		val releaseChangelogTask = registerReleaseChangelogTask()
