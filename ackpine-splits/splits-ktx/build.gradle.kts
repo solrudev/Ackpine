@@ -32,7 +32,7 @@ ackpine {
 }
 
 dependencies {
-	api(projects.ackpineSplits)
+	api(projects.ackpineSplits.splitsMain)
 	api(kotlinx.coroutines.core)
 	implementation(androidx.concurrent.futures.ktx)
 }

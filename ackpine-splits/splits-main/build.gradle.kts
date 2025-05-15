@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,28 @@
  * limitations under the License.
  */
 
+description = "Utilities for working with split APKs"
+
 plugins {
-	id("ru.solrudev.ackpine.project")
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
+}
+
+ackpine {
+	id = "splits"
+	minSdk = 21
+	artifact {
+		name = "Ackpine Splits"
+	}
 }
 
 dependencies {
-	// task :buildAckpine
-	library(projects.ackpineApi.apiMain)
-	library(projects.ackpineCore)
-	library(projects.ackpineKtx)
-	library(projects.ackpineSplits.splitsMain)
-	library(projects.ackpineSplits.splitsKtx)
-	library(projects.ackpineAssets)
-	library(projects.ackpineRuntime)
-	library(projects.ackpineResources)
-
-	// task :buildSamples
-	sample(projects.sampleJava)
-	sample(projects.sampleKtx)
-	sample(projects.sampleApi34)
+	api(androidx.annotation)
+	api(libs.listenablefuture)
+	implementation(projects.ackpineRuntime)
+	implementation(androidx.core.ktx)
+	implementation(androidx.concurrent.futures.core)
+	implementation(libs.apache.commons.compress)
+	implementation(libs.apksig)
 }
