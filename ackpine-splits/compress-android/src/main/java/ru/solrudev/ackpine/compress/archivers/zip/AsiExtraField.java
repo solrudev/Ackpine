@@ -61,300 +61,300 @@ import java.util.zip.ZipException;
  */
 public class AsiExtraField implements ZipExtraField, UnixStat, Cloneable {
 
-    static final ZipShort HEADER_ID = new ZipShort(0x756E);
-    private static final int MIN_SIZE = WORD + SHORT + WORD + SHORT + SHORT;
+	static final ZipShort HEADER_ID = new ZipShort(0x756E);
+	private static final int MIN_SIZE = WORD + SHORT + WORD + SHORT + SHORT;
 
-    /**
-     * Standard UNIX stat(2) file mode.
-     */
-    private int mode;
-    /**
-     * User ID.
-     */
-    private int uid;
-    /**
-     * Group ID.
-     */
-    private int gid;
-    /**
-     * File this entry points to, if it is a symbolic link.
-     *
-     * <p>
-     * empty string - if entry is not a symbolic link.
-     * </p>
-     */
-    private String link = "";
-    /**
-     * Is this an entry for a directory?
-     */
-    private boolean dirFlag;
+	/**
+	 * Standard UNIX stat(2) file mode.
+	 */
+	private int mode;
+	/**
+	 * User ID.
+	 */
+	private int uid;
+	/**
+	 * Group ID.
+	 */
+	private int gid;
+	/**
+	 * File this entry points to, if it is a symbolic link.
+	 *
+	 * <p>
+	 * empty string - if entry is not a symbolic link.
+	 * </p>
+	 */
+	private String link = "";
+	/**
+	 * Is this an entry for a directory?
+	 */
+	private boolean dirFlag;
 
-    /**
-     * Instance used to calculate checksums.
-     */
-    private CRC32 crc = new CRC32();
+	/**
+	 * Instance used to calculate checksums.
+	 */
+	private CRC32 crc = new CRC32();
 
-    /** Constructor for AsiExtraField. */
-    public AsiExtraField() {
-    }
+	/** Constructor for AsiExtraField. */
+	public AsiExtraField() {
+	}
 
-    @Override
-    public Object clone() {
-        try {
-            final AsiExtraField cloned = (AsiExtraField) super.clone();
-            cloned.crc = new CRC32();
-            return cloned;
-        } catch (final CloneNotSupportedException cnfe) {
-            // impossible
-            throw new UnsupportedOperationException(cnfe); // NOSONAR
-        }
-    }
+	@Override
+	public Object clone() {
+		try {
+			final AsiExtraField cloned = (AsiExtraField) super.clone();
+			cloned.crc = new CRC32();
+			return cloned;
+		} catch (final CloneNotSupportedException cnfe) {
+			// impossible
+			throw new UnsupportedOperationException(cnfe); // NOSONAR
+		}
+	}
 
-    /**
-     * Delegate to local file data.
-     *
-     * @return the local file data
-     */
-    @Override
-    public byte[] getCentralDirectoryData() {
-        return getLocalFileDataData();
-    }
+	/**
+	 * Delegate to local file data.
+	 *
+	 * @return the local file data
+	 */
+	@Override
+	public byte[] getCentralDirectoryData() {
+		return getLocalFileDataData();
+	}
 
-    /**
-     * Delegate to local file data.
-     *
-     * @return the centralDirectory length
-     */
-    @Override
-    public ZipShort getCentralDirectoryLength() {
-        return getLocalFileDataLength();
-    }
+	/**
+	 * Delegate to local file data.
+	 *
+	 * @return the centralDirectory length
+	 */
+	@Override
+	public ZipShort getCentralDirectoryLength() {
+		return getLocalFileDataLength();
+	}
 
-    /**
-     * Gets the group id.
-     *
-     * @return the group id
-     */
-    public int getGroupId() {
-        return gid;
-    }
+	/**
+	 * Gets the group id.
+	 *
+	 * @return the group id
+	 */
+	public int getGroupId() {
+		return gid;
+	}
 
-    /**
-     * The Header-ID.
-     *
-     * @return the value for the header id for this extrafield
-     */
-    @Override
-    public ZipShort getHeaderId() {
-        return HEADER_ID;
-    }
+	/**
+	 * The Header-ID.
+	 *
+	 * @return the value for the header id for this extrafield
+	 */
+	@Override
+	public ZipShort getHeaderId() {
+		return HEADER_ID;
+	}
 
-    /**
-     * Name of linked file
-     *
-     * @return name of the file this entry links to if it is a symbolic link, the empty string otherwise.
-     */
-    public String getLinkedFile() {
-        return link;
-    }
+	/**
+	 * Name of linked file
+	 *
+	 * @return name of the file this entry links to if it is a symbolic link, the empty string otherwise.
+	 */
+	public String getLinkedFile() {
+		return link;
+	}
 
-    /**
-     * The actual data to put into local file data - without Header-ID or length specifier.
-     *
-     * @return get the data
-     */
-    @Override
-    public byte[] getLocalFileDataData() {
-        // CRC will be added later
-        final byte[] data = new byte[getLocalFileDataLength().getValue() - WORD];
-        System.arraycopy(ZipShort.getBytes(getMode()), 0, data, 0, 2);
+	/**
+	 * The actual data to put into local file data - without Header-ID or length specifier.
+	 *
+	 * @return get the data
+	 */
+	@Override
+	public byte[] getLocalFileDataData() {
+		// CRC will be added later
+		final byte[] data = new byte[getLocalFileDataLength().getValue() - WORD];
+		System.arraycopy(ZipShort.getBytes(getMode()), 0, data, 0, 2);
 
-        final byte[] linkArray = getLinkedFile().getBytes(Charset.defaultCharset()); // Uses default charset - see class Javadoc
-        // CheckStyle:MagicNumber OFF
-        System.arraycopy(ZipLong.getBytes(linkArray.length), 0, data, 2, WORD);
+		final byte[] linkArray = getLinkedFile().getBytes(Charset.defaultCharset()); // Uses default charset - see class Javadoc
+		// CheckStyle:MagicNumber OFF
+		System.arraycopy(ZipLong.getBytes(linkArray.length), 0, data, 2, WORD);
 
-        System.arraycopy(ZipShort.getBytes(getUserId()), 0, data, 6, 2);
-        System.arraycopy(ZipShort.getBytes(getGroupId()), 0, data, 8, 2);
+		System.arraycopy(ZipShort.getBytes(getUserId()), 0, data, 6, 2);
+		System.arraycopy(ZipShort.getBytes(getGroupId()), 0, data, 8, 2);
 
-        System.arraycopy(linkArray, 0, data, 10, linkArray.length);
-        // CheckStyle:MagicNumber ON
+		System.arraycopy(linkArray, 0, data, 10, linkArray.length);
+		// CheckStyle:MagicNumber ON
 
-        crc.reset();
-        crc.update(data);
-        final long checksum = crc.getValue();
+		crc.reset();
+		crc.update(data);
+		final long checksum = crc.getValue();
 
-        final byte[] result = new byte[data.length + WORD];
-        System.arraycopy(ZipLong.getBytes(checksum), 0, result, 0, WORD);
-        System.arraycopy(data, 0, result, WORD, data.length);
-        return result;
-    }
+		final byte[] result = new byte[data.length + WORD];
+		System.arraycopy(ZipLong.getBytes(checksum), 0, result, 0, WORD);
+		System.arraycopy(data, 0, result, WORD, data.length);
+		return result;
+	}
 
-    /**
-     * Length of the extra field in the local file data - without Header-ID or length specifier.
-     *
-     * @return a {@code ZipShort} for the length of the data of this extra field
-     */
-    @Override
-    public ZipShort getLocalFileDataLength() {
-        // @formatter:off
-        return new ZipShort(WORD      // CRC
-                          + 2         // Mode
-                          + WORD      // SizDev
-                          + 2         // UID
-                          + 2         // GID
-                          + getLinkedFile().getBytes(Charset.defaultCharset()).length);
-                          // Uses default charset - see class Javadoc
-        // @formatter:on
-    }
+	/**
+	 * Length of the extra field in the local file data - without Header-ID or length specifier.
+	 *
+	 * @return a {@code ZipShort} for the length of the data of this extra field
+	 */
+	@Override
+	public ZipShort getLocalFileDataLength() {
+		// @formatter:off
+		return new ZipShort(WORD      // CRC
+				+ 2         // Mode
+				+ WORD      // SizDev
+				+ 2         // UID
+				+ 2         // GID
+				+ getLinkedFile().getBytes(Charset.defaultCharset()).length);
+		// Uses default charset - see class Javadoc
+		// @formatter:on
+	}
 
-    /**
-     * File mode of this file.
-     *
-     * @return the file mode
-     */
-    public int getMode() {
-        return mode;
-    }
+	/**
+	 * File mode of this file.
+	 *
+	 * @return the file mode
+	 */
+	public int getMode() {
+		return mode;
+	}
 
-    /**
-     * Gets the file mode for given permissions with the correct file type.
-     *
-     * @param mode the mode
-     * @return the type with the mode
-     */
-    protected int getMode(final int mode) {
-        int type = FILE_FLAG;
-        if (isLink()) {
-            type = LINK_FLAG;
-        } else if (isDirectory()) {
-            type = DIR_FLAG;
-        }
-        return type | mode & PERM_MASK;
-    }
+	/**
+	 * Gets the file mode for given permissions with the correct file type.
+	 *
+	 * @param mode the mode
+	 * @return the type with the mode
+	 */
+	protected int getMode(final int mode) {
+		int type = FILE_FLAG;
+		if (isLink()) {
+			type = LINK_FLAG;
+		} else if (isDirectory()) {
+			type = DIR_FLAG;
+		}
+		return type | mode & PERM_MASK;
+	}
 
-    /**
-     * Gets the user id.
-     *
-     * @return the user id
-     */
-    public int getUserId() {
-        return uid;
-    }
+	/**
+	 * Gets the user id.
+	 *
+	 * @return the user id
+	 */
+	public int getUserId() {
+		return uid;
+	}
 
-    /**
-     * Is this entry a directory?
-     *
-     * @return true if this entry is a directory
-     */
-    public boolean isDirectory() {
-        return dirFlag && !isLink();
-    }
+	/**
+	 * Is this entry a directory?
+	 *
+	 * @return true if this entry is a directory
+	 */
+	public boolean isDirectory() {
+		return dirFlag && !isLink();
+	}
 
-    /**
-     * Is this entry a symbolic link?
-     *
-     * @return true if this is a symbolic link
-     */
-    public boolean isLink() {
-        return !getLinkedFile().isEmpty();
-    }
+	/**
+	 * Is this entry a symbolic link?
+	 *
+	 * @return true if this is a symbolic link
+	 */
+	public boolean isLink() {
+		return !getLinkedFile().isEmpty();
+	}
 
-    /**
-     * Doesn't do anything special since this class always uses the same data in central directory and local file data.
-     */
-    @Override
-    public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) throws ZipException {
-        parseFromLocalFileData(buffer, offset, length);
-    }
+	/**
+	 * Doesn't do anything special since this class always uses the same data in central directory and local file data.
+	 */
+	@Override
+	public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) throws ZipException {
+		parseFromLocalFileData(buffer, offset, length);
+	}
 
-    /**
-     * Populate data from this array as if it was in local file data.
-     *
-     * @param data   an array of bytes
-     * @param offset the start offset
-     * @param length the number of bytes in the array from offset
-     * @throws ZipException on error
-     */
-    @Override
-    public void parseFromLocalFileData(final byte[] data, final int offset, final int length) throws ZipException {
-        if (length < MIN_SIZE) {
-            throw new ZipException("The length is too short, only " + length + " bytes, expected at least " + MIN_SIZE);
-        }
+	/**
+	 * Populate data from this array as if it was in local file data.
+	 *
+	 * @param data   an array of bytes
+	 * @param offset the start offset
+	 * @param length the number of bytes in the array from offset
+	 * @throws ZipException on error
+	 */
+	@Override
+	public void parseFromLocalFileData(final byte[] data, final int offset, final int length) throws ZipException {
+		if (length < MIN_SIZE) {
+			throw new ZipException("The length is too short, only " + length + " bytes, expected at least " + MIN_SIZE);
+		}
 
-        final long givenChecksum = ZipLong.getValue(data, offset);
-        final byte[] tmp = new byte[length - WORD];
-        System.arraycopy(data, offset + WORD, tmp, 0, length - WORD);
-        crc.reset();
-        crc.update(tmp);
-        final long realChecksum = crc.getValue();
-        if (givenChecksum != realChecksum) {
-            throw new ZipException("Bad CRC checksum, expected " + Long.toHexString(givenChecksum) + " instead of " + Long.toHexString(realChecksum));
-        }
+		final long givenChecksum = ZipLong.getValue(data, offset);
+		final byte[] tmp = new byte[length - WORD];
+		System.arraycopy(data, offset + WORD, tmp, 0, length - WORD);
+		crc.reset();
+		crc.update(tmp);
+		final long realChecksum = crc.getValue();
+		if (givenChecksum != realChecksum) {
+			throw new ZipException("Bad CRC checksum, expected " + Long.toHexString(givenChecksum) + " instead of " + Long.toHexString(realChecksum));
+		}
 
-        final int newMode = ZipShort.getValue(tmp, 0);
-        // CheckStyle:MagicNumber OFF
-        final int linkArrayLength = (int) ZipLong.getValue(tmp, 2);
-        if (linkArrayLength < 0 || linkArrayLength > tmp.length - 10) {
-            throw new ZipException("Bad symbolic link name length " + linkArrayLength + " in ASI extra field");
-        }
-        uid = ZipShort.getValue(tmp, 6);
-        gid = ZipShort.getValue(tmp, 8);
-        if (linkArrayLength == 0) {
-            link = "";
-        } else {
-            final byte[] linkArray = new byte[linkArrayLength];
-            System.arraycopy(tmp, 10, linkArray, 0, linkArrayLength);
-            link = new String(linkArray, Charset.defaultCharset()); // Uses default charset - see class Javadoc
-        }
-        // CheckStyle:MagicNumber ON
-        setDirectory((newMode & DIR_FLAG) != 0);
-        setMode(newMode);
-    }
+		final int newMode = ZipShort.getValue(tmp, 0);
+		// CheckStyle:MagicNumber OFF
+		final int linkArrayLength = (int) ZipLong.getValue(tmp, 2);
+		if (linkArrayLength < 0 || linkArrayLength > tmp.length - 10) {
+			throw new ZipException("Bad symbolic link name length " + linkArrayLength + " in ASI extra field");
+		}
+		uid = ZipShort.getValue(tmp, 6);
+		gid = ZipShort.getValue(tmp, 8);
+		if (linkArrayLength == 0) {
+			link = "";
+		} else {
+			final byte[] linkArray = new byte[linkArrayLength];
+			System.arraycopy(tmp, 10, linkArray, 0, linkArrayLength);
+			link = new String(linkArray, Charset.defaultCharset()); // Uses default charset - see class Javadoc
+		}
+		// CheckStyle:MagicNumber ON
+		setDirectory((newMode & DIR_FLAG) != 0);
+		setMode(newMode);
+	}
 
-    /**
-     * Indicate whether this entry is a directory.
-     *
-     * @param dirFlag if true, this entry is a directory
-     */
-    public void setDirectory(final boolean dirFlag) {
-        this.dirFlag = dirFlag;
-        mode = getMode(mode);
-    }
+	/**
+	 * Indicate whether this entry is a directory.
+	 *
+	 * @param dirFlag if true, this entry is a directory
+	 */
+	public void setDirectory(final boolean dirFlag) {
+		this.dirFlag = dirFlag;
+		mode = getMode(mode);
+	}
 
-    /**
-     * Sets the group id.
-     *
-     * @param gid the group id
-     */
-    public void setGroupId(final int gid) {
-        this.gid = gid;
-    }
+	/**
+	 * Sets the group id.
+	 *
+	 * @param gid the group id
+	 */
+	public void setGroupId(final int gid) {
+		this.gid = gid;
+	}
 
-    /**
-     * Indicate that this entry is a symbolic link to the given file name.
-     *
-     * @param name Name of the file this entry links to, empty String if it is not a symbolic link.
-     */
-    public void setLinkedFile(final String name) {
-        link = name;
-        mode = getMode(mode);
-    }
+	/**
+	 * Indicate that this entry is a symbolic link to the given file name.
+	 *
+	 * @param name Name of the file this entry links to, empty String if it is not a symbolic link.
+	 */
+	public void setLinkedFile(final String name) {
+		link = name;
+		mode = getMode(mode);
+	}
 
-    /**
-     * File mode of this file.
-     *
-     * @param mode the file mode
-     */
-    public void setMode(final int mode) {
-        this.mode = getMode(mode);
-    }
+	/**
+	 * File mode of this file.
+	 *
+	 * @param mode the file mode
+	 */
+	public void setMode(final int mode) {
+		this.mode = getMode(mode);
+	}
 
-    /**
-     * Sets the user id.
-     *
-     * @param uid the user id
-     */
-    public void setUserId(final int uid) {
-        this.uid = uid;
-    }
+	/**
+	 * Sets the user id.
+	 *
+	 * @param uid the user id
+	 */
+	public void setUserId(final int uid) {
+		this.uid = uid;
+	}
 }

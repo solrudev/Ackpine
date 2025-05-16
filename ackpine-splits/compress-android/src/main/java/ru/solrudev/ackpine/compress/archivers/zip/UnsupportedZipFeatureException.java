@@ -29,109 +29,109 @@ import java.util.zip.ZipException;
  */
 public class UnsupportedZipFeatureException extends ZipException {
 
-    /**
-     * ZIP Features that may or may not be supported.
-     *
-     * @since 1.1
-     */
-    public static class Feature implements Serializable {
+	/**
+	 * ZIP Features that may or may not be supported.
+	 *
+	 * @since 1.1
+	 */
+	public static class Feature implements Serializable {
 
-        private static final long serialVersionUID = 4112582948775420359L;
-        /**
-         * The entry is encrypted.
-         */
-        public static final Feature ENCRYPTION = new Feature("encryption");
-        /**
-         * The entry used an unsupported compression method.
-         */
-        public static final Feature METHOD = new Feature("compression method");
-        /**
-         * The entry uses a data descriptor.
-         */
-        public static final Feature DATA_DESCRIPTOR = new Feature("data descriptor");
-        /**
-         * The archive uses splitting or spanning.
-         *
-         * @since 1.5
-         */
-        public static final Feature SPLITTING = new Feature("splitting");
-        /**
-         * The archive contains entries with unknown compressed size for a compression method that doesn't support detection of the end of the compressed
-         * stream.
-         *
-         * @since 1.16
-         */
-        public static final Feature UNKNOWN_COMPRESSED_SIZE = new Feature("unknown compressed size");
+		private static final long serialVersionUID = 4112582948775420359L;
+		/**
+		 * The entry is encrypted.
+		 */
+		public static final Feature ENCRYPTION = new Feature("encryption");
+		/**
+		 * The entry used an unsupported compression method.
+		 */
+		public static final Feature METHOD = new Feature("compression method");
+		/**
+		 * The entry uses a data descriptor.
+		 */
+		public static final Feature DATA_DESCRIPTOR = new Feature("data descriptor");
+		/**
+		 * The archive uses splitting or spanning.
+		 *
+		 * @since 1.5
+		 */
+		public static final Feature SPLITTING = new Feature("splitting");
+		/**
+		 * The archive contains entries with unknown compressed size for a compression method that doesn't support detection of the end of the compressed
+		 * stream.
+		 *
+		 * @since 1.16
+		 */
+		public static final Feature UNKNOWN_COMPRESSED_SIZE = new Feature("unknown compressed size");
 
-        private final String name;
+		private final String name;
 
-        private Feature(final String name) {
-            this.name = name;
-        }
+		private Feature(final String name) {
+			this.name = name;
+		}
 
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
+		@Override
+		public String toString() {
+			return name;
+		}
+	}
 
-    private static final long serialVersionUID = 20161219L;
-    private final Feature reason;
+	private static final long serialVersionUID = 20161219L;
+	private final Feature reason;
 
-    private final transient ZipArchiveEntry entry;
+	private final transient ZipArchiveEntry entry;
 
-    /**
-     * Creates an exception when the whole archive uses an unsupported feature.
-     *
-     * @param reason the feature that is not supported
-     * @since 1.5
-     */
-    public UnsupportedZipFeatureException(final Feature reason) {
-        super("Unsupported feature " + reason + " used in archive.");
-        this.reason = reason;
-        this.entry = null;
-    }
+	/**
+	 * Creates an exception when the whole archive uses an unsupported feature.
+	 *
+	 * @param reason the feature that is not supported
+	 * @since 1.5
+	 */
+	public UnsupportedZipFeatureException(final Feature reason) {
+		super("Unsupported feature " + reason + " used in archive.");
+		this.reason = reason;
+		this.entry = null;
+	}
 
-    /**
-     * Creates an exception.
-     *
-     * @param reason the feature that is not supported
-     * @param entry  the entry using the feature
-     */
-    public UnsupportedZipFeatureException(final Feature reason, final ZipArchiveEntry entry) {
-        super("Unsupported feature " + reason + " used in entry " + entry.getName());
-        this.reason = reason;
-        this.entry = entry;
-    }
+	/**
+	 * Creates an exception.
+	 *
+	 * @param reason the feature that is not supported
+	 * @param entry  the entry using the feature
+	 */
+	public UnsupportedZipFeatureException(final Feature reason, final ZipArchiveEntry entry) {
+		super("Unsupported feature " + reason + " used in entry " + entry.getName());
+		this.reason = reason;
+		this.entry = entry;
+	}
 
-    /**
-     * Creates an exception for archives that use an unsupported compression algorithm.
-     *
-     * @param method the method that is not supported
-     * @param entry  the entry using the feature
-     * @since 1.5
-     */
-    public UnsupportedZipFeatureException(final ZipMethod method, final ZipArchiveEntry entry) {
-        super("Unsupported compression method " + entry.getMethod() + " (" + method.name() + ") used in entry " + entry.getName());
-        this.reason = Feature.METHOD;
-        this.entry = entry;
-    }
+	/**
+	 * Creates an exception for archives that use an unsupported compression algorithm.
+	 *
+	 * @param method the method that is not supported
+	 * @param entry  the entry using the feature
+	 * @since 1.5
+	 */
+	public UnsupportedZipFeatureException(final ZipMethod method, final ZipArchiveEntry entry) {
+		super("Unsupported compression method " + entry.getMethod() + " (" + method.name() + ") used in entry " + entry.getName());
+		this.reason = Feature.METHOD;
+		this.entry = entry;
+	}
 
-    /**
-     * The entry using the unsupported feature.
-     *
-     * @return The entry using the unsupported feature.
-     */
-    public ZipArchiveEntry getEntry() {
-        return entry;
-    }
+	/**
+	 * The entry using the unsupported feature.
+	 *
+	 * @return The entry using the unsupported feature.
+	 */
+	public ZipArchiveEntry getEntry() {
+		return entry;
+	}
 
-    /**
-     * The unsupported feature that has been used.
-     *
-     * @return The unsupported feature that has been used.
-     */
-    public Feature getFeature() {
-        return reason;
-    }
+	/**
+	 * The unsupported feature that has been used.
+	 *
+	 * @return The unsupported feature that has been used.
+	 */
+	public Feature getFeature() {
+		return reason;
+	}
 }

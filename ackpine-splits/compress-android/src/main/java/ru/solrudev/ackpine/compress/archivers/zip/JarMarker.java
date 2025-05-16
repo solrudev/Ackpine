@@ -29,95 +29,95 @@ import ru.solrudev.ackpine.compress.utils.ByteUtils;
  */
 public final class JarMarker implements ZipExtraField {
 
-    static final ZipShort ID = new ZipShort(0xCAFE);
-    private static final ZipShort NULL = new ZipShort(0);
-    private static final JarMarker DEFAULT = new JarMarker();
+	static final ZipShort ID = new ZipShort(0xCAFE);
+	private static final ZipShort NULL = new ZipShort(0);
+	private static final JarMarker DEFAULT = new JarMarker();
 
-    /**
-     * Since JarMarker is stateless we can always use the same instance.
-     *
-     * @return the DEFAULT jarmaker.
-     */
-    public static JarMarker getInstance() {
-        return DEFAULT;
-    }
+	/**
+	 * Since JarMarker is stateless we can always use the same instance.
+	 *
+	 * @return the DEFAULT jarmaker.
+	 */
+	public static JarMarker getInstance() {
+		return DEFAULT;
+	}
 
-    /** No-arg constructor */
-    public JarMarker() {
-        // empty
-    }
+	/** No-arg constructor */
+	public JarMarker() {
+		// empty
+	}
 
-    /**
-     * The actual data to put central directory - without Header-ID or length specifier.
-     *
-     * @return the data
-     */
-    @Override
-    public byte[] getCentralDirectoryData() {
-        return ByteUtils.EMPTY_BYTE_ARRAY;
-    }
+	/**
+	 * The actual data to put central directory - without Header-ID or length specifier.
+	 *
+	 * @return the data
+	 */
+	@Override
+	public byte[] getCentralDirectoryData() {
+		return ByteUtils.EMPTY_BYTE_ARRAY;
+	}
 
-    /**
-     * Length of the extra field in the central directory - without Header-ID or length specifier.
-     *
-     * @return 0
-     */
-    @Override
-    public ZipShort getCentralDirectoryLength() {
-        return NULL;
-    }
+	/**
+	 * Length of the extra field in the central directory - without Header-ID or length specifier.
+	 *
+	 * @return 0
+	 */
+	@Override
+	public ZipShort getCentralDirectoryLength() {
+		return NULL;
+	}
 
-    /**
-     * The Header-ID.
-     *
-     * @return the header id
-     */
-    @Override
-    public ZipShort getHeaderId() {
-        return ID;
-    }
+	/**
+	 * The Header-ID.
+	 *
+	 * @return the header id
+	 */
+	@Override
+	public ZipShort getHeaderId() {
+		return ID;
+	}
 
-    /**
-     * The actual data to put into local file data - without Header-ID or length specifier.
-     *
-     * @return the data
-     */
-    @Override
-    public byte[] getLocalFileDataData() {
-        return ByteUtils.EMPTY_BYTE_ARRAY;
-    }
+	/**
+	 * The actual data to put into local file data - without Header-ID or length specifier.
+	 *
+	 * @return the data
+	 */
+	@Override
+	public byte[] getLocalFileDataData() {
+		return ByteUtils.EMPTY_BYTE_ARRAY;
+	}
 
-    /**
-     * Length of the extra field in the local file data - without Header-ID or length specifier.
-     *
-     * @return 0
-     */
-    @Override
-    public ZipShort getLocalFileDataLength() {
-        return NULL;
-    }
+	/**
+	 * Length of the extra field in the local file data - without Header-ID or length specifier.
+	 *
+	 * @return 0
+	 */
+	@Override
+	public ZipShort getLocalFileDataLength() {
+		return NULL;
+	}
 
-    /**
-     * Doesn't do anything special since this class always uses the same data in central directory and local file data.
-     */
-    @Override
-    public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) throws ZipException {
-        parseFromLocalFileData(buffer, offset, length);
-    }
+	/**
+	 * Doesn't do anything special since this class always uses the same data in central directory and local file data.
+	 */
+	@Override
+	public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) throws ZipException {
+		parseFromLocalFileData(buffer, offset, length);
+	}
 
-    /**
-     * Populate data from this array as if it was in local file data.
-     *
-     * @param data   an array of bytes
-     * @param offset the start offset
-     * @param length the number of bytes in the array from offset
-     *
-     * @throws ZipException on error
-     */
-    @Override
-    public void parseFromLocalFileData(final byte[] data, final int offset, final int length) throws ZipException {
-        if (length != 0) {
-            throw new ZipException("JarMarker doesn't expect any data");
-        }
-    }
+	/**
+	 * Populate data from this array as if it was in local file data.
+	 *
+	 * @param data   an array of bytes
+	 * @param offset the start offset
+	 * @param length the number of bytes in the array from offset
+	 *
+	 * @throws ZipException on error
+	 */
+	@Override
+	public void parseFromLocalFileData(final byte[] data, final int offset, final int length) throws ZipException {
+		if (length != 0) {
+			throw new ZipException("JarMarker doesn't expect any data");
+		}
+	}
 }

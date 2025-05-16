@@ -27,17 +27,17 @@ package ru.solrudev.ackpine.compress.utils;
  */
 public interface InputStreamStatistics {
 
-    /**
-     * Gets the amount of raw or compressed bytes read by the stream.
-     *
-     * @return the amount of raw or compressed bytes read by the stream.
-     */
-    long getCompressedCount();
+	/**
+	 * Gets the amount of raw or compressed bytes read by the stream.
+	 *
+	 * @return the amount of raw or compressed bytes read by the stream.
+	 */
+	long getCompressedCount();
 
-    /**
-     * Gets the amount of decompressed bytes returned by the stream.
-     *
-     * @return the amount of decompressed bytes returned by the stream.
-     */
-    long getUncompressedCount();
+	/**
+	 * Gets the amount of decompressed bytes returned by the stream.
+	 *
+	 * @return the amount of decompressed bytes returned by the stream.
+	 */
+	long getUncompressedCount();
 }
