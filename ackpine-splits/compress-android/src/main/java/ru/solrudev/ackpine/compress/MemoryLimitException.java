@@ -28,35 +28,35 @@ import java.io.IOException;
  */
 public class MemoryLimitException extends IOException {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    private static String buildMessage(final long memoryNeededInKb, final int memoryLimitInKb) {
-        return memoryNeededInKb + " kb of memory would be needed; limit was " + memoryLimitInKb + " kb. "
-                + "If the file is not corrupt, consider increasing the memory limit.";
-    }
+	private static String buildMessage(final long memoryNeededInKb, final int memoryLimitInKb) {
+		return memoryNeededInKb + " kb of memory would be needed; limit was " + memoryLimitInKb + " kb. "
+				+ "If the file is not corrupt, consider increasing the memory limit.";
+	}
 
-    /** A long instead of int to account for overflow for corrupt files. */
-    private final long memoryNeededInKb;
+	/** A long instead of int to account for overflow for corrupt files. */
+	private final long memoryNeededInKb;
 
-    private final int memoryLimitInKb;
+	private final int memoryLimitInKb;
 
-    public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb) {
-        super(buildMessage(memoryNeededInKb, memoryLimitInKb));
-        this.memoryNeededInKb = memoryNeededInKb;
-        this.memoryLimitInKb = memoryLimitInKb;
-    }
+	public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb) {
+		super(buildMessage(memoryNeededInKb, memoryLimitInKb));
+		this.memoryNeededInKb = memoryNeededInKb;
+		this.memoryLimitInKb = memoryLimitInKb;
+	}
 
-    public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb, final Exception e) {
-        super(buildMessage(memoryNeededInKb, memoryLimitInKb), e);
-        this.memoryNeededInKb = memoryNeededInKb;
-        this.memoryLimitInKb = memoryLimitInKb;
-    }
+	public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb, final Exception e) {
+		super(buildMessage(memoryNeededInKb, memoryLimitInKb), e);
+		this.memoryNeededInKb = memoryNeededInKb;
+		this.memoryLimitInKb = memoryLimitInKb;
+	}
 
-    public int getMemoryLimitInKb() {
-        return memoryLimitInKb;
-    }
+	public int getMemoryLimitInKb() {
+		return memoryLimitInKb;
+	}
 
-    public long getMemoryNeededInKb() {
-        return memoryNeededInKb;
-    }
+	public long getMemoryNeededInKb() {
+		return memoryNeededInKb;
+	}
 }

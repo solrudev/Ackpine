@@ -32,35 +32,35 @@ package ru.solrudev.ackpine.compress.archivers.zip;
  */
 public class UnicodePathExtraField extends AbstractUnicodeExtraField {
 
-    public static final ZipShort UPATH_ID = new ZipShort(0x7075);
+	public static final ZipShort UPATH_ID = new ZipShort(0x7075);
 
-    public UnicodePathExtraField() {
-    }
+	public UnicodePathExtraField() {
+	}
 
-    /**
-     * Assemble as unicode path extension from the name given as text as well as the encoded bytes actually written to the archive.
-     *
-     * @param name  The file name
-     * @param bytes the bytes actually written to the archive
-     */
-    public UnicodePathExtraField(final String name, final byte[] bytes) {
-        super(name, bytes);
-    }
+	/**
+	 * Assemble as unicode path extension from the name given as text as well as the encoded bytes actually written to the archive.
+	 *
+	 * @param name  The file name
+	 * @param bytes the bytes actually written to the archive
+	 */
+	public UnicodePathExtraField(final String name, final byte[] bytes) {
+		super(name, bytes);
+	}
 
-    /**
-     * Assemble as unicode path extension from the name given as text as well as the encoded bytes actually written to the archive.
-     *
-     * @param text  The file name
-     * @param bytes the bytes actually written to the archive
-     * @param off   The offset of the encoded file name in {@code bytes}.
-     * @param len   The length of the encoded file name or comment in {@code bytes}.
-     */
-    public UnicodePathExtraField(final String text, final byte[] bytes, final int off, final int len) {
-        super(text, bytes, off, len);
-    }
+	/**
+	 * Assemble as unicode path extension from the name given as text as well as the encoded bytes actually written to the archive.
+	 *
+	 * @param text  The file name
+	 * @param bytes the bytes actually written to the archive
+	 * @param off   The offset of the encoded file name in {@code bytes}.
+	 * @param len   The length of the encoded file name or comment in {@code bytes}.
+	 */
+	public UnicodePathExtraField(final String text, final byte[] bytes, final int off, final int len) {
+		super(text, bytes, off, len);
+	}
 
-    @Override
-    public ZipShort getHeaderId() {
-        return UPATH_ID;
-    }
+	@Override
+	public ZipShort getHeaderId() {
+		return UPATH_ID;
+	}
 }

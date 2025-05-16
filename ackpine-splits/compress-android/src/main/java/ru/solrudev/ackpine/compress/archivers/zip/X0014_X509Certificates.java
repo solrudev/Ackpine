@@ -44,10 +44,10 @@ package ru.solrudev.ackpine.compress.archivers.zip;
  */
 public class X0014_X509Certificates extends PKWareExtraHeader {
 
-    static final ZipShort HEADER_ID = new ZipShort(0x0014);
+	static final ZipShort HEADER_ID = new ZipShort(0x0014);
 
-    public X0014_X509Certificates() {
-        super(HEADER_ID);
-    }
+	public X0014_X509Certificates() {
+		super(HEADER_ID);
+	}
 
 }

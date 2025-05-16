@@ -33,97 +33,97 @@ import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
  * @NotThreadSafe
  */
 public class Deflate64CompressorInputStream extends CompressorInputStream implements InputStreamStatistics {
-    private InputStream originalStream;
-    private HuffmanDecoder decoder;
-    private long compressedBytesRead;
-    private final byte[] oneByte = new byte[1];
+	private InputStream originalStream;
+	private HuffmanDecoder decoder;
+	private long compressedBytesRead;
+	private final byte[] oneByte = new byte[1];
 
-    Deflate64CompressorInputStream(final HuffmanDecoder decoder) {
-        this.decoder = decoder;
-    }
+	Deflate64CompressorInputStream(final HuffmanDecoder decoder) {
+		this.decoder = decoder;
+	}
 
-    /**
-     * Constructs a Deflate64CompressorInputStream.
-     *
-     * @param in the stream to read from
-     */
-    public Deflate64CompressorInputStream(final InputStream in) {
-        this(new HuffmanDecoder(in));
-        originalStream = in;
-    }
+	/**
+	 * Constructs a Deflate64CompressorInputStream.
+	 *
+	 * @param in the stream to read from
+	 */
+	public Deflate64CompressorInputStream(final InputStream in) {
+		this(new HuffmanDecoder(in));
+		originalStream = in;
+	}
 
-    @Override
-    public int available() throws IOException {
-        return decoder != null ? decoder.available() : 0;
-    }
+	@Override
+	public int available() throws IOException {
+		return decoder != null ? decoder.available() : 0;
+	}
 
-    @Override
-    public void close() throws IOException {
-        try {
-            closeDecoder();
-        } finally {
-            if (originalStream != null) {
-                originalStream.close();
-                originalStream = null;
-            }
-        }
-    }
+	@Override
+	public void close() throws IOException {
+		try {
+			closeDecoder();
+		} finally {
+			if (originalStream != null) {
+				originalStream.close();
+				originalStream = null;
+			}
+		}
+	}
 
-    private void closeDecoder() {
-        final Closeable c = decoder;
-        IOUtils.closeQuietly(c);
-        decoder = null;
-    }
+	private void closeDecoder() {
+		final Closeable c = decoder;
+		IOUtils.closeQuietly(c);
+		decoder = null;
+	}
 
-    /**
-     * @since 1.17
-     */
-    @Override
-    public long getCompressedCount() {
-        return compressedBytesRead;
-    }
+	/**
+	 * @since 1.17
+	 */
+	@Override
+	public long getCompressedCount() {
+		return compressedBytesRead;
+	}
 
-    /**
-     * @throws java.io.EOFException if the underlying stream is exhausted before the end of deflated data was reached.
-     */
-    @Override
-    public int read() throws IOException {
-        while (true) {
-            final int r = read(oneByte);
-            switch (r) {
-            case 1:
-                return oneByte[0] & 0xFF;
-            case -1:
-                return -1;
-            case 0:
-                continue;
-            default:
-                throw new IllegalStateException("Invalid return value from read: " + r);
-            }
-        }
-    }
+	/**
+	 * @throws java.io.EOFException if the underlying stream is exhausted before the end of deflated data was reached.
+	 */
+	@Override
+	public int read() throws IOException {
+		while (true) {
+			final int r = read(oneByte);
+			switch (r) {
+				case 1:
+					return oneByte[0] & 0xFF;
+				case -1:
+					return -1;
+				case 0:
+					continue;
+				default:
+					throw new IllegalStateException("Invalid return value from read: " + r);
+			}
+		}
+	}
 
-    /**
-     * @throws java.io.EOFException if the underlying stream is exhausted before the end of deflated data was reached.
-     */
-    @Override
-    public int read(final byte[] b, final int off, final int len) throws IOException {
-        if (len == 0) {
-            return 0;
-        }
-        int read = -1;
-        if (decoder != null) {
-            try {
-                read = decoder.decode(b, off, len);
-            } catch (final RuntimeException ex) {
-                throw new IOException("Invalid Deflate64 input", ex);
-            }
-            compressedBytesRead = decoder.getBytesRead();
-            count(read);
-            if (read == -1) {
-                closeDecoder();
-            }
-        }
-        return read;
-    }
+	/**
+	 * @throws java.io.EOFException if the underlying stream is exhausted before the end of deflated data was reached.
+	 */
+	@Override
+	public int read(final byte[] b, final int off, final int len) throws IOException {
+		if (len == 0) {
+			return 0;
+		}
+		int read = -1;
+		if (decoder != null) {
+			try {
+				read = decoder.decode(b, off, len);
+			} catch (final RuntimeException ex) {
+				throw new IOException("Invalid Deflate64 input", ex);
+			}
+			compressedBytesRead = decoder.getBytesRead();
+			count(read);
+			if (read == -1) {
+				closeDecoder();
+			}
+		}
+		return read;
+	}
 }

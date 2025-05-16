@@ -19,5 +19,5 @@
 package ru.solrudev.ackpine.compress.compressors.deflate64;
 
 enum HuffmanState {
-    INITIAL, STORED, DYNAMIC_CODES, FIXED_CODES
+	INITIAL, STORED, DYNAMIC_CODES, FIXED_CODES
 }

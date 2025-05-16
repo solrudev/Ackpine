@@ -47,39 +47,39 @@ import java.util.zip.ZipException;
  */
 public class X0015_CertificateIdForFile extends PKWareExtraHeader {
 
-    static final ZipShort HEADER_ID = new ZipShort(0x0015);
+	static final ZipShort HEADER_ID = new ZipShort(0x0015);
 
-    private int rcount;
+	private int rcount;
 
-    private HashAlgorithm hashAlg;
+	private HashAlgorithm hashAlg;
 
-    public X0015_CertificateIdForFile() {
-        super(HEADER_ID);
-    }
+	public X0015_CertificateIdForFile() {
+		super(HEADER_ID);
+	}
 
-    /**
-     * Gets hash algorithm.
-     *
-     * @return the hash algorithm
-     */
-    public HashAlgorithm getHashAlgorithm() {
-        return hashAlg;
-    }
+	/**
+	 * Gets hash algorithm.
+	 *
+	 * @return the hash algorithm
+	 */
+	public HashAlgorithm getHashAlgorithm() {
+		return hashAlg;
+	}
 
-    /**
-     * Gets record count.
-     *
-     * @return the record count
-     */
-    public int getRecordCount() {
-        return rcount;
-    }
+	/**
+	 * Gets record count.
+	 *
+	 * @return the record count
+	 */
+	public int getRecordCount() {
+		return rcount;
+	}
 
-    @Override
-    public void parseFromCentralDirectoryData(final byte[] data, final int offset, final int length) throws ZipException {
-        assertMinimalLength(4, length);
-        super.parseFromCentralDirectoryData(data, offset, length);
-        this.rcount = ZipShort.getValue(data, offset);
-        this.hashAlg = HashAlgorithm.getAlgorithmByCode(ZipShort.getValue(data, offset + 2));
-    }
+	@Override
+	public void parseFromCentralDirectoryData(final byte[] data, final int offset, final int length) throws ZipException {
+		assertMinimalLength(4, length);
+		super.parseFromCentralDirectoryData(data, offset, length);
+		this.rcount = ZipShort.getValue(data, offset);
+		this.hashAlg = HashAlgorithm.getAlgorithmByCode(ZipShort.getValue(data, offset + 2));
+	}
 }

@@ -32,14 +32,14 @@ import java.nio.charset.Charset;
  */
 public interface CharsetAccessor {
 
-    /**
-     * Provides access to the character set associated with an object.
-     * <p>
-     * This allowsNIOoriented code to use more natural character encoding/decoding methods, whilst allowing existing code to continue to rely on special-case
-     * error handling for UTF-8.
-     * </p>
-     *
-     * @return the character set associated with this object
-     */
-    Charset getCharset();
+	/**
+	 * Provides access to the character set associated with an object.
+	 * <p>
+	 * This allowsNIOoriented code to use more natural character encoding/decoding methods, whilst allowing existing code to continue to rely on special-case
+	 * error handling for UTF-8.
+	 * </p>
+	 *
+	 * @return the character set associated with this object
+	 */
+	Charset getCharset();
 }

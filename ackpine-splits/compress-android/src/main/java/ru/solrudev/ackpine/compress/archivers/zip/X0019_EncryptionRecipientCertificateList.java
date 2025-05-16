@@ -50,10 +50,10 @@ package ru.solrudev.ackpine.compress.archivers.zip;
  */
 public class X0019_EncryptionRecipientCertificateList extends PKWareExtraHeader {
 
-    static final ZipShort HEADER_ID = new ZipShort(0x0019);
+	static final ZipShort HEADER_ID = new ZipShort(0x0019);
 
-    public X0019_EncryptionRecipientCertificateList() {
-        super(HEADER_ID);
-    }
+	public X0019_EncryptionRecipientCertificateList() {
+		super(HEADER_ID);
+	}
 
 }
