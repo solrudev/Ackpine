@@ -16,6 +16,8 @@
 
 import ru.solrudev.ackpine.gradle.Constants
 
+description = "Dokka plugin allowing to hide declarations marked with provided annotations from API documentation"
+
 plugins {
 	kotlin("jvm")
 	alias(libs.plugins.kotlin.serialization)
