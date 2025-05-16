@@ -70,8 +70,7 @@ public interface Session<out F : Failure> {
 	 * This method allows to re-launch the session when it's not in process of preparations and session's state hasn't
 	 * reached [Awaiting] yet, e.g. when preparations were interrupted with process death.
 	 *
-	 * In general, this method should not be used directly, use [addStateListener] with [TerminalStateListener] or
-	 * `await()` instead.
+	 * In general, this method should not be used directly, use [TerminalStateListener.bind] or `await()` instead.
 	 *
 	 * @return `true` if session preparations have been launched due to this invocation. `false` if session preparations
 	 * are in progress or have been already done, or session was cancelled.
