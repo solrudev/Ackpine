@@ -6,7 +6,7 @@ dokka = "2.0.0"
 
 [libraries]
 materialcomponents = { module = "com.google.android.material:material", version = "1.12.0" }
-plugin-gradleMavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.30.0" }
+plugin-gradleMavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.32.0" }
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-gradleplugin" }
 plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx.binary-compatibility-validator:org.jetbrains.kotlinx.binary-compatibility-validator.gradle.plugin", version = "0.17.0" }
