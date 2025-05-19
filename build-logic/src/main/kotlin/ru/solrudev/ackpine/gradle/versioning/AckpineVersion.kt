@@ -28,7 +28,7 @@ public val Project.ackpineVersion: Provider<Version>
 	get() = gradle
 		.sharedServices
 		.registerIfAbsent("versioning", VersioningService::class) {
-			parameters.versionFile = isolated.rootProject.projectDirectory.file("version.properties")
+			parameters.versionFile = layout.settingsDirectory.file("version.properties")
 		}
 		.map { service ->
 			service.version

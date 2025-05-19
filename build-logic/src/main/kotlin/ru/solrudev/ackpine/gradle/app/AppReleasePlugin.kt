@@ -53,7 +53,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
-		val keystorePropertiesFile = isolated.rootProject.projectDirectory.file("keystore.properties")
+		val keystorePropertiesFile = layout.settingsDirectory.file("keystore.properties")
 		val fileConfigProvider = propertiesProvider(name = "app_signing", keystorePropertiesFile)
 			.map { properties ->
 				properties.filterKeys { it.startsWith(APP_SIGNING_PREFIX) }

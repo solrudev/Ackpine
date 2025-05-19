@@ -16,7 +16,7 @@
 
 description = "Aggregates and generates API documentation for library projects"
 
-val docsDir = isolated.rootProject.projectDirectory.dir("docs/api")
+val docsDir = layout.settingsDirectory.dir("docs/api")
 
 plugins {
 	id("ru.solrudev.ackpine.dokka")

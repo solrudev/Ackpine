@@ -58,8 +58,8 @@ public class DokkaConventionPlugin : Plugin<Project> {
 			annotatedWith.add("androidx.annotation.RestrictTo")
 		}
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
-			customAssets.from(isolated.rootProject.projectDirectory.file("docs/images/logo-icon.svg"))
-			customStyleSheets.from(isolated.rootProject.projectDirectory.file("docs/css/logo-styles.css"))
+			customAssets.from(layout.settingsDirectory.file("docs/images/logo-icon.svg"))
+			customStyleSheets.from(layout.settingsDirectory.file("docs/css/logo-styles.css"))
 			footerMessage = "© Ilya Fomichev"
 		}
 		dokkaSourceSets.configureEach {
