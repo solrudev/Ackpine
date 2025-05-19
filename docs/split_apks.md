@@ -42,7 +42,7 @@ val versionCode: Long
 val description: String
 ```
 
-`Apk` has the following types: `Base` for base APK, `Feature` for a feature split, `Libs` for an APK split containing native libraries, `ScreenDensity` for an APK split containing graphic resources tailored to specific screen density, `Localization` for an APK split containing localized resources and `Other` for an unknown APK split. They also have their specific properties. Refer to [API documentation](api/ackpine-splits/index.html) for details.
+`Apk` has the following types: `Base` for base APK, `Feature` for a feature split, `Libs` for an APK split containing native libraries, `ScreenDensity` for an APK split containing graphic resources tailored to specific screen density, `Localization` for an APK split containing localized resources and `Other` for an unknown APK split. They also have their specific properties. Refer to [API documentation](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/index.html) for details.
 
 Working with splits
 -------------------
