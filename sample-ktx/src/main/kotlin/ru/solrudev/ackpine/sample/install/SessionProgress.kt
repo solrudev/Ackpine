@@ -14,26 +14,22 @@
  * limitations under the License.
  */
 
-@file:Suppress("ConstPropertyName", "Unused")
-
 package ru.solrudev.ackpine.sample.install
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import ru.solrudev.ackpine.session.Progress
-import java.io.Serializable
 import java.util.UUID
 
+@Parcelize
 data class SessionProgress(
 	val id: UUID,
 	val currentProgress: Int,
 	val progressMax: Int
-) : Serializable {
+) : Parcelable {
 
 	constructor(id: UUID, progress: Progress) : this(id, progress.progress, progress.max)
 
 	val progress: Progress
 		get() = Progress(currentProgress, progressMax)
-
-	private companion object {
-		private const val serialVersionUID: Long = -8422171532182780133L
-	}
 }

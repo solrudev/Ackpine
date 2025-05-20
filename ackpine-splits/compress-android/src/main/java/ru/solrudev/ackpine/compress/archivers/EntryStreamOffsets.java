@@ -23,22 +23,22 @@ package ru.solrudev.ackpine.compress.archivers;
  */
 public interface EntryStreamOffsets {
 
-    /**
-     * Indicates that the offset is unknown.
-     */
-    long OFFSET_UNKNOWN = -1;
+	/**
+	 * Indicates that the offset is unknown.
+	 */
+	long OFFSET_UNKNOWN = -1;
 
-    /**
-     * Gets the offset of data stream within the archive file,
-     *
-     * @return the offset of entry data stream, {@code OFFSET_UNKNOWN} if not known.
-     */
-    long getDataOffset();
+	/**
+	 * Gets the offset of data stream within the archive file,
+	 *
+	 * @return the offset of entry data stream, {@code OFFSET_UNKNOWN} if not known.
+	 */
+	long getDataOffset();
 
-    /**
-     * Tests whether the stream is contiguous, that is, not split among several archive parts, interspersed with control blocks, and so on.
-     *
-     * @return true if stream is contiguous, false otherwise.
-     */
-    boolean isStreamContiguous();
+	/**
+	 * Tests whether the stream is contiguous, that is, not split among several archive parts, interspersed with control blocks, and so on.
+	 *
+	 * @return true if stream is contiguous, false otherwise.
+	 */
+	boolean isStreamContiguous();
 }

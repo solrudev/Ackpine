@@ -30,71 +30,71 @@ import java.nio.ByteBuffer;
  */
 public abstract class BoundedArchiveInputStream extends InputStream {
 
-    private final long end;
-    private ByteBuffer singleByteBuffer;
-    private long loc;
+	private final long end;
+	private ByteBuffer singleByteBuffer;
+	private long loc;
 
-    /**
-     * Constructs a new bounded input stream.
-     *
-     * @param start     position in the stream from where the reading of this bounded stream starts.
-     * @param remaining amount of bytes which are allowed to read from the bounded stream.
-     */
-    public BoundedArchiveInputStream(final long start, final long remaining) {
-        this.end = start + remaining;
-        if (this.end < start) {
-            // check for potential vulnerability due to overflow
-            throw new IllegalArgumentException("Invalid length of stream at offset=" + start + ", length=" + remaining);
-        }
-        loc = start;
-    }
+	/**
+	 * Constructs a new bounded input stream.
+	 *
+	 * @param start     position in the stream from where the reading of this bounded stream starts.
+	 * @param remaining amount of bytes which are allowed to read from the bounded stream.
+	 */
+	public BoundedArchiveInputStream(final long start, final long remaining) {
+		this.end = start + remaining;
+		if (this.end < start) {
+			// check for potential vulnerability due to overflow
+			throw new IllegalArgumentException("Invalid length of stream at offset=" + start + ", length=" + remaining);
+		}
+		loc = start;
+	}
 
-    @Override
-    public synchronized int read() throws IOException {
-        if (loc >= end) {
-            return -1;
-        }
-        if (singleByteBuffer == null) {
-            singleByteBuffer = ByteBuffer.allocate(1);
-        } else {
-            singleByteBuffer.rewind();
-        }
-        final int read = read(loc, singleByteBuffer);
-        if (read < 1) {
-            return -1;
-        }
-        loc++;
-        return singleByteBuffer.get() & 0xff;
-    }
+	@Override
+	public synchronized int read() throws IOException {
+		if (loc >= end) {
+			return -1;
+		}
+		if (singleByteBuffer == null) {
+			singleByteBuffer = ByteBuffer.allocate(1);
+		} else {
+			singleByteBuffer.rewind();
+		}
+		final int read = read(loc, singleByteBuffer);
+		if (read < 1) {
+			return -1;
+		}
+		loc++;
+		return singleByteBuffer.get() & 0xff;
+	}
 
-    @Override
-    public synchronized int read(final byte[] b, final int off, final int len) throws IOException {
-        if (loc >= end) {
-            return -1;
-        }
-        final long maxLen = Math.min(len, end - loc);
-        if (maxLen <= 0) {
-            return 0;
-        }
-        if (off < 0 || off > b.length || maxLen > b.length - off) {
-            throw new IndexOutOfBoundsException("offset or len are out of bounds");
-        }
+	@Override
+	public synchronized int read(final byte[] b, final int off, final int len) throws IOException {
+		if (loc >= end) {
+			return -1;
+		}
+		final long maxLen = Math.min(len, end - loc);
+		if (maxLen <= 0) {
+			return 0;
+		}
+		if (off < 0 || off > b.length || maxLen > b.length - off) {
+			throw new IndexOutOfBoundsException("offset or len are out of bounds");
+		}
 
-        final ByteBuffer buf = ByteBuffer.wrap(b, off, (int) maxLen);
-        final int ret = read(loc, buf);
-        if (ret > 0) {
-            loc += ret;
-        }
-        return ret;
-    }
+		final ByteBuffer buf = ByteBuffer.wrap(b, off, (int) maxLen);
+		final int ret = read(loc, buf);
+		if (ret > 0) {
+			loc += ret;
+		}
+		return ret;
+	}
 
-    /**
-     * Reads content of the stream into a {@link ByteBuffer}.
-     *
-     * @param pos position to start the read.
-     * @param buf buffer to add the read content.
-     * @return number of read bytes.
-     * @throws IOException if I/O fails.
-     */
-    protected abstract int read(long pos, ByteBuffer buf) throws IOException;
+	/**
+	 * Reads content of the stream into a {@link ByteBuffer}.
+	 *
+	 * @param pos position to start the read.
+	 * @param buf buffer to add the read content.
+	 * @return number of read bytes.
+	 * @throws IOException if I/O fails.
+	 */
+	protected abstract int read(long pos, ByteBuffer buf) throws IOException;
 }

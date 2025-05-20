@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.12.1 (2025-05-20)
+---------------------------
+
+### Dependencies
+
+- Updated Kotlin to 2.1.21.
+
+### Bug fixes and improvements
+
+- Prevent confirmation notifications from automatic grouping to avoid user clicking on the group, leaving sessions in hanging state.
+
 Version 0.12.1 (2025-05-16)
 ---------------------------
 

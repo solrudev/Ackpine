@@ -24,84 +24,84 @@ import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
 
 public abstract class CompressorInputStream extends InputStream {
 
-    private long bytesRead;
+	private long bytesRead;
 
-    /**
-     * Constructs a new instance.
-     */
-    public CompressorInputStream() {
-        // empty
-    }
+	/**
+	 * Constructs a new instance.
+	 */
+	public CompressorInputStream() {
+		// empty
+	}
 
-    /**
-     * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
-     *
-     * @param read the number of bytes read
-     *
-     * @since 1.1
-     */
-    protected void count(final int read) {
-        count((long) read);
-    }
+	/**
+	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
+	 *
+	 * @param read the number of bytes read
+	 *
+	 * @since 1.1
+	 */
+	protected void count(final int read) {
+		count((long) read);
+	}
 
-    /**
-     * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
-     *
-     * @param read the number of bytes read
-     */
-    protected void count(final long read) {
-        if (read != -1) {
-            bytesRead += read;
-        }
-    }
+	/**
+	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
+	 *
+	 * @param read the number of bytes read
+	 */
+	protected void count(final long read) {
+		if (read != -1) {
+			bytesRead += read;
+		}
+	}
 
-    /**
-     * Gets the current number of bytes read from this stream.
-     *
-     * @return the number of read bytes
-     *
-     * @since 1.1
-     */
-    public long getBytesRead() {
-        return bytesRead;
-    }
+	/**
+	 * Gets the current number of bytes read from this stream.
+	 *
+	 * @return the number of read bytes
+	 *
+	 * @since 1.1
+	 */
+	public long getBytesRead() {
+		return bytesRead;
+	}
 
-    /**
-     * Gets the current number of bytes read from this stream.
-     *
-     * @return the number of read bytes
-     * @deprecated this method may yield wrong results for large archives, use #getBytesRead instead
-     */
-    @Deprecated
-    public int getCount() {
-        return (int) bytesRead;
-    }
+	/**
+	 * Gets the current number of bytes read from this stream.
+	 *
+	 * @return the number of read bytes
+	 * @deprecated this method may yield wrong results for large archives, use #getBytesRead instead
+	 */
+	@Deprecated
+	public int getCount() {
+		return (int) bytesRead;
+	}
 
-    /**
-     * Gets the amount of raw or compressed bytes read by the stream.
-     *
-     * <p>
-     * This implementation invokes {@link #getBytesRead}.
-     * </p>
-     *
-     * <p>
-     * Provides half of {@link InputStreamStatistics} without forcing subclasses to implement the other half.
-     * </p>
-     *
-     * @return the amount of decompressed bytes returned by the stream
-     * @since 1.17
-     */
-    public long getUncompressedCount() {
-        return getBytesRead();
-    }
+	/**
+	 * Gets the amount of raw or compressed bytes read by the stream.
+	 *
+	 * <p>
+	 * This implementation invokes {@link #getBytesRead}.
+	 * </p>
+	 *
+	 * <p>
+	 * Provides half of {@link InputStreamStatistics} without forcing subclasses to implement the other half.
+	 * </p>
+	 *
+	 * @return the amount of decompressed bytes returned by the stream
+	 * @since 1.17
+	 */
+	public long getUncompressedCount() {
+		return getBytesRead();
+	}
 
-    /**
-     * Decrements the counter of already read bytes.
-     *
-     * @param pushedBack the number of bytes pushed back.
-     * @since 1.7
-     */
-    protected void pushedBackBytes(final long pushedBack) {
-        bytesRead -= pushedBack;
-    }
+	/**
+	 * Decrements the counter of already read bytes.
+	 *
+	 * @param pushedBack the number of bytes pushed back.
+	 * @since 1.7
+	 */
+	protected void pushedBackBytes(final long pushedBack) {
+		bytesRead -= pushedBack;
+	}
 }

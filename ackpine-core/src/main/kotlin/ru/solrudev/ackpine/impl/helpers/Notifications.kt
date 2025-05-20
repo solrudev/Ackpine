@@ -35,6 +35,8 @@ import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 
+private const val ACKPINE_NOTIFICATIONS_GROUP_KEY = "ru.solrudev.ackpine.ACKPINE_NOTIFICATIONS_GROUP"
+
 @JvmSynthetic
 @JvmField
 internal val CANCEL_CURRENT_FLAGS = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -108,6 +110,8 @@ private fun Context.showNotification(
 			setStyle(NotificationCompat.BigTextStyle().bigText(contentText))
 		}
 		setContentIntent(intent)
+		setGroup(ACKPINE_NOTIFICATIONS_GROUP_KEY)
+		setGroupSummary(false)
 		priority = NotificationCompat.PRIORITY_MAX
 		setDefaults(NotificationCompat.DEFAULT_ALL)
 		setSmallIcon(notificationData.icon.drawableId())

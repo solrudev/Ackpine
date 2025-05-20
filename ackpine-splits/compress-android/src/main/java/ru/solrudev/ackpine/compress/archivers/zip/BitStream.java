@@ -32,35 +32,35 @@ import ru.solrudev.ackpine.compress.utils.BitInputStream;
  */
 final class BitStream extends BitInputStream {
 
-    BitStream(final InputStream in) {
-        super(in, ByteOrder.LITTLE_ENDIAN);
-    }
+	BitStream(final InputStream in) {
+		super(in, ByteOrder.LITTLE_ENDIAN);
+	}
 
-    /**
-     * Returns the next bit.
-     *
-     * @return The next bit (0 or 1) or -1 if the end of the stream has been reached
-     * @throws IOException on error.
-     */
-    int nextBit() throws IOException {
-        return (int) readBits(1);
-    }
+	/**
+	 * Returns the next bit.
+	 *
+	 * @return The next bit (0 or 1) or -1 if the end of the stream has been reached
+	 * @throws IOException on error.
+	 */
+	int nextBit() throws IOException {
+		return (int) readBits(1);
+	}
 
-    /**
-     * Returns the integer value formed by the n next bits (up to 8 bits).
-     *
-     * @param n the number of bits read (up to 8)
-     * @return The value formed by the n bits, or -1 if the end of the stream has been reached
-     * @throws IOException on error.
-     */
-    long nextBits(final int n) throws IOException {
-        if (n < 0 || n > 8) {
-            throw new IOException("Trying to read " + n + " bits, at most 8 are allowed");
-        }
-        return readBits(n);
-    }
+	/**
+	 * Returns the integer value formed by the n next bits (up to 8 bits).
+	 *
+	 * @param n the number of bits read (up to 8)
+	 * @return The value formed by the n bits, or -1 if the end of the stream has been reached
+	 * @throws IOException on error.
+	 */
+	long nextBits(final int n) throws IOException {
+		if (n < 0 || n > 8) {
+			throw new IOException("Trying to read " + n + " bits, at most 8 are allowed");
+		}
+		return readBits(n);
+	}
 
-    int nextByte() throws IOException {
-        return (int) readBits(8);
-    }
+	int nextByte() throws IOException {
+		return (int) readBits(8);
+	}
 }

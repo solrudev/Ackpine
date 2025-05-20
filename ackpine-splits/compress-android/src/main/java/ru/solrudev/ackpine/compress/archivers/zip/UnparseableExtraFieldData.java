@@ -32,86 +32,86 @@ import java.util.Arrays;
  * @NotThreadSafe
  */
 public final class UnparseableExtraFieldData implements ZipExtraField {
-    private static final ZipShort HEADER_ID = new ZipShort(0xACC1);
+	private static final ZipShort HEADER_ID = new ZipShort(0xACC1);
 
-    private byte[] localFileData;
-    private byte[] centralDirectoryData;
+	private byte[] localFileData;
+	private byte[] centralDirectoryData;
 
-    /**
-     * The actual data to put into central directory.
-     *
-     * @return The CentralDirectoryData value
-     */
-    @Override
-    public byte[] getCentralDirectoryData() {
-        return centralDirectoryData == null ? getLocalFileDataData() : ZipUtil.copy(centralDirectoryData);
-    }
+	/**
+	 * The actual data to put into central directory.
+	 *
+	 * @return The CentralDirectoryData value
+	 */
+	@Override
+	public byte[] getCentralDirectoryData() {
+		return centralDirectoryData == null ? getLocalFileDataData() : ZipUtil.copy(centralDirectoryData);
+	}
 
-    /**
-     * Length of the complete extra field in the central directory.
-     *
-     * @return The CentralDirectoryLength value
-     */
-    @Override
-    public ZipShort getCentralDirectoryLength() {
-        return centralDirectoryData == null ? getLocalFileDataLength() : new ZipShort(centralDirectoryData.length);
-    }
+	/**
+	 * Length of the complete extra field in the central directory.
+	 *
+	 * @return The CentralDirectoryLength value
+	 */
+	@Override
+	public ZipShort getCentralDirectoryLength() {
+		return centralDirectoryData == null ? getLocalFileDataLength() : new ZipShort(centralDirectoryData.length);
+	}
 
-    /**
-     * The Header-ID.
-     *
-     * @return a completely arbitrary value that should be ignored.
-     */
-    @Override
-    public ZipShort getHeaderId() {
-        return HEADER_ID;
-    }
+	/**
+	 * The Header-ID.
+	 *
+	 * @return a completely arbitrary value that should be ignored.
+	 */
+	@Override
+	public ZipShort getHeaderId() {
+		return HEADER_ID;
+	}
 
-    /**
-     * The actual data to put into local file data.
-     *
-     * @return The LocalFileDataData value
-     */
-    @Override
-    public byte[] getLocalFileDataData() {
-        return ZipUtil.copy(localFileData);
-    }
+	/**
+	 * The actual data to put into local file data.
+	 *
+	 * @return The LocalFileDataData value
+	 */
+	@Override
+	public byte[] getLocalFileDataData() {
+		return ZipUtil.copy(localFileData);
+	}
 
-    /**
-     * Length of the complete extra field in the local file data.
-     *
-     * @return The LocalFileDataLength value
-     */
-    @Override
-    public ZipShort getLocalFileDataLength() {
-        return new ZipShort(localFileData == null ? 0 : localFileData.length);
-    }
+	/**
+	 * Length of the complete extra field in the local file data.
+	 *
+	 * @return The LocalFileDataLength value
+	 */
+	@Override
+	public ZipShort getLocalFileDataLength() {
+		return new ZipShort(localFileData == null ? 0 : localFileData.length);
+	}
 
-    /**
-     * Populate data from this array as if it was in central directory data.
-     *
-     * @param buffer the buffer to read data from
-     * @param offset offset into buffer to read data
-     * @param length the length of data
-     */
-    @Override
-    public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) {
-        centralDirectoryData = Arrays.copyOfRange(buffer, offset, offset + length);
-        if (localFileData == null) {
-            parseFromLocalFileData(buffer, offset, length);
-        }
-    }
+	/**
+	 * Populate data from this array as if it was in central directory data.
+	 *
+	 * @param buffer the buffer to read data from
+	 * @param offset offset into buffer to read data
+	 * @param length the length of data
+	 */
+	@Override
+	public void parseFromCentralDirectoryData(final byte[] buffer, final int offset, final int length) {
+		centralDirectoryData = Arrays.copyOfRange(buffer, offset, offset + length);
+		if (localFileData == null) {
+			parseFromLocalFileData(buffer, offset, length);
+		}
+	}
 
-    /**
-     * Populate data from this array as if it was in local file data.
-     *
-     * @param buffer the buffer to read data from
-     * @param offset offset into buffer to read data
-     * @param length the length of data
-     */
-    @Override
-    public void parseFromLocalFileData(final byte[] buffer, final int offset, final int length) {
-        localFileData = Arrays.copyOfRange(buffer, offset, offset + length);
-    }
+	/**
+	 * Populate data from this array as if it was in local file data.
+	 *
+	 * @param buffer the buffer to read data from
+	 * @param offset offset into buffer to read data
+	 * @param length the length of data
+	 */
+	@Override
+	public void parseFromLocalFileData(final byte[] buffer, final int offset, final int length) {
+		localFileData = Arrays.copyOfRange(buffer, offset, offset + length);
+	}
 
 }
