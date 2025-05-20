@@ -19,6 +19,7 @@ description = "Sample application in Kotlin showcasing Ackpine usage and leverag
 plugins {
 	id("ru.solrudev.ackpine.sample.kotlin")
 	id("ru.solrudev.ackpine.app-release")
+	id("kotlin-parcelize")
 }
 
 dependencies {

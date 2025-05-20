@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-@file:Suppress("ConstPropertyName", "Unused")
-
 package ru.solrudev.ackpine.sample.install
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import ru.solrudev.ackpine.resources.ResolvableString
-import java.io.Serializable
 import java.util.UUID
 
+@Parcelize
 data class SessionData(
 	val id: UUID,
 	val name: String,
 	val error: ResolvableString = ResolvableString.empty(),
 	val isCancellable: Boolean = true
-) : Serializable {
-	private companion object {
-		private const val serialVersionUID: Long = 8755976983702116478L
-	}
-}
+) : Parcelable
