@@ -18,6 +18,9 @@ theme:
     - content.code.copy
     - content.tabs.link
     - navigation.footer
+    - navigation.tabs
+    - navigation.tracking
+    - navigation.top
   icon:
     repo: fontawesome/brands/github
   font:
@@ -64,6 +67,7 @@ markdown_extensions:
       permalink: true
 
 plugins:
+  - meta
   - search
   - minify:
       minify_html: true
