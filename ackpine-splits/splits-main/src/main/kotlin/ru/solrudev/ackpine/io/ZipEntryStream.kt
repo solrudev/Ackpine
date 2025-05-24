@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
 import java.io.File
 import java.io.FileInputStream
+import java.io.FilterInputStream
 import java.io.InputStream
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
@@ -34,16 +35,7 @@ internal class ZipEntryStream private constructor(
 	private val inputStream: InputStream,
 	val size: Long,
 	private vararg var resources: AutoCloseable
-) : InputStream() {
-
-	override fun read(): Int = inputStream.read()
-	override fun available(): Int = inputStream.available()
-	override fun markSupported(): Boolean = inputStream.markSupported()
-	override fun mark(readlimit: Int) = inputStream.mark(readlimit)
-	override fun read(b: ByteArray?): Int = inputStream.read(b)
-	override fun read(b: ByteArray?, off: Int, len: Int): Int = inputStream.read(b, off, len)
-	override fun reset() = inputStream.reset()
-	override fun skip(n: Long): Long = inputStream.skip(n)
+) : FilterInputStream(inputStream) {
 
 	override fun close() {
 		try {
