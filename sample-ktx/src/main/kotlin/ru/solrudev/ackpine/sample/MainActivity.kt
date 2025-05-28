@@ -43,6 +43,9 @@ class MainActivity : AppCompatActivity(R.layout.nav_host) {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		enableEdgeToEdge()
 		super.onCreate(savedInstanceState)
+		if (intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY != 0) {
+			intent.data = null
+		}
 		setContentView(binding.root)
 		applyInsets()
 		val navController = navController
