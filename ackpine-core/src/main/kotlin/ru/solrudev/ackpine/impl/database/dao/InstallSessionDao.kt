@@ -27,6 +27,7 @@ import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
+import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallerType
@@ -56,6 +57,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 		insertUris(session.uris.map { uri ->
 			InstallUriEntity(sessionId = session.session.id, uri = uri)
 		})
+		insertPlugins(session.plugins)
 		database.sessionProgressDao().initProgress(session.session.id)
 		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)
 		if (!session.name.isNullOrEmpty()) {
@@ -119,4 +121,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)
+
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
+	protected abstract fun insertPlugins(uris: List<PluginEntity>)
 }

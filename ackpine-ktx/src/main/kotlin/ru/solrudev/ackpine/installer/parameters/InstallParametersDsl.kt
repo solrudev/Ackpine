@@ -22,6 +22,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -126,6 +127,8 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Default value is [PackageSource.Unspecified].
 	 */
 	public var packageSource: PackageSource
+
+	public fun usePlugin(plugin: Class<out AckpinePlugin>)
 }
 
 @PublishedApi
@@ -205,6 +208,10 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 		set(value) {
 			builder.setPackageSource(value)
 		}
+
+	override fun usePlugin(plugin: Class<out AckpinePlugin>) {
+		builder.usePlugin(plugin)
+	}
 
 	fun build() = builder.build()
 }
@@ -316,3 +323,5 @@ public fun InstallParametersDsl.preapproval(
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
 }
+
+public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin() = usePlugin(T::class.java)
