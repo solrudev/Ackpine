@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "3da0de55d0c8d293af96430c8f1f2b17",
+    "identityHash": "664cd7bf4025110997d1fa8bbc483389",
     "entities": [
       {
         "tableName": "sessions",
@@ -841,7 +841,7 @@
       },
       {
         "tableName": "sessions_plugins",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `session_id` TEXT NOT NULL, `plugin_class_name` TEXT NOT NULL, FOREIGN KEY(`session_id`) REFERENCES `sessions`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `session_id` TEXT NOT NULL, `plugin_class_name` TEXT NOT NULL, `plugin_parameters` BLOB NOT NULL, FOREIGN KEY(`session_id`) REFERENCES `sessions`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -859,6 +859,12 @@
             "fieldPath": "pluginClassName",
             "columnName": "plugin_class_name",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "pluginParameters",
+            "columnName": "plugin_parameters",
+            "affinity": "BLOB",
             "notNull": true
           }
         ],
@@ -897,7 +903,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3da0de55d0c8d293af96430c8f1f2b17')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '664cd7bf4025110997d1fa8bbc483389')"
     ]
   }
 }

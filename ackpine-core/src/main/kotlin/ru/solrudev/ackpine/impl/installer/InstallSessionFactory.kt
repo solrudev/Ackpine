@@ -46,7 +46,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
-import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -113,7 +113,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 		)
 
 		InstallerType.SESSION_BASED -> withAndroidPackageInstaller(
-			parameters.plugins.toPluginsSet()
+			id,
+			runCatching { parameters.plugins.getPlugins() }
 		) { androidPackageInstaller ->
 			SessionBasedInstallSession(
 				applicationContext,
@@ -167,22 +168,30 @@ internal class InstallSessionFactoryImpl internal constructor(
 	}
 
 	private inline fun <R : CompletableProgressSession<InstallFailure>> withAndroidPackageInstaller(
-		plugins: Set<AckpinePlugin>,
+		sessionId: UUID,
+		pluginsSet: Result<Set<AckpinePluginContainer.Entry>>,
 		sessionFactory: (AndroidPackageInstaller) -> R
 	): R {
-		val androidPackageInstaller = runCatching {
+		val androidPackageInstaller = pluginsSet.mapCatching { plugins ->
+			val pluginIds = plugins.map { entry -> entry.plugin.id }
 			ackpineServiceProviders
 				.value
-				.filter { provider ->
-					provider.plugin.id in plugins.map { plugin -> plugin.id }
-				}
+				.filter { provider -> provider.pluginId in pluginIds }
 				.firstNotNullOfOrNull { provider -> provider.get<AndroidPackageInstaller>(applicationContext) }
+				?.also { service ->
+					for (entry in plugins) {
+						service.applyParameters(sessionId, entry.parameters)
+					}
+				}
 		}
 		val session = sessionFactory(
 			androidPackageInstaller.getOrNull() ?: defaultAndroidPackageInstaller.value
 		)
 		androidPackageInstaller.onFailure { throwable ->
-			session.completeExceptionally(throwable as Exception)
+			when (throwable) {
+				is Error -> throw throwable
+				is Exception -> session.completeExceptionally(throwable)
+			}
 		}
 		return session
 	}
@@ -230,15 +239,16 @@ internal class InstallSessionFactoryImpl internal constructor(
 		installSession: SessionEntity.InstallSession,
 		completeIfSucceeded: Boolean
 	): SessionBasedInstallSession {
+		val sessionId = UUID.fromString(installSession.session.id)
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
-		val session = withAndroidPackageInstaller(installSession.getPlugins()) { androidPackageInstaller ->
+		val session = withAndroidPackageInstaller(sessionId, installSession.getPlugins()) { androidPackageInstaller ->
 			SessionBasedInstallSession(
 				applicationContext,
 				androidPackageInstaller,
 				apks = installSession.uris.map(String::toUri),
-				id = UUID.fromString(installSession.session.id),
+				sessionId,
 				initialState, initialProgress,
 				installSession.session.confirmation, installSession.getNotificationData(),
 				installSession.session.requireUserAction, installSession.getInstallMode(),

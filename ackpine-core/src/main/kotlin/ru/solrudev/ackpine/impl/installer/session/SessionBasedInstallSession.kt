@@ -331,7 +331,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun createSession(): Int {
-		val sessionId = packageInstaller.createSession(createSessionParams())
+		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)

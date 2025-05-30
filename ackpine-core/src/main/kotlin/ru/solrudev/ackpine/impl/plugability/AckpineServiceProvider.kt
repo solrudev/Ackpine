@@ -19,14 +19,13 @@ package ru.solrudev.ackpine.impl.plugability
 import android.content.Context
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface AckpineServiceProvider {
-	public val plugin: AckpinePlugin
-	public fun <T : Any> get(serviceClass: KClass<T>, context: Context): T?
+	public val pluginId: String
+	public fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T?
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
@@ -35,10 +34,10 @@ public abstract class AbstractAckpineServiceProvider(
 ) : AckpineServiceProvider {
 
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }
-	private val services = ConcurrentHashMap<KClass<*>, Any>()
+	private val services = ConcurrentHashMap<KClass<out AckpineService>, AckpineService>()
 
 	@Suppress("UNCHECKED_CAST")
-	override fun <T : Any> get(serviceClass: KClass<T>, context: Context): T? {
+	override fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T? {
 		if (serviceClass !in factories.keys) {
 			return null
 		}
@@ -48,11 +47,13 @@ public abstract class AbstractAckpineServiceProvider(
 	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-	public class ServiceFactory<T : Any>(
+	public class ServiceFactory<T : AckpineService>(
 		public val serviceClass: KClass<T>,
 		public val serviceFactory: (Context) -> T
 	)
 }
 
 @JvmSynthetic
-internal inline fun <reified T : Any> AckpineServiceProvider.get(context: Context): T? = get(T::class, context)
+internal inline fun <reified T : AckpineService> AckpineServiceProvider.get(context: Context): T? {
+	return get(T::class, context)
+}

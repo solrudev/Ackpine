@@ -14,9 +14,12 @@
  * limitations under the License.
  */
 
+@file:Suppress("Unused", "RedundantVisibilityModifier")
+
 package ru.solrudev.ackpine.plugability
 
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import java.io.Serializable
 
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
@@ -32,4 +35,18 @@ public interface AckpinePlugin {
 	 * Applies some settings to install parameters to accommodate the plugin's functionality.
 	 */
 	public fun apply(builder: InstallParameters.Builder)
+
+	public interface Parameters<out T : AckpinePlugin> : Serializable {
+
+		public data object None : Parameters<AckpinePlugin> {
+			private const val serialVersionUID = -8443803615690115391L
+			private fun readResolve(): Any = None
+		}
+
+		private companion object {
+
+			@JvmField
+			public val NONE: Parameters<AckpinePlugin> = None
+		}
+	}
 }

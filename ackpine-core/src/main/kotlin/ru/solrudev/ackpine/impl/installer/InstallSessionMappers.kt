@@ -30,7 +30,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginsSet
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -98,18 +98,17 @@ internal fun SessionEntity.InstallSession.getConstraints(): InstallConstraints {
 }
 
 @JvmSynthetic
-internal fun SessionEntity.InstallSession.getPlugins(): Set<AckpinePlugin> {
-	val set = mutableSetOf<AckpinePlugin>()
-	plugins.mapNotNullTo(set) { plugin ->
-		runCatching {
-			Class
-				.forName(plugin.pluginClassName)
-				.getDeclaredConstructor()
-				.apply { isAccessible = true }
-				.newInstance() as AckpinePlugin
-		}.getOrNull()
+internal fun SessionEntity.InstallSession.getPlugins(): Result<Set<AckpinePluginContainer.Entry>> = runCatching {
+	val set = mutableSetOf<AckpinePluginContainer.Entry>()
+	plugins.mapTo(set) { pluginEntity ->
+		val plugin = Class
+			.forName(pluginEntity.pluginClassName)
+			.getDeclaredConstructor()
+			.apply { isAccessible = true }
+			.newInstance() as AckpinePlugin
+		val params = pluginEntity.pluginParameters
+		AckpinePluginContainer.Entry(plugin, params)
 	}
-	return set
 }
 
 @JvmSynthetic
@@ -129,9 +128,13 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 	}
 }
 
-internal fun AckpinePluginsSet.toEntityList(sessionId: String): List<PluginEntity> {
-	return toPluginClassesSet().map { pluginClass ->
-		PluginEntity(sessionId = sessionId, pluginClassName = pluginClass.name)
+internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
+	return getPluginClasses().map { (pluginClass, params) ->
+		PluginEntity(
+			sessionId = sessionId,
+			pluginClassName = pluginClass.name,
+			pluginParameters = params
+		)
 	}
 }
 

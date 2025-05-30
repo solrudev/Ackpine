@@ -11,3 +11,5 @@
 # Plugins
 -keep interface ru.solrudev.ackpine.plugability.AckpinePlugin { *; }
 -keep class * implements ru.solrudev.ackpine.plugability.AckpinePlugin { *; }
+-keep interface ru.solrudev.ackpine.plugability.AckpinePlugin$Parameters { *; }
+-keep class * implements ru.solrudev.ackpine.plugability.AckpinePlugin$Parameters { *; }

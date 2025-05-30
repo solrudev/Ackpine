@@ -22,15 +22,17 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller.Session
+import ru.solrudev.ackpine.impl.plugability.AckpineService
 import java.io.Closeable
 import java.io.OutputStream
+import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-public interface AndroidPackageInstaller {
+public interface AndroidPackageInstaller : AckpineService {
 
 	public val uid: Int
-	public fun createSession(params: PackageInstaller.SessionParams): Int
+	public fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int
 	public fun openSession(sessionId: Int): Session
 	public fun getSessionInfo(sessionId: Int): PackageInstaller.SessionInfo?
 
@@ -65,7 +67,10 @@ internal class PackageInstallerWrapper(
 	private val packageInstaller: PackageInstaller,
 	override val uid: Int
 ) : AndroidPackageInstaller {
-	override fun createSession(params: PackageInstaller.SessionParams) = packageInstaller.createSession(params)
+
+	override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID) =
+		packageInstaller.createSession(params)
+
 	override fun openSession(sessionId: Int) = PackageInstallerSessionWrapper(packageInstaller.openSession(sessionId))
 	override fun getSessionInfo(sessionId: Int) = packageInstaller.getSessionInfo(sessionId)
 

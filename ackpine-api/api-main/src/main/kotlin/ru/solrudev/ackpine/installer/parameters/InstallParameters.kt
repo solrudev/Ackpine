@@ -24,7 +24,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginsSet
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -131,7 +131,7 @@ public class InstallParameters private constructor(
 	 */
 	public val packageSource: PackageSource,
 
-	public val plugins: AckpinePluginsSet
+	public val plugins: AckpinePluginContainer
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -202,7 +202,7 @@ public class InstallParameters private constructor(
 		}
 
 		private val _apks: MutableApkList
-		private val plugins = mutableSetOf<Class<out AckpinePlugin>>()
+		private val plugins = mutableMapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>>()
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.
@@ -418,21 +418,23 @@ public class InstallParameters private constructor(
 			this.packageSource = packageSource
 		}
 
-		public fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
-			plugins += plugin
+		@Suppress("UNCHECKED_CAST")
+		@JvmOverloads
+		public fun <T : AckpinePlugin> usePlugin(
+			plugin: Class<T>,
+			parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>
+		): Builder = apply {
+			plugins.put(plugin, parameters)
 		}
-
-		@JvmSynthetic
-		public inline fun <reified T : AckpinePlugin> usePlugin(): Builder = usePlugin(T::class.java)
 
 		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			val pluginsSet = AckpinePluginsSet.from(plugins)
-			for (plugin in pluginsSet.toPluginsSet()) {
-				plugin.apply(this)
+			val pluginContainer = AckpinePluginContainer.from(plugins)
+			for (entry in pluginContainer.getPlugins()) {
+				entry.plugin.apply(this)
 			}
 			return InstallParameters(
 				ReadOnlyApkList(apks),
@@ -446,7 +448,7 @@ public class InstallParameters private constructor(
 				constraints,
 				requestUpdateOwnership,
 				packageSource,
-				pluginsSet
+				pluginContainer
 			)
 		}
 

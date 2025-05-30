@@ -128,7 +128,12 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 */
 	public var packageSource: PackageSource
 
-	public fun usePlugin(plugin: Class<out AckpinePlugin>)
+	public fun <T : AckpinePlugin> usePlugin(plugin: Class<T>)
+
+	public fun <T : AckpinePlugin> usePlugin(
+		plugin: Class<T>,
+		parameters: AckpinePlugin.Parameters<T>
+	)
 }
 
 @PublishedApi
@@ -209,8 +214,15 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun usePlugin(plugin: Class<out AckpinePlugin>) {
+	override fun <T : AckpinePlugin> usePlugin(plugin: Class<T>) {
 		builder.usePlugin(plugin)
+	}
+
+	override fun <T : AckpinePlugin> usePlugin(
+		plugin: Class<T>,
+		parameters: AckpinePlugin.Parameters<T>
+	) {
+		builder.usePlugin(plugin, parameters)
 	}
 
 	fun build() = builder.build()
@@ -324,4 +336,7 @@ public fun InstallParametersDsl.preapproval(
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
 }
 
-public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin() = usePlugin(T::class.java)
+@Suppress("UNCHECKED_CAST")
+public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin(
+	parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>
+) = usePlugin(T::class.java, parameters)

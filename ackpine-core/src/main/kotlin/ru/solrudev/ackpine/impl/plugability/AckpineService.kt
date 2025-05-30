@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.session.parameters
+package ru.solrudev.ackpine.impl.plugability
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.plugability.AckpinePlugin
+import java.util.UUID
 
-/**
- * DSL marker for Ackpine session parameters.
- */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-@DslMarker
-public annotation class SessionParametersDsl
+public interface AckpineService {
+	public fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters<*>) {
+		// no-op by default
+	}
+}
