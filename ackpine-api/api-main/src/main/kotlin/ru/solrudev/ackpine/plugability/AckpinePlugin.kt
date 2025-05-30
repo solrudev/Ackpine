@@ -36,8 +36,14 @@ public interface AckpinePlugin {
 	 */
 	public fun apply(builder: InstallParameters.Builder)
 
+	/**
+	 * A set of parameters for [AckpinePlugin].
+	 */
 	public interface Parameters<out T : AckpinePlugin> : Serializable {
 
+		/**
+		 * Empty [AckpinePlugin] parameters for plugins without configuration or if default configuration is used.
+		 */
 		public data object None : Parameters<AckpinePlugin> {
 			private const val serialVersionUID = -8443803615690115391L
 			private fun readResolve(): Any = None
@@ -45,6 +51,9 @@ public interface AckpinePlugin {
 
 		private companion object {
 
+			/**
+			 * Empty [AckpinePlugin] parameters for plugins without configuration or if default configuration is used.
+			 */
 			@JvmField
 			public val NONE: Parameters<AckpinePlugin> = None
 		}

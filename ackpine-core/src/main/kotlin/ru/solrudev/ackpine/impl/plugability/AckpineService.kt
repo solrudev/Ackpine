@@ -20,8 +20,15 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 
+/**
+ * A service provided by an [AckpinePlugin] via [AckpineServiceProvider].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public interface AckpineService {
+
+	/**
+	 * Applies [parameters] of an [AckpinePlugin] to a session with ID equal to [sessionId].
+	 */
 	public fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters<*>) {
 		// no-op by default
 	}

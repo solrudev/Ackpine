@@ -27,15 +27,37 @@ import java.io.Closeable
 import java.io.OutputStream
 import java.util.UUID
 
+/**
+ * Provides functionality of Android's [PackageInstaller].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 public interface AndroidPackageInstaller : AckpineService {
 
+	/**
+	 * UID of the process owning underlying package installer service.
+	 */
 	public val uid: Int
+
+	/**
+	 * @param ackpineSessionId ID of the Ackpine install session.
+	 * @see PackageInstaller.createSession
+	 */
 	public fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int
+
+	/**
+	 * @see PackageInstaller.openSession
+	 */
 	public fun openSession(sessionId: Int): Session
+
+	/**
+	 * @see PackageInstaller.getSessionInfo
+	 */
 	public fun getSessionInfo(sessionId: Int): PackageInstaller.SessionInfo?
 
+	/**
+	 * @see PackageInstaller.commitSessionAfterInstallConstraintsAreMet
+	 */
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	public fun commitSessionAfterInstallConstraintsAreMet(
 		sessionId: Int,
@@ -44,21 +66,77 @@ public interface AndroidPackageInstaller : AckpineService {
 		timeoutMillis: Long
 	)
 
+	/**
+	 * @see PackageInstaller.registerSessionCallback
+	 */
 	public fun registerSessionCallback(callback: PackageInstaller.SessionCallback)
+
+	/**
+	 * @see PackageInstaller.unregisterSessionCallback
+	 */
 	public fun unregisterSessionCallback(callback: PackageInstaller.SessionCallback)
+
+	/**
+	 * @see PackageInstaller.abandonSession
+	 */
 	public fun abandonSession(sessionId: Int)
 
+	/**
+	 * A facade for [PackageInstaller.Session].
+	 */
 	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 	public interface Session : Closeable {
+
+		/**
+		 * @see PackageInstaller.Session.openWrite
+		 */
 		public fun openWrite(name: String, offsetBytes: Long, lengthBytes: Long): OutputStream
+
+		/**
+		 * @see PackageInstaller.Session.fsync
+		 */
 		public fun fsync(out: OutputStream)
+
+		/**
+		 * @see PackageInstaller.Session.setStagingProgress
+		 */
 		public fun setStagingProgress(progress: Float)
+
+		/**
+		 * @see PackageInstaller.Session.commit
+		 */
 		public fun commit(statusReceiver: IntentSender)
 
+		/**
+		 * @see PackageInstaller.Session.requestUserPreapproval
+		 */
 		@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 		public fun requestUserPreapproval(details: PackageInstaller.PreapprovalDetails, statusReceiver: IntentSender)
 	}
+}
+
+/**
+ * An [AndroidPackageInstaller.Session] implementation which forwards all calls to the underlying
+ * [PackageInstaller.Session].
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+public class PackageInstallerSessionWrapper(private val session: PackageInstaller.Session) : Session {
+	override fun openWrite(name: String, offsetBytes: Long, lengthBytes: Long): OutputStream =
+		session.openWrite(name, offsetBytes, lengthBytes)
+
+	override fun fsync(out: OutputStream): Unit = session.fsync(out)
+	override fun setStagingProgress(progress: Float): Unit = session.setStagingProgress(progress)
+	override fun commit(statusReceiver: IntentSender): Unit = session.commit(statusReceiver)
+
+	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+	override fun requestUserPreapproval(
+		details: PackageInstaller.PreapprovalDetails,
+		statusReceiver: IntentSender
+	): Unit = session.requestUserPreapproval(details, statusReceiver)
+
+	override fun close(): Unit = session.close()
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -94,23 +172,4 @@ internal class PackageInstallerWrapper(
 		packageInstaller.unregisterSessionCallback(callback)
 
 	override fun abandonSession(sessionId: Int) = packageInstaller.abandonSession(sessionId)
-}
-
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-public class PackageInstallerSessionWrapper(private val session: PackageInstaller.Session) : Session {
-	override fun openWrite(name: String, offsetBytes: Long, lengthBytes: Long): OutputStream =
-		session.openWrite(name, offsetBytes, lengthBytes)
-
-	override fun fsync(out: OutputStream): Unit = session.fsync(out)
-	override fun setStagingProgress(progress: Float): Unit = session.setStagingProgress(progress)
-	override fun commit(statusReceiver: IntentSender): Unit = session.commit(statusReceiver)
-
-	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	override fun requestUserPreapproval(
-		details: PackageInstaller.PreapprovalDetails,
-		statusReceiver: IntentSender
-	): Unit = session.requestUserPreapproval(details, statusReceiver)
-
-	override fun close(): Unit = session.close()
 }

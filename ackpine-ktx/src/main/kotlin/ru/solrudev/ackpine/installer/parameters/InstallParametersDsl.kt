@@ -128,8 +128,17 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 */
 	public var packageSource: PackageSource
 
+	/**
+	 * Applies a [plugin] to the session.
+	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 */
 	public fun <T : AckpinePlugin> usePlugin(plugin: Class<T>)
 
+	/**
+	 * Applies a [plugin] to the session.
+	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 * @param parameters parameters of the applied plugin for the session being configured.
+	 */
 	public fun <T : AckpinePlugin> usePlugin(
 		plugin: Class<T>,
 		parameters: AckpinePlugin.Parameters<T>
@@ -336,6 +345,10 @@ public fun InstallParametersDsl.preapproval(
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
 }
 
+/**
+ * Applies a plugin to the session. [T] is the type of the plugin being applied.
+ * @param parameters parameters of the applied plugin for the session being configured.
+ */
 @Suppress("UNCHECKED_CAST")
 public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin(
 	parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>

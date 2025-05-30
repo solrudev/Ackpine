@@ -131,6 +131,9 @@ public class InstallParameters private constructor(
 	 */
 	public val packageSource: PackageSource,
 
+	/**
+	 * [Plugins][AckpinePlugin] applied to the install session.
+	 */
 	public val plugins: AckpinePluginContainer
 ) : ConfirmationAware {
 
@@ -418,6 +421,11 @@ public class InstallParameters private constructor(
 			this.packageSource = packageSource
 		}
 
+		/**
+		 * Applies a [plugin] to the session.
+		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+		 * @param parameters parameters of the applied plugin for the session being configured.
+		 */
 		@Suppress("UNCHECKED_CAST")
 		@JvmOverloads
 		public fun <T : AckpinePlugin> usePlugin(

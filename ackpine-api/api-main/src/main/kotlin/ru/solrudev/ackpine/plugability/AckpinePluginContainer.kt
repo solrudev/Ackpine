@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine.plugability
 
+/**
+ * A container of [AckpinePlugins][AckpinePlugin].
+ */
 public class AckpinePluginContainer private constructor(
 	private val pluginsMap: Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>>
 ) {
@@ -29,16 +32,27 @@ public class AckpinePluginContainer private constructor(
 		}
 	}
 
+	/**
+	 * Returns a new copy of plugin [entries][Entry] saved inside of this container.
+	 */
 	public fun getPlugins(): Set<Entry> = plugins
 		.map { (plugin, params) ->
 			Entry(plugin, params)
 		}
 		.toSet()
 
+	/**
+	 * Returns a map of plugin classes with their parameters saved inside of this container.
+	 */
 	public fun getPluginClasses(): Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>> {
 		return pluginsMap.toMap()
 	}
 
+	/**
+	 * An [AckpinePluginContainer] entry.
+	 * @property plugin an instance of [AckpinePlugin].
+	 * @property parameters a set of parameters for the [plugin].
+	 */
 	public data class Entry(
 		public val plugin: AckpinePlugin,
 		public val parameters: AckpinePlugin.Parameters<*>
