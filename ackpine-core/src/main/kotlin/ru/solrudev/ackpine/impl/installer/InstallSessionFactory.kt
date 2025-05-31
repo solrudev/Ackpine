@@ -189,7 +189,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		)
 		androidPackageInstaller.onFailure { throwable ->
 			when (throwable) {
-				is Error -> throw throwable
+				is Error -> session.completeExceptionally(RuntimeException(throwable))
 				is Exception -> session.completeExceptionally(throwable)
 			}
 		}
