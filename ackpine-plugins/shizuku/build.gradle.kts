@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,26 @@
  * limitations under the License.
  */
 
-description = "Aggregates and generates API documentation for library projects"
-
-val docsDir = layout.settingsDirectory.dir("docs/api")
+description = "Ackpine plugin providing Shizuku support for installing packages"
 
 plugins {
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
 }
 
-dokka {
-	moduleName = isolated.rootProject.name
-	dokkaPublications.html {
-		outputDirectory = docsDir
+ackpine {
+	id = "shizuku"
+	minSdk = 24
+	artifact {
+		name = "Ackpine Shizuku Plugin"
+		inceptionYear = "2025"
 	}
 }
 
 dependencies {
-	dokka(projects.ackpineApi.apiMain)
-	dokka(projects.ackpineCore)
-	dokka(projects.ackpineKtx)
-	dokka(projects.ackpineSplits.splitsMain)
-	dokka(projects.ackpineSplits.splitsKtx)
-	dokka(projects.ackpineAssets)
-	dokka(projects.ackpineResources)
-	dokka(projects.ackpinePlugins.shizuku)
-	dokka(projects.ackpinePlugins.shizukuKtx)
-}
-
-tasks.clean {
-	delete(docsDir)
+	api(projects.ackpineCore)
+	compileOnly(projects.ackpinePlugins.shizukuStubs)
+	implementation(libs.shizuku.api)
+	implementation(libs.hiddenapibypass)
 }

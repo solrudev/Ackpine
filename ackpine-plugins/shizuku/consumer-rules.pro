@@ -1,0 +1,6 @@
+-dontwarn android.content.pm.IPackageInstaller$Stub
+-dontwarn android.content.pm.IPackageInstaller
+-dontwarn android.content.pm.IPackageInstallerSession$Stub
+-dontwarn android.content.pm.IPackageInstallerSession
+-dontwarn android.content.pm.IPackageManager$Stub
+-dontwarn android.content.pm.IPackageManager
