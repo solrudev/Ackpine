@@ -46,13 +46,21 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     # optional - support for asset files inside of application's package
     ackpine-assets = { module = "ru.solrudev.ackpine:ackpine-assets", version.ref = "ackpine" }
     
+    # optional - plugin enabling installs through Shizuku
+    ackpine-shizuku = { module = "ru.solrudev.ackpine:ackpine-shizuku", version.ref = "ackpine" }
+    
+    # optional - Kotlin extensions for Shizuku plugin
+    ackpine-shizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-shizuku-ktx", version.ref = "ackpine" }
+    
     [bundles]
     ackpine = [
         "ackpine-core",
         "ackpine-ktx",
         "ackpine-splits",
         "ackpine-splits-ktx",
-        "ackpine-assets"
+        "ackpine-assets",
+        "ackpine-shizuku",
+        "ackpine-shizuku-ktx"
     ]
     ```
 
@@ -74,6 +82,12 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     
         // optional - support for asset files inside of application's package
         implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
+    
+        // optional - plugin enabling installs through Shizuku
+        implementation("ru.solrudev.ackpine:ackpine-shizuku:$ackpineVersion")
+    
+        // optional - Kotlin extensions for Shizuku plugin
+        implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
     }
     ```
 
