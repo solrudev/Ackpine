@@ -275,10 +275,14 @@ internal class PackageInstallerImpl internal constructor(
 		}
 
 		private fun ackpineServiceProviders() = lazy {
-			ServiceLoader.load(
-				AckpineServiceProvider::class.java,
-				AckpineServiceProvider::class.java.classLoader
-			).iterator().asSequence().toList()
+			ServiceLoader
+				.load(
+					AckpineServiceProvider::class.java,
+					AckpineServiceProvider::class.java.classLoader
+				)
+				.iterator()
+				.asSequence()
+				.toList()
 		}
 	}
 }
