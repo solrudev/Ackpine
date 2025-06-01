@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 import java.util.Locale
+import kotlin.reflect.KClass
 import kotlin.time.Duration
 
 /**
@@ -130,17 +131,17 @@ public interface InstallParametersDsl : ConfirmationDsl {
 
 	/**
 	 * Applies a [plugin] to the session.
-	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 */
-	public fun <T : AckpinePlugin> usePlugin(plugin: Class<T>)
+	public fun <T : AckpinePlugin> usePlugin(plugin: KClass<T>)
 
 	/**
 	 * Applies a [plugin] to the session.
-	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
 	public fun <T : AckpinePlugin> usePlugin(
-		plugin: Class<T>,
+		plugin: KClass<T>,
 		parameters: AckpinePlugin.Parameters<T>
 	)
 }
@@ -223,15 +224,15 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun <T : AckpinePlugin> usePlugin(plugin: Class<T>) {
-		builder.usePlugin(plugin)
+	override fun <T : AckpinePlugin> usePlugin(plugin: KClass<T>) {
+		builder.usePlugin(plugin.java)
 	}
 
 	override fun <T : AckpinePlugin> usePlugin(
-		plugin: Class<T>,
+		plugin: KClass<T>,
 		parameters: AckpinePlugin.Parameters<T>
 	) {
-		builder.usePlugin(plugin, parameters)
+		builder.usePlugin(plugin.java, parameters)
 	}
 
 	fun build() = builder.build()
@@ -352,4 +353,4 @@ public fun InstallParametersDsl.preapproval(
 @Suppress("UNCHECKED_CAST")
 public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin(
 	parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>
-) = usePlugin(T::class.java, parameters)
+) = usePlugin(T::class, parameters)
