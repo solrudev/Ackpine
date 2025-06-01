@@ -57,6 +57,25 @@ Using the plugin
 
 To apply the plugin to an install session, just add this to your install parameters configuration:
 
+=== "Kotlin"
+
+    ```kotlin
+    val session = packageInstaller.createSession(uri) {
+        // ...some session configuration...
+        useShizuku()
+    
+        // Or, if you want to configure some parameters for the plugin
+        useShizuku {
+            bypassLowTargetSdkBlock = true
+            allowTest = true
+            replaceExisting = true
+            requestDowngrade = true
+            grantAllRequestedPermissions = true
+            allUsers = true
+        }
+    }
+    ```
+
 === "Java"
 
     ```java
@@ -77,25 +96,6 @@ To apply the plugin to an install session, just add this to your install paramet
     var parameters = new InstallParameters.Builder(uri)
             .usePlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
-    ```
-
-=== "Kotlin"
-
-    ```kotlin
-    val session = packageInstaller.createSession(uri) {
-        // ...some session configuration...
-        useShizuku()
-    
-        // Or, if you want to configure some parameters for the plugin
-        useShizuku {
-            bypassLowTargetSdkBlock = true
-            allowTest = true
-            replaceExisting = true
-            requestDowngrade = true
-            grantAllRequestedPermissions = true
-            allUsers = true
-        }
-    }
     ```
 
 !!! Note
