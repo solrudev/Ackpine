@@ -1,6 +1,9 @@
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin {
 	public fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
+	public fun equals (Ljava/lang/Object;)Z
 	public fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
