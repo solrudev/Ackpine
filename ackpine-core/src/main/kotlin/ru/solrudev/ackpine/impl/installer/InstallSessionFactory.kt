@@ -173,6 +173,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 		sessionFactory: (AndroidPackageInstaller) -> R
 	): R {
 		val androidPackageInstaller = pluginsSet.mapCatching { plugins ->
+			if (plugins.isEmpty()) {
+				return sessionFactory(defaultAndroidPackageInstaller.value)
+			}
 			val pluginIds = plugins.map { entry -> entry.plugin.id }
 			ackpineServiceProviders
 				.value
