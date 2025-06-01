@@ -103,25 +103,22 @@ internal class ShizukuPackageInstaller(
 		shizukuParams: ShizukuPlugin.Parameters
 	) {
 		var flags = params.getInstallFlags()
-		if (shizukuParams.bypassLowTargetSdkBlock) {
-			flags = flags or INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK
-		}
-		if (shizukuParams.allowTest) {
-			flags = flags or INSTALL_ALLOW_TEST
-		}
-		if (shizukuParams.replaceExisting) {
-			flags = flags or INSTALL_REPLACE_EXISTING
-		}
-		if (shizukuParams.requestDowngrade) {
-			flags = flags or INSTALL_REQUEST_DOWNGRADE or INSTALL_ALLOW_DOWNGRADE
-		}
-		if (shizukuParams.grantAllRequestedPermissions) {
-			flags = flags or INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS
-		}
-		if (shizukuParams.allUsers) {
-			flags = flags or INSTALL_ALL_USERS
+		shizukuParams.run {
+			flags = applyFlag(flags, bypassLowTargetSdkBlock, INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK)
+			flags = applyFlag(flags, allowTest, INSTALL_ALLOW_TEST)
+			flags = applyFlag(flags, replaceExisting, INSTALL_REPLACE_EXISTING)
+			flags = applyFlag(flags, requestDowngrade, INSTALL_REQUEST_DOWNGRADE or INSTALL_ALLOW_DOWNGRADE)
+			flags = applyFlag(flags, grantAllRequestedPermissions, INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS)
+			flags = applyFlag(flags, allUsers, INSTALL_ALL_USERS)
 		}
 		params.setInstallFlags(flags)
+	}
+
+	private fun applyFlag(installFlags: Int, flag: Boolean, installFlag: Int): Int {
+		if (flag) {
+			return installFlags or installFlag
+		}
+		return installFlags and installFlag.inv()
 	}
 
 	internal companion object Factory {
