@@ -100,12 +100,12 @@ internal fun SessionEntity.InstallSession.getConstraints(): InstallConstraints {
 
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-internal fun SessionEntity.InstallSession.getPlugins(): Result<Set<AckpinePluginContainer.Entry>> = runCatching {
-	plugins.mapTo(mutableSetOf()) { pluginEntity ->
+internal fun SessionEntity.InstallSession.getPlugins() = runCatching {
+	plugins.associate { pluginEntity ->
 		val pluginClass = Class.forName(pluginEntity.pluginClassName) as Class<AckpinePlugin<*>>
 		val plugin = AckpinePluginCache.get(pluginClass)
 		val params = pluginEntity.pluginParameters
-		AckpinePluginContainer.Entry(plugin, params)
+		plugin to params
 	}
 }
 
@@ -128,7 +128,7 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 
 @JvmSynthetic
 internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
-	return getPluginClasses().map { (pluginClass, params) ->
+	return getPlugins().map { (pluginClass, params) ->
 		PluginEntity(
 			sessionId = sessionId,
 			pluginClassName = pluginClass.name,

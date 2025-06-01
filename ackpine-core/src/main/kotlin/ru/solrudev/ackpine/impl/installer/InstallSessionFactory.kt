@@ -46,7 +46,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
-import ru.solrudev.ackpine.plugability.AckpinePluginContainer
+import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -114,7 +114,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 		InstallerType.SESSION_BASED -> withAndroidPackageInstaller(
 			id,
-			runCatching { parameters.plugins.getPlugins() }
+			runCatching { parameters.plugins.getPluginInstances() }
 		) { androidPackageInstaller ->
 			SessionBasedInstallSession(
 				applicationContext,
@@ -169,21 +169,21 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private inline fun <R : CompletableProgressSession<InstallFailure>> withAndroidPackageInstaller(
 		sessionId: UUID,
-		pluginsSet: Result<Set<AckpinePluginContainer.Entry>>,
+		pluginsSet: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
 		sessionFactory: (AndroidPackageInstaller) -> R
 	): R {
 		val androidPackageInstaller = pluginsSet.mapCatching { plugins ->
 			if (plugins.isEmpty()) {
 				return sessionFactory(defaultAndroidPackageInstaller.value)
 			}
-			val pluginIds = plugins.map { entry -> entry.plugin.id }
+			val pluginIds = plugins.keys.map { plugin -> plugin.id }
 			ackpineServiceProviders
 				.value
 				.filter { provider -> provider.pluginId in pluginIds }
 				.firstNotNullOfOrNull { provider -> provider.get<AndroidPackageInstaller>(applicationContext) }
 				?.also { service ->
-					for (entry in plugins) {
-						service.applyParameters(sessionId, entry.parameters)
+					for (parameters in plugins.values) {
+						service.applyParameters(sessionId, parameters)
 					}
 				}
 		}

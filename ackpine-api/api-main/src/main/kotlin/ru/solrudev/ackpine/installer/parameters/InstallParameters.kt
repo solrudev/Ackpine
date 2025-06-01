@@ -439,8 +439,8 @@ public class InstallParameters private constructor(
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
 			val pluginContainer = AckpinePluginContainer.from(plugins)
-			for (entry in pluginContainer.getPlugins()) {
-				entry.plugin.apply(this)
+			for (plugin in pluginContainer.getPluginInstances().keys) {
+				plugin.apply(this)
 			}
 			return InstallParameters(
 				ReadOnlyApkList(apks),

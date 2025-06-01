@@ -410,21 +410,7 @@ public final class ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters$None
 
 public final class ru/solrudev/ackpine/plugability/AckpinePluginContainer {
 	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun getPluginClasses ()Ljava/util/Map;
-	public final fun getPlugins ()Ljava/util/Set;
-}
-
-public final class ru/solrudev/ackpine/plugability/AckpinePluginContainer$Entry {
-	public fun <init> (Lru/solrudev/ackpine/plugability/AckpinePlugin;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
-	public final fun component1 ()Lru/solrudev/ackpine/plugability/AckpinePlugin;
-	public final fun component2 ()Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;
-	public final fun copy (Lru/solrudev/ackpine/plugability/AckpinePlugin;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/plugability/AckpinePluginContainer$Entry;
-	public static synthetic fun copy$default (Lru/solrudev/ackpine/plugability/AckpinePluginContainer$Entry;Lru/solrudev/ackpine/plugability/AckpinePlugin;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;ILjava/lang/Object;)Lru/solrudev/ackpine/plugability/AckpinePluginContainer$Entry;
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getParameters ()Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;
-	public final fun getPlugin ()Lru/solrudev/ackpine/plugability/AckpinePlugin;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+	public final fun getPlugins ()Ljava/util/Map;
 }
 
 public abstract interface class ru/solrudev/ackpine/session/Failure {

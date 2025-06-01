@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine.plugability
 
+import androidx.annotation.RestrictTo
+
 /**
  * A container of [AckpinePlugins][AckpinePlugin] applied to a session.
  */
@@ -23,33 +25,25 @@ public class AckpinePluginContainer private constructor(
 	private val pluginsMap: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
 ) {
 
-	private val plugins by lazy {
+	private val pluginInstancesMap by lazy {
 		pluginsMap.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
 	}
 
 	/**
-	 * Returns a new copy of plugin [entries][Entry] saved inside of this container.
+	 * Returns a new copy of plugin entries saved inside of this container.
 	 */
-	public fun getPlugins(): Set<Entry> {
-		return plugins.mapTo(mutableSetOf()) { (plugin, params) -> Entry(plugin, params) }
-	}
-
-	/**
-	 * Returns a map of plugin classes with their parameters saved inside of this container.
-	 */
-	public fun getPluginClasses(): Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters> {
+	public fun getPlugins(): Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters> {
 		return pluginsMap.toMap()
 	}
 
 	/**
-	 * An [AckpinePluginContainer] entry.
-	 * @property plugin an instance of [AckpinePlugin].
-	 * @property parameters a set of parameters for the [plugin].
+	 * Returns a map of plugin instances with their parameters saved inside of this container.
 	 */
-	public data class Entry(
-		public val plugin: AckpinePlugin<*>,
-		public val parameters: AckpinePlugin.Parameters
-	)
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	@JvmSynthetic
+	public fun getPluginInstances(): Map<AckpinePlugin<*>, AckpinePlugin.Parameters> {
+		return pluginInstancesMap.toMap()
+	}
 
 	internal companion object {
 		@JvmSynthetic
