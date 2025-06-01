@@ -24,12 +24,7 @@ public class AckpinePluginContainer private constructor(
 ) {
 
 	private val plugins by lazy {
-		pluginsMap.map { (pluginClass, params) ->
-			pluginClass
-				.getDeclaredConstructor()
-				.apply { isAccessible = true }
-				.newInstance() as AckpinePlugin to params
-		}
+		pluginsMap.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
 	}
 
 	/**
