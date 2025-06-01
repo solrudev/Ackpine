@@ -45,7 +45,17 @@ public class AckpinePluginContainer private constructor(
 		return pluginInstancesMap.toMap()
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (other !is AckpinePluginContainer) return false
+		return pluginsMap == other.pluginsMap
+	}
+
+	override fun hashCode(): Int = pluginsMap.hashCode()
+	override fun toString(): String = "AckpinePluginContainer($pluginsMap)"
+
 	internal companion object {
+
 		@JvmSynthetic
 		internal fun from(
 			plugins: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
