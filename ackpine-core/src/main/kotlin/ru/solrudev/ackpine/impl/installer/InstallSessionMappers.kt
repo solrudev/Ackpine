@@ -128,6 +128,7 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 	}
 }
 
+@JvmSynthetic
 internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
 	return getPluginClasses().map { (pluginClass, params) ->
 		PluginEntity(
