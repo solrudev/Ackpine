@@ -261,8 +261,8 @@ internal class SessionBasedInstallSession internal constructor(
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			packageInstaller.openSession(sessionId).commit(statusReceiver)
 			writeCommitProgressIfAbsent()
+			packageInstaller.openSession(sessionId).commit(statusReceiver)
 		}
 	}
 
@@ -272,10 +272,10 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			val installConstraints = createPackageInstallerInstallConstraints()
+			writeCommitProgressIfAbsent()
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 			)
-			writeCommitProgressIfAbsent()
 		}
 	}
 
