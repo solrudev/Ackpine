@@ -49,7 +49,7 @@ internal class ShizukuPackageInstaller(
 
 	private val pluginParameters = ConcurrentHashMap<UUID, ShizukuPlugin.Parameters>()
 
-	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters<*>) {
+	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
 		if (parameters is ShizukuPlugin.Parameters) {
 			pluginParameters.put(sessionId, parameters)
 		}

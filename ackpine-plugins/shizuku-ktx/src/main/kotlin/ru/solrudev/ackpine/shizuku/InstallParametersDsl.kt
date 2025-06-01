@@ -17,16 +17,15 @@
 package ru.solrudev.ackpine.shizuku
 
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
-import ru.solrudev.ackpine.installer.parameters.usePlugin
 
 /**
  * Applies [ShizukuPlugin] to the session.
  */
-public fun InstallParametersDsl.useShizuku() = usePlugin<ShizukuPlugin>()
+public fun InstallParametersDsl.useShizuku() = usePlugin(ShizukuPlugin::class, ShizukuPluginParameters())
 
 /**
  * Applies [ShizukuPlugin] to the session.
  */
 public inline fun InstallParametersDsl.useShizuku(
 	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-) = usePlugin<ShizukuPlugin>(ShizukuPluginParameters(configure))
+) = usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))

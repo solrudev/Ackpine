@@ -72,7 +72,6 @@ public abstract interface class ru/solrudev/ackpine/installer/parameters/Install
 	public abstract fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)V
 	public abstract fun setRequestUpdateOwnership (Z)V
 	public abstract fun setRequireUserAction (Z)V
-	public abstract fun usePlugin (Lkotlin/reflect/KClass;)V
 	public abstract fun usePlugin (Lkotlin/reflect/KClass;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
 }
 
@@ -101,7 +100,6 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl
 	public fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)V
 	public fun setRequestUpdateOwnership (Z)V
 	public fun setRequireUserAction (Z)V
-	public fun usePlugin (Lkotlin/reflect/KClass;)V
 	public fun usePlugin (Lkotlin/reflect/KClass;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
 }
 

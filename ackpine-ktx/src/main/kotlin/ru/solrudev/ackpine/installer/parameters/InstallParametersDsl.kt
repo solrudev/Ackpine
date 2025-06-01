@@ -132,17 +132,11 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	/**
 	 * Applies a [plugin] to the session.
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
-	 */
-	public fun <T : AckpinePlugin> usePlugin(plugin: KClass<T>)
-
-	/**
-	 * Applies a [plugin] to the session.
-	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
-	public fun <T : AckpinePlugin> usePlugin(
-		plugin: KClass<T>,
-		parameters: AckpinePlugin.Parameters<T>
+	public fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
+		plugin: KClass<Plugin>,
+		parameters: Params
 	)
 }
 
@@ -224,13 +218,9 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun <T : AckpinePlugin> usePlugin(plugin: KClass<T>) {
-		builder.usePlugin(plugin.java)
-	}
-
-	override fun <T : AckpinePlugin> usePlugin(
-		plugin: KClass<T>,
-		parameters: AckpinePlugin.Parameters<T>
+	override fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
+		plugin: KClass<Plugin>,
+		parameters: Params
 	) {
 		builder.usePlugin(plugin.java, parameters)
 	}
@@ -345,12 +335,3 @@ public fun InstallParametersDsl.preapproval(
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
 }
-
-/**
- * Applies a plugin to the session. [T] is the type of the plugin being applied.
- * @param parameters parameters of the applied plugin for the session being configured.
- */
-@Suppress("UNCHECKED_CAST")
-public inline fun <reified T : AckpinePlugin> InstallParametersDsl.usePlugin(
-	parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>
-) = usePlugin(T::class, parameters)

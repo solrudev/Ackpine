@@ -17,10 +17,10 @@
 package ru.solrudev.ackpine.plugability
 
 /**
- * A container of [AckpinePlugins][AckpinePlugin].
+ * A container of [AckpinePlugins][AckpinePlugin] applied to a session.
  */
 public class AckpinePluginContainer private constructor(
-	private val pluginsMap: Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>>
+	private val pluginsMap: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
 ) {
 
 	private val plugins by lazy {
@@ -38,7 +38,7 @@ public class AckpinePluginContainer private constructor(
 	/**
 	 * Returns a map of plugin classes with their parameters saved inside of this container.
 	 */
-	public fun getPluginClasses(): Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>> {
+	public fun getPluginClasses(): Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters> {
 		return pluginsMap.toMap()
 	}
 
@@ -48,14 +48,14 @@ public class AckpinePluginContainer private constructor(
 	 * @property parameters a set of parameters for the [plugin].
 	 */
 	public data class Entry(
-		public val plugin: AckpinePlugin,
-		public val parameters: AckpinePlugin.Parameters<*>
+		public val plugin: AckpinePlugin<*>,
+		public val parameters: AckpinePlugin.Parameters
 	)
 
 	internal companion object {
 		@JvmSynthetic
 		internal fun from(
-			plugins: Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>>
+			plugins: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
 		) = AckpinePluginContainer(plugins.filterNot { it.key == AckpinePlugin::class.java })
 	}
 }

@@ -21,7 +21,7 @@ package ru.solrudev.ackpine.shizuku
  */
 @Suppress("FunctionName")
 public inline fun ShizukuPluginParameters(
-	configure: ShizukuPluginParametersDsl.() -> Unit
+	configure: ShizukuPluginParametersDsl.() -> Unit = {}
 ): ShizukuPlugin.Parameters {
 	return ShizukuPluginParametersDslBuilder().apply(configure).build()
 }

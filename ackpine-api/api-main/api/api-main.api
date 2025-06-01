@@ -305,9 +305,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequestUpdateOwnership (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequireUserAction (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
-	public final fun usePlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun usePlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
-	public static synthetic fun usePlugin$default (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallPreapproval {
@@ -404,14 +402,10 @@ public abstract interface class ru/solrudev/ackpine/plugability/AckpinePlugin {
 }
 
 public abstract interface class ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters : java/io/Serializable {
-	public static final field NONE Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;
 }
 
 public final class ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters$None : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
-	public static final field INSTANCE Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters$None;
-	public fun equals (Ljava/lang/Object;)Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
+	public fun <init> ()V
 }
 
 public final class ru/solrudev/ackpine/plugability/AckpinePluginContainer {

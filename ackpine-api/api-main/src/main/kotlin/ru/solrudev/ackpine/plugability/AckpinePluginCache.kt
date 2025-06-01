@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object AckpinePluginCache {
 
-	private val plugins = ConcurrentHashMap<Class<out AckpinePlugin>, AckpinePlugin>()
+	private val plugins = ConcurrentHashMap<Class<out AckpinePlugin<*>>, AckpinePlugin<*>>()
 
 	/**
 	 * Returns plugin for the given [pluginClass]. If it's not found in the cache, creates a new instance of the plugin
@@ -33,7 +33,7 @@ public object AckpinePluginCache {
 	 */
 	@Suppress("UNCHECKED_CAST")
 	@JvmSynthetic
-	public fun <T : AckpinePlugin> get(pluginClass: Class<T>): T = plugins.getOrPut(pluginClass) {
+	public fun <T : AckpinePlugin<*>> get(pluginClass: Class<T>): T = plugins.getOrPut(pluginClass) {
 		pluginClass
 			.getDeclaredConstructor()
 			.apply { isAccessible = true }

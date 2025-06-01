@@ -34,7 +34,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
  * **Note:** Shizuku permission and binder lifecycle are not managed by this Ackpine plugin. You must handle these in
  * your app to successfully use Shizuku.
  */
-public class ShizukuPlugin private constructor() : AckpinePlugin {
+public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.Parameters> {
 
 	override val id: String = PLUGIN_ID
 
@@ -87,7 +87,7 @@ public class ShizukuPlugin private constructor() : AckpinePlugin {
 		 * Flag to indicate that this install should immediately be visible to all users.
 		 */
 		public val allUsers: Boolean
-	) : AckpinePlugin.Parameters<ShizukuPlugin> {
+	) : AckpinePlugin.Parameters {
 
 		override fun equals(other: Any?): Boolean {
 			if (this === other) return true

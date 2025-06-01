@@ -205,7 +205,7 @@ public class InstallParameters private constructor(
 		}
 
 		private val _apks: MutableApkList
-		private val plugins = mutableMapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters<AckpinePlugin>>()
+		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.
@@ -426,11 +426,9 @@ public class InstallParameters private constructor(
 		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 		 * @param parameters parameters of the applied plugin for the session being configured.
 		 */
-		@Suppress("UNCHECKED_CAST")
-		@JvmOverloads
-		public fun <T : AckpinePlugin> usePlugin(
-			plugin: Class<T>,
-			parameters: AckpinePlugin.Parameters<T> = AckpinePlugin.Parameters.None as AckpinePlugin.Parameters<T>
+		public fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<Plugin>,
+			parameters: Params
 		): Builder = apply {
 			plugins.put(plugin, parameters)
 		}

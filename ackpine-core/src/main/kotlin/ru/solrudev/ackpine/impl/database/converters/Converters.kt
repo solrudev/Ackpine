@@ -86,8 +86,8 @@ internal object PackageSourceConverters {
 internal object AckpinePluginParametersConverters {
 
 	@TypeConverter
-	internal fun fromByteArray(byteArray: ByteArray): AckpinePlugin.Parameters<AckpinePlugin> = byteArray.deserialize()
+	internal fun fromByteArray(byteArray: ByteArray): AckpinePlugin.Parameters = byteArray.deserialize()
 
 	@TypeConverter
-	internal fun toByteArray(params: AckpinePlugin.Parameters<AckpinePlugin>): ByteArray = params.serialize()
+	internal fun toByteArray(params: AckpinePlugin.Parameters): ByteArray = params.serialize()
 }

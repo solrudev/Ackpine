@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("Unused", "RedundantVisibilityModifier")
-
 package ru.solrudev.ackpine.plugability
 
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
@@ -24,7 +22,8 @@ import java.io.Serializable
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
  */
-public interface AckpinePlugin {
+@Suppress("Unused")
+public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
 
 	/**
 	 * Unique ID of the plugin.
@@ -39,23 +38,16 @@ public interface AckpinePlugin {
 	/**
 	 * A set of parameters for [AckpinePlugin].
 	 */
-	public interface Parameters<out T : AckpinePlugin> : Serializable {
+	public interface Parameters : Serializable {
 
 		/**
-		 * Empty [AckpinePlugin] parameters for plugins without configuration or if default configuration is used.
+		 * Empty [AckpinePlugin] parameters for plugins without configuration.
 		 */
-		public data object None : Parameters<AckpinePlugin> {
-			private const val serialVersionUID = -8443803615690115391L
-			private fun readResolve(): Any = None
-		}
-
-		private companion object {
-
-			/**
-			 * Empty [AckpinePlugin] parameters for plugins without configuration or if default configuration is used.
-			 */
-			@JvmField
-			public val NONE: Parameters<AckpinePlugin> = None
+		public class None : Parameters {
+			private companion object {
+				@Suppress("Unused")
+				private const val serialVersionUID = -8443803615690115391L
+			}
 		}
 	}
 }

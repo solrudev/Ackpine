@@ -38,5 +38,6 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersDslBuilder
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersKt {
 	public static final fun ShizukuPluginParameters (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
+	public static synthetic fun ShizukuPluginParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
 }
 
