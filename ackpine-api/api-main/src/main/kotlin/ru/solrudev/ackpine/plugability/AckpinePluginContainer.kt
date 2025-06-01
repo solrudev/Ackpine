@@ -30,11 +30,10 @@ public class AckpinePluginContainer private constructor(
 	/**
 	 * Returns a new copy of plugin [entries][Entry] saved inside of this container.
 	 */
-	public fun getPlugins(): Set<Entry> = plugins
-		.map { (plugin, params) ->
-			Entry(plugin, params)
-		}
-		.toSet()
+	public fun getPlugins(): Set<Entry> {
+		val set = mutableSetOf<Entry>()
+		return plugins.mapTo(set) { (plugin, params) -> Entry(plugin, params) }
+	}
 
 	/**
 	 * Returns a map of plugin classes with their parameters saved inside of this container.
