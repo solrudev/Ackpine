@@ -123,5 +123,5 @@ internal abstract class InstallSessionDao protected constructor(private val data
 	protected abstract fun insertUris(uris: List<InstallUriEntity>)
 
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
-	protected abstract fun insertPlugins(uris: List<PluginEntity>)
+	protected abstract fun insertPlugins(plugins: List<PluginEntity>)
 }
