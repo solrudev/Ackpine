@@ -43,11 +43,10 @@ public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
 		/**
 		 * Empty [AckpinePlugin] parameters for plugins without configuration.
 		 */
-		public class None : Parameters {
-			private companion object {
-				@Suppress("Unused")
-				private const val serialVersionUID = -8443803615690115391L
-			}
+		public data object None : Parameters {
+			@Suppress("Unused")
+			private const val serialVersionUID = -8443803615690115391L
+			private fun readResolve(): Any = None
 		}
 	}
 }
