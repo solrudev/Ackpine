@@ -23,6 +23,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller.Session
 import ru.solrudev.ackpine.impl.plugability.AckpineService
+import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.io.Closeable
 import java.io.OutputStream
 import java.util.UUID
@@ -145,6 +146,9 @@ internal class PackageInstallerWrapper(
 	private val packageInstaller: PackageInstaller,
 	override val uid: Int
 ) : AndroidPackageInstaller {
+
+	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) { // no-op
+	}
 
 	override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID) =
 		packageInstaller.createSession(params)

@@ -29,7 +29,5 @@ public interface AckpineService {
 	/**
 	 * Applies [parameters] of an [AckpinePlugin] to a session with ID equal to [sessionId].
 	 */
-	public fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
-		// no-op by default
-	}
+	public fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters)
 }
