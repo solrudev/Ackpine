@@ -167,7 +167,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		return AckpinePromptInstallMessage
 	}
 
-	private inline fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
+	private fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
 		sessionId: UUID,
 		pluginsSet: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
 		sessionFactory: (PackageInstallerService) -> R
