@@ -1,5 +1,4 @@
 public final class ru/solrudev/ackpine/shizuku/InstallParametersDslKt {
-	public static final fun useShizuku (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;)V
 	public static final fun useShizuku (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Lkotlin/jvm/functions/Function1;)V
 	public static synthetic fun useShizuku$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
