@@ -16,7 +16,7 @@ Version 0.13.0 (2025-06-02)
 
 ### Public API changes
 
-- Added `AckpinePlugin`, `AckpinePlugin.Parameters`, `AckpinePluginContainer` and `AckpinePluginContainer.Entry` types in `ackpine-api`.
+- Added `AckpinePlugin`, `AckpinePlugin.Parameters`, `AckpinePluginContainer` types in `ackpine-api`.
 - Added `usePlugin` function to `InstallParameters.Builder`, `InstallParametersDsl`.
 - Added `plugins` property to `InstallParameters`.
 
