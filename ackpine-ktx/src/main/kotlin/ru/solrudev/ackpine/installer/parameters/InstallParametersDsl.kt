@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePlugin.Parameters
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -134,10 +135,16 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
-	public fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
+	public fun <Plugin : AckpinePlugin<Params>, Params : Parameters> usePlugin(
 		plugin: KClass<Plugin>,
 		parameters: Params
 	)
+
+	/**
+	 * Applies a [plugin] to the session.
+	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
+	 */
+	public fun <Plugin : AckpinePlugin<Parameters.None>> usePlugin(plugin: KClass<Plugin>)
 }
 
 @PublishedApi
@@ -218,11 +225,15 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
+	override fun <Plugin : AckpinePlugin<Params>, Params : Parameters> usePlugin(
 		plugin: KClass<Plugin>,
 		parameters: Params
 	) {
 		builder.usePlugin(plugin.java, parameters)
+	}
+
+	override fun <Plugin : AckpinePlugin<Parameters.None>> usePlugin(plugin: KClass<Plugin>) {
+		builder.usePlugin(plugin.java)
 	}
 
 	fun build() = builder.build()
@@ -334,4 +345,12 @@ public fun InstallParametersDsl.preapproval(
 	icon: Uri
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
+}
+
+/**
+ * Applies a plugin to the session. [Plugin] is the type of the plugin being applied.
+ */
+@Suppress("UNCHECKED_CAST")
+public inline fun <reified Plugin : AckpinePlugin<Parameters.None>> InstallParametersDsl.usePlugin() {
+	usePlugin(Plugin::class)
 }

@@ -305,6 +305,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequestUpdateOwnership (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequireUserAction (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun usePlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun usePlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 }
 

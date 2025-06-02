@@ -434,6 +434,16 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Applies a [plugin] to the session.
+		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+		 */
+		public fun <Plugin : AckpinePlugin<AckpinePlugin.Parameters.None>> usePlugin(
+			plugin: Class<Plugin>
+		): Builder = apply {
+			plugins.put(plugin, AckpinePlugin.Parameters.None)
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
