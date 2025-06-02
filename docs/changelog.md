@@ -1,6 +1,27 @@
 Change Log
 ==========
 
+Version 0.13.0 (2025-06-02)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 8.10.1.
+
+### Bug fixes and improvements
+
+- Add ability to use Shizuku for install sessions via `ShizukuPlugin` in `ackpine-shizuku` artifact. See documentation for details.
+- `ackpine-splits`: Don't fall back to `ZipInputStream` if reading of zipped file fails and throw instead.
+- Sample apps: don't restart installation if app was launched through an `ACTION_VIEW` intent when launching from recent apps history.
+- Sample apps: fix reappearing install session when last install session is removed.
+
+### Public API changes
+
+- Added `AckpinePlugin`, `AckpinePlugin.Parameters`, `AckpinePluginContainer` types in `ackpine-api`.
+- Added `usePlugin` function to `InstallParameters.Builder`, `InstallParametersDsl`.
+- Added `plugins` property to `InstallParameters`.
+- Added `ackpine-shizuku` and `ackpine-shizuku-ktx` modules.
+
 Version 0.12.2 (2025-05-20)
 ---------------------------
 

@@ -28,6 +28,8 @@ dependencies {
 	library(projects.ackpineAssets)
 	library(projects.ackpineRuntime)
 	library(projects.ackpineResources)
+	library(projects.ackpinePlugins.shizuku)
+	library(projects.ackpinePlugins.shizukuKtx)
 
 	// task :buildSamples
 	sample(projects.sampleJava)

@@ -1,0 +1,38 @@
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin {
+	public fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public synthetic fun <init> (ZZZZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setAllowTest (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setReplaceExisting (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+}
+

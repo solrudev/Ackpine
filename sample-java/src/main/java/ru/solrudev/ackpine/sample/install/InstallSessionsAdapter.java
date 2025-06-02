@@ -131,11 +131,6 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 		isReattaching = true;
 	}
 
-	@Override
-	public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-		recyclerView.setItemAnimator(new DefaultItemAnimator());
-	}
-
 	@NonNull
 	@Override
 	public SessionViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {

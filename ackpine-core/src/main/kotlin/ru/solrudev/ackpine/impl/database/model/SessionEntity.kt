@@ -105,6 +105,12 @@ internal class SessionEntity internal constructor(
 		@JvmField
 		@Relation(
 			parentColumn = "id",
+			entityColumn = "session_id"
+		)
+		val plugins: List<PluginEntity>,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
 			entityColumn = "session_id",
 			entity = SessionNameEntity::class,
 			projection = ["name"]

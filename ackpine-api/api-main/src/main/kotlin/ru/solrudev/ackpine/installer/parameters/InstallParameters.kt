@@ -23,6 +23,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
+import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -127,39 +129,46 @@ public class InstallParameters private constructor(
 	 *
 	 * Default value is [PackageSource.Unspecified].
 	 */
-	public val packageSource: PackageSource
+	public val packageSource: PackageSource,
+
+	/**
+	 * [Plugins][AckpinePlugin] applied to the install session.
+	 */
+	public val plugins: AckpinePluginContainer
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (javaClass != other?.javaClass) return false
 		other as InstallParameters
+		if (requireUserAction != other.requireUserAction) return false
+		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
 		if (apks != other.apks) return false
 		if (installerType != other.installerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		if (name != other.name) return false
-		if (requireUserAction != other.requireUserAction) return false
 		if (installMode != other.installMode) return false
 		if (preapproval != other.preapproval) return false
 		if (constraints != other.constraints) return false
-		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
 		if (packageSource != other.packageSource) return false
+		if (plugins != other.plugins) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
-		var result = apks.hashCode()
+		var result = requireUserAction.hashCode()
+		result = 31 * result + requestUpdateOwnership.hashCode()
+		result = 31 * result + apks.hashCode()
 		result = 31 * result + installerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		result = 31 * result + name.hashCode()
-		result = 31 * result + requireUserAction.hashCode()
 		result = 31 * result + installMode.hashCode()
 		result = 31 * result + preapproval.hashCode()
 		result = 31 * result + constraints.hashCode()
-		result = 31 * result + requestUpdateOwnership.hashCode()
 		result = 31 * result + packageSource.hashCode()
+		result = 31 * result + plugins.hashCode()
 		return result
 	}
 
@@ -175,7 +184,8 @@ public class InstallParameters private constructor(
 				"preapproval=$preapproval, " +
 				"constraints=$constraints, " +
 				"requestUpdateOwnership=$requestUpdateOwnership, " +
-				"packageSource=$packageSource" +
+				"packageSource=$packageSource, " +
+				"plugins=$plugins" +
 				")"
 	}
 
@@ -195,6 +205,7 @@ public class InstallParameters private constructor(
 		}
 
 		private val _apks: MutableApkList
+		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.
@@ -411,10 +422,34 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Applies a [plugin] to the session.
+		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+		 * @param parameters parameters of the applied plugin for the session being configured.
+		 */
+		public fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin<Params>>,
+			parameters: Params
+		): Builder = apply {
+			plugins.put(plugin, parameters)
+		}
+
+		/**
+		 * Applies a [plugin] to the session.
+		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+		 */
+		public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+			plugins.put(plugin, AckpinePlugin.Parameters.None)
+		}
+
+		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
+			val pluginContainer = AckpinePluginContainer.from(plugins)
+			for (plugin in pluginContainer.getPluginInstances().keys) {
+				plugin.apply(this)
+			}
 			return InstallParameters(
 				ReadOnlyApkList(apks),
 				installerType,
@@ -426,7 +461,8 @@ public class InstallParameters private constructor(
 				preapproval,
 				constraints,
 				requestUpdateOwnership,
-				packageSource
+				packageSource,
+				pluginContainer
 			)
 		}
 

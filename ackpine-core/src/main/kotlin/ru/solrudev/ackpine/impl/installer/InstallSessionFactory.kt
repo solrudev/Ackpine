@@ -39,11 +39,14 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
+import ru.solrudev.ackpine.impl.plugability.get
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
+import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -77,6 +80,8 @@ internal interface InstallSessionFactory {
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
+	private val defaultPackageInstallerService: Lazy<PackageInstallerService>,
+	private val ackpineServiceProviders: Lazy<Set<AckpineServiceProvider>>,
 	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	private val installSessionDao: InstallSessionDao,
 	private val sessionDao: SessionDao,
@@ -107,26 +112,32 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, notificationId, dbWriteSemaphore
 		)
 
-		InstallerType.SESSION_BASED -> SessionBasedInstallSession(
-			applicationContext,
-			apks = parameters.apks.toList(),
+		InstallerType.SESSION_BASED -> withPackageInstallerService(
 			id,
-			initialState = Session.State.Pending,
-			initialProgress = Progress(),
-			parameters.confirmation,
-			resolveNotificationData(parameters.notificationData, parameters.name),
-			parameters.requireUserAction, parameters.installMode, parameters.preapproval, parameters.constraints,
-			parameters.requestUpdateOwnership, parameters.packageSource,
-			sessionDao,
-			sessionFailureDao = installSessionDao,
-			sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
-			executor, handler,
-			nativeSessionId = -1,
-			notificationId,
-			commitAttemptsCount = 0,
-			isPreapproved = false,
-			dbWriteSemaphore
-		)
+			runCatching { parameters.plugins.getPluginInstances() }
+		) { packageInstallerService ->
+			SessionBasedInstallSession(
+				applicationContext,
+				packageInstallerService,
+				apks = parameters.apks.toList(),
+				id,
+				initialState = Session.State.Pending,
+				initialProgress = Progress(),
+				parameters.confirmation,
+				resolveNotificationData(parameters.notificationData, parameters.name),
+				parameters.requireUserAction, parameters.installMode, parameters.preapproval, parameters.constraints,
+				parameters.requestUpdateOwnership, parameters.packageSource,
+				sessionDao,
+				sessionFailureDao = installSessionDao,
+				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
+				executor, handler,
+				nativeSessionId = -1,
+				notificationId,
+				commitAttemptsCount = 0,
+				isPreapproved = false,
+				dbWriteSemaphore
+			)
+		}
 	}
 
 	override fun create(
@@ -154,6 +165,39 @@ internal class InstallSessionFactoryImpl internal constructor(
 			return AckpinePromptInstallMessageWithLabel(name)
 		}
 		return AckpinePromptInstallMessage
+	}
+
+	private fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
+		sessionId: UUID,
+		pluginsSet: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
+		sessionFactory: (PackageInstallerService) -> R
+	): R {
+		val packageInstallerService = pluginsSet.mapCatching { plugins ->
+			if (plugins.isEmpty()) {
+				return sessionFactory(defaultPackageInstallerService.value)
+			}
+			val pluginIds = plugins.keys.map { plugin -> plugin.id }
+			ackpineServiceProviders
+				.value
+				.filter { provider -> provider.pluginId in pluginIds }
+				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>(applicationContext) }
+				?.also { service ->
+					plugins
+						.values
+						.filterNot { params -> params is AckpinePlugin.Parameters.None }
+						.forEach { params -> service.applyParameters(sessionId, params) }
+				}
+		}
+		val session = sessionFactory(
+			packageInstallerService.getOrNull() ?: defaultPackageInstallerService.value
+		)
+		packageInstallerService.onFailure { throwable ->
+			when (throwable) {
+				is Error -> session.completeExceptionally(RuntimeException(throwable))
+				is Exception -> session.completeExceptionally(throwable)
+			}
+		}
+		return session
 	}
 
 	private fun createIntentBasedInstallSession(
@@ -199,27 +243,34 @@ internal class InstallSessionFactoryImpl internal constructor(
 		installSession: SessionEntity.InstallSession,
 		completeIfSucceeded: Boolean
 	): SessionBasedInstallSession {
+		val sessionId = UUID.fromString(installSession.session.id)
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
-		val session = SessionBasedInstallSession(
-			applicationContext,
-			apks = installSession.uris.map(String::toUri),
-			id = UUID.fromString(installSession.session.id),
-			initialState, initialProgress,
-			installSession.session.confirmation, installSession.getNotificationData(),
-			installSession.session.requireUserAction, installSession.getInstallMode(),
-			installSession.getPreapproval(), installSession.getConstraints(),
-			requestUpdateOwnership = installSession.requestUpdateOwnership == true,
-			packageSource = installSession.packageSource ?: PackageSource.Unspecified,
-			sessionDao,
-			sessionFailureDao = installSessionDao,
-			sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
-			executor, handler, nativeSessionId, installSession.notificationId!!,
-			commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
-			isPreapproved = installSession.preapproval?.isPreapproved == true,
-			dbWriteSemaphore = BinarySemaphore()
-		)
+		val session = withPackageInstallerService(sessionId, installSession.getPlugins()) { packageInstallerService ->
+			SessionBasedInstallSession(
+				applicationContext,
+				packageInstallerService,
+				apks = installSession.uris.map(String::toUri),
+				sessionId,
+				initialState, initialProgress,
+				installSession.session.confirmation, installSession.getNotificationData(),
+				installSession.session.requireUserAction, installSession.getInstallMode(),
+				installSession.getPreapproval(), installSession.getConstraints(),
+				requestUpdateOwnership = installSession.requestUpdateOwnership == true,
+				packageSource = installSession.packageSource ?: PackageSource.Unspecified,
+				sessionDao,
+				sessionFailureDao = installSessionDao,
+				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
+				executor, handler, nativeSessionId, installSession.notificationId!!,
+				commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
+				isPreapproved = installSession.preapproval?.isPreapproved == true,
+				dbWriteSemaphore = BinarySemaphore()
+			)
+		}
+		if (session.isCompleted) {
+			return session
+		}
 		if (!completeIfSucceeded || initialState.isTerminal) {
 			return session
 		}

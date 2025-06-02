@@ -35,7 +35,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.OperationCanceledException
-import android.os.Process
 import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
@@ -56,6 +55,7 @@ import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
+import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
@@ -86,6 +86,7 @@ private const val TAG = "SessionBasedInstallSession"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
 	private val context: Context,
+	private val packageInstaller: PackageInstallerService,
 	private val apks: List<Uri>,
 	id: UUID,
 	initialState: Session.State<InstallFailure>,
@@ -130,9 +131,6 @@ internal class SessionBasedInstallSession internal constructor(
 	private var isPreapprovalActive = false
 
 	private val attempts = AtomicInteger(commitAttemptsCount)
-
-	private val packageInstaller: PackageInstaller
-		get() = context.packageManager.packageInstaller
 
 	override fun prepare() {
 		if (isPreapprovalActive) {
@@ -263,8 +261,8 @@ internal class SessionBasedInstallSession internal constructor(
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			packageInstaller.openSession(sessionId).commit(statusReceiver)
 			writeCommitProgressIfAbsent()
+			packageInstaller.openSession(sessionId).commit(statusReceiver)
 		}
 	}
 
@@ -274,10 +272,10 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		if (packageInstaller.getSessionInfo(sessionId) != null) {
 			val installConstraints = createPackageInstallerInstallConstraints()
+			writeCommitProgressIfAbsent()
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 			)
-			writeCommitProgressIfAbsent()
 		}
 	}
 
@@ -333,7 +331,7 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun createSession(): Int {
-		val sessionId = packageInstaller.createSession(createSessionParams())
+		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
@@ -351,7 +349,7 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			sessionParams.setOriginatingUid(Process.myUid())
+			sessionParams.setOriginatingUid(packageInstaller.uid)
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 			sessionParams.setInstallReason(PackageManager.INSTALL_REASON_USER)
@@ -394,7 +392,7 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	private fun PackageInstaller.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
+	private fun PackageInstallerService.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
@@ -422,7 +420,7 @@ internal class SessionBasedInstallSession internal constructor(
 		"SessionBasedInstallSession.writeApks"
 	}
 
-	private fun PackageInstaller.Session.writeApk(
+	private fun PackageInstallerService.Session.writeApk(
 		afd: AssetFileDescriptor,
 		index: Int,
 		currentProgress: AtomicInteger,
@@ -441,7 +439,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun PackageInstaller.createAndRegisterSessionCallback(
+	private fun PackageInstallerService.createAndRegisterSessionCallback(
 		nativeSessionId: Int
 	): PackageInstaller.SessionCallback {
 		val callback = packageInstallerSessionCallback(nativeSessionId)

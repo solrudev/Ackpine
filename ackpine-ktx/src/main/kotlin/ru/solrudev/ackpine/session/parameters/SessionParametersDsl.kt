@@ -16,5 +16,11 @@
 
 package ru.solrudev.ackpine.session.parameters
 
+import androidx.annotation.RestrictTo
+
+/**
+ * DSL marker for Ackpine session parameters.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @DslMarker
-internal annotation class SessionParametersDsl
+public annotation class SessionParametersDsl

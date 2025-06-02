@@ -22,28 +22,18 @@ import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import ru.solrudev.ackpine.helpers.closeAll
 import ru.solrudev.ackpine.helpers.closeWithException
-import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
 import java.io.File
 import java.io.FileInputStream
+import java.io.FilterInputStream
 import java.io.InputStream
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
 internal class ZipEntryStream private constructor(
 	private val inputStream: InputStream,
 	val size: Long,
 	private vararg var resources: AutoCloseable
-) : InputStream() {
-
-	override fun read(): Int = inputStream.read()
-	override fun available(): Int = inputStream.available()
-	override fun markSupported(): Boolean = inputStream.markSupported()
-	override fun mark(readlimit: Int) = inputStream.mark(readlimit)
-	override fun read(b: ByteArray?): Int = inputStream.read(b)
-	override fun read(b: ByteArray?, off: Int, len: Int): Int = inputStream.read(b, off, len)
-	override fun reset() = inputStream.reset()
-	override fun skip(n: Long): Long = inputStream.skip(n)
+) : FilterInputStream(inputStream) {
 
 	override fun close() {
 		try {
@@ -126,8 +116,7 @@ internal class ZipEntryStream private constructor(
 			} catch (throwable: Throwable) {
 				fd?.closeWithException(throwable)
 				fileInputStream?.closeWithException(throwable)
-				throwable.printStackTrace()
-				return openUsingZipInputStream(uri, zipEntryName, context, signal)
+				throw throwable
 			}
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName)
@@ -142,28 +131,6 @@ internal class ZipEntryStream private constructor(
 				zipFile.closeWithException(throwable)
 				throw throwable
 			}
-		}
-
-		private fun openUsingZipInputStream(
-			uri: Uri,
-			zipEntryName: String,
-			context: Context,
-			signal: CancellationSignal?
-		): ZipEntryStream? {
-			val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri))
-			val zipEntry = try {
-				zipStream.entries()
-					.onEach { signal?.throwIfCanceled() }
-					.firstOrNull { it.name == zipEntryName }
-			} catch (throwable: Throwable) {
-				zipStream.closeWithException(throwable)
-				throw throwable
-			}
-			if (zipEntry == null) {
-				zipStream.close()
-				return null
-			}
-			return ZipEntryStream(zipStream, zipEntry.size)
 		}
 	}
 }

@@ -260,7 +260,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallMode$InheritE
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : ru/solrudev/ackpine/session/parameters/ConfirmationAware {
-	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;ZLru/solrudev/ackpine/installer/parameters/InstallMode;Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;Lru/solrudev/ackpine/installer/parameters/InstallConstraints;ZLru/solrudev/ackpine/installer/parameters/PackageSource;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;ZLru/solrudev/ackpine/installer/parameters/InstallMode;Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;Lru/solrudev/ackpine/installer/parameters/InstallConstraints;ZLru/solrudev/ackpine/installer/parameters/PackageSource;Lru/solrudev/ackpine/plugability/AckpinePluginContainer;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApks ()Lru/solrudev/ackpine/installer/parameters/ApkList;
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
@@ -270,6 +270,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : 
 	public final fun getName ()Ljava/lang/String;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
 	public final fun getPackageSource ()Lru/solrudev/ackpine/installer/parameters/PackageSource;
+	public final fun getPlugins ()Lru/solrudev/ackpine/plugability/AckpinePluginContainer;
 	public final fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public final fun getRequestUpdateOwnership ()Z
 	public final fun getRequireUserAction ()Z
@@ -304,6 +305,8 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequestUpdateOwnership (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequireUserAction (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun usePlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun usePlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallPreapproval {
@@ -390,6 +393,29 @@ public final class ru/solrudev/ackpine/installer/parameters/PackageSource$Store 
 public final class ru/solrudev/ackpine/installer/parameters/PackageSource$Unspecified : ru/solrudev/ackpine/installer/parameters/PackageSource {
 	public static final field INSTANCE Lru/solrudev/ackpine/installer/parameters/PackageSource$Unspecified;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class ru/solrudev/ackpine/plugability/AckpinePlugin {
+	public abstract fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
+	public abstract fun getId ()Ljava/lang/String;
+}
+
+public abstract interface class ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters : java/io/Serializable {
+}
+
+public final class ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters$None : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field INSTANCE Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters$None;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/plugability/AckpinePluginContainer {
+	public synthetic fun <init> (Ljava/util/Map;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPlugins ()Ljava/util/Map;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

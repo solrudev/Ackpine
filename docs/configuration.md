@@ -280,3 +280,10 @@ Available for install sessions.
 Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is `PackageSource.Unspecified`.
 
 Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level >= 33.
+
+Plugins
+-------
+
+Ackpine supports plugins. For now they are limited to install sessions. Other limitations include affecting only sessions of `SESSION_BASED` installer by changing Android's `PackageInstaller` behavior.
+
+At the moment, only one Ackpine plugin exists: [ShizukuPlugin](shizuku.md).

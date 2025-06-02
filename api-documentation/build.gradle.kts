@@ -37,6 +37,8 @@ dependencies {
 	dokka(projects.ackpineSplits.splitsKtx)
 	dokka(projects.ackpineAssets)
 	dokka(projects.ackpineResources)
+	dokka(projects.ackpinePlugins.shizuku)
+	dokka(projects.ackpinePlugins.shizukuKtx)
 }
 
 tasks.clean {

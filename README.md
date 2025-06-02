@@ -35,7 +35,7 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
 
 ```toml
 [versions]
-ackpine = "0.12.2"
+ackpine = "0.13.0"
 
 [libraries]
 ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
@@ -52,13 +52,21 @@ ackpine-splits-ktx = { module = "ru.solrudev.ackpine:ackpine-splits-ktx", versio
 # optional - support for asset files inside of application's package
 ackpine-assets = { module = "ru.solrudev.ackpine:ackpine-assets", version.ref = "ackpine" }
 
+# optional - plugin enabling installs through Shizuku
+ackpine-shizuku = { module = "ru.solrudev.ackpine:ackpine-shizuku", version.ref = "ackpine" }
+
+# optional - Kotlin extensions for Shizuku plugin
+ackpine-shizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-shizuku-ktx", version.ref = "ackpine" }
+
 [bundles]
 ackpine = [
     "ackpine-core",
     "ackpine-ktx",
     "ackpine-splits",
     "ackpine-splits-ktx",
-    "ackpine-assets"
+    "ackpine-assets",
+    "ackpine-shizuku",
+    "ackpine-shizuku-ktx"
 ]
 ```
 </details>
@@ -68,7 +76,7 @@ ackpine = [
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.12.2"
+    val ackpineVersion = "0.13.0"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
@@ -82,6 +90,12 @@ dependencies {
 
     // optional - support for asset files inside of application's package
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
+
+	// optional - plugin enabling installs through Shizuku
+	implementation("ru.solrudev.ackpine:ackpine-shizuku:$ackpineVersion")
+
+	// optional - Kotlin extensions for Shizuku plugin
+	implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
 }
 ```
 </details>

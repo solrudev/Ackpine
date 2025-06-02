@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.installer
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
+import android.os.Process
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
@@ -33,6 +34,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
@@ -40,6 +42,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
+import java.util.ServiceLoader
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -77,9 +80,9 @@ internal class PackageInstallerImpl internal constructor(
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
 		val dbWriteSemaphore = BinarySemaphore()
+		persistSession(parameters, id, notificationId, dbWriteSemaphore)
 		val session = installSessionFactory.create(parameters, id, notificationId, dbWriteSemaphore)
 		sessions[id] = session
-		persistSession(parameters, id, notificationId, dbWriteSemaphore)
 		return session
 	}
 
@@ -201,6 +204,7 @@ internal class PackageInstallerImpl internal constructor(
 				),
 				installerType = parameters.installerType,
 				uris = parameters.apks.toList().map { it.toString() },
+				plugins = parameters.plugins.toEntityList(sessionId),
 				name = parameters.name,
 				notificationId,
 				installMode = parameters.installMode.toEntity(sessionId),
@@ -238,12 +242,15 @@ internal class PackageInstallerImpl internal constructor(
 		}
 
 		private fun create(context: Context): PackageInstallerImpl {
-			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool)
+			val applicationContext = context.applicationContext
+			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
 				InstallSessionFactoryImpl(
-					context.applicationContext,
+					applicationContext,
+					defaultAndroidPackageInstaller(applicationContext),
+					ackpineServiceProviders(),
 					database.lastUpdateTimestampDao(),
 					database.installSessionDao(),
 					database.sessionDao(),
@@ -257,6 +264,25 @@ internal class PackageInstallerImpl internal constructor(
 				uuidFactory = UUID::randomUUID,
 				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
 			)
+		}
+
+		@SuppressLint("NewApi")
+		private fun defaultAndroidPackageInstaller(applicationContext: Context) = lazy {
+			PackageInstallerWrapper(
+				applicationContext.packageManager.packageInstaller,
+				Process.myUid()
+			)
+		}
+
+		private fun ackpineServiceProviders() = lazy {
+			ServiceLoader
+				.load(
+					AckpineServiceProvider::class.java,
+					AckpineServiceProvider::class.java.classLoader
+				)
+				.iterator()
+				.asSequence()
+				.toSet()
 		}
 	}
 }

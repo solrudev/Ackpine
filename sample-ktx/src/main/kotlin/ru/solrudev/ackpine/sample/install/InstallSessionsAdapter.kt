@@ -106,10 +106,6 @@ class InstallSessionsAdapter(
 		isReattaching = true
 	}
 
-	override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
-		recyclerView.itemAnimator = DefaultItemAnimator()
-	}
-
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SessionViewHolder {
 		val itemBinding = ItemInstallSessionBinding.inflate(
 			LayoutInflater.from(parent.context), parent, false

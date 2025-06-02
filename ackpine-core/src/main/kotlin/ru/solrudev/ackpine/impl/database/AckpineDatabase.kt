@@ -26,6 +26,7 @@ import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import ru.solrudev.ackpine.impl.database.converters.AckpinePluginParametersConverters
 import ru.solrudev.ackpine.impl.database.converters.DrawableIdConverters
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
 import ru.solrudev.ackpine.impl.database.converters.PackageSourceConverters
@@ -54,6 +55,7 @@ import ru.solrudev.ackpine.impl.database.model.NativeSessionIdEntity
 import ru.solrudev.ackpine.impl.database.model.NotificationIdEntity
 import ru.solrudev.ackpine.impl.database.model.PackageNameEntity
 import ru.solrudev.ackpine.impl.database.model.PackageSourceEntity
+import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TERMINAL_STATES
 import ru.solrudev.ackpine.impl.database.model.SessionInstallerTypeEntity
@@ -86,7 +88,8 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		InstallConstraintsEntity::class,
 		UpdateOwnershipEntity::class,
 		PackageSourceEntity::class,
-		ConfirmationLaunchEntity::class
+		ConfirmationLaunchEntity::class,
+		PluginEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
@@ -95,9 +98,10 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 5, to = 6),
 		AutoMigration(from = 6, to = 7),
 		AutoMigration(from = 8, to = 9),
-		AutoMigration(from = 9, to = 10)
+		AutoMigration(from = 9, to = 10),
+		AutoMigration(from = 10, to = 11)
 	],
-	version = 10,
+	version = 11,
 	exportSchema = true
 )
 @TypeConverters(
@@ -107,7 +111,8 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		ResolvableStringConverters::class,
 		DrawableIdConverters::class,
 		TimeoutStrategyConverters::class,
-		PackageSourceConverters::class
+		PackageSourceConverters::class,
+		AckpinePluginParametersConverters::class
 	]
 )
 internal abstract class AckpineDatabase : RoomDatabase() {

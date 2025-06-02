@@ -1,6 +1,6 @@
 [versions]
-lifecycle = "2.8.7"
-navigation = "2.8.9"
+lifecycle = "2.9.0"
+navigation = "2.9.0"
 room = "2.6.1"
 concurrent = "1.2.0"
 core = "1.12.0"
@@ -30,4 +30,4 @@ lifecycle = ["lifecycle-livedata", "lifecycle-viewmodel"]
 navigation = ["navigation-fragment", "navigation-ui"]
 
 [plugins]
-room = { id = "androidx.room", version = "2.7.0" }
+room = { id = "androidx.room", version = "2.7.1" }
