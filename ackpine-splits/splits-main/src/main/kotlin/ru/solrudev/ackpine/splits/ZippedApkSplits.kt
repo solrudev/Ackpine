@@ -20,12 +20,10 @@ import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import ru.solrudev.ackpine.helpers.closeWithException
-import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
 import java.io.File
 import java.io.FileInputStream
 import java.util.zip.ZipFile
-import java.util.zip.ZipInputStream
 
 /**
  * Factories for [APK splits][Apk] [sequences][Sequence].
@@ -102,9 +100,7 @@ public object ZippedApkSplits {
 		} catch (throwable: Throwable) {
 			fd?.closeWithException(throwable)
 			fileInputStream?.closeWithException(throwable)
-			throwable.printStackTrace()
-			yieldAllUsingZipInputStream(context, uri)
-			return
+			throw throwable
 		}
 		zipFile.entries
 			.asSequence()
@@ -115,15 +111,6 @@ public object ZippedApkSplits {
 					Apk.fromZipEntry(uri.toString(), zipEntry, entryStream, scope = this)
 				}
 			}
-			.forEach { yield(it) }
-
-	}
-
-	private suspend inline fun CloseableSequenceScope<Apk>.yieldAllUsingZipInputStream(context: Context, uri: Uri) {
-		val zipStream = ZipInputStream(context.contentResolver.openInputStream(uri)).use()
-		zipStream.entries()
-			.filterNot { isClosed }
-			.mapNotNull { zipEntry -> Apk.fromZipEntry(uri.toString(), zipEntry, zipStream, scope = this) }
 			.forEach { yield(it) }
 	}
 }
