@@ -135,8 +135,8 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
-	public fun <Plugin : AckpinePlugin<Params>, Params : Parameters> usePlugin(
-		plugin: KClass<Plugin>,
+	public fun <Params : Parameters> usePlugin(
+		plugin: KClass<out AckpinePlugin<Params>>,
 		parameters: Params
 	)
 
@@ -144,7 +144,7 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Applies a [plugin] to the session.
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 */
-	public fun <Plugin : AckpinePlugin<Parameters.None>> usePlugin(plugin: KClass<Plugin>)
+	public fun usePlugin(plugin: KClass<out AckpinePlugin<Parameters.None>>)
 }
 
 @PublishedApi
@@ -225,14 +225,14 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
-	override fun <Plugin : AckpinePlugin<Params>, Params : Parameters> usePlugin(
-		plugin: KClass<Plugin>,
+	override fun <Params : Parameters> usePlugin(
+		plugin: KClass<out AckpinePlugin<Params>>,
 		parameters: Params
 	) {
 		builder.usePlugin(plugin.java, parameters)
 	}
 
-	override fun <Plugin : AckpinePlugin<Parameters.None>> usePlugin(plugin: KClass<Plugin>) {
+	override fun usePlugin(plugin: KClass<out AckpinePlugin<Parameters.None>>) {
 		builder.usePlugin(plugin.java)
 	}
 

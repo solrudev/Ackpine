@@ -426,8 +426,8 @@ public class InstallParameters private constructor(
 		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 		 * @param parameters parameters of the applied plugin for the session being configured.
 		 */
-		public fun <Plugin : AckpinePlugin<Params>, Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<Plugin>,
+		public fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
 			plugins.put(plugin, parameters)
@@ -437,9 +437,7 @@ public class InstallParameters private constructor(
 		 * Applies a [plugin] to the session.
 		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 		 */
-		public fun <Plugin : AckpinePlugin<AckpinePlugin.Parameters.None>> usePlugin(
-			plugin: Class<Plugin>
-		): Builder = apply {
+		public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
 			plugins.put(plugin, AckpinePlugin.Parameters.None)
 		}
 
