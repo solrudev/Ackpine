@@ -81,7 +81,7 @@ internal interface InstallSessionFactory {
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
 	private val defaultPackageInstallerService: Lazy<PackageInstallerService>,
-	private val ackpineServiceProviders: Lazy<List<AckpineServiceProvider>>,
+	private val ackpineServiceProviders: Lazy<Set<AckpineServiceProvider>>,
 	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	private val installSessionDao: InstallSessionDao,
 	private val sessionDao: SessionDao,

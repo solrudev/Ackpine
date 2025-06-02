@@ -282,7 +282,7 @@ internal class PackageInstallerImpl internal constructor(
 				)
 				.iterator()
 				.asSequence()
-				.toList()
+				.toSet()
 		}
 	}
 }
