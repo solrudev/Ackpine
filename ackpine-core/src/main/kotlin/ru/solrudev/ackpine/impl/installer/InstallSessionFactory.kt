@@ -182,9 +182,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 				.filter { provider -> provider.pluginId in pluginIds }
 				.firstNotNullOfOrNull { provider -> provider.get<AndroidPackageInstaller>(applicationContext) }
 				?.also { service ->
-					for (parameters in plugins.values) {
-						service.applyParameters(sessionId, parameters)
-					}
+					plugins
+						.values
+						.filterNot { params -> params is AckpinePlugin.Parameters.None }
+						.forEach { params -> service.applyParameters(sessionId, params) }
 				}
 		}
 		val session = sessionFactory(
