@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.shizuku
 import android.content.Context
 import androidx.annotation.RestrictTo
 import rikka.shizuku.Shizuku
-import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller
+import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineService
 import kotlin.reflect.KClass
@@ -27,7 +27,7 @@ import kotlin.reflect.KClass
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	serviceFactories = setOf(
-		ServiceFactory(AndroidPackageInstaller::class, ShizukuPackageInstaller::create)
+		ServiceFactory(PackageInstallerService::class, ShizukuPackageInstaller::create)
 	)
 ) {
 	override val pluginId = ShizukuPlugin.PLUGIN_ID

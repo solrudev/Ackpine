@@ -80,7 +80,7 @@ internal interface InstallSessionFactory {
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
-	private val defaultAndroidPackageInstaller: Lazy<AndroidPackageInstaller>,
+	private val defaultPackageInstallerService: Lazy<PackageInstallerService>,
 	private val ackpineServiceProviders: Lazy<List<AckpineServiceProvider>>,
 	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	private val installSessionDao: InstallSessionDao,
@@ -112,13 +112,13 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, notificationId, dbWriteSemaphore
 		)
 
-		InstallerType.SESSION_BASED -> withAndroidPackageInstaller(
+		InstallerType.SESSION_BASED -> withPackageInstallerService(
 			id,
 			runCatching { parameters.plugins.getPluginInstances() }
-		) { androidPackageInstaller ->
+		) { packageInstallerService ->
 			SessionBasedInstallSession(
 				applicationContext,
-				androidPackageInstaller,
+				packageInstallerService,
 				apks = parameters.apks.toList(),
 				id,
 				initialState = Session.State.Pending,
@@ -167,20 +167,20 @@ internal class InstallSessionFactoryImpl internal constructor(
 		return AckpinePromptInstallMessage
 	}
 
-	private inline fun <R : CompletableProgressSession<InstallFailure>> withAndroidPackageInstaller(
+	private inline fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
 		sessionId: UUID,
 		pluginsSet: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
-		sessionFactory: (AndroidPackageInstaller) -> R
+		sessionFactory: (PackageInstallerService) -> R
 	): R {
-		val androidPackageInstaller = pluginsSet.mapCatching { plugins ->
+		val packageInstallerService = pluginsSet.mapCatching { plugins ->
 			if (plugins.isEmpty()) {
-				return sessionFactory(defaultAndroidPackageInstaller.value)
+				return sessionFactory(defaultPackageInstallerService.value)
 			}
 			val pluginIds = plugins.keys.map { plugin -> plugin.id }
 			ackpineServiceProviders
 				.value
 				.filter { provider -> provider.pluginId in pluginIds }
-				.firstNotNullOfOrNull { provider -> provider.get<AndroidPackageInstaller>(applicationContext) }
+				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>(applicationContext) }
 				?.also { service ->
 					plugins
 						.values
@@ -189,9 +189,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 				}
 		}
 		val session = sessionFactory(
-			androidPackageInstaller.getOrNull() ?: defaultAndroidPackageInstaller.value
+			packageInstallerService.getOrNull() ?: defaultPackageInstallerService.value
 		)
-		androidPackageInstaller.onFailure { throwable ->
+		packageInstallerService.onFailure { throwable ->
 			when (throwable) {
 				is Error -> session.completeExceptionally(RuntimeException(throwable))
 				is Exception -> session.completeExceptionally(throwable)
@@ -247,10 +247,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
-		val session = withAndroidPackageInstaller(sessionId, installSession.getPlugins()) { androidPackageInstaller ->
+		val session = withPackageInstallerService(sessionId, installSession.getPlugins()) { packageInstallerService ->
 			SessionBasedInstallSession(
 				applicationContext,
-				androidPackageInstaller,
+				packageInstallerService,
 				apks = installSession.uris.map(String::toUri),
 				sessionId,
 				initialState, initialProgress,

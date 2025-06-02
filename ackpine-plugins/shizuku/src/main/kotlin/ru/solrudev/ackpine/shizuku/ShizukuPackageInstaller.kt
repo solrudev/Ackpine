@@ -31,21 +31,21 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
-import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller
+import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.installer.PackageInstallerSessionWrapper
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Implementation of [AndroidPackageInstaller] which delegates work to [PackageInstaller] obtained through Shizuku.
+ * Implementation of [PackageInstallerService] which delegates work to [PackageInstaller] obtained through Shizuku.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuPackageInstaller(
 	private val packageInstaller: PackageInstaller,
 	private val remotePackageInstaller: IPackageInstaller,
 	override val uid: Int
-) : AndroidPackageInstaller {
+) : PackageInstallerService {
 
 	private val pluginParameters = ConcurrentHashMap<UUID, ShizukuPlugin.Parameters>()
 
@@ -63,7 +63,7 @@ internal class ShizukuPackageInstaller(
 		return packageInstaller.createSession(params)
 	}
 
-	override fun openSession(sessionId: Int): AndroidPackageInstaller.Session {
+	override fun openSession(sessionId: Int): PackageInstallerService.Session {
 		val remoteSession = IPackageInstallerSession.Stub.asInterface(
 			ShizukuBinderWrapper(remotePackageInstaller.openSession(sessionId).asBinder())
 		)

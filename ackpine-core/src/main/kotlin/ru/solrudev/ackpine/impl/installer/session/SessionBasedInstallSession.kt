@@ -54,8 +54,8 @@ import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
-import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller
 import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
+import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
@@ -86,7 +86,7 @@ private const val TAG = "SessionBasedInstallSession"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
 	private val context: Context,
-	private val packageInstaller: AndroidPackageInstaller,
+	private val packageInstaller: PackageInstallerService,
 	private val apks: List<Uri>,
 	id: UUID,
 	initialState: Session.State<InstallFailure>,
@@ -392,7 +392,7 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	private fun AndroidPackageInstaller.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
+	private fun PackageInstallerService.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
@@ -420,7 +420,7 @@ internal class SessionBasedInstallSession internal constructor(
 		"SessionBasedInstallSession.writeApks"
 	}
 
-	private fun AndroidPackageInstaller.Session.writeApk(
+	private fun PackageInstallerService.Session.writeApk(
 		afd: AssetFileDescriptor,
 		index: Int,
 		currentProgress: AtomicInteger,
@@ -439,7 +439,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun AndroidPackageInstaller.createAndRegisterSessionCallback(
+	private fun PackageInstallerService.createAndRegisterSessionCallback(
 		nativeSessionId: Int
 	): PackageInstaller.SessionCallback {
 		val callback = packageInstallerSessionCallback(nativeSessionId)

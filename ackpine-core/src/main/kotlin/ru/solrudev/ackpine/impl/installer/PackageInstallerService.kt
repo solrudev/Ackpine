@@ -21,7 +21,7 @@ import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.installer.AndroidPackageInstaller.Session
+import ru.solrudev.ackpine.impl.installer.PackageInstallerService.Session
 import ru.solrudev.ackpine.impl.plugability.AckpineService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.io.Closeable
@@ -33,7 +33,7 @@ import java.util.UUID
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-public interface AndroidPackageInstaller : AckpineService {
+public interface PackageInstallerService : AckpineService {
 
 	/**
 	 * UID of the process owning underlying package installer service.
@@ -118,7 +118,7 @@ public interface AndroidPackageInstaller : AckpineService {
 }
 
 /**
- * An [AndroidPackageInstaller.Session] implementation which forwards all calls to the underlying
+ * A [PackageInstallerService.Session] implementation which forwards all calls to the underlying
  * [PackageInstaller.Session].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
@@ -145,7 +145,7 @@ public class PackageInstallerSessionWrapper(private val session: PackageInstalle
 internal class PackageInstallerWrapper(
 	private val packageInstaller: PackageInstaller,
 	override val uid: Int
-) : AndroidPackageInstaller {
+) : PackageInstallerService {
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) { // no-op
 	}
