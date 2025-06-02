@@ -59,6 +59,6 @@ public class AckpinePluginContainer private constructor(
 		@JvmSynthetic
 		internal fun from(
 			plugins: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
-		) = AckpinePluginContainer(plugins.filterNot { it.key == AckpinePlugin::class.java })
+		) = AckpinePluginContainer(plugins.filterNot { it.key.name == AckpinePlugin::class.java.name })
 	}
 }
