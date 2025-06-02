@@ -350,7 +350,6 @@ public fun InstallParametersDsl.preapproval(
 /**
  * Applies a plugin to the session. [Plugin] is the type of the plugin being applied.
  */
-@Suppress("UNCHECKED_CAST")
 public inline fun <reified Plugin : AckpinePlugin<Parameters.None>> InstallParametersDsl.usePlugin() {
 	usePlugin(Plugin::class)
 }
