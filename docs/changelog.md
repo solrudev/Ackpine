@@ -20,6 +20,7 @@ Version 0.13.0 (2025-06-02)
 - Added `AckpinePlugin`, `AckpinePlugin.Parameters`, `AckpinePluginContainer` types in `ackpine-api`.
 - Added `usePlugin` function to `InstallParameters.Builder`, `InstallParametersDsl`.
 - Added `plugins` property to `InstallParameters`.
+- Added `ackpine-shizuku` and `ackpine-shizuku-ktx` modules.
 
 Version 0.12.2 (2025-05-20)
 ---------------------------
