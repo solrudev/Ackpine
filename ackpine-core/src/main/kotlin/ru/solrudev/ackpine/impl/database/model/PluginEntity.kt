@@ -47,5 +47,5 @@ internal class PluginEntity internal constructor(
 	val pluginClassName: String,
 	@JvmField
 	@ColumnInfo(name = "plugin_parameters")
-	val pluginParameters: AckpinePlugin.Parameters,
+	val pluginParameters: AckpinePlugin.Parameters
 )
