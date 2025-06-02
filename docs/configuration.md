@@ -286,4 +286,4 @@ Plugins
 
 Ackpine supports plugins. For now they are limited to install sessions. Other limitations include affecting only sessions of `SESSION_BASED` installer by changing Android's `PackageInstaller` behavior.
 
-At the moment, only one Ackpine plugin exists: [ShizukuPlugin](/shizuku).
+At the moment, only one Ackpine plugin exists: [ShizukuPlugin](shizuku.md).
