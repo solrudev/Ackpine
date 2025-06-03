@@ -67,9 +67,7 @@ internal class ShizukuPackageInstaller(
 		val remoteSession = IPackageInstallerSession.Stub.asInterface(
 			ShizukuBinderWrapper(remotePackageInstaller.openSession(sessionId).asBinder())
 		)
-		val session = PackageInstaller.Session::class.java
-			.getConstructor(IPackageInstallerSession::class.java)
-			.newInstance(remoteSession)
+		val session = SESSION_CONSTRUCTOR.newInstance(remoteSession)
 		return PackageInstallerSessionWrapper(session)
 	}
 
@@ -122,6 +120,9 @@ internal class ShizukuPackageInstaller(
 	}
 
 	internal companion object Factory {
+
+		private val SESSION_CONSTRUCTOR = PackageInstaller.Session::class.java
+			.getConstructor(IPackageInstallerSession::class.java)
 
 		@JvmSynthetic
 		internal fun create(context: Context): ShizukuPackageInstaller {
