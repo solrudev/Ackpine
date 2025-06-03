@@ -30,11 +30,9 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 internal object DrawableIdConverters {
 
 	@TypeConverter
-	@JvmStatic
 	internal fun fromByteArray(byteArray: ByteArray): DrawableId = byteArray.deserialize()
 
 	@TypeConverter
-	@JvmStatic
 	internal fun toByteArray(drawableId: DrawableId): ByteArray = drawableId.serialize()
 }
 
