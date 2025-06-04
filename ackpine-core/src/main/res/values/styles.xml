@@ -19,6 +19,6 @@
 
 	<style name="WindowAnimation.Ackpine.SessionCommitActivity" parent="@android:style/Animation.Translucent">
 		<item name="android:windowEnterAnimation">@null</item>
-		<item name="android:windowExitAnimation">@anim/fade_out</item>
+		<item name="android:windowExitAnimation">@anim/ackpine_fade_out</item>
 	</style>
 </resources>
