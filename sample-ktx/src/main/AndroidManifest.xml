@@ -27,6 +27,12 @@
 		tools:ignore="ScopedStorage"
 		tools:node="remove" />
 	<uses-permission
+		android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION"
+		tools:node="remove" />
+	<uses-permission
+		android:name="android.permission.ENFORCE_UPDATE_OWNERSHIP"
+		tools:node="remove" />
+	<uses-permission
 		android:name="android.permission.QUERY_ALL_PACKAGES"
 		tools:ignore="QueryAllPackagesPermission" />
 
