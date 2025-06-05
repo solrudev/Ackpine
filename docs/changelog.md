@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 0.13.1 (2025-06-05)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add static `DEFAULT` field to `ShizukuPlugin` parameters.
+- Make all Android resources private in `ackpine-core` module.
+- Remove `UPDATE_PACKAGES_WITHOUT_USER_ACTION` and `ENFORCE_UPDATE_OWNERSHIP` permissions from sample apps.
+
+### Public API changes
+
+- Added static `DEFAULT` field to `ShizukuPlugin.Parameters`.
+
 Version 0.13.0 (2025-06-02)
 ---------------------------
 

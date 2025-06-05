@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ Copyright (C) 2023 Ilya Fomichev
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (C) 2025 Ilya Fomichev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -16,9 +15,5 @@
   -->
 
 <resources>
-
-	<style name="WindowAnimation.Ackpine.SessionCommitActivity" parent="@android:style/Animation.Translucent">
-		<item name="android:windowEnterAnimation">@null</item>
-		<item name="android:windowExitAnimation">@anim/ackpine_fade_out</item>
-	</style>
+	<public />
 </resources>
