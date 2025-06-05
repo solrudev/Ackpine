@@ -232,9 +232,25 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			)
 		}
 
-		@Suppress("Unused")
-		private companion object {
+		public companion object {
+
+			@Suppress("Unused")
 			private const val serialVersionUID: Long = 3253616568184160735L
+
+			/**
+			 * Default [ShizukuPlugin] parameters.
+			 *
+			 * All parameters are `false` by default.
+			 */
+			@JvmField
+			public val DEFAULT: Parameters = Parameters(
+				bypassLowTargetSdkBlock = false,
+				allowTest = false,
+				replaceExisting = false,
+				requestDowngrade = false,
+				grantAllRequestedPermissions = false,
+				allUsers = false
+			)
 		}
 	}
 

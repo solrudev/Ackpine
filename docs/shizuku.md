@@ -81,7 +81,7 @@ To apply the plugin to an install session, just add this to your install paramet
     ```java
     var parameters = new InstallParameters.Builder(uri)
             // ...some session configuration...
-            .usePlugin(ShizukuPlugin.class, new ShizukuPlugin.Parameters.Builder().build())
+            .usePlugin(ShizukuPlugin.class, ShizukuPlugin.Parameters.DEFAULT)
             .build();
     
     // Or, if you want to configure some parameters for the plugin

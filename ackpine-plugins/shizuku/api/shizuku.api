@@ -7,6 +7,8 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpi
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
 	public synthetic fun <init> (ZZZZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Z
@@ -34,5 +36,8 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder 
 	public final fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
 	public final fun setReplaceExisting (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
 	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion {
 }
 
