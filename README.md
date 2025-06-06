@@ -91,10 +91,10 @@ dependencies {
     // optional - support for asset files inside of application's package
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
 
-	// optional - plugin enabling installs through Shizuku
+    // optional - plugin enabling installs through Shizuku
     implementation("ru.solrudev.ackpine:ackpine-shizuku:$ackpineVersion")
 
-	// optional - Kotlin extensions for Shizuku plugin
+    // optional - Kotlin extensions for Shizuku plugin
     implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
 }
 ```
