@@ -1,7 +1,7 @@
 Shizuku
 =======
 
-`ackpine-shizuku` artifact provides a plugin for Ackpine which, when applied, uses Shizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of root user or ADB shell. This enables possibility of using such flags as bypassing low target SDK of the installed app on Android 14+, requesting version downgrade, and others. Also it can bypass requirement for user's confirmation for fresh installs.
+`ackpine-shizuku` artifact provides a plugin for Ackpine which, when applied, uses Shizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of root user or ADB shell even if your app doesn't have such privileges. This enables possibility of using such flags as bypassing low target SDK of the installed app on Android 14+, requesting version downgrade, and others. Also it can bypass requirement for user's confirmation for fresh installs.
 
 Kotlin examples below use APIs from `ackpine-shizuku-ktx` artifact.
 
@@ -10,13 +10,15 @@ Setting up Shizuku
 
 You can see a [full guide](https://github.com/RikkaApps/Shizuku-API#guide) in the Shizuku-API repository.
 
+Latest Shizuku-API version: ![Shizuku-API version](https://img.shields.io/maven-central/v/dev.rikka.shizuku/api)
+
 First of all, if you don't already have Shizuku support in your app, you need to explicitly add Shizuku-API dependencies to your build:
 
 === "Gradle version catalog"
 
     ```toml
     [versions]
-    shizuku = "see in Shizuku-API repository"
+    shizuku = "see above"
     
     [libraries]
     shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
@@ -29,11 +31,11 @@ First of all, if you don't already have Shizuku support in your app, you need to
 
     ```kotlin
     dependencies {
-        val shizukuVersion = "see in Shizuku-API repository"
-        implementation("dev.rikka.shizuku:api:shizukuVersion")
+        val shizukuVersion = "see above"
+        implementation("dev.rikka.shizuku:api:$shizukuVersion")
     
         // Add this if you want to support Shizuku
-        implementation("dev.rikka.shizuku:provider:shizukuVersion")
+        implementation("dev.rikka.shizuku:provider:$shizukuVersion")
     }
     ```
 
@@ -105,6 +107,8 @@ If Shizuku service is not running, or if Shizuku permission is not granted for y
 
 Plugin parameters
 -----------------
+
+By default, all flags are disabled.
 
 ### `bypassLowTargetSdkBlock`
 
