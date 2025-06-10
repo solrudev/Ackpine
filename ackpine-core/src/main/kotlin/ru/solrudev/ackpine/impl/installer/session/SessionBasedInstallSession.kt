@@ -106,7 +106,8 @@ internal class SessionBasedInstallSession internal constructor(
 	private val installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
-	private val handler: Handler,
+	handler: Handler,
+	private val sessionCallbackHandler: Handler,
 	@Volatile private var nativeSessionId: Int,
 	notificationId: Int,
 	commitAttemptsCount: Int,
@@ -443,18 +444,14 @@ internal class SessionBasedInstallSession internal constructor(
 		nativeSessionId: Int
 	): PackageInstaller.SessionCallback {
 		val callback = packageInstallerSessionCallback(nativeSessionId)
-		handler.post {
-			registerSessionCallback(callback)
-		}
+		registerSessionCallback(callback, sessionCallbackHandler)
 		return callback
 	}
 
 	private fun clearPackageInstallerSessionCallback() {
 		val callback = sessionCallback ?: return
 		sessionCallback = null
-		handler.post {
-			packageInstaller.unregisterSessionCallback(callback)
-		}
+		packageInstaller.unregisterSessionCallback(callback)
 	}
 
 	private fun packageInstallerSessionCallback(nativeSessionId: Int) = object : PackageInstaller.SessionCallback() {

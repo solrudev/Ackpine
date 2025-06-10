@@ -24,6 +24,7 @@ import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
 import android.os.Build
+import android.os.Handler
 import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
@@ -86,8 +87,8 @@ internal class ShizukuPackageInstaller(
 		timeoutMillis
 	)
 
-	override fun registerSessionCallback(callback: PackageInstaller.SessionCallback) =
-		packageInstaller.registerSessionCallback(callback)
+	override fun registerSessionCallback(callback: PackageInstaller.SessionCallback, handler: Handler) =
+		packageInstaller.registerSessionCallback(callback, handler)
 
 	override fun unregisterSessionCallback(callback: PackageInstaller.SessionCallback) =
 		packageInstaller.unregisterSessionCallback(callback)

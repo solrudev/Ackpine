@@ -90,7 +90,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
-	private val handler: Handler
+	private val handler: Handler,
+	private val sessionCallbackHandler: Lazy<Handler>
 ) : InstallSessionFactory {
 
 	override fun create(
@@ -130,7 +131,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 				sessionDao,
 				sessionFailureDao = installSessionDao,
 				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
-				executor, handler,
+				executor, handler, sessionCallbackHandler.value,
 				nativeSessionId = -1,
 				notificationId,
 				commitAttemptsCount = 0,
@@ -262,7 +263,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 				sessionDao,
 				sessionFailureDao = installSessionDao,
 				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
-				executor, handler, nativeSessionId, installSession.notificationId!!,
+				executor, handler, sessionCallbackHandler.value, nativeSessionId, installSession.notificationId!!,
 				commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
 				isPreapproved = installSession.preapproval?.isPreapproved == true,
 				dbWriteSemaphore = BinarySemaphore()

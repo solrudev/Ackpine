@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.installer
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.os.Build
+import android.os.Handler
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.installer.PackageInstallerService.Session
@@ -70,7 +71,7 @@ public interface PackageInstallerService : AckpineService {
 	/**
 	 * @see PackageInstaller.registerSessionCallback
 	 */
-	public fun registerSessionCallback(callback: PackageInstaller.SessionCallback)
+	public fun registerSessionCallback(callback: PackageInstaller.SessionCallback, handler: Handler)
 
 	/**
 	 * @see PackageInstaller.unregisterSessionCallback
@@ -169,8 +170,8 @@ internal class PackageInstallerWrapper(
 		timeoutMillis
 	)
 
-	override fun registerSessionCallback(callback: PackageInstaller.SessionCallback) =
-		packageInstaller.registerSessionCallback(callback)
+	override fun registerSessionCallback(callback: PackageInstaller.SessionCallback, handler: Handler) =
+		packageInstaller.registerSessionCallback(callback, handler)
 
 	override fun unregisterSessionCallback(callback: PackageInstaller.SessionCallback) =
 		packageInstaller.unregisterSessionCallback(callback)

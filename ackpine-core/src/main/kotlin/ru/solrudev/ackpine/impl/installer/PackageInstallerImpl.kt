@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.installer
 import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Process
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
@@ -259,7 +260,8 @@ internal class PackageInstallerImpl internal constructor(
 					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
 					AckpineThreadPool,
-					Handler(context.mainLooper)
+					Handler(context.mainLooper),
+					sessionCallbackHandler()
 				),
 				uuidFactory = UUID::randomUUID,
 				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
@@ -283,6 +285,14 @@ internal class PackageInstallerImpl internal constructor(
 				.iterator()
 				.asSequence()
 				.toSet()
+		}
+
+		private fun sessionCallbackHandler() = lazy {
+			Handler(
+				HandlerThread("ackpine.session-callback-handler")
+					.apply { start() }
+					.looper
+			)
 		}
 	}
 }
