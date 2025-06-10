@@ -123,7 +123,12 @@ internal class SessionBasedInstallSession internal constructor(
 
 	@Volatile
 	private var sessionCallback = if (nativeSessionId != -1) {
-		packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
+		try {
+			packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
+		} catch (exception: Exception) {
+			completeExceptionally(exception)
+			null
+		}
 	} else {
 		null
 	}
@@ -451,7 +456,10 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun clearPackageInstallerSessionCallback() {
 		val callback = sessionCallback ?: return
 		sessionCallback = null
-		packageInstaller.unregisterSessionCallback(callback)
+		try {
+			packageInstaller.unregisterSessionCallback(callback)
+		} catch (_: Throwable) { // no-op
+		}
 	}
 
 	private fun packageInstallerSessionCallback(nativeSessionId: Int) = object : PackageInstaller.SessionCallback() {
