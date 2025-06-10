@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.13.2 (2025-06-10)
+---------------------------
+
+### Bug fixes and improvements
+
+- Prevent crashing the whole app on main thread if Shizuku is used when Shizuku service dies, instead only complete an install session with exception.
+
 Version 0.13.1 (2025-06-05)
 ---------------------------
 
