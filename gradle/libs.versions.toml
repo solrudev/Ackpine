@@ -4,6 +4,7 @@ kotlin = "2.1.21"
 kotlin-ksp = "2.1.21-2.0.1"
 dokka = "2.0.0"
 shizuku = "13.1.5"
+hidden-api-refine = "4.4.0"
 
 [libraries]
 materialcomponents = { module = "com.google.android.material:material", version = "1.12.0" }
@@ -23,7 +24,10 @@ insetter = { module = "dev.chrisbanes.insetter:insetter", version = "0.6.1" }
 apache-commons-io = { module = "commons-io:commons-io", version = "2.16.1" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
+hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
+hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
 
 [plugins]
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }

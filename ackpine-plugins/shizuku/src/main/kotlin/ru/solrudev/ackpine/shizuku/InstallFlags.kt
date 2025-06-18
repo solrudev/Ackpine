@@ -16,9 +16,6 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import android.annotation.SuppressLint
-import android.content.pm.PackageInstaller
-
 @JvmSynthetic
 internal const val INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK = 0x01000000
 
@@ -39,18 +36,3 @@ internal const val INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS = 0x00000100
 
 @JvmSynthetic
 internal const val INSTALL_ALL_USERS = 0x00000040
-
-private val INSTALL_FLAGS by lazy {
-	@SuppressLint("PrivateApi")
-	PackageInstaller.SessionParams::class.java.getDeclaredField("installFlags")
-}
-
-@JvmSynthetic
-internal fun PackageInstaller.SessionParams.getInstallFlags(): Int {
-	return INSTALL_FLAGS.get(this) as Int
-}
-
-@JvmSynthetic
-internal fun PackageInstaller.SessionParams.setInstallFlags(flags: Int) {
-	INSTALL_FLAGS.set(this, flags)
-}

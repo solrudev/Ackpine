@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-import ru.solrudev.ackpine.gradle.Constants
-
 description = "API stubs for ackpine-shizuku"
 
 plugins {
-	`java-library`
+	id("ru.solrudev.ackpine.library.base")
 }
 
-java {
-	toolchain.languageVersion = JavaLanguageVersion.of(Constants.JDK_VERSION)
+ackpine {
+	id = "shizuku-stubs"
+}
+
+dependencies {
+	annotationProcessor(libs.hiddenApiRefine.processor)
+	compileOnly(libs.hiddenApiRefine.annotation)
+	api(androidx.annotation)
 }

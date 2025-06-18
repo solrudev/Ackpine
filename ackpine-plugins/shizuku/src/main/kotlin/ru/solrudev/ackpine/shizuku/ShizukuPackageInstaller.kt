@@ -22,7 +22,7 @@ import android.content.pm.IPackageInstaller
 import android.content.pm.IPackageInstallerSession
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
-import android.content.pm.PackageManager
+import android.content.pm.PackageInstallerHidden
 import android.os.Build
 import android.os.Handler
 import android.os.Process
@@ -56,19 +56,21 @@ internal class ShizukuPackageInstaller(
 		}
 	}
 
+	@Suppress("KotlinConstantConditions")
 	override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int {
 		val shizukuParams = pluginParameters[ackpineSessionId]
 		if (shizukuParams != null) {
-			applyInstallFlags(params, shizukuParams)
+			applyInstallFlags(params as PackageInstallerHidden.SessionParamsHidden, shizukuParams)
 		}
 		return packageInstaller.createSession(params)
 	}
 
+	@Suppress("KotlinConstantConditions")
 	override fun openSession(sessionId: Int): PackageInstallerService.Session {
 		val remoteSession = IPackageInstallerSession.Stub.asInterface(
 			ShizukuBinderWrapper(remotePackageInstaller.openSession(sessionId).asBinder())
 		)
-		val session = SESSION_CONSTRUCTOR.newInstance(remoteSession)
+		val session = PackageInstallerHidden.SessionHidden(remoteSession) as PackageInstaller.Session
 		return PackageInstallerSessionWrapper(session)
 	}
 
@@ -98,10 +100,10 @@ internal class ShizukuPackageInstaller(
 	}
 
 	private fun applyInstallFlags(
-		params: PackageInstaller.SessionParams,
+		params: PackageInstallerHidden.SessionParamsHidden,
 		shizukuParams: ShizukuPlugin.Parameters
 	) {
-		var flags = params.getInstallFlags()
+		var flags = params.installFlags
 		shizukuParams.run {
 			flags = applyFlag(flags, bypassLowTargetSdkBlock, INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK)
 			flags = applyFlag(flags, allowTest, INSTALL_ALLOW_TEST)
@@ -110,7 +112,7 @@ internal class ShizukuPackageInstaller(
 			flags = applyFlag(flags, grantAllRequestedPermissions, INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS)
 			flags = applyFlag(flags, allUsers, INSTALL_ALL_USERS)
 		}
-		params.setInstallFlags(flags)
+		params.installFlags = flags
 	}
 
 	private fun applyFlag(installFlags: Int, flag: Boolean, installFlag: Int): Int {
@@ -121,9 +123,6 @@ internal class ShizukuPackageInstaller(
 	}
 
 	internal companion object Factory {
-
-		private val SESSION_CONSTRUCTOR = PackageInstaller.Session::class.java
-			.getConstructor(IPackageInstallerSession::class.java)
 
 		@JvmSynthetic
 		internal fun create(context: Context): ShizukuPackageInstaller {
@@ -147,33 +146,28 @@ internal class ShizukuPackageInstaller(
 			)
 		}
 
+		@Suppress("KotlinConstantConditions")
 		private fun createPackageInstaller(
 			context: Context,
 			remotePackageInstaller: IPackageInstaller,
 			installerPackageName: String,
 			userId: Int
 		) = when {
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PackageInstaller::class.java.getConstructor(
-				IPackageInstaller::class.java,
-				String::class.java,
-				String::class.java,
-				Int::class.javaPrimitiveType
-			).newInstance(remotePackageInstaller, installerPackageName, context.attributionTagCompat, userId)
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PackageInstallerHidden(
+				remotePackageInstaller,
+				installerPackageName,
+				context.attributionTagCompat,
+				userId
+			)
 
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> PackageInstaller::class.java.getConstructor(
-				IPackageInstaller::class.java,
-				String::class.java,
-				Int::class.javaPrimitiveType
-			).newInstance(remotePackageInstaller, installerPackageName, userId)
+			Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> PackageInstallerHidden(
+				remotePackageInstaller,
+				installerPackageName,
+				userId
+			)
 
 			else -> context.applicationContext.let { applicationContext ->
-				PackageInstaller::class.java.getConstructor(
-					Context::class.java,
-					PackageManager::class.java,
-					IPackageInstaller::class.java,
-					String::class.java,
-					Int::class.javaPrimitiveType
-				).newInstance(
+				PackageInstallerHidden(
 					applicationContext,
 					applicationContext.packageManager,
 					remotePackageInstaller,
@@ -181,7 +175,7 @@ internal class ShizukuPackageInstaller(
 					userId
 				)
 			}
-		}
+		} as PackageInstaller
 
 		private val Context.attributionTagCompat
 			get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
