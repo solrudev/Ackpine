@@ -60,7 +60,7 @@ internal class ShizukuPackageInstaller(
 	override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int {
 		val shizukuParams = pluginParameters[ackpineSessionId]
 		if (shizukuParams != null) {
-			applyInstallFlags(params as PackageInstallerHidden.SessionParamsHidden, shizukuParams)
+			applyInstallFlags(params as PackageInstallerHidden.SessionParams, shizukuParams)
 		}
 		return packageInstaller.createSession(params)
 	}
@@ -70,7 +70,7 @@ internal class ShizukuPackageInstaller(
 		val remoteSession = IPackageInstallerSession.Stub.asInterface(
 			ShizukuBinderWrapper(remotePackageInstaller.openSession(sessionId).asBinder())
 		)
-		val session = PackageInstallerHidden.SessionHidden(remoteSession) as PackageInstaller.Session
+		val session = PackageInstallerHidden.Session(remoteSession) as PackageInstaller.Session
 		return PackageInstallerSessionWrapper(session)
 	}
 
@@ -100,7 +100,7 @@ internal class ShizukuPackageInstaller(
 	}
 
 	private fun applyInstallFlags(
-		params: PackageInstallerHidden.SessionParamsHidden,
+		params: PackageInstallerHidden.SessionParams,
 		shizukuParams: ShizukuPlugin.Parameters
 	) {
 		var flags = params.installFlags

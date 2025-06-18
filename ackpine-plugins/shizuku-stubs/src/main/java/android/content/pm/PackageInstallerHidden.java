@@ -49,14 +49,12 @@ public class PackageInstallerHidden {
 		throw new UnsupportedOperationException();
 	}
 
-	@RefineAs(PackageInstaller.SessionParams.class)
-	public static class SessionParamsHidden {
+	public static class SessionParams {
 		public int installFlags;
 	}
 
-	@RefineAs(PackageInstaller.Session.class)
-	public static class SessionHidden {
-		public SessionHidden(IPackageInstallerSession session) {
+	public static class Session {
+		public Session(IPackageInstallerSession session) {
 			throw new UnsupportedOperationException();
 		}
 	}
