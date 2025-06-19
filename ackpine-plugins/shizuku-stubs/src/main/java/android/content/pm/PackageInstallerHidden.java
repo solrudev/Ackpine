@@ -23,6 +23,9 @@ import androidx.annotation.RequiresApi;
 
 import dev.rikka.tools.refine.RefineAs;
 
+/**
+ * Stub for {@link PackageInstaller} which will be renamed and removed during transformation.
+ */
 @RefineAs(PackageInstaller.class)
 public class PackageInstallerHidden {
 
@@ -49,10 +52,16 @@ public class PackageInstallerHidden {
 		throw new UnsupportedOperationException();
 	}
 
+	/**
+	 * Stub for {@link PackageInstaller.SessionParams} which will be removed during transformation.
+	 */
 	public static class SessionParams {
 		public int installFlags;
 	}
 
+	/**
+	 * Stub for {@link PackageInstaller.Session} which will be removed during transformation.
+	 */
 	public static class Session {
 		public Session(IPackageInstallerSession session) {
 			throw new UnsupportedOperationException();

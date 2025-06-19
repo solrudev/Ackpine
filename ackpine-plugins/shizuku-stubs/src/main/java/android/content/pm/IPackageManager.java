@@ -21,7 +21,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 
 /**
- * Stub for android.content.pm.IPackageManager.
+ * Stub for {@code android.content.pm.IPackageManager}.
  */
 public interface IPackageManager extends IInterface {
 	IPackageInstaller getPackageInstaller();

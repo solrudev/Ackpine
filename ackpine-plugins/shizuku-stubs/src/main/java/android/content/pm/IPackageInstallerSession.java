@@ -21,7 +21,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 
 /**
- * Stub for android.content.pm.IPackageInstallerSession.
+ * Stub for {@code android.content.pm.IPackageInstallerSession}.
  */
 public interface IPackageInstallerSession extends IInterface {
 	abstract class Stub extends Binder implements IPackageInstallerSession {
