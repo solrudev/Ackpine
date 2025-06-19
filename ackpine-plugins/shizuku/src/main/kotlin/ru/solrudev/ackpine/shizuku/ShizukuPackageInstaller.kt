@@ -52,7 +52,7 @@ internal class ShizukuPackageInstaller(
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
 		if (parameters is ShizukuPlugin.Parameters) {
-			pluginParameters.put(sessionId, parameters)
+			pluginParameters[sessionId] = parameters
 		}
 	}
 
