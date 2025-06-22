@@ -19,7 +19,6 @@ package ru.solrudev.ackpine.gradle.publishing
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
 import com.vanniktech.maven.publish.MavenPublishBasePlugin
-import com.vanniktech.maven.publish.SonatypeHost
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
@@ -62,7 +61,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 				publishJavadocJar = false
 			)
 		)
-		publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
+		publishToMavenCentral()
 		signAllPublications()
 
 		pom {
