@@ -33,7 +33,7 @@ ackpine {
 }
 
 room {
-	schemaDirectory("$projectDir/schemas")
+	schemaDirectory(layout.projectDirectory.dir("schemas"))
 }
 
 dependencies {
