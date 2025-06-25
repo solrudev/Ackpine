@@ -63,7 +63,7 @@ private class SuppressAnnotatedApiTransformer(
 			.flatMap { it.directAnnotations.values.flatten() }
 			.any { annotation ->
 				val annotationFqn = "${annotation.dri.packageName}.${annotation.dri.classNames}"
-				return annotationFqn in configuration.annotatedWith
+				annotationFqn in configuration.annotatedWith
 			}
 	}
 }
