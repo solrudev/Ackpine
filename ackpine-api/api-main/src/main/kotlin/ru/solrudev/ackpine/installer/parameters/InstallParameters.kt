@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
@@ -447,7 +448,10 @@ public class InstallParameters private constructor(
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
 			val pluginContainer = AckpinePluginContainer.from(plugins)
-			for (plugin in pluginContainer.getPluginInstances().keys) {
+			val pluginInstances = pluginContainer
+				.getPlugins()
+				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
+			for (plugin in pluginInstances) {
 				plugin.apply(this)
 			}
 			return InstallParameters(

@@ -47,6 +47,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -115,7 +116,12 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 		InstallerType.SESSION_BASED -> withPackageInstallerService(
 			id,
-			runCatching { parameters.plugins.getPluginInstances() }
+			runCatching {
+				parameters
+					.plugins
+					.getPlugins()
+					.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
+			}
 		) { packageInstallerService ->
 			SessionBasedInstallSession(
 				applicationContext,
