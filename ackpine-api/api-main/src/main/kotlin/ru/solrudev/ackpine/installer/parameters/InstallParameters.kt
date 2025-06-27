@@ -135,8 +135,15 @@ public class InstallParameters private constructor(
 	/**
 	 * [Plugins][AckpinePlugin] applied to the install session.
 	 */
-	public val plugins: AckpinePluginContainer
+	public val pluginContainer: AckpinePluginContainer
 ) : ConfirmationAware {
+
+	/**
+	 * [Plugins][AckpinePlugin] applied to the install session.
+	 */
+	@Deprecated(message = "Renamed to pluginContainer", replaceWith = ReplaceWith(expression = "pluginContainer"))
+	public val plugins: AckpinePluginContainer
+		get() = pluginContainer
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -153,7 +160,7 @@ public class InstallParameters private constructor(
 		if (preapproval != other.preapproval) return false
 		if (constraints != other.constraints) return false
 		if (packageSource != other.packageSource) return false
-		if (plugins != other.plugins) return false
+		if (pluginContainer != other.pluginContainer) return false
 		return true
 	}
 
@@ -169,7 +176,7 @@ public class InstallParameters private constructor(
 		result = 31 * result + preapproval.hashCode()
 		result = 31 * result + constraints.hashCode()
 		result = 31 * result + packageSource.hashCode()
-		result = 31 * result + plugins.hashCode()
+		result = 31 * result + pluginContainer.hashCode()
 		return result
 	}
 
@@ -186,7 +193,7 @@ public class InstallParameters private constructor(
 				"constraints=$constraints, " +
 				"requestUpdateOwnership=$requestUpdateOwnership, " +
 				"packageSource=$packageSource, " +
-				"plugins=$plugins" +
+				"pluginContainer=$pluginContainer" +
 				")"
 	}
 

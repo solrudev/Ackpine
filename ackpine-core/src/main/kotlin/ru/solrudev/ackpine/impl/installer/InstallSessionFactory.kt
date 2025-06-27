@@ -118,7 +118,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			id,
 			runCatching {
 				parameters
-					.plugins
+					.pluginContainer
 					.getPlugins()
 					.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
 			}
