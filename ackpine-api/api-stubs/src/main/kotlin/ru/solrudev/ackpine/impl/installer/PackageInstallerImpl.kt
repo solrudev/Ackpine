@@ -23,7 +23,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller
  * Stub for `PackageInstallerImpl` from `ackpine-core`.
  */
 public class PackageInstallerImpl : PackageInstaller {
-	public companion object Companion {
+	public companion object {
 		public fun getInstance(context: Context): PackageInstallerImpl {
 			throw NotImplementedError()
 		}

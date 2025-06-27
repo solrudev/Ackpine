@@ -270,6 +270,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : 
 	public final fun getName ()Ljava/lang/String;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
 	public final fun getPackageSource ()Lru/solrudev/ackpine/installer/parameters/PackageSource;
+	public final fun getPluginContainer ()Lru/solrudev/ackpine/plugability/AckpinePluginContainer;
 	public final fun getPlugins ()Lru/solrudev/ackpine/plugability/AckpinePluginContainer;
 	public final fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public final fun getRequestUpdateOwnership ()Z

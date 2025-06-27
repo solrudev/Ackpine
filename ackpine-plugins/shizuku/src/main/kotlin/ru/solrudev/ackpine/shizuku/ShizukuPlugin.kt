@@ -50,12 +50,7 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 		}
 	}
 
-	override fun equals(other: Any?): Boolean {
-		if (this === other) return true
-		if (other !is ShizukuPlugin) return false
-		return id == other.id
-	}
-
+	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin
 	override fun hashCode(): Int = id.hashCode()
 	override fun toString(): String = "ShizukuPlugin"
 

@@ -28,10 +28,9 @@ import kotlin.reflect.KClass
 internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	serviceFactories = setOf(
 		ServiceFactory(PackageInstallerService::class, ShizukuPackageInstaller::create)
-	)
+	),
+	pluginId = ShizukuPlugin.PLUGIN_ID
 ) {
-	override val pluginId = ShizukuPlugin.PLUGIN_ID
-
 	override fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T? {
 		if (Shizuku.isPreV11()) {
 			return null

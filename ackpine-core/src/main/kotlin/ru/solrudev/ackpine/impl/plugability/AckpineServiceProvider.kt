@@ -49,7 +49,8 @@ public interface AckpineServiceProvider {
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractAckpineServiceProvider(
-	serviceFactories: Set<ServiceFactory<*>>
+	serviceFactories: Set<ServiceFactory<*>>,
+	override val pluginId: String
 ) : AckpineServiceProvider {
 
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }

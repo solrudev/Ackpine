@@ -21,7 +21,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 
 /**
- * Stub for android.content.pm.IPackageInstaller.
+ * Stub for {@code android.content.pm.IPackageInstaller}.
  */
 public interface IPackageInstaller extends IInterface {
 	void abandonSession(int sessionId);

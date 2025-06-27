@@ -16,8 +16,6 @@
 
 package ru.solrudev.ackpine.plugability
 
-import androidx.annotation.RestrictTo
-
 /**
  * A container of [AckpinePlugins][AckpinePlugin] applied to a session.
  */
@@ -25,24 +23,11 @@ public class AckpinePluginContainer private constructor(
 	private val pluginsMap: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
 ) {
 
-	private val pluginInstancesMap by lazy {
-		pluginsMap.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
-	}
-
 	/**
 	 * Returns a new copy of plugin entries saved inside of this container.
 	 */
 	public fun getPlugins(): Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters> {
 		return pluginsMap.toMap()
-	}
-
-	/**
-	 * Returns a map of plugin instances with their parameters saved inside of this container.
-	 */
-	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-	@JvmSynthetic
-	public fun getPluginInstances(): Map<AckpinePlugin<*>, AckpinePlugin.Parameters> {
-		return pluginInstancesMap.toMap()
 	}
 
 	override fun equals(other: Any?): Boolean {

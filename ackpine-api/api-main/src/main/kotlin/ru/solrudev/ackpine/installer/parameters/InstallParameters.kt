@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
@@ -134,8 +135,15 @@ public class InstallParameters private constructor(
 	/**
 	 * [Plugins][AckpinePlugin] applied to the install session.
 	 */
-	public val plugins: AckpinePluginContainer
+	public val pluginContainer: AckpinePluginContainer
 ) : ConfirmationAware {
+
+	/**
+	 * [Plugins][AckpinePlugin] applied to the install session.
+	 */
+	@Deprecated(message = "Renamed to pluginContainer", replaceWith = ReplaceWith(expression = "pluginContainer"))
+	public val plugins: AckpinePluginContainer
+		get() = pluginContainer
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -152,7 +160,7 @@ public class InstallParameters private constructor(
 		if (preapproval != other.preapproval) return false
 		if (constraints != other.constraints) return false
 		if (packageSource != other.packageSource) return false
-		if (plugins != other.plugins) return false
+		if (pluginContainer != other.pluginContainer) return false
 		return true
 	}
 
@@ -168,7 +176,7 @@ public class InstallParameters private constructor(
 		result = 31 * result + preapproval.hashCode()
 		result = 31 * result + constraints.hashCode()
 		result = 31 * result + packageSource.hashCode()
-		result = 31 * result + plugins.hashCode()
+		result = 31 * result + pluginContainer.hashCode()
 		return result
 	}
 
@@ -185,7 +193,7 @@ public class InstallParameters private constructor(
 				"constraints=$constraints, " +
 				"requestUpdateOwnership=$requestUpdateOwnership, " +
 				"packageSource=$packageSource, " +
-				"plugins=$plugins" +
+				"pluginContainer=$pluginContainer" +
 				")"
 	}
 
@@ -430,7 +438,7 @@ public class InstallParameters private constructor(
 			plugin: Class<out AckpinePlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
-			plugins.put(plugin, parameters)
+			plugins[plugin] = parameters
 		}
 
 		/**
@@ -438,7 +446,7 @@ public class InstallParameters private constructor(
 		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 		 */
 		public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
-			plugins.put(plugin, AckpinePlugin.Parameters.None)
+			plugins[plugin] = AckpinePlugin.Parameters.None
 		}
 
 		/**
@@ -447,7 +455,10 @@ public class InstallParameters private constructor(
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
 			val pluginContainer = AckpinePluginContainer.from(plugins)
-			for (plugin in pluginContainer.getPluginInstances().keys) {
+			val pluginInstances = pluginContainer
+				.getPlugins()
+				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
+			for (plugin in pluginInstances) {
 				plugin.apply(this)
 			}
 			return InstallParameters(
