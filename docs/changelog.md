@@ -1,6 +1,20 @@
 Change Log
 ==========
 
+Version 0.14.0 (2025-06-27)
+---------------------------
+
+### Bug fixes and improvements
+
+- Rename `InstallParameters.plugins` to `InstallParameters.pluginContainer`.
+- Use direct calls instead of reflection in Shizuku plugin.
+- Make all Android resources private in `ackpine-runtime` module.
+
+### Public API changes
+
+- Added `InstallParameters.pluginContainer` property.
+- Deprecated with warning `InstallParameters.plugins` property.
+
 Version 0.13.2 (2025-06-10)
 ---------------------------
 
