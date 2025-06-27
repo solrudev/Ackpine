@@ -430,7 +430,7 @@ public class InstallParameters private constructor(
 			plugin: Class<out AckpinePlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
-			plugins.put(plugin, parameters)
+			plugins[plugin] = parameters
 		}
 
 		/**
@@ -438,7 +438,7 @@ public class InstallParameters private constructor(
 		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 		 */
 		public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
-			plugins.put(plugin, AckpinePlugin.Parameters.None)
+			plugins[plugin] = AckpinePlugin.Parameters.None
 		}
 
 		/**
