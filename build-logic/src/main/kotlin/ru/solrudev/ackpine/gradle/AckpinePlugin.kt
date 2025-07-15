@@ -21,7 +21,6 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
