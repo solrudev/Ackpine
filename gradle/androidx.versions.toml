@@ -8,7 +8,7 @@ room = "2.6.1"
 [libraries]
 activity = "androidx.activity:activity:1.10.1"
 annotation = "androidx.annotation:annotation:1.9.1"
-appCompat = "androidx.appcompat:appcompat:1.7.0"
+appCompat = "androidx.appcompat:appcompat:1.7.1"
 concurrent-futures-core = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
 concurrent-futures-ktx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent" }
 constraintLayout = "androidx.constraintlayout:constraintlayout:2.2.1"
