@@ -36,5 +36,5 @@ dependencies {
 	api(projects.ackpineCore)
 	compileOnly(projects.ackpinePlugins.shizukuStubs)
 	implementation(libs.shizuku.api)
-	implementation(libs.hiddenapibypass)
+	implementation(libs.hiddenApiBypass)
 }

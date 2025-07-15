@@ -31,7 +31,7 @@ ackpine {
 }
 
 dependencies {
-	api(libs.listenablefuture)
+	api(libs.listenableFuture)
 	api(androidx.annotation)
 	api(projects.ackpineResources)
 	compileOnly(projects.ackpineApi.apiStubs)

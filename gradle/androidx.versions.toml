@@ -1,33 +1,33 @@
 [versions]
+concurrent = "1.2.0"
+core = "1.12.0"
 lifecycle = "2.9.0"
 navigation = "2.9.0"
 room = "2.6.1"
-concurrent = "1.2.0"
-core = "1.12.0"
 
 [libraries]
-activity = { module = "androidx.activity:activity", version = "1.10.1" }
-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
+activity = "androidx.activity:activity:1.10.1"
+annotation = "androidx.annotation:annotation:1.9.1"
+appCompat = "androidx.appcompat:appcompat:1.7.0"
 concurrent-futures-core = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent" }
 concurrent-futures-ktx = { module = "androidx.concurrent:concurrent-futures-ktx", version.ref = "concurrent" }
-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
-coordinatorlayout = { module = "androidx.coordinatorlayout:coordinatorlayout", version = "1.3.0" }
+constraintLayout = "androidx.constraintlayout:constraintlayout:2.2.1"
+coordinatorLayout = "androidx.coordinatorlayout:coordinatorlayout:1.3.0"
 core = { module = "androidx.core:core", version.ref = "core" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core" }
-lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "lifecycle" }
-lifecycle-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+lifecycle-liveData = { module = "androidx.lifecycle:lifecycle-livedata", version.ref = "lifecycle" }
+lifecycle-viewModel = { module = "androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
 navigation-fragment = { module = "androidx.navigation:navigation-fragment", version.ref = "navigation" }
 navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "navigation" }
-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
+recyclerView = "androidx.recyclerview:recyclerview:1.4.0"
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
-startup = { module = "androidx.startup:startup-runtime", version = "1.1.1" }
-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version = "1.1.0" }
+startup = "androidx.startup:startup-runtime:1.1.1"
+swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 
 [bundles]
-lifecycle = ["lifecycle-livedata", "lifecycle-viewmodel"]
+lifecycle = ["lifecycle-liveData", "lifecycle-viewModel"]
 navigation = ["navigation-fragment", "navigation-ui"]
 
 [plugins]
-room = { id = "androidx.room", version = "2.7.1" }
+room = "androidx.room:2.7.1"

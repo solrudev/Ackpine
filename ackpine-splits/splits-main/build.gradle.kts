@@ -32,7 +32,7 @@ ackpine {
 
 dependencies {
 	api(androidx.annotation)
-	api(libs.listenablefuture)
+	api(libs.listenableFuture)
 	implementation(projects.ackpineRuntime)
 	implementation(projects.ackpineSplits.compressAndroid)
 	implementation(androidx.core.ktx)

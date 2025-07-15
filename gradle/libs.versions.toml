@@ -1,33 +1,33 @@
 [versions]
-android-gradleplugin = "8.10.1"
+android-plugin = "8.10.1"
+dokka = "2.0.0"
+hidden-api-refine = "4.4.0"
 kotlin = "2.1.21"
 kotlin-ksp = "2.1.21-2.0.1"
-dokka = "2.0.0"
 shizuku = "13.1.5"
-hidden-api-refine = "4.4.0"
 
 [libraries]
-materialcomponents = { module = "com.google.android.material:material", version = "1.12.0" }
-plugin-gradleMavenPublish = { module = "com.vanniktech:gradle-maven-publish-plugin", version = "0.34.0" }
-plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-gradleplugin" }
-plugin-kotlin-android = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-binaryCompatibilityValidator = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.18.1" }
+plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.34.0"
+plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-bcv = "org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1"
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
-dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+apache-commons-io = "commons-io:commons-io:2.16.1"
+apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
-apksig = { module = "com.android.tools.build:apksig", version.ref = "android-gradleplugin" }
-listenablefuture = { module = "com.google.guava:listenablefuture", version = "1.0" }
-guava = { module = "com.google.guava:guava", version = "33.4.8-android" }
-viewbindingpropertydelegate = { module = "dev.androidbroadcast.vbpd:vbpd", version = "2.0.4" }
-okhttp = { module = "com.squareup.okhttp3:okhttp", version = "4.12.0" }
-insetter = { module = "dev.chrisbanes.insetter:insetter", version = "0.6.1" }
-apache-commons-io = { module = "commons-io:commons-io", version = "2.16.1" }
-shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
-hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
-hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
+dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+guava = "com.google.guava:guava:33.4.8-android"
+hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.1"
 hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
+hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
+insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
+listenableFuture = "com.google.guava:listenablefuture:1.0"
+materialComponents = "com.google.android.material:material:1.12.0"
+okHttp = "com.squareup.okhttp3:okhttp:4.12.0"
+shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"
 
 [plugins]
+hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }

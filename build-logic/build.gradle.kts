@@ -62,9 +62,9 @@ gradlePlugin {
 
 dependencies {
 	implementation(libs.plugin.agp)
-	implementation(libs.plugin.kotlin.android)
+	implementation(libs.plugin.kotlin)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
-	implementation(libs.plugin.binaryCompatibilityValidator)
+	implementation(libs.plugin.bcv)
 	implementation(kotlinx.serialization.json)
 }
