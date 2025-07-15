@@ -31,6 +31,7 @@ import org.jetbrains.dokka.gradle.DokkaPlugin
 import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
+import ru.solrudev.ackpine.gradle.docsDirectory
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 import java.net.URI
 
@@ -58,8 +59,8 @@ public class DokkaConventionPlugin : Plugin<Project> {
 			annotatedWith.add("androidx.annotation.RestrictTo")
 		}
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
-			customAssets.from(layout.settingsDirectory.file("docs/images/logo-icon.svg"))
-			customStyleSheets.from(layout.settingsDirectory.file("docs/css/logo-styles.css"))
+			customAssets.from(layout.docsDirectory.file("images/logo-icon.svg"))
+			customStyleSheets.from(layout.docsDirectory.file("css/logo-styles.css"))
 			footerMessage = "© Ilya Fomichev"
 		}
 		dokkaSourceSets.configureEach {

@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-description = "Aggregates and generates API documentation for library projects"
+import ru.solrudev.ackpine.gradle.docsDirectory
 
-val docsDir = layout.settingsDirectory.dir("docs/api")
+description = "Aggregates and generates API documentation for library projects"
 
 plugins {
 	id("ru.solrudev.ackpine.dokka")
 }
 
+val apiDocsDir = layout.docsDirectory.dir("api")
+
 dokka {
 	moduleName = isolated.rootProject.name
 	dokkaPublications.html {
-		outputDirectory = docsDir
+		outputDirectory = apiDocsDir
 	}
 }
 
@@ -42,5 +44,5 @@ dependencies {
 }
 
 tasks.clean {
-	delete(docsDir)
+	delete(apiDocsDir)
 }

@@ -74,8 +74,8 @@ public class AckpinePlugin : Plugin<Project> {
 	private fun Project.registerReleaseChangelogTask(): TaskProvider<*> {
 		val releaseChangelogFile = layout.projectDirectory.file("changelog.txt")
 		return tasks.register<ReleaseChangelogTask>("releaseChangelog") {
-			changelogFile = layout.projectDirectory.file("docs/changelog.md")
-			outputFile = releaseChangelogFile
+			changelogFile.convention(layout.docsDirectory.file("changelog.md"))
+			outputFile.convention(releaseChangelogFile)
 		}
 	}
 
