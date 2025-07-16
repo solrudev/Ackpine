@@ -35,7 +35,7 @@ dependencies {
 	implementation(androidx.appCompat)
 	implementation(androidx.constraintLayout)
 	implementation(androidx.coordinatorLayout)
-	implementation(androidx.bundles.lifecycle)
+	implementation(androidx.lifecycle.viewModel)
 	implementation(libs.materialComponents)
 	implementation(libs.okHttp)
 	implementation(libs.vbpd)
