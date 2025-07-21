@@ -176,21 +176,21 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
 		sessionId: UUID,
-		pluginsSet: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
+		pluginsMap: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
 		sessionFactory: (PackageInstallerService) -> R
 	): R {
-		val packageInstallerService = pluginsSet.mapCatching { plugins ->
+		val packageInstallerService = pluginsMap.mapCatching { plugins ->
 			if (plugins.isEmpty()) {
 				return sessionFactory(defaultPackageInstallerService.value)
 			}
-			val pluginIds = plugins.keys.map { plugin -> plugin.id }
+			val appliedPlugins = plugins.keys.map { plugin -> plugin.id }
+			val pluginParams = plugins.values
 			ackpineServiceProviders
 				.value
-				.filter { provider -> provider.pluginId in pluginIds }
+				.filter { provider -> provider.pluginId in appliedPlugins }
 				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>(applicationContext) }
 				?.also { service ->
-					plugins
-						.values
+					pluginParams
 						.filterNot { params -> params is AckpinePlugin.Parameters.None }
 						.forEach { params -> service.applyParameters(sessionId, params) }
 				}
