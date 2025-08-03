@@ -85,7 +85,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		super.onCreate(savedInstanceState)
 		if (isPreapproval) {
 			withCompletableSession { session ->
-				(session as PreapprovalListener).onPreapproval()
+				(session as PreapprovalListener).onPreapprovalStarted()
 			}
 		}
 		if (savedInstanceState == null) {

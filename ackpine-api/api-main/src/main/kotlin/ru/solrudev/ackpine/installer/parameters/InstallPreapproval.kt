@@ -51,7 +51,12 @@ public class InstallPreapproval private constructor(
 	/**
 	 * The icon representing the app to be installed.
 	 */
-	public val icon: Uri
+	public val icon: Uri,
+
+	/**
+	 * If `true`, allows to fall back to normal on-demand user approval if preapproval is not available.
+	 */
+	public val fallbackToOnDemandApproval: Boolean
 ) {
 
 	override fun equals(other: Any?): Boolean {
@@ -62,6 +67,7 @@ public class InstallPreapproval private constructor(
 		if (label != other.label) return false
 		if (languageTag != other.languageTag) return false
 		if (icon != other.icon) return false
+		if (fallbackToOnDemandApproval != other.fallbackToOnDemandApproval) return false
 		return true
 	}
 
@@ -70,6 +76,7 @@ public class InstallPreapproval private constructor(
 		result = 31 * result + label.hashCode()
 		result = 31 * result + languageTag.hashCode()
 		result = 31 * result + icon.hashCode()
+		result = 31 * result + fallbackToOnDemandApproval.hashCode()
 		return result
 	}
 
@@ -78,7 +85,8 @@ public class InstallPreapproval private constructor(
 				"packageName='$packageName', " +
 				"label='$label', " +
 				"languageTag='$languageTag', " +
-				"icon=$icon" +
+				"icon=$icon, " +
+				"fallbackToOnDemandApproval=$fallbackToOnDemandApproval" +
 				")"
 	}
 
@@ -112,6 +120,12 @@ public class InstallPreapproval private constructor(
 			private set
 
 		/**
+		 * If `true`, allows to fall back to normal on-demand user approval if preapproval is not available.
+		 */
+		public var fallbackToOnDemandApproval: Boolean = false
+			private set
+
+		/**
 		 * Sets [InstallPreapproval.icon].
 		 */
 		public fun setIcon(icon: Uri): Builder = apply {
@@ -119,10 +133,17 @@ public class InstallPreapproval private constructor(
 		}
 
 		/**
+		 * Sets [InstallPreapproval.fallbackToOnDemandApproval]
+		 */
+		public fun setFallbackToOnDemandApproval(value: Boolean): Builder = apply {
+			this.fallbackToOnDemandApproval = value
+		}
+
+		/**
 		 * Constructs a new instance of [InstallPreapproval].
 		 */
 		public fun build(): InstallPreapproval {
-			return InstallPreapproval(packageName, label, languageTag, icon)
+			return InstallPreapproval(packageName, label, languageTag, icon, fallbackToOnDemandApproval)
 		}
 	}
 
@@ -136,7 +157,8 @@ public class InstallPreapproval private constructor(
 			packageName = "",
 			label = "",
 			languageTag = "",
-			icon = Uri.EMPTY
+			icon = Uri.EMPTY,
+			fallbackToOnDemandApproval = false
 		)
 	}
 }

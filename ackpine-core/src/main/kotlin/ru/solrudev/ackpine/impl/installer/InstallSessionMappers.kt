@@ -80,6 +80,7 @@ internal fun SessionEntity.InstallSession.getPreapproval(): InstallPreapproval {
 		preapproval.locale
 	)
 		.setIcon(preapproval.icon.toUri())
+		.setFallbackToOnDemandApproval(preapproval.fallbackToOnDemandApproval)
 		.build()
 }
 
@@ -139,7 +140,14 @@ internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<Plugin
 
 @JvmSynthetic
 internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalEntity {
-	return InstallPreapprovalEntity(sessionId, packageName, label, languageTag, icon.toString())
+	return InstallPreapprovalEntity(
+		sessionId,
+		packageName,
+		label,
+		languageTag,
+		icon.toString(),
+		fallbackToOnDemandApproval
+	)
 }
 
 @JvmSynthetic

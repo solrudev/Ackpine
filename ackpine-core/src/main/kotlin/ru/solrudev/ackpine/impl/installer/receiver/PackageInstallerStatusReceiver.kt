@@ -34,6 +34,7 @@ import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
+import ru.solrudev.ackpine.impl.installer.session.PackageInstallerStatus
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -161,12 +162,14 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		intent: Intent
 	) {
 		session as PreapprovalListener
-		when (status) {
-			PackageInstaller.STATUS_SUCCESS -> session.onPreapproved()
-			else -> session.complete(
-				Session.State.Failed(getInstallFailure(intent, status, message))
-			)
+		if (status == PackageInstaller.STATUS_SUCCESS) {
+			session.onPreapprovalSucceeded()
+			return
 		}
+		val publicFailure = getInstallFailure(intent, status, message)
+		val legacyStatus = intent.getIntExtra(EXTRA_LEGACY_STATUS, -1)
+		val packageInstallerStatus = PackageInstallerStatus.entries.firstOrNull { it.legacyStatus == legacyStatus }
+		session.onPreapprovalFailed(packageInstallerStatus, publicFailure)
 	}
 
 	private fun showConfirmationNotification(
@@ -230,5 +233,12 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 		@JvmSynthetic
 		internal const val EXTRA_REQUIRE_USER_ACTION = "ru.solrudev.ackpine.extra.REQUIRE_USER_ACTION"
+
+		// https://cs.android.com/android/platform/superproject/main/+/main:frameworks/base/core/java/android/content/pm/PackageInstaller.java;drc=61197364367c9e404c7da6900658f1b16c42d0da;l=331
+		/**
+		 * The status as used internally in the package manager. Refer to [PackageInstallerStatus]
+		 * for a list of all valid legacy statuses.
+		 */
+		private const val EXTRA_LEGACY_STATUS = "android.content.pm.extra.LEGACY_STATUS"
 	}
 }

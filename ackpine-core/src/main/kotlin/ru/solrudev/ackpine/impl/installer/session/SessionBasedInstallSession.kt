@@ -136,6 +136,9 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var isPreapprovalActive = false
 
+	@Volatile
+	private var ignorePreapproval = false
+
 	private val attempts = AtomicInteger(commitAttemptsCount)
 
 	override fun prepare() {
@@ -170,11 +173,11 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	override fun onPreapproval() {
+	override fun onPreapprovalStarted() {
 		isPreapprovalActive = true
 	}
 
-	override fun onPreapproved() {
+	override fun onPreapprovalSucceeded() {
 		isPreapproved = true
 		isPreapprovalActive = false
 		executor.execute {
@@ -182,9 +185,23 @@ internal class SessionBasedInstallSession internal constructor(
 				installPreapprovalDao.setPreapproved(id.toString())
 			}
 		}
-		executor.execute {
-			writeApksToSession(nativeSessionId)
+		executor.execute(::prepare)
+	}
+
+	override fun onPreapprovalFailed(
+		status: PackageInstallerStatus?,
+		publicFailure: InstallFailure
+	) {
+		isPreapprovalActive = false
+		if (
+			preapproval.fallbackToOnDemandApproval
+			&& status == PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE
+		) {
+			ignorePreapproval = true
+			executor.execute(::prepare)
+			return
 		}
+		complete(Failed(publicFailure))
 	}
 
 	override fun onCompleted(state: Completed<InstallFailure>): Boolean {
@@ -220,6 +237,7 @@ internal class SessionBasedInstallSession internal constructor(
 	@ChecksSdkIntAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun shouldRequestPreapproval(): Boolean {
 		return !isPreapproved
+				&& !ignorePreapproval
 				&& preapproval != InstallPreapproval.NONE
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}

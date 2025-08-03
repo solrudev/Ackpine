@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.installer.session
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 
 /**
@@ -28,10 +29,20 @@ internal interface PreapprovalListener {
 	/**
 	 * Called when preapproval is requested.
 	 */
-	fun onPreapproval()
+	fun onPreapprovalStarted()
 
 	/**
-	 * Called when session has been preapproved.
+	 * Called when session preapproval has been completed successfully.
 	 */
-	fun onPreapproved()
+	fun onPreapprovalSucceeded()
+
+	/**
+	 * Called when session preapproval has been completed with failure.
+	 * @param status internal package manager status, representing exact install failure reason.
+	 * @param publicFailure an [InstallFailure] instance to which the [status] is mapped.
+	 */
+	fun onPreapprovalFailed(
+		status: PackageInstallerStatus?,
+		publicFailure: InstallFailure
+	)
 }
