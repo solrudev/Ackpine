@@ -48,7 +48,11 @@ public abstract class AckpineCommonExtension(
 	/**
 	 * Minimum SDK version.
 	 */
-	public var minSdk: Int? by commonExtension.defaultConfig::minSdk
+	public var minSdk: Int?
+		get() = commonExtension.defaultConfig.minSdk
+		set(value) {
+			commonExtension.defaultConfig.minSdk = value
+		}
 
 	/**
 	 * Adds a [listener] which will be called when [id] is set.
