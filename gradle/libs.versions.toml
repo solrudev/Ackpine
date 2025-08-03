@@ -23,7 +23,7 @@ hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-proces
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.12.0"
-okHttp = "com.squareup.okhttp3:okhttp:5.0.0-alpha.17"
+okHttp = "com.squareup.okhttp3:okhttp:5.1.0"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"
 
