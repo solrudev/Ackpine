@@ -23,7 +23,9 @@ import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.setProperty
+import java.util.Optional
 import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
 
@@ -32,7 +34,7 @@ private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
  */
 public abstract class AckpineLibraryExtension @Inject constructor(
 	libraryExtension: LibraryExtension,
-	private val apiValidationExtension: ApiValidationExtension?,
+	private val apiValidationExtension: Optional<ApiValidationExtension>,
 	objectFactory: ObjectFactory
 ) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware {
 
@@ -52,8 +54,6 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
 		}
 		_internalPackages = packageNames.toSet()
-		if (apiValidationExtension != null) {
-			apiValidationExtension.ignoredPackages += packageNames
-		}
+		apiValidationExtension.getOrNull()?.ignoredPackages += packageNames
 	}
 }
