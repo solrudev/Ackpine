@@ -86,7 +86,9 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 			val sessionId = intent.getIntExtra(PackageInstaller.EXTRA_SESSION_ID, -1)
 			val status = intent.getIntExtra(PackageInstaller.EXTRA_STATUS, -1)
 			val message = intent.getStringExtra(PackageInstaller.EXTRA_STATUS_MESSAGE)
-			val isPreapproval = isPreapproval(intent)
+			val legacyStatus = intent.getIntExtra(EXTRA_LEGACY_STATUS, -1)
+			val packageInstallerStatus = PackageInstallerStatus.fromLegacyStatus(legacyStatus)
+			val isPreapproval = isPreapproval(intent) || packageInstallerStatus?.isPreapproval == true
 			when {
 				status == PackageInstaller.STATUS_PENDING_USER_ACTION -> {
 					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
@@ -105,7 +107,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 					return
 				}
 
-				isPreapproval -> handlePreapprovalResult(session, status, message, intent)
+				isPreapproval -> handlePreapprovalResult(session, status, packageInstallerStatus, message, intent)
 				else -> handleSessionResult(session, status, message, intent)
 			}
 		} finally {
@@ -158,18 +160,18 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	private fun handlePreapprovalResult(
 		session: CompletableSession<InstallFailure>?,
 		status: Int,
+		packageInstallerStatus: PackageInstallerStatus?,
 		message: String?,
 		intent: Intent
 	) {
 		session as PreapprovalListener
-		if (status == PackageInstaller.STATUS_SUCCESS) {
-			session.onPreapprovalSucceeded()
-			return
+		when (status) {
+			PackageInstaller.STATUS_SUCCESS -> session.onPreapprovalSucceeded()
+			else -> {
+				val publicFailure = getInstallFailure(intent, status, message)
+				session.onPreapprovalFailed(packageInstallerStatus, publicFailure)
+			}
 		}
-		val publicFailure = getInstallFailure(intent, status, message)
-		val legacyStatus = intent.getIntExtra(EXTRA_LEGACY_STATUS, -1)
-		val packageInstallerStatus = PackageInstallerStatus.entries.firstOrNull { it.legacyStatus == legacyStatus }
-		session.onPreapprovalFailed(packageInstallerStatus, publicFailure)
 	}
 
 	private fun showConfirmationNotification(

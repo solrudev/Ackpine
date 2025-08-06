@@ -198,7 +198,13 @@ internal class SessionBasedInstallSession internal constructor(
 			&& status == PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE
 		) {
 			ignorePreapproval = true
-			executor.execute(::prepare)
+			nativeSessionId = -1
+			executor.execute {
+				dbWriteSemaphore.withPermit {
+					nativeSessionIdDao.removeNativeSessionId(id.toString())
+				}
+				prepare()
+			}
 			return
 		}
 		complete(Failed(publicFailure))

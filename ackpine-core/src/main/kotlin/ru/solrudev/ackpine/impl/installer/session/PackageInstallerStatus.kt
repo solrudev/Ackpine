@@ -23,10 +23,22 @@ import androidx.annotation.RestrictTo
  * The status as used internally in the package manager.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal enum class PackageInstallerStatus(@get:JvmSynthetic internal val legacyStatus: Int) {
+internal enum class PackageInstallerStatus(
+	@get:JvmSynthetic internal val legacyStatus: Int,
+	@get:JvmSynthetic internal val isPreapproval: Boolean = false
+) {
 
 	/**
 	 * Installation failed return code: requesting user pre-approval is currently unavailable.
 	 */
-	INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE(-129)
+	INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE(-129, isPreapproval = true);
+
+	internal companion object {
+
+		/**
+		 * Returns an enum entry matching the int status.
+		 */
+		@JvmSynthetic
+		internal fun fromLegacyStatus(legacyStatus: Int) = entries.firstOrNull { it.legacyStatus == legacyStatus }
+	}
 }
