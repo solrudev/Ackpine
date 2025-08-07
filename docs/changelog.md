@@ -1,6 +1,25 @@
 Change Log
 ==========
 
+Version 0.15.0 (2025-08-07)
+---------------------------
+
+### Dependencies
+
+- Updated `androidx.concurrent` to 1.3.0.
+- Updated `apksig` to 8.12.0.
+
+### Bug fixes and improvements
+
+- Add `fallbackToOnDemandApproval` parameter for pre-approvals. See [documentation](configuration.md#preapproval) for details.
+- Raise `InstallParameters.plugins` deprecation level to error.
+- Improvements for file picking in sample apps.
+
+### Public API changes
+
+- Added `fallbackToOnDemandApproval` property to `InstallPreapproval`, `InstallPreapproval.Builder` and `InstallPreapprovalDsl`.
+- Raised deprecation level to error for `InstallParameters.plugins` property.
+
 Version 0.14.0 (2025-06-27)
 ---------------------------
 
