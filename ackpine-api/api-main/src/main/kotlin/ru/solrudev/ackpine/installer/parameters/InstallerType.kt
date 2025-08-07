@@ -66,4 +66,12 @@ public enum class InstallerType {
 
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
 @JvmSynthetic
-internal fun areSplitPackagesSupported(): Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+internal fun areSplitPackagesSupported(): Boolean = isPackageInstallerAvailable
+
+// To avoid referencing Build.VERSION.SDK_INT
+private val isPackageInstallerAvailable = try {
+	Class.forName("android.content.pm.PackageInstaller")
+	true
+} catch (_: ClassNotFoundException) {
+	false
+}

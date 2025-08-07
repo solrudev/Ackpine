@@ -141,7 +141,11 @@ public class InstallParameters private constructor(
 	/**
 	 * [Plugins][AckpinePlugin] applied to the install session.
 	 */
-	@Deprecated(message = "Renamed to pluginContainer", replaceWith = ReplaceWith(expression = "pluginContainer"))
+	@Deprecated(
+		message = "Renamed to pluginContainer",
+		replaceWith = ReplaceWith(expression = "pluginContainer"),
+		level = DeprecationLevel.ERROR
+	)
 	public val plugins: AckpinePluginContainer
 		get() = pluginContainer
 

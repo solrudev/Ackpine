@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,13 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.sample.util
+package ru.solrudev.ackpine.gradle
 
-import android.content.ContentResolver
-import android.net.Uri
-import android.provider.OpenableColumns
-import androidx.core.net.toFile
+import org.gradle.api.file.Directory
+import org.gradle.api.file.ProjectLayout
 
-fun ContentResolver.getDisplayName(uri: Uri): String {
-	if (uri.scheme == ContentResolver.SCHEME_FILE) {
-		return uri.toFile().name
-	}
-	query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null).use { cursor ->
-		if (cursor == null || !cursor.moveToFirst()) {
-			return ""
-		}
-		return cursor.getString(0)
-	}
-}
+/**
+ * Returns the documentation directory.
+ */
+public val ProjectLayout.docsDirectory: Directory
+	get() = settingsDirectory.dir("docs")

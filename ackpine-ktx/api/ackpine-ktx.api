@@ -124,7 +124,9 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParametersKt 
 }
 
 public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDsl {
+	public abstract fun getFallbackToOnDemandApproval ()Z
 	public abstract fun getIcon ()Landroid/net/Uri;
+	public abstract fun setFallbackToOnDemandApproval (Z)V
 	public abstract fun setIcon (Landroid/net/Uri;)V
 }
 
@@ -133,7 +135,9 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalDs
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;)V
 	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public fun getFallbackToOnDemandApproval ()Z
 	public fun getIcon ()Landroid/net/Uri;
+	public fun setFallbackToOnDemandApproval (Z)V
 	public fun setIcon (Landroid/net/Uri;)V
 }
 

@@ -27,10 +27,10 @@ import android.net.Uri
 import android.os.CancellationSignal
 import android.os.ParcelFileDescriptor
 import androidx.core.net.toUri
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import okhttp3.internal.headersContentLength
 import java.io.FileOutputStream
 import java.io.InputStream
 import java.io.OutputStream
@@ -48,7 +48,7 @@ class OkHttpProvider : ContentProvider() {
 	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
 			val response = executeHttpRequest(uri)
-			val contentLength = response.headersContentLength()
+			val contentLength = response.headers["Content-Length"]?.toLongOrNull() ?: -1L
 			response.writeBodyTo(outputFd, signal)
 			return AssetFileDescriptor(inputFd, 0, contentLength)
 		}
@@ -59,7 +59,7 @@ class OkHttpProvider : ContentProvider() {
 	}
 
 	override fun getType(uri: Uri) = executeHttpRequest(uri).use { response ->
-		response.body?.contentType()?.toString()
+		response.body.contentType()?.toString()
 	}
 
 	private fun executeHttpRequest(uri: Uri): Response {
@@ -70,16 +70,14 @@ class OkHttpProvider : ContentProvider() {
 			.encodedQuery(uri.encodedQuery)
 			.build()
 			.toString()
-		val request = Request.Builder()
-			.url(url)
-			.build()
+		val request = Request(url.toHttpUrl())
 		return okHttpClient.newCall(request).execute()
 	}
 
 	private fun Response.writeBodyTo(outputFd: ParcelFileDescriptor, signal: CancellationSignal?) = thread {
 		use {
 			outputFd.safeWrite { outputStream ->
-				body?.byteStream()?.buffered()?.use { inputStream ->
+				body.byteStream().buffered().use { inputStream ->
 					inputStream.copyTo(outputStream, signal)
 					outputStream.flush()
 				}

@@ -36,6 +36,7 @@ import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
+import java.util.Optional
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
 
@@ -50,7 +51,12 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		val apiValidationExtension = extensions.findByType<ApiValidationExtension>()?.apply {
 			nonPublicMarkers += "androidx.annotation.RestrictTo"
 		}
-		extensions.create("ackpine", AckpineLibraryExtension::class.java, libraryExtension, apiValidationExtension)
+		extensions.create(
+			"ackpine",
+			AckpineLibraryExtension::class.java,
+			libraryExtension,
+			Optional.ofNullable(apiValidationExtension)
+		)
 		configureAndroid()
 		registerConsumableLibraryConfiguration()
 	}

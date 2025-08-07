@@ -205,7 +205,7 @@ internal class PackageInstallerImpl internal constructor(
 				),
 				installerType = parameters.installerType,
 				uris = parameters.apks.toList().map { it.toString() },
-				plugins = parameters.plugins.toEntityList(sessionId),
+				plugins = parameters.pluginContainer.toEntityList(sessionId),
 				name = parameters.name,
 				notificationId,
 				installMode = parameters.installMode.toEntity(sessionId),
@@ -225,6 +225,7 @@ internal class PackageInstallerImpl internal constructor(
 		@Volatile
 		private var packageInstaller: PackageInstallerImpl? = null
 
+		// Hide from Java and don't mangle the function name so it can be linked to in ackpine-api
 		@JvmName("getInstance")
 		@JvmSynthetic
 		internal fun getInstance(context: Context): PackageInstallerImpl {

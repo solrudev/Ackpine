@@ -51,6 +51,9 @@ internal class InstallPreapprovalEntity(
 	@ColumnInfo(name = "icon")
 	val icon: String,
 	@JvmField
+	@ColumnInfo(name = "fallback_to_on_demand_approval", defaultValue = "false")
+	val fallbackToOnDemandApproval: Boolean,
+	@JvmField
 	@ColumnInfo(name = "is_preapproved")
 	val isPreapproved: Boolean = false
 )

@@ -23,11 +23,12 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts.GetContent
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.annotation.RequiresApi
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
+import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -39,11 +40,14 @@ import kotlinx.coroutines.launch
 import ru.solrudev.ackpine.sample.R
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding
 import ru.solrudev.ackpine.sample.util.findAppBarLayout
-import ru.solrudev.ackpine.sample.util.getDisplayName
 import ru.solrudev.ackpine.splits.ApkSplits.validate
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
+
+private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
+private const val ZIP_MIME_TYPE = "application/zip"
+private const val BINARY_MIME_TYPE = "application/octet-stream"
 
 class InstallFragment : Fragment(R.layout.fragment_install) {
 
@@ -81,7 +85,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		resetUriToInstall()
 	}
 
-	private val pickerLauncher = registerForActivityResult(GetContent(), ::install)
+	private val pickerLauncher = registerForActivityResult(OpenDocument(), ::install)
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		findAppBarLayout().setLiftOnScrollTargetView(binding.recyclerViewInstall)
@@ -145,7 +149,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 
 	private fun chooseFile() {
 		try {
-			pickerLauncher.launch("*/*")
+			pickerLauncher.launch(arrayOf(APK_MIME_TYPE, ZIP_MIME_TYPE, BINARY_MIME_TYPE))
 		} catch (_: ActivityNotFoundException) { // no-op
 		}
 	}
@@ -154,17 +158,23 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		if (uri == null) {
 			return
 		}
-		val name = requireContext().contentResolver.getDisplayName(uri)
+		val name = DocumentFile.fromSingleUri(requireContext(), uri)?.name.orEmpty()
 		val apks = getApksFromUri(uri, name)
 		viewModel.installPackage(apks, name)
 	}
 
 	private fun getApksFromUri(uri: Uri, name: String): SplitPackage.Provider {
-		val extension = name.substringAfterLast('.', "").lowercase()
 		val context = requireContext()
-		return when (extension) {
-			"apk" -> SingletonApkSequence(uri, context).toSplitPackage()
-			"zip", "apks", "xapk", "apkm" -> ZippedApkSplits.getApksForUri(uri, context)
+		val fileType = name
+			.substringAfterLast('.', "")
+			.ifEmpty { context.contentResolver.getType(uri) }
+			?.lowercase()
+		return when (fileType) {
+			"apk",
+			APK_MIME_TYPE -> SingletonApkSequence(uri, context).toSplitPackage()
+
+			"zip", "apks", "xapk", "apkm",
+			ZIP_MIME_TYPE, BINARY_MIME_TYPE -> ZippedApkSplits.getApksForUri(uri, context)
 				.validate()
 				.toSplitPackage()
 				.filterCompatible(context)

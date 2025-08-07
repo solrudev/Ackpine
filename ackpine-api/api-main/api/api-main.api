@@ -313,8 +313,9 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 public final class ru/solrudev/ackpine/installer/parameters/InstallPreapproval {
 	public static final field Companion Lru/solrudev/ackpine/installer/parameters/InstallPreapproval$Companion;
 	public static final field NONE Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
-	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/net/Uri;ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getFallbackToOnDemandApproval ()Z
 	public final fun getIcon ()Landroid/net/Uri;
 	public final fun getLabel ()Ljava/lang/String;
 	public final fun getLanguageTag ()Ljava/lang/String;
@@ -328,7 +329,9 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallPreapproval$B
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;)V
 	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
+	public final fun getFallbackToOnDemandApproval ()Z
 	public final fun getIcon ()Landroid/net/Uri;
+	public final fun setFallbackToOnDemandApproval (Z)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval$Builder;
 	public final fun setIcon (Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval$Builder;
 }
 

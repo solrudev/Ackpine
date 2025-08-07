@@ -98,9 +98,11 @@ class MainViewModel(
 			preapproval(
 				packageName = "ru.solrudev.ackpine.sample",
 				label = "Ackpine",
-				locale = ULocale.US,
+				locale = ULocale.US
+			) {
 				icon = AssetFileProvider.getUriForAsset("ackpine_icon.webp")
-			)
+				fallbackToOnDemandApproval = true
+			}
 			constraints(timeout = 1.minutes) {
 				timeoutStrategy = TimeoutStrategy.CommitEagerly
 				isAppNotInteractingRequired = true

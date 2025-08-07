@@ -33,9 +33,11 @@ An example of creating a session with custom parameters:
         preapproval(
             packageName = "com.example.package",
             label = "Sample App",
-            locale = ULocale.US,
+            locale = ULocale.US
+        ) {
             icon = iconUri
-        )
+            fallbackToOnDemandApproval = true
+        }
         constraints(timeout = 1.minutes) {
             timeoutStrategy = TimeoutStrategy.CommitEagerly
             isAppNotForegroundRequired = true
@@ -74,6 +76,7 @@ An example of creating a session with custom parameters:
             .build();
     var preapproval = new InstallPreapproval.Builder("com.example.package", "Sample App", ULocale.US)
             .setIcon(iconUri)
+            .setFallbackToOnDemandApproval(true)
             .build();
     var timeout = Duration.ofMinutes(1);
     // Or use raw millis value on older Android versions, e.g. 60000L
@@ -228,6 +231,8 @@ Preapproval
 Available for install sessions on API level >= 34. Attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
 
 Preapproval requires package name of the app being installed, label representing it and locale used to get the label to be provided. Optionally, it's possible to also provide the app's icon via `Uri`.
+
+If preapproval is not available on the device, session will fail. If you want to instead fall back to on-demand user approval, set the `fallbackToOnDemandApproval` property to `true` when configuring `InstallPreapproval`.
 
 Constraints
 -----------

@@ -33,6 +33,11 @@ public interface InstallPreapprovalDsl {
 	 * The icon representing the app to be installed.
 	 */
 	public var icon: Uri
+
+	/**
+	 * If `true`, allows to fall back to normal on-demand user approval if preapproval is not available.
+	 */
+	public var fallbackToOnDemandApproval: Boolean
 }
 
 @PublishedApi
@@ -62,6 +67,12 @@ internal class InstallPreapprovalDslBuilder(
 		get() = builder.icon
 		set(value) {
 			builder.setIcon(value)
+		}
+
+	override var fallbackToOnDemandApproval: Boolean
+		get() = builder.fallbackToOnDemandApproval
+		set(value) {
+			builder.setFallbackToOnDemandApproval(value)
 		}
 
 	fun build() = builder.build()

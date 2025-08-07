@@ -30,7 +30,7 @@ ackpine {
 
 dependencies {
 	api(androidx.annotation)
-	compileOnly(libs.listenablefuture)
+	compileOnly(libs.listenableFuture)
 	implementation(androidx.core.ktx)
 	implementation(androidx.concurrent.futures.core)
 }

@@ -19,31 +19,28 @@ package ru.solrudev.ackpine.sample.install;
 import static android.Manifest.permission.POST_NOTIFICATIONS;
 
 import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts.GetContent;
+import androidx.activity.result.contract.ActivityResultContracts.OpenDocument;
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.os.BundleCompat;
 import androidx.core.view.ViewKt;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.io.File;
 import java.util.HashSet;
-import java.util.Objects;
 
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
@@ -54,6 +51,9 @@ import ru.solrudev.ackpine.splits.ZippedApkSplits;
 public final class InstallFragment extends Fragment {
 
 	public static final String URI_KEY = "URI";
+	private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
+	private static final String ZIP_MIME_TYPE = "application/zip";
+	private static final String BINARY_MIME_TYPE = "application/octet-stream";
 	private FragmentInstallBinding binding;
 	private InstallViewModel viewModel;
 
@@ -86,8 +86,8 @@ public final class InstallFragment extends Fragment {
 				resetUriToInstall();
 			});
 
-	private final ActivityResultLauncher<String> pickerLauncher =
-			registerForActivityResult(new GetContent(), this::install);
+	private final ActivityResultLauncher<String[]> pickerLauncher =
+			registerForActivityResult(new OpenDocument(), this::install);
 
 	public InstallFragment() {
 		super(R.layout.fragment_install);
@@ -175,7 +175,7 @@ public final class InstallFragment extends Fragment {
 
 	private void chooseFile() {
 		try {
-			pickerLauncher.launch("*/*");
+			pickerLauncher.launch(new String[]{APK_MIME_TYPE, ZIP_MIME_TYPE, BINARY_MIME_TYPE});
 		} catch (ActivityNotFoundException ignored) { // no-op
 		}
 	}
@@ -184,35 +184,37 @@ public final class InstallFragment extends Fragment {
 		if (uri == null) {
 			return;
 		}
-		final var name = getDisplayName(requireContext().getContentResolver(), uri);
+		final var document = DocumentFile.fromSingleUri(requireContext(), uri);
+		if (document == null) {
+			return;
+		}
+		var name = document.getName();
+		if (name == null) {
+			name = "";
+		}
 		final var apks = getApksFromUri(uri, name);
 		viewModel.installPackage(apks, name);
 	}
 
 	@NonNull
 	private SplitPackage.Provider getApksFromUri(@NonNull Uri uri, @NonNull String name) {
-		final var extensionIndex = name.lastIndexOf('.') + 1;
-		final var extension = extensionIndex != 0 ? name.substring(extensionIndex).toLowerCase() : "";
 		final var context = requireContext();
-		return switch (extension) {
-			case "apk" -> SplitPackage.from(new SingletonApkSequence(uri, context));
-			case "zip", "apks", "xapk", "apkm" -> SplitPackage
+		final var extensionIndex = name.lastIndexOf('.') + 1;
+		var fileType = extensionIndex != 0 ? name.substring(extensionIndex) : "";
+		if (fileType.isEmpty()) {
+			fileType = context.getContentResolver().getType(uri);
+		}
+		if (fileType == null) {
+			return SplitPackage.empty();
+		}
+		fileType = fileType.toLowerCase();
+		return switch (fileType) {
+			case "apk", APK_MIME_TYPE -> SplitPackage.from(new SingletonApkSequence(uri, context));
+			case "zip", "apks", "xapk", "apkm", ZIP_MIME_TYPE, BINARY_MIME_TYPE -> SplitPackage
 					.from(ApkSplits.validate(ZippedApkSplits.getApksForUri(uri, context)))
 					.filterCompatible(context);
 			default -> SplitPackage.empty();
 		};
-	}
-
-	@NonNull
-	private static String getDisplayName(@NonNull ContentResolver resolver, @NonNull Uri uri) {
-		if (Objects.equals(uri.getScheme(), ContentResolver.SCHEME_FILE)) {
-			return new File(Objects.requireNonNull(uri.getPath())).getName();
-		}
-		try (final var cursor = resolver.query(uri, new String[]{OpenableColumns.DISPLAY_NAME}, null, null, null)) {
-			if (cursor == null) return "";
-			if (!cursor.moveToFirst()) return "";
-			return cursor.getString(0);
-		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.M)
