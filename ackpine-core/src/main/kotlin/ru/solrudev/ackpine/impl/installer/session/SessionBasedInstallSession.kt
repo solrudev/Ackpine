@@ -33,6 +33,7 @@ import android.graphics.BitmapFactory
 import android.icu.util.ULocale
 import android.net.Uri
 import android.os.Build
+import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
 import android.util.Log
@@ -40,8 +41,11 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import ru.solrudev.ackpine.helpers.closeAllWithException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import ru.solrudev.ackpine.helpers.getOrElse
+import ru.solrudev.ackpine.helpers.mapCatching
 import ru.solrudev.ackpine.helpers.use
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
@@ -75,6 +79,7 @@ import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
+import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
@@ -403,7 +408,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun writeApksToSession(sessionId: Int) {
 		val session = packageInstaller.openSession(sessionId)
-		session.writeApks().handleResult(
+		session.writeApksAsync().handleResult(
 			block = {
 				try {
 					session.close()
@@ -414,7 +419,7 @@ internal class SessionBasedInstallSession internal constructor(
 			},
 			onException = { exception ->
 				session.closeWithException(exception)
-				if (exception is OperationCanceledException) {
+				if (exception is CancellationException) {
 					cancel()
 				} else {
 					completeExceptionally(exception)
@@ -422,39 +427,67 @@ internal class SessionBasedInstallSession internal constructor(
 			})
 	}
 
-	private fun PackageInstallerService.Session.writeApks() = CallbackToFutureAdapter.getFuture { completer ->
+	private fun PackageInstallerService.Session.writeApksAsync() = CallbackToFutureAdapter.getFuture { completer ->
+		writeApks(completer)
+	}
+
+	private fun PackageInstallerService.Session.writeApks(
+		completer: CallbackToFutureAdapter.Completer<Unit>
+	): String {
+		val tag = "SessionBasedInstallSession.writeApks"
+		val assetFileDescriptors = apks
+			.mapCatching { uri ->
+				context.openAssetFileDescriptor(uri, cancellationSignal)
+					?: error("AssetFileDescriptor was null: $uri")
+			}
+			.getOrElse { failure ->
+				closeAllWithException(failure.partialResult, failure.exception)
+				if (failure.exception is OperationCanceledException) {
+					completer.setCancelled()
+				} else {
+					completer.setException(failure.exception)
+				}
+				return tag
+			}
 		val countdown = AtomicInteger(apks.size)
 		val currentProgress = AtomicInteger(0)
 		val progressMax = apks.size * PROGRESS_MAX
-		apks.forEachIndexed { index, uri ->
-			val afd = context.openAssetFileDescriptor(uri, cancellationSignal)
-				?: error("AssetFileDescriptor was null: $uri")
+		val sharedCancelSignal = CancellationSignal()
+		cancellationSignal.setOnCancelListener {
+			sharedCancelSignal.cancel()
+			completer.setCancelled()
+		}
+		assetFileDescriptors.forEachIndexed { index, afd ->
 			try {
 				executor.execute {
 					try {
 						afd.use {
-							writeApk(afd, index, currentProgress, progressMax)
+							writeApk(afd, index, currentProgress, progressMax, sharedCancelSignal)
 							if (countdown.decrementAndGet() == 0) {
 								completer.set(Unit)
 							}
 						}
+					} catch (_: OperationCanceledException) { // no-op
 					} catch (throwable: Throwable) {
+						sharedCancelSignal.cancel()
 						completer.setException(throwable)
 					}
 				}
 			} catch (exception: Exception) {
 				afd.closeWithException(exception)
+				sharedCancelSignal.cancel()
 				completer.setException(exception)
 			}
 		}
-		"SessionBasedInstallSession.writeApks"
+		return tag
 	}
 
 	private fun PackageInstallerService.Session.writeApk(
 		afd: AssetFileDescriptor,
 		index: Int,
 		currentProgress: AtomicInteger,
-		progressMax: Int
+		progressMax: Int,
+		cancellationSignal: CancellationSignal
 	) = afd.createInputStream().use { apkStream ->
 		requireNotNull(apkStream) { "APK $index InputStream was null." }
 		val length = afd.declaredLength

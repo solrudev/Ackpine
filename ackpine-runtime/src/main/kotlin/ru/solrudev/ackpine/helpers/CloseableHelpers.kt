@@ -45,3 +45,36 @@ public fun AutoCloseable.closeWithException(cause: Throwable) {
 		cause.addSuppressed(closeException)
 	}
 }
+
+/**
+ * Guarantees closing all [resources] and delivery of every failure through thrown exception.
+ */
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@JvmSynthetic
+public fun closeAll(resources: Iterable<AutoCloseable>) {
+	resources
+		.mapCatching { it.close() }
+		.getOrThrow()
+}
+
+/**
+ * Guarantees closing all [resources] and delivery of every failure through the [cause] via its suppressed exceptions.
+ */
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@JvmSynthetic
+public fun closeAllWithException(resources: Iterable<AutoCloseable>, cause: Throwable) {
+	resources
+		.mapCatching { it.close() }
+		.failureOrNull()
+		?.let { failure -> cause.addSuppressed(failure.exception) }
+}
+
+/**
+ * Guarantees closing all [resources] and delivery of every failure through thrown exception.
+ */
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@JvmSynthetic
+public fun closeAll(vararg resources: AutoCloseable): Unit = closeAll(resources.asIterable())

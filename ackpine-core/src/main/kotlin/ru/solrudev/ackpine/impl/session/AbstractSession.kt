@@ -194,6 +194,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		try {
 			cancellationSignal.cancel()
+			cancellationSignal.setOnCancelListener(null)
 			handleCancellation()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
