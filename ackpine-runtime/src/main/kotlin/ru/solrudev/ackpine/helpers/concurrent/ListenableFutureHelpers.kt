@@ -111,5 +111,7 @@ private fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
 		Result.success(get())
 	} catch (exception: ExecutionException) {
 		Result.failure(exception.cause ?: exception)
+	} catch (exception: Exception) {
+		Result.failure(exception)
 	}
 }
