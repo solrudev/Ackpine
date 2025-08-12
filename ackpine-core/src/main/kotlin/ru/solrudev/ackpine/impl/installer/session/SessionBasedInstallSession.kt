@@ -45,7 +45,7 @@ import ru.solrudev.ackpine.helpers.closeAllWithException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.getOrElse
-import ru.solrudev.ackpine.helpers.mapCatching
+import ru.solrudev.ackpine.helpers.mapCatchingFirst
 import ru.solrudev.ackpine.helpers.use
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
@@ -436,7 +436,7 @@ internal class SessionBasedInstallSession internal constructor(
 	): String {
 		val tag = "SessionBasedInstallSession.writeApks"
 		val assetFileDescriptors = apks
-			.mapCatching { uri ->
+			.mapCatchingFirst { uri ->
 				context.openAssetFileDescriptor(uri, cancellationSignal)
 					?: error("AssetFileDescriptor was null: $uri")
 			}

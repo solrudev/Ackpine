@@ -18,8 +18,6 @@
 
 package ru.solrudev.ackpine.helpers
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.MapResult.Failure
 import kotlin.contracts.ExperimentalContracts
@@ -31,23 +29,55 @@ import kotlin.contracts.contract
  * original collection, catching and aggregating any [Throwable] exceptions that were thrown from the [transform]
  * function execution and encapsulating them as a failure.
  *
+ * This function always processes all elements and aggregates all caught exceptions. [mapCatchingFirst] processes
+ * elements only until the first exception is caught.
+ *
  * In case of failure, partial result of transformation is delivered to handle successfully processed elements.
  */
-@RequiresApi(Build.VERSION_CODES.KITKAT)
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @JvmSynthetic
 public inline fun <T, R> Iterable<T>.mapCatching(transform: (T) -> R): MapResult<List<R>> {
-	val results = map { element ->
-		runCatching { transform(element) }
+	val values = mutableListOf<R>()
+	val exceptions = mutableListOf<Throwable>()
+	for (element in this) {
+		try {
+			values += transform(element)
+		} catch (throwable: Throwable) {
+			exceptions += throwable
+		}
 	}
-	val exceptions = results.mapNotNullTo(mutableListOf()) { it.exceptionOrNull() }
-	val value = results.mapNotNull { it.getOrNull() }
 	val mainException = exceptions.removeFirstOrNull()
-	if (mainException != null) {
-		exceptions.forEach(mainException::addSuppressed)
-		return MapResult(Failure(partialResult = value, mainException))
+	if (mainException == null) {
+		return MapResult(values)
 	}
-	return MapResult(value)
+	for (exception in exceptions) {
+		mainException.addSuppressed(exception)
+	}
+	return MapResult(Failure(partialResult = values, mainException))
+}
+
+/**
+ * Returns an encapsulated list containing the results of applying the given [transform] function to each element in the
+ * original collection, catching the first [Throwable] exception that was thrown from the [transform]
+ * function execution, encapsulating it as a failure and terminating further operations.
+ *
+ * This function processes elements only until the first exception is caught. [mapCatching] always processes all
+ * elements and aggregates all caught exceptions.
+ *
+ * In case of failure, partial result of transformation is delivered to handle successfully processed elements.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+@JvmSynthetic
+public inline fun <T, R> Iterable<T>.mapCatchingFirst(transform: (T) -> R): MapResult<List<R>> {
+	val values = mutableListOf<R>()
+	for (element in this) {
+		try {
+			values += transform(element)
+		} catch (exception: Throwable) {
+			return MapResult(Failure(partialResult = values, exception))
+		}
+	}
+	return MapResult(values)
 }
 
 /**
