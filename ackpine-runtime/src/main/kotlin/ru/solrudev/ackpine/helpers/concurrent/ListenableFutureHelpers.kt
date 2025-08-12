@@ -25,7 +25,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public fun <V> ListenableFuture<V>.handleResult(executor: Executor, block: (V) -> Unit) {
+@SuppressLint("RestrictedApi")
+@JvmOverloads
+public fun <V> ListenableFuture<V>.handleResult(
+	executor: Executor = DirectExecutor.INSTANCE,
+	block: (V) -> Unit
+) {
 	if (isDone) {
 		getAndUnwrapException()
 			.onSuccess(block)
@@ -37,12 +42,6 @@ public fun <V> ListenableFuture<V>.handleResult(executor: Executor, block: (V) -
 			.onSuccess(block)
 			.onFailure { throw it }
 	}, executor)
-}
-
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-@SuppressLint("RestrictedApi")
-public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
-	handleResult(DirectExecutor.INSTANCE, block)
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
