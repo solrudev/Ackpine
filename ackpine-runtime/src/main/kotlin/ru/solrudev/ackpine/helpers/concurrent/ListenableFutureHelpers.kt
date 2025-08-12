@@ -56,13 +56,25 @@ public fun <V> ListenableFuture<V>.handleResult(
 	if (isDone) {
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
+			.onFailure { throwable ->
+				if (throwable is Exception) {
+					onException(throwable)
+				} else {
+					onException(RuntimeException(throwable))
+				}
+			}
 		return
 	}
 	addListener({
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
+			.onFailure { throwable ->
+				if (throwable is Exception) {
+					onException(throwable)
+				} else {
+					onException(RuntimeException(throwable))
+				}
+			}
 	}, executor)
 }
 
