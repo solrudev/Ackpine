@@ -438,7 +438,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val assetFileDescriptors = apks
 			.mapCatchingFirst { uri ->
 				context.openAssetFileDescriptor(uri, cancellationSignal)
-					?: error("AssetFileDescriptor was null: $uri")
+					?: throw NullPointerException("AssetFileDescriptor was null: $uri")
 			}
 			.getOrElse { failure ->
 				closeAllWithException(failure.partialResult, failure.exception)
