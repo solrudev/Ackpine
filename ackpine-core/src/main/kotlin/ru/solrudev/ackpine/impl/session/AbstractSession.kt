@@ -194,7 +194,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		try {
 			cancellationSignal.cancel()
-			cancellationSignal.setOnCancelListener(null)
 			handleCancellation()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
@@ -259,6 +258,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun cleanup() {
+		cancellationSignal.setOnCancelListener(null)
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 	}
