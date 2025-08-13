@@ -141,7 +141,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	}
 
 	protected fun withCompletableSession(block: (CompletableSession<F>?) -> Unit) {
-		ackpineSessionFuture.handleResult(block)
+		ackpineSessionFuture.handleResult(block = block)
 	}
 
 	private fun notifySessionCommitted() {

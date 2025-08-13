@@ -25,7 +25,12 @@ import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public fun <V> ListenableFuture<V>.handleResult(executor: Executor, block: (V) -> Unit) {
+@SuppressLint("RestrictedApi")
+@JvmOverloads
+public fun <V> ListenableFuture<V>.handleResult(
+	executor: Executor = DirectExecutor.INSTANCE,
+	block: (V) -> Unit
+) {
 	if (isDone) {
 		getAndUnwrapException()
 			.onSuccess(block)
@@ -41,12 +46,6 @@ public fun <V> ListenableFuture<V>.handleResult(executor: Executor, block: (V) -
 
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
-public fun <V> ListenableFuture<V>.handleResult(block: (V) -> Unit) {
-	handleResult(DirectExecutor.INSTANCE, block)
-}
-
-@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-@SuppressLint("RestrictedApi")
 @JvmOverloads
 public fun <V> ListenableFuture<V>.handleResult(
 	executor: Executor = DirectExecutor.INSTANCE,
@@ -56,13 +55,25 @@ public fun <V> ListenableFuture<V>.handleResult(
 	if (isDone) {
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
+			.onFailure { throwable ->
+				if (throwable is Exception) {
+					onException(throwable)
+				} else {
+					onException(RuntimeException(throwable))
+				}
+			}
 		return
 	}
 	addListener({
 		getAndUnwrapException()
 			.onSuccess(block)
-			.onFailure { throwable -> if (throwable is Exception) onException(throwable) else throw throwable }
+			.onFailure { throwable ->
+				if (throwable is Exception) {
+					onException(throwable)
+				} else {
+					onException(RuntimeException(throwable))
+				}
+			}
 	}, executor)
 }
 
@@ -99,5 +110,7 @@ private fun <V> ListenableFuture<V>.getAndUnwrapException(): Result<V> {
 		Result.success(get())
 	} catch (exception: ExecutionException) {
 		Result.failure(exception.cause ?: exception)
+	} catch (exception: Exception) {
+		Result.failure(exception)
 	}
 }

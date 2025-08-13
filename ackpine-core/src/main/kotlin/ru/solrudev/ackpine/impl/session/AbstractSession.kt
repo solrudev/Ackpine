@@ -258,6 +258,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	private fun cleanup() {
+		cancellationSignal.setOnCancelListener(null)
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 	}

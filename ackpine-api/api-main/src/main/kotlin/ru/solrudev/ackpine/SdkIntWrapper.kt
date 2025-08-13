@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.exceptions
+package ru.solrudev.ackpine
 
-import ru.solrudev.ackpine.SdkIntWrapper
-
-/**
- * Thrown if installation of split packages is not supported when creating session with split package is attempted.
- */
-public class SplitPackagesNotSupportedException : IllegalArgumentException(
-	"Split packages are not supported on current Android API level: ${SdkIntWrapper.get()}"
-)
+internal object SdkIntWrapper {
+	@JvmSynthetic
+	fun get() = try {
+		SdkInt.get()
+	} catch (_: NoClassDefFoundError) {
+		throw NoClassDefFoundError(
+			"Class ru.solrudev.ackpine.SdkInt was not found. " +
+					"Make sure you have configured a dependency on ackpine-core module."
+		)
+	}
+}

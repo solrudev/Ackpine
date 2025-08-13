@@ -147,7 +147,7 @@ internal class IntentBasedInstallSession internal constructor(
 		apkFile.parentFile?.mkdirs()
 		apkFile.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
-			?: error("AssetFileDescriptor was null: $apk")
+			?: throw NullPointerException("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
 			val outputStream = apkFile.outputStream()
 			outputStream.buffered().use { bufferedOutputStream ->

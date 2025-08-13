@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.15.1 (2025-08-13)
+---------------------------
+
+### Bug fixes and improvements
+
+- Improve error handling in install sessions.
+
 Version 0.15.0 (2025-08-07)
 ---------------------------
 
