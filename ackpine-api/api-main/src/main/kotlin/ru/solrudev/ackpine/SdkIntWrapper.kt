@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine
 
+import androidx.annotation.RestrictTo
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 internal object SdkIntWrapper {
 	@JvmSynthetic
 	fun get() = try {
