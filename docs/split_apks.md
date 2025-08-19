@@ -3,6 +3,29 @@ Split APKs
 
 `ackpine-splits` artifact contains utilities for working with split APK files.
 
+Add it to your dependencies:
+
+=== "Gradle version catalog"
+
+    ```toml
+    [libraries]
+    ackpine-splits = { module = "ru.solrudev.ackpine:ackpine-splits", version.ref = "ackpine" }
+    
+    # Kotlin extensions
+    ackpine-splits-ktx = { module = "ru.solrudev.ackpine:ackpine-splits-ktx", version.ref = "ackpine" }
+    ```
+
+=== "build.gradle.kts"
+
+    ```kotlin
+    dependencies {
+        implementation("ru.solrudev.ackpine:ackpine-splits:$ackpineVersion")
+    
+        // Kotlin extensions
+        implementation("ru.solrudev.ackpine:ackpine-splits-ktx:$ackpineVersion")
+    }
+    ```
+
 Reading zipped splits
 ---------------------
 
