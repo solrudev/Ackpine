@@ -51,6 +51,29 @@ If you want to support Shizuku in addition to Sui, add `ShizukuProvider` (which 
     android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 ```
 
+Then add an `ackpine-shizuku` dependency:
+
+=== "Gradle version catalog"
+
+    ```toml
+    [libraries]
+    ackpine-shizuku = { module = "ru.solrudev.ackpine:ackpine-shizuku", version.ref = "ackpine" }
+    
+    # Kotlin extensions
+    ackpine-shizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-shizuku-ktx", version.ref = "ackpine" }
+    ```
+
+=== "build.gradle.kts"
+
+    ```kotlin
+    dependencies {
+        implementation("ru.solrudev.ackpine:ackpine-shizuku:$ackpineVersion")
+    
+        // Kotlin extensions
+        implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
+    }
+    ```
+
 !!! warning "Attention"
     Shizuku plugin for Ackpine doesn't manage Shizuku permission and binder lifecycle. You must handle these in your app to successfully use Shizuku. See the [Shizuku-API guide](https://github.com/RikkaApps/Shizuku-API#guide) and their [demo project](https://github.com/RikkaApps/Shizuku-API/tree/master/demo).
 
