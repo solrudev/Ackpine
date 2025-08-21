@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.15.2 (2025-08-21)
+---------------------------
+
+### Dependencies
+
+- Updated Apache Commons IO to 2.20.0 (`ackpine-compress-android`).
+
+### Bug fixes and improvements
+
+- Pull changes from Apache Commons Compress 1.28.0 to Ackpine Compress fork.
+
 Version 0.15.1 (2025-08-13)
 ---------------------------
 
