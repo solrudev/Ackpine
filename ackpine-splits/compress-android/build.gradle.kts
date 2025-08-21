@@ -18,11 +18,12 @@ import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 description = "Fork of Apache Commons Compress, compatible with Android API 19+. " +
 		"Contains only a subset of Compress API."
-version = "1.27.1-${ackpineVersion.get()}"
+version = "1.28.0-${ackpineVersion.get()}"
 
 plugins {
 	id("ru.solrudev.ackpine.library.base")
 	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.optional-dependencies")
 }
 
 ackpine {
@@ -142,4 +143,6 @@ mavenPublishing {
 dependencies {
 	implementation(androidx.core)
 	implementation(libs.apache.commons.io)
+	optional(libs.zstd)
+	optional(libs.xz)
 }

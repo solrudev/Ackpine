@@ -138,7 +138,7 @@ final class BinaryTree {
 
 	BinaryTree(final int depth) {
 		if (depth < 0 || depth > 30) {
-			throw new IllegalArgumentException("depth must be bigger than 0 and not bigger than 30" + " but is " + depth);
+			throw new IllegalArgumentException("depth must be bigger than 0 and not bigger than 30 but is " + depth);
 		}
 		tree = new int[(int) ((1L << depth + 1) - 1)];
 		Arrays.fill(tree, UNDEFINED);
@@ -172,7 +172,7 @@ final class BinaryTree {
 	/**
 	 * Reads a value from the specified bit stream.
 	 *
-	 * @param stream
+	 * @param stream The data source.
 	 * @return the value decoded, or -1 if the end of the stream is reached
 	 * @throws IOException on error.
 	 */
@@ -180,7 +180,7 @@ final class BinaryTree {
 		int currentIndex = 0;
 
 		while (true) {
-			final int bit = stream.nextBit();
+			final int bit = stream.readBit();
 			if (bit == -1) {
 				return -1;
 			}

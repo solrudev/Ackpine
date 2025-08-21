@@ -127,7 +127,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream implements
 	 *
 	 * @param n the number of bits to read, must not exceed 32?
 	 * @return the requested bits combined into an int
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs.
 	 */
 	private static int bsR(final BitInputStream bin, final int n) throws IOException {
 		final long thech = bin.readBits(n);
@@ -194,7 +194,6 @@ public class BZip2CompressorInputStream extends CompressorInputStream implements
 	 * @param signature the bytes to check
 	 * @param length    the number of bytes to check
 	 * @return true, if this stream is a bzip2 compressed stream, false otherwise
-	 *
 	 * @since 1.1
 	 */
 	public static boolean matches(final byte[] signature, final int length) {
@@ -223,7 +222,8 @@ public class BZip2CompressorInputStream extends CompressorInputStream implements
 	private BitInputStream bin;
 	private final boolean decompressConcatenated;
 	private int currentState = START_BLOCK_STATE;
-	private int storedBlockCRC, storedCombinedCRC;
+	private int storedBlockCRC;
+	private int storedCombinedCRC;
 	private int computedCombinedCRC;
 	private int su_count;
 	private int su_ch2;
@@ -521,7 +521,7 @@ public class BZip2CompressorInputStream extends CompressorInputStream implements
 		final int magic2 = readNextByte(this.bin);
 
 		if (magic0 != 'B' || magic1 != 'Z' || magic2 != 'h') {
-			throw new IOException(isFirstStream ? "Stream is not in the BZip2 format" : "Garbage after a valid BZip2 stream");
+			throw new IOException(isFirstStream ? "Stream is not in the BZip2 format" : "Unexpected data after a valid BZip2 stream");
 		}
 
 		final int blockSize = readNextByte(this.bin);

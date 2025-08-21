@@ -84,7 +84,7 @@ public final class UnparseableExtraFieldData implements ZipExtraField {
 	 */
 	@Override
 	public ZipShort getLocalFileDataLength() {
-		return new ZipShort(localFileData == null ? 0 : localFileData.length);
+		return ZipShort.lengthOf(localFileData);
 	}
 
 	/**

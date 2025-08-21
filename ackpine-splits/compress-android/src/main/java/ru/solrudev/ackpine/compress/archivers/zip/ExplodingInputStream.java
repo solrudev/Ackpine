@@ -33,7 +33,6 @@ import ru.solrudev.ackpine.compress.utils.CloseShieldInputStream;
  * The algorithm is described in the ZIP File Format Specification.
  *
  * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">ZIP File Format Specification</a>
- *
  * @since 1.7
  */
 final class ExplodingInputStream extends InputStream implements InputStreamStatistics {
@@ -104,7 +103,7 @@ final class ExplodingInputStream extends InputStream implements InputStreamStati
 	private void fillBuffer() throws IOException {
 		init();
 
-		final int bit = bits.nextBit();
+		final int bit = bits.readBit();
 		if (bit == -1) {
 			// EOF
 			return;
@@ -170,7 +169,7 @@ final class ExplodingInputStream extends InputStream implements InputStreamStati
 	/**
 	 * Reads the encoded binary trees and prepares the bit stream.
 	 *
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs.
 	 */
 	private void init() throws IOException {
 		if (bits == null) {

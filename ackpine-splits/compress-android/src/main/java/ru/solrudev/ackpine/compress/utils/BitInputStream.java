@@ -111,7 +111,7 @@ public class BitInputStream implements Closeable {
 	 *
 	 * @param count
 	 * @return return true, when EOF
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs.
 	 */
 	private boolean ensureCache(final int count) throws IOException {
 		while (bitsCachedSize < count && bitsCachedSize < 57) {
@@ -131,7 +131,7 @@ public class BitInputStream implements Closeable {
 	}
 
 	/**
-	 * Returns the number of bytes read from the underlying stream.
+	 * Gets the number of bytes read from the underlying stream.
 	 * <p>
 	 * This includes the bytes read to fill the current cache and not read as bits so far.
 	 * </p>
@@ -172,12 +172,23 @@ public class BitInputStream implements Closeable {
 	}
 
 	/**
-	 * Returns at most 63 bits read from the underlying stream.
+	 * Reads and returns the next bit read from the underlying stream.
+	 *
+	 * @return the next bit (0 or 1) or -1 if the end of the stream has been reached
+	 * @throws IOException if an I/O error occurs.
+	 * @since 1.28
+	 */
+	public int readBit() throws IOException {
+		return (int) readBits(1);
+	}
+
+	/**
+	 * Reads and returns at most 63 bits read from the underlying stream.
 	 *
 	 * @param count the number of bits to read, must be a positive number not bigger than 63.
 	 * @return the bits concatenated as a long using the stream's byte order. -1 if the end of the underlying stream has been reached before reading the
 	 *         requested number of bits
-	 * @throws IOException on error
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public long readBits(final int count) throws IOException {
 		if (count < 0 || count > MAXIMUM_CACHE_SIZE) {

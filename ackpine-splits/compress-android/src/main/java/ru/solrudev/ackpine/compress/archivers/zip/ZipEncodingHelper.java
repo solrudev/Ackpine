@@ -23,7 +23,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
 import java.util.Set;
 
 import org.apache.commons.io.Charsets;
@@ -50,7 +49,7 @@ public abstract class ZipEncodingHelper {
 	 * @since 1.26.0
 	 */
 	public static ZipEncoding getZipEncoding(final Charset charset) {
-		return new NioZipEncoding(Charsets.toCharset(charset), isUTF8(Charsets.toCharset(charset)));
+		return new NioZipEncoding(Charsets.toCharset(charset));
 	}
 
 	/**
@@ -64,7 +63,7 @@ public abstract class ZipEncodingHelper {
 	 * @return A ZIP encoding for the given encoding name.
 	 */
 	public static ZipEncoding getZipEncoding(final String name) {
-		return new NioZipEncoding(toSafeCharset(name), isUTF8(toSafeCharset(name).name()));
+		return new NioZipEncoding(toSafeCharset(name));
 	}
 
 	static ByteBuffer growBufferBy(final ByteBuffer buffer, final int increment) {
@@ -85,38 +84,37 @@ public abstract class ZipEncodingHelper {
 	}
 
 	/**
-	 * Tests whether a given encoding is UTF-8. If the given name is null, then check the platform's default encoding.
+	 * Tests whether the given non-null charset name is a UTF-8 alias.
 	 *
-	 * @param charsetName If the given name is null, then check the platform's default encoding.
+	 * @param name a non-null charset name.
+	 * @return whether the given non-null charset name is a UTF-8 alias.
 	 */
-	static boolean isUTF8(final String charsetName) {
-		return isUTF8Alias(charsetName != null ? charsetName : Charset.defaultCharset().name());
-	}
-
-	private static boolean isUTF8Alias(final String actual) {
-		if (UTF_8.name().equalsIgnoreCase(actual)) {
+	private static boolean isUTF8Alias(final String name) {
+		if (UTF_8.name().equalsIgnoreCase(name)) {
 			return true;
 		}
 		final Set<String> aliases = UTF_8.aliases();
 		for (final String alias : aliases) {
-			if (alias.equalsIgnoreCase(actual)) {
+			if (alias.equalsIgnoreCase(name)) {
 				return true;
 			}
 		}
 		return false;
-//        return UTF_8.name().equalsIgnoreCase(actual) || UTF_8
-//                .aliases()
-//                .stream()
-//                .anyMatch(alias -> alias.equalsIgnoreCase(actual));
+//		return UTF_8.name().equalsIgnoreCase(name) || UTF_8.aliases().stream().anyMatch(name::equalsIgnoreCase);
 	}
 
+	/**
+	 * Returns a Charset for the named charset. If the name cannot find a charset, return {@link Charset#defaultCharset()}.
+	 *
+	 * @param name The name of the requested charset, may be null.
+	 * @return a Charset for the named charset.
+	 * @see Charset#defaultCharset()
+	 */
 	private static Charset toSafeCharset(final String name) {
-		Charset charset = Charset.defaultCharset();
 		try {
-			charset = Charsets.toCharset(name);
-		} catch (final UnsupportedCharsetException ignored) {
-			// Use the default encoding instead.
+			return Charsets.toCharset(name);
+		} catch (final IllegalArgumentException | NullPointerException ignored) {
+			return Charset.defaultCharset();
 		}
-		return charset;
 	}
 }

@@ -27,10 +27,11 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.zip.ZipException;
 
+import ru.solrudev.ackpine.compress.utils.ArrayUtils;
 import ru.solrudev.ackpine.compress.utils.ByteUtils;
 
 /**
- * An extra field that stores UNIX UID/GID data (owner &amp; group ownership) for a given ZIP entry. We're using the field definition given in Info-Zip's source
+ * An extra field that stores Unix UID/GID data (owner &amp; group ownership) for a given ZIP entry. We're using the field definition given in Info-Zip's source
  * archive: zip-3.0.tar.gz/proginfo/extrafld.txt
  *
  * <pre>
@@ -83,7 +84,6 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 		}
 
 		/*
-		 *
 		 * I agonized over my choice of MIN_LENGTH=1. Here's the situation: InfoZip (the tool I am using to test interop) always sets these to length=4. And so
 		 * a UID of 0 (typically root) for example is encoded as {4,0,0,0,0} (len=4, 32 bits of zero), when it could just as easily be encoded as {1,0} (len=1,
 		 * 8 bits of zero) according to the spec.
@@ -94,10 +94,10 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 		 *
 		 * 2.) Fundamentally, ZIP files are about shrinking things, so let's save a few bytes per entry while we can.
 		 *
-		 * 3.) Of all the people creating ZIP files using commons- compress, how many care about UNIX UID/GID attributes of the files they store? (e.g., I am
-		 * probably thinking way too hard about this and no one cares!)
+		 * 3.) Of all the people creating ZIP files using commons- compress, how many care about Unix UID/GID attributes of the files they store? (for example,
+		 * I am probably thinking way too hard about this and no one cares!)
 		 *
-		 * 4.) InfoZip's tool, even though it carefully stores every UID/GID for every file zipped on a UNIX machine (by default) currently appears unable to
+		 * 4.) InfoZip's tool, even though it carefully stores every UID/GID for every file zipped on a Unix machine (by default) currently appears unable to
 		 * ever restore UID/GID. unzip -X has no effect on my machine, even when run as root!!!!
 		 *
 		 * And thus it is decided: MIN_LENGTH=1.
@@ -168,13 +168,13 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 	}
 
 	/**
-	 * Gets the GID as a long. GID is typically a 32 bit unsigned value on most UNIX systems, so we return a long to avoid integer overflow into the negatives
+	 * Gets the GID as a long. GID is typically a 32 bit unsigned value on most Unix systems, so we return a long to avoid integer overflow into the negatives
 	 * in case values above and including 2^31 are being used.
 	 *
 	 * @return the GID value.
 	 */
 	public long getGID() {
-		return ZipUtil.bigToLong(gid);
+		return ZipUtil.toLong(gid);
 	}
 
 	/**
@@ -196,14 +196,13 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 	public byte[] getLocalFileDataData() {
 		byte[] uidBytes = uid.toByteArray();
 		byte[] gidBytes = gid.toByteArray();
-
 		// BigInteger might prepend a leading-zero to force a positive representation
-		// (e.g., so that the sign-bit is set to zero). We need to remove that
+		// (for example, so that the sign-bit is set to zero). We need to remove that
 		// before sending the number over the wire.
 		uidBytes = trimLeadingZeroesForceMinLength(uidBytes);
-		final int uidBytesLen = uidBytes != null ? uidBytes.length : 0;
+		final int uidBytesLen = ArrayUtils.getLength(uidBytes);
 		gidBytes = trimLeadingZeroesForceMinLength(gidBytes);
-		final int gidBytesLen = gidBytes != null ? gidBytes.length : 0;
+		final int gidBytesLen = ArrayUtils.getLength(gidBytes);
 
 		// Couldn't bring myself to just call getLocalFileDataLength() when we've
 		// already got the arrays right here. Yeah, yeah, I know, premature
@@ -211,7 +210,6 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 		//
 		// The 3 comes from: version=1 + uidsize=1 + gidsize=1
 		final byte[] data = new byte[3 + uidBytesLen + gidBytesLen];
-
 		// reverse() switches byte array from big-endian to little-endian.
 		if (uidBytes != null) {
 			reverse(uidBytes);
@@ -219,7 +217,6 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 		if (gidBytes != null) {
 			reverse(gidBytes);
 		}
-
 		int pos = 0;
 		data[pos++] = unsignedIntToSignedByte(version);
 		data[pos++] = unsignedIntToSignedByte(uidBytesLen);
@@ -242,22 +239,22 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 	@Override
 	public ZipShort getLocalFileDataLength() {
 		byte[] b = trimLeadingZeroesForceMinLength(uid.toByteArray());
-		final int uidSize = b == null ? 0 : b.length;
+		final int uidSize = ArrayUtils.getLength(b);
 		b = trimLeadingZeroesForceMinLength(gid.toByteArray());
-		final int gidSize = b == null ? 0 : b.length;
+		final int gidSize = ArrayUtils.getLength(b);
 
 		// The 3 comes from: version=1 + uidsize=1 + gidsize=1
 		return new ZipShort(3 + uidSize + gidSize);
 	}
 
 	/**
-	 * Gets the UID as a long. UID is typically a 32 bit unsigned value on most UNIX systems, so we return a long to avoid integer overflow into the negatives
+	 * Gets the UID as a long. UID is typically a 32 bit unsigned value on most Unix systems, so we return a long to avoid integer overflow into the negatives
 	 * in case values above and including 2^31 are being used.
 	 *
 	 * @return the UID value.
 	 */
 	public long getUID() {
-		return ZipUtil.bigToLong(uid);
+		return ZipUtil.toLong(uid);
 	}
 
 	@Override
@@ -313,7 +310,7 @@ public class X7875_NewUnix implements ZipExtraField, Cloneable, Serializable {
 	 * Reset state back to newly constructed state. Helps us make sure parse() calls always generate clean results.
 	 */
 	private void reset() {
-		// Typical UID/GID of the first non-root user created on a UNIX system.
+		// Typical UID/GID of the first non-root user created on a Unix system.
 		uid = ONE_THOUSAND;
 		gid = ONE_THOUSAND;
 	}

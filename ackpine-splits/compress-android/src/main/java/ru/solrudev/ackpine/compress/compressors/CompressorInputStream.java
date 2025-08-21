@@ -22,6 +22,9 @@ import java.io.InputStream;
 
 import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
 
+/**
+ * Abstracts services for all compressor input streams.
+ */
 public abstract class CompressorInputStream extends InputStream {
 
 	private long bytesRead;
@@ -37,7 +40,6 @@ public abstract class CompressorInputStream extends InputStream {
 	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
 	 *
 	 * @param read the number of bytes read
-	 *
 	 * @since 1.1
 	 */
 	protected void count(final int read) {
@@ -59,7 +61,6 @@ public abstract class CompressorInputStream extends InputStream {
 	 * Gets the current number of bytes read from this stream.
 	 *
 	 * @return the number of read bytes
-	 *
 	 * @since 1.1
 	 */
 	public long getBytesRead() {

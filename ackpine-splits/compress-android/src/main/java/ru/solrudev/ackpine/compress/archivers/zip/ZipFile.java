@@ -18,6 +18,8 @@
  */
 package ru.solrudev.ackpine.compress.archivers.zip;
 
+import androidx.core.util.Function;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -43,6 +45,8 @@ import java.util.zip.ZipException;
 import ru.solrudev.ackpine.compress.archivers.EntryStreamOffsets;
 import ru.solrudev.ackpine.compress.compressors.bzip2.BZip2CompressorInputStream;
 import ru.solrudev.ackpine.compress.compressors.deflate64.Deflate64CompressorInputStream;
+import ru.solrudev.ackpine.compress.compressors.xz.XZCompressorInputStream;
+import ru.solrudev.ackpine.compress.compressors.zstandard.ZstdCompressorInputStream;
 import ru.solrudev.ackpine.compress.utils.BoundedArchiveInputStream;
 import ru.solrudev.ackpine.compress.utils.IOUtils;
 import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
@@ -77,7 +81,7 @@ public class ZipFile implements Closeable {
 	 * Lock-free implementation of BoundedInputStream. The implementation uses positioned reads on the underlying archive file channel and therefore performs
 	 * significantly faster in concurrent environment.
 	 */
-	private static class BoundedFileChannelInputStream extends BoundedArchiveInputStream {
+	private static final class BoundedFileChannelInputStream extends BoundedArchiveInputStream {
 		private final FileChannel archive;
 
 		BoundedFileChannelInputStream(final long start, final long remaining, final FileChannel archive) {
@@ -111,8 +115,13 @@ public class ZipFile implements Closeable {
 	public static class Builder {
 
 		static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-
 		private FileChannel fileChannel;
+		private Function<InputStream, InputStream> zstdInputStreamFactory;
+
+		/**
+		 * Constructs a new instance.
+		 */
+		public Builder() { }
 
 		public ZipFile get() throws IOException {
 			final FileChannel actualChannel = fileChannel;
@@ -120,7 +129,8 @@ public class ZipFile implements Closeable {
 			final boolean closeOnError = true;
 			final boolean useUnicodeExtraFields = true;
 			final boolean ignoreLocalFileHeader = false;
-			return new ZipFile(actualChannel, actualDescription, DEFAULT_CHARSET, useUnicodeExtraFields, closeOnError, ignoreLocalFileHeader);
+			return new ZipFile(actualChannel, actualDescription, DEFAULT_CHARSET, useUnicodeExtraFields, closeOnError, ignoreLocalFileHeader,
+					zstdInputStreamFactory);
 		}
 
 		/**
@@ -131,6 +141,22 @@ public class ZipFile implements Closeable {
 		 */
 		public Builder setFileChannel(final FileChannel fileChannel) {
 			this.fileChannel = fileChannel;
+			return this;
+		}
+
+		/**
+		 * Sets the factory {@link Function} to create a Zstd {@link InputStream}. Defaults to
+		 * {@link ZstdCompressorInputStream#ZstdCompressorInputStream(InputStream)}.
+		 * <p>
+		 * Call this method to plugin an alternate Zstd input stream implementation.
+		 * </p>
+		 *
+		 * @param zstdInpStreamFactory the factory {@link Function} to create a Zstd {@link InputStream}; {@code null} resets to the default.
+		 * @return {@code this} instance.
+		 * @since 1.28.0
+		 */
+		public Builder setZstdInputStreamFactory(final Function<InputStream, InputStream> zstdInpStreamFactory) {
+			this.zstdInputStreamFactory = zstdInpStreamFactory;
 			return this;
 		}
 
@@ -210,7 +236,7 @@ public class ZipFile implements Closeable {
 			/* compression method              */ + ZipConstants.SHORT
 			/* last mod file time              */ + ZipConstants.SHORT
 			/* last mod file date              */ + ZipConstants.SHORT
-			/* crc-32                          */ + ZipConstants.WORD
+			/* CRC-32                          */ + ZipConstants.WORD
 			/* compressed size                 */ + ZipConstants.WORD
 			/* uncompressed size               */ + ZipConstants.WORD
 			/* file name length                */ + ZipConstants. SHORT
@@ -379,7 +405,7 @@ public class ZipFile implements Closeable {
 			/* compression method              */ + ZipConstants.SHORT
 			/* last mod file time              */ + ZipConstants.SHORT
 			/* last mod file date              */ + ZipConstants.SHORT
-			/* crc-32                          */ + ZipConstants.WORD
+			/* CRC-32                          */ + ZipConstants.WORD
 			/* compressed size                 */ + ZipConstants.WORD
 			/* uncompressed size               */ + (long) ZipConstants.WORD;
 	// @formatter:on
@@ -440,6 +466,40 @@ public class ZipFile implements Closeable {
 		}
 
 		return found64;
+	}
+
+	/**
+	 * Converts a raw version made by int to a <a href="https://pkwaredownloads.blob.core.windows.net/pkware-general/Documentation/APPNOTE_6.2.0.TXT">platform
+	 * code</a>.
+	 * <ul>
+	 * <li>0 - MS-DOS and OS/2 (FAT / VFAT / FAT32 file systems)</li>
+	 * <li>1 - Amiga</li>
+	 * <li>2 - OpenVMS</li>
+	 * <li>3 - Unix</li>
+	 * <li>4 - VM/CMS</li>
+	 * <li>5 - Atari ST</li>
+	 * <li>6 - OS/2 H.P.F.S.</li>
+	 * <li>7 - Macintosh</li>
+	 * <li>8 - Z-System</li>
+	 * <li>9 - CP/M</li>
+	 * <li>10 - Windows NTFS</li>
+	 * <li>11 - MVS (OS/390 - Z/OS)</li>
+	 * <li>12 - VSE</li>
+	 * <li>13 - Acorn Risc</li>
+	 * <li>14 - VFAT</li>
+	 * <li>15 - alternate MVS</li>
+	 * <li>16 - BeOS</li>
+	 * <li>17 - Tandem</li>
+	 * <li>18 - OS/400</li>
+	 * <li>19 - OS/X (Darwin)</li>
+	 * <li>20 thru 255 - unused</li>
+	 * </ul>
+	 *
+	 * @param versionMadeBy version/
+	 * @return a platform code.
+	 */
+	static int toPlatform(final int versionMadeBy) {
+		return versionMadeBy >> BYTE_SHIFT & NIBLET_MASK;
 	}
 
 	/**
@@ -543,19 +603,26 @@ public class ZipFile implements Closeable {
 
 	private final ByteBuffer cfhBbuf = ByteBuffer.wrap(cfhBuf);
 
-	private long centralDirectoryStartDiskNumber, centralDirectoryStartRelativeOffset;
+	private final ByteBuffer shortBbuf = ByteBuffer.wrap(shortBuf);
+
+	private final Function<InputStream, InputStream> zstdInputStreamFactory;
+
+	private long centralDirectoryStartDiskNumber;
+
+	private long centralDirectoryStartRelativeOffset;
 
 	private long centralDirectoryStartOffset;
 
 	private long firstLocalFileHeaderOffset;
 
 	private ZipFile(final FileChannel channel, final String channelDescription, final Charset encoding, final boolean useUnicodeExtraFields,
-					final boolean closeOnError, final boolean ignoreLocalFileHeader) throws IOException {
+					final boolean closeOnError, final boolean ignoreLocalFileHeader, final Function<InputStream, InputStream> zstdInputStream) throws IOException {
 		this.isSplitZipArchive = false;
 		this.encoding = Charsets.toCharset(encoding, Builder.DEFAULT_CHARSET);
 		this.zipEncoding = ZipEncodingHelper.getZipEncoding(encoding);
 		this.useUnicodeExtraFields = useUnicodeExtraFields;
 		this.archive = channel;
+		this.zstdInputStreamFactory = zstdInputStream;
 		boolean success = false;
 		try {
 			final Map<ZipArchiveEntry, NameAndComment> entriesWithoutUTF8Flag = populateFromCentralDirectory();
@@ -596,9 +663,22 @@ public class ZipFile implements Closeable {
 	 */
 	private BoundedArchiveInputStream createBoundedInputStream(final long start, final long remaining) {
 		if (start < 0 || remaining < 0 || start + remaining < start) {
-			throw new IllegalArgumentException("Corrupted archive, stream boundaries" + " are out of range");
+			throw new IllegalArgumentException("Corrupted archive, stream boundaries are out of range");
 		}
 		return new BoundedFileChannelInputStream(start, remaining, archive);
+	}
+
+	/**
+	 * Creates an InputStream for the Zstd compression method.
+	 *
+	 * @param in the input stream which should be used for compression.
+	 * @return the {@link InputStream} for handling the Zstd compression.
+	 * @throws IOException if an I/O error occurs.
+	 */
+	@SuppressWarnings("resource")
+	InputStream createZstdInputStream(final InputStream in) throws IOException {
+		// This method is the only location that references ZstdCompressorInputStream directly to avoid requiring the JAR for all use cases.
+		return zstdInputStreamFactory != null ? zstdInputStreamFactory.apply(in) : new ZstdCompressorInputStream(in);
 	}
 
 	private void fillNameMap() {
@@ -670,7 +750,6 @@ public class ZipFile implements Closeable {
 	 * </p>
 	 *
 	 * @return all entries as {@link ZipArchiveEntry} instances
-	 *
 	 * @since 1.1
 	 */
 	public Enumeration<ZipArchiveEntry> getEntriesInPhysicalOrder() {
@@ -743,6 +822,11 @@ public class ZipFile implements Closeable {
 				return new BZip2CompressorInputStream(is);
 			case ENHANCED_DEFLATED:
 				return new Deflate64CompressorInputStream(is);
+			case ZSTD:
+			case ZSTD_DEPRECATED:
+				return createZstdInputStream(is);
+			case XZ:
+				return new XZCompressorInputStream(is);
 			case AES_ENCRYPTED:
 			case EXPANDING_LEVEL_1:
 			case EXPANDING_LEVEL_2:
@@ -755,7 +839,6 @@ public class ZipFile implements Closeable {
 			case TOKENIZATION:
 			case UNKNOWN:
 			case WAVPACK:
-			case XZ:
 			default:
 				throw new UnsupportedZipFeatureException(ZipMethod.getMethodByCode(entry.getMethod()), entry);
 		}
@@ -773,8 +856,8 @@ public class ZipFile implements Closeable {
 	 *
 	 * @param entry The entry to get the stream for
 	 * @return The raw input stream containing (possibly) compressed data.
-	 * @since 1.11
 	 * @throws IOException if there is a problem reading data offset (added in version 1.22).
+	 * @since 1.11
 	 */
 	public InputStream getRawInputStream(final ZipArchiveEntry entry) throws IOException {
 		if (!(entry instanceof Entry)) {
@@ -807,7 +890,7 @@ public class ZipFile implements Closeable {
 		long sig = ZipLong.getValue(wordBuf);
 
 		if (sig != CFH_SIG && startsWithLocalFileHeader()) {
-			throw new IOException("Central directory is empty, can't expand" + " corrupt archive.");
+			throw new IOException("Central directory is empty, can't expand corrupt archive.");
 		}
 
 		while (sig == CFH_SIG) {
@@ -895,7 +978,7 @@ public class ZipFile implements Closeable {
 		final int versionMadeBy = ZipShort.getValue(cfhBuf, off);
 		off += ZipConstants.SHORT;
 		ze.setVersionMadeBy(versionMadeBy);
-		ze.setPlatform(versionMadeBy >> BYTE_SHIFT & NIBLET_MASK);
+		ze.setPlatform(toPlatform(versionMadeBy));
 
 		ze.setVersionRequired(ZipShort.getValue(cfhBuf, off));
 		off += ZipConstants.SHORT; // version required
@@ -981,9 +1064,7 @@ public class ZipFile implements Closeable {
 		try {
 			ze.setCentralDirectoryExtra(cdExtraData);
 		} catch (final RuntimeException e) {
-			final ZipException z = new ZipException("Invalid extra data in entry " + ze.getName());
-			z.initCause(e);
-			throw z;
+			throw ZipUtil.newZipException("Invalid extra data in entry " + ze.getName(), e);
 		}
 
 		setSizesAndOffsetFromZip64Extra(ze);
@@ -1023,11 +1104,8 @@ public class ZipFile implements Closeable {
 			try {
 				ze.setExtra(localExtraData);
 			} catch (final RuntimeException e) {
-				final ZipException z = new ZipException("Invalid extra data in entry " + ze.getName());
-				z.initCause(e);
-				throw z;
+				throw ZipUtil.newZipException("Invalid extra data in entry " + ze.getName(), e);
 			}
-
 			if (entriesWithoutUTF8Flag.containsKey(ze)) {
 				final NameAndComment nc = entriesWithoutUTF8Flag.get(ze);
 				ZipUtil.setNameAndCommentFromExtraFields(ze, nc.name, nc.comment);

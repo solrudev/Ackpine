@@ -27,14 +27,15 @@ import org.apache.commons.io.Charsets;
 import org.apache.commons.io.input.NullInputStream;
 
 /**
- * Archive input streams <b>MUST</b> override the {@link #read(byte[], int, int)} - or {@link #read()} - method so that reading from the stream generates EOF
- * for the end of data in each entry as well as at the end of the file proper.
+ * Archive input streams <strong>MUST</strong> override the {@link #read(byte[], int, int)} - or {@link #read()} - method so that reading from the stream
+ * generates EOF for the end of data in each entry as well as at the end of the file proper.
  * <p>
  * The {@link #getNextEntry()} method is used to reset the input stream ready for reading the data from the next entry.
  * </p>
  * <p>
  * The input stream classes must also implement a method with the signature:
  * </p>
+ *
  * <pre>
  * public static boolean matches(byte[] signature, int length)
  * </pre>
@@ -50,7 +51,7 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 
 	private final byte[] single = new byte[1];
 
-	/** The number of bytes read in this stream */
+	/** The number of bytes read in this stream. */
 	private long bytesRead;
 
 	private Charset charset;
@@ -58,8 +59,9 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 	/**
 	 * Constructs a new instance.
 	 */
+	@SuppressWarnings("resource")
 	public ArchiveInputStream() {
-		this(NullInputStream.INSTANCE, Charset.defaultCharset());
+		this(new NullInputStream(), Charset.defaultCharset());
 	}
 
 	/**
@@ -87,14 +89,13 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 	}
 
 	/**
-	 * Whether this stream is able to read the given entry.
+	 * Tests whether this stream is able to read the given entry.
 	 * <p>
 	 * Some archive formats support variants or details that are not supported (yet).
 	 * </p>
 	 *
-	 * @param archiveEntry the entry to test
+	 * @param archiveEntry the entry to test.
 	 * @return This implementation always returns true.
-	 *
 	 * @since 1.1
 	 */
 	public boolean canReadEntryData(final ArchiveEntry archiveEntry) {
@@ -102,18 +103,18 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 	}
 
 	/**
-	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
+	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1).
 	 *
-	 * @param read the number of bytes read
+	 * @param read the number of bytes read.
 	 */
 	protected void count(final int read) {
 		count((long) read);
 	}
 
 	/**
-	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1)
+	 * Increments the counter of already read bytes. Doesn't increment if the EOF has been hit (read == -1).
 	 *
-	 * @param read the number of bytes read
+	 * @param read the number of bytes read.
 	 * @since 1.1
 	 */
 	protected void count(final long read) {
@@ -133,9 +134,9 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 	}
 
 	/**
-	 * Gets the Charest.
+	 * Gets the Charset.
 	 *
-	 * @return the Charest.
+	 * @return the Charset.
 	 */
 	public Charset getCharset() {
 		return charset;
@@ -144,7 +145,7 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 	/**
 	 * Gets the current number of bytes read from this stream.
 	 *
-	 * @return the number of read bytes
+	 * @return the number of read.
 	 * @deprecated this method may yield wrong results for large archives, use {@link #getBytesRead()} instead.
 	 */
 	@Deprecated
@@ -162,8 +163,9 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 
 	/**
 	 * Does nothing.
-	 *
+	 * <p>
 	 * TODO [COMPRESS-670] Support mark() and reset() in ArchiveInputStream.
+	 * </p>
 	 *
 	 * @param readlimit ignored.
 	 */
@@ -174,8 +176,9 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 
 	/**
 	 * Always returns false.
-	 *
+	 * <p>
 	 * TODO [COMPRESS-670] Support mark() and reset() in ArchiveInputStream.
+	 * </p>
 	 *
 	 * @return Always returns false.
 	 */
@@ -196,13 +199,15 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 
 	/**
 	 * Reads a byte of data. This method will block until enough input is available.
-	 *
+	 * <p>
 	 * Simply calls the {@link #read(byte[], int, int)} method.
-	 *
+	 * </p>
+	 * <p>
 	 * MUST be overridden if the {@link #read(byte[], int, int)} method is not overridden; may be overridden otherwise.
+	 * </p>
 	 *
-	 * @return the byte read, or -1 if end of input is reached
-	 * @throws IOException if an I/O error has occurred
+	 * @return the byte read, or -1 if end of input is reached.
+	 * @throws IOException if an I/O error has occurred.
 	 */
 	@Override
 	public int read() throws IOException {
@@ -212,8 +217,9 @@ public abstract class ArchiveInputStream<E extends ArchiveEntry> extends FilterI
 
 	/**
 	 * Does nothing.
-	 *
+	 * <p>
 	 * TODO [COMPRESS-670] Support mark() and reset() in ArchiveInputStream.
+	 * </p>
 	 *
 	 * @throws IOException not thrown here but may be thrown from a subclass.
 	 */

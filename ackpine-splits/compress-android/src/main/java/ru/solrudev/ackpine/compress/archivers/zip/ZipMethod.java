@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 
 /**
- * List of known compression methods
+ * Enumerates known compression methods.
  *
- * Many of these methods are currently not supported by commons compress
+ * Some of these methods are currently not supported by commons compress.
  *
  * @since 1.5
  */
@@ -98,21 +98,21 @@ public enum ZipMethod {
 	/**
 	 * Compression Method 9 for enhanced deflate.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	ENHANCED_DEFLATED(9),
 
 	/**
 	 * PKWARE Data Compression Library Imploding.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	PKWARE_IMPLODING(10),
 
 	/**
 	 * Compression Method 12 for bzip2.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	BZIP2(12),
 
@@ -120,42 +120,66 @@ public enum ZipMethod {
 	 * Compression Method 14 for LZMA.
 	 *
 	 * @see <a href="https://www.7-zip.org/sdk.html">https://www.7-zip.org/sdk.html</a>
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	LZMA(14),
 
 	/**
+	 * Compression Method 20 for Zstandard (deprecated).
+	 *
+	 * @see <a href="https://github.com/facebook/zstd">Facebook Zstandard source code</a>
+	 * @see <a href="https://pkwaredownloads.blob.core.windows.net/pkware-general/Documentation/APPNOTE-6.3.7.TXT">.ZIP File Format Specification 6.3.7:
+	 *      Deprecated zstd compression method id</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">.ZIP File Format Specification: Explanation of fields: compression method: (2
+	 *      bytes)</a>
+	 * @since 1.28.0
+	 */
+	ZSTD_DEPRECATED(20),
+
+	/**
+	 * Compression Method 93 for Zstandard.
+	 *
+	 * @see <a href="https://github.com/facebook/zstd">Facebook Zstandard source code</a>
+	 * @see <a href="https://pkwaredownloads.blob.core.windows.net/pkware-general/Documentation/APPNOTE-6.3.8.TXT">.ZIP File Format Specification 6.3.8: Changed
+	 *      zstd compression method id</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">.ZIP File Format Specification: Explanation of fields: compression method: (2
+	 *      bytes)</a>
+	 * @since 1.28.0
+	 */
+	ZSTD(93),
+
+	/**
 	 * Compression Method 95 for XZ.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	XZ(95),
 
 	/**
 	 * Compression Method 96 for Jpeg compression.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	JPEG(96),
 
 	/**
 	 * Compression Method 97 for WavPack.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	WAVPACK(97),
 
 	/**
 	 * Compression Method 98 for PPMd.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	PPMD(98),
 
 	/**
 	 * Compression Method 99 for AES encryption.
 	 *
-	 * @see <a href="https://www.winzip.com/wz54.htm">https://www.winzip.com/wz54.htm</a>
+	 * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">Explanation of fields: compression method: (2 bytes)</a>
 	 */
 	AES_ENCRYPTED(99),
 
@@ -166,6 +190,8 @@ public enum ZipMethod {
 
 	static final int UNKNOWN_CODE = -1;
 
+//	private static final Map<Integer, ZipMethod> codeToEnum = Collections
+//			.unmodifiableMap(Stream.of(values()).collect(Collectors.toMap(ZipMethod::getCode, Function.identity())));
 	private static final Map<Integer, ZipMethod> codeToEnum;
 
 	static {
@@ -177,13 +203,23 @@ public enum ZipMethod {
 	}
 
 	/**
-	 * returns the {@link ZipMethod} for the given code or null if the method is not known.
+	 * Gets the {@link ZipMethod} for the given code or null if the method is not known.
 	 *
 	 * @param code the code
 	 * @return the {@link ZipMethod} for the given code or null if the method is not known.
 	 */
 	public static ZipMethod getMethodByCode(final int code) {
 		return codeToEnum.get(code);
+	}
+
+	/**
+	 * Tests whether the given ZIP method is a ZStandard method.
+	 *
+	 * @param method The method to test.
+	 * @return Whether the given ZIP method is a ZStandard method.
+	 */
+	static boolean isZstd(final int method) {
+		return method == ZSTD.getCode() || method == ZSTD_DEPRECATED.getCode();
 	}
 
 	private final int code;

@@ -68,7 +68,7 @@ public class ExtraFieldUtils {
 		public static final UnparseableExtraField SKIP = new UnparseableExtraField(SKIP_KEY);
 
 		/**
-		 * Read the extra field data into an instance of {@link UnparseableExtraFieldData UnparseableExtraFieldData}.
+		 * Reads the extra field data into an instance of {@link UnparseableExtraFieldData UnparseableExtraFieldData}.
 		 */
 		public static final UnparseableExtraField READ = new UnparseableExtraField(READ_KEY);
 
@@ -92,7 +92,7 @@ public class ExtraFieldUtils {
 				throws ZipException {
 			switch (key) {
 				case THROW_KEY:
-					throw new ZipException("Bad extra field starting at " + off + ".  Block length of " + claimedLength + " bytes exceeds remaining" + " data of "
+					throw new ZipException("Bad extra field starting at " + off + ".  Block length of " + claimedLength + " bytes exceeds remaining data of "
 							+ (len - WORD) + " bytes.");
 				case READ_KEY:
 					final UnparseableExtraFieldData field = new UnparseableExtraFieldData();
@@ -192,8 +192,7 @@ public class ExtraFieldUtils {
 			}
 			return ze;
 		} catch (final ArrayIndexOutOfBoundsException e) {
-			throw (ZipException) new ZipException("Failed to parse corrupt ZIP extra field of type " + Integer.toHexString(ze.getHeaderId().getValue()))
-					.initCause(e);
+			throw ZipUtil.newZipException("Failed to parse corrupt ZIP extra field of type " + Integer.toHexString(ze.getHeaderId().getValue()), e);
 		}
 	}
 
@@ -326,7 +325,7 @@ public class ExtraFieldUtils {
 				v.add(Objects.requireNonNull(parsingBehavior.fill(ze, data, start + WORD, length, local), "fill must not return null"));
 				start += length + WORD;
 			} catch (final InstantiationException | IllegalAccessException e) {
-				throw (ZipException) new ZipException(e.getMessage()).initCause(e);
+				throw ZipUtil.newZipException(e.getMessage(), e);
 			}
 		}
 

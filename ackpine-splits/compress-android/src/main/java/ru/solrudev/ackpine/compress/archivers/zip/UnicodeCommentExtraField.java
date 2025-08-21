@@ -27,18 +27,23 @@ package ru.solrudev.ackpine.compress.archivers.zip;
  * </p>
  *
  * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">PKWARE APPNOTE.TXT, section 4.6.8</a>
- *
  * @NotThreadSafe super-class is not thread-safe
  */
 public class UnicodeCommentExtraField extends AbstractUnicodeExtraField {
 
+	/**
+	 * Field ID.
+	 */
 	public static final ZipShort UCOM_ID = new ZipShort(0x6375);
 
+	/**
+	 * Constructs a new instance.
+	 */
 	public UnicodeCommentExtraField() {
 	}
 
 	/**
-	 * Assemble as unicode comment extension from the comment given as text as well as the bytes actually written to the archive.
+	 * Constructs a new instance as Unicode comment extension from the comment given as text as well as the bytes actually written to the archive.
 	 *
 	 * @param comment The file comment
 	 * @param bytes   the bytes actually written to the archive
@@ -48,7 +53,7 @@ public class UnicodeCommentExtraField extends AbstractUnicodeExtraField {
 	}
 
 	/**
-	 * Assemble as unicode comment extension from the name given as text as well as the encoded bytes actually written to the archive.
+	 * Assemble as Unicode comment extension from the name given as text as well as the encoded bytes actually written to the archive.
 	 *
 	 * @param text  The file name
 	 * @param bytes the bytes actually written to the archive

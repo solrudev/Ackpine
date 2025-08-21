@@ -21,8 +21,6 @@ import static ru.solrudev.ackpine.compress.utils.IOUtils.EOF;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-
 /**
  * Always returns {@link IOUtils#EOF} to all attempts to read something from the stream.
  * <p>

@@ -37,7 +37,6 @@ import ru.solrudev.ackpine.compress.utils.ByteUtils;
  * </p>
  *
  * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">PKWARE APPNOTE.TXT, section 4.5.3</a>
- *
  * @since 1.2
  * @NotThreadSafe
  */
@@ -45,8 +44,10 @@ public class Zip64ExtendedInformationExtraField implements ZipExtraField {
 
 	static final ZipShort HEADER_ID = new ZipShort(0x0001);
 
-	private static final String LFH_MUST_HAVE_BOTH_SIZES_MSG = "Zip64 extended information must contain" + " both size values in the local file header.";
-	private ZipEightByteInteger size, compressedSize, relativeHeaderOffset;
+	private static final String LFH_MUST_HAVE_BOTH_SIZES_MSG = "Zip64 extended information must contain both size values in the local file header.";
+	private ZipEightByteInteger size;
+	private ZipEightByteInteger compressedSize;
+	private ZipEightByteInteger relativeHeaderOffset;
 	private ZipLong diskStart;
 
 	/**
@@ -72,7 +73,6 @@ public class Zip64ExtendedInformationExtraField implements ZipExtraField {
 	 *
 	 * @param size           the entry's original size
 	 * @param compressedSize the entry's compressed size
-	 *
 	 * @throws IllegalArgumentException if size or compressedSize is null
 	 */
 	public Zip64ExtendedInformationExtraField(final ZipEightByteInteger size, final ZipEightByteInteger compressedSize) {
@@ -86,7 +86,6 @@ public class Zip64ExtendedInformationExtraField implements ZipExtraField {
 	 * @param compressedSize       the entry's compressed size
 	 * @param relativeHeaderOffset the entry's offset
 	 * @param diskStart            the disk start
-	 *
 	 * @throws IllegalArgumentException if size or compressedSize is null
 	 */
 	public Zip64ExtendedInformationExtraField(final ZipEightByteInteger size, final ZipEightByteInteger compressedSize,
@@ -264,7 +263,7 @@ public class Zip64ExtendedInformationExtraField implements ZipExtraField {
 			final int expectedLength = (hasUncompressedSize ? DWORD : 0) + (hasCompressedSize ? DWORD : 0) + (hasRelativeHeaderOffset ? DWORD : 0)
 					+ (hasDiskStart ? WORD : 0);
 			if (rawCentralDirectoryData.length < expectedLength) {
-				throw new ZipException("Central directory zip64 extended" + " information extra field's length" + " doesn't match central directory"
+				throw new ZipException("Central directory zip64 extended information extra field's length doesn't match central directory"
 						+ " data.  Expected length " + expectedLength + " but is " + rawCentralDirectoryData.length);
 			}
 			int offset = 0;
