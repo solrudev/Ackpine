@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 
 /**
  * Utility class for handling DOS and Java time conversions.
@@ -112,19 +113,6 @@ public abstract class ZipUtil {
 	}
 
 	/**
-	 * Converts a BigInteger into a long, and blows up (NumberFormatException) if the BigInteger is too big.
-	 *
-	 * @param big BigInteger to convert.
-	 * @return long representation of the BigInteger.
-	 */
-	static long bigToLong(final BigInteger big) {
-		if (big.bitLength() <= 63) { // bitLength() doesn't count the sign bit.
-			return big.longValue();
-		}
-		throw new NumberFormatException("The BigInteger cannot fit inside a 64 bit java long: [" + big + "]");
-	}
-
-	/**
 	 * Tests if this library is able to read or write the given entry.
 	 */
 	static boolean canHandleEntryData(final ZipArchiveEntry entry) {
@@ -205,15 +193,15 @@ public abstract class ZipUtil {
 	 * If the field is null or the CRCs don't match, return null instead.
 	 * </p>
 	 */
-	private static String getUnicodeStringIfOriginalMatches(final AbstractUnicodeExtraField f, final byte[] orig) {
-		if (f != null) {
+	private static String getUnicodeStringIfOriginalMatches(final AbstractUnicodeExtraField field, final byte[] originalNameBytes) {
+		if (field != null) {
 			final CRC32 crc32 = new CRC32();
-			crc32.update(orig);
+			crc32.update(originalNameBytes);
 			final long origCRC32 = crc32.getValue();
 
-			if (origCRC32 == f.getNameCRC32()) {
+			if (origCRC32 == field.getNameCRC32()) {
 				try {
-					return ZipEncodingHelper.ZIP_ENCODING_UTF_8.decode(f.getUnicodeName());
+					return ZipEncodingHelper.ZIP_ENCODING_UTF_8.decode(field.getUnicodeName());
 				} catch (final IOException ignored) {
 					// UTF-8 unsupported? should be impossible the
 					// Unicode*ExtraField must contain some bad bytes
@@ -226,8 +214,8 @@ public abstract class ZipUtil {
 
 	/**
 	 * <p>
-	 * Converts a long into a BigInteger. Negative numbers between -1 and -2^31 are treated as unsigned 32 bit (e.g., positive) integers. Negative numbers below
-	 * -2^31 cause an IllegalArgumentException to be thrown.
+	 * Converts a long into a BigInteger. Negative numbers between -1 and -2^31 are treated as unsigned 32 bit (for example, positive) integers. Negative
+	 * numbers below -2^31 cause an IllegalArgumentException to be thrown.
 	 * </p>
 	 *
 	 * @param l long to convert to BigInteger.
@@ -239,17 +227,27 @@ public abstract class ZipUtil {
 		}
 		if (l < 0 && l >= Integer.MIN_VALUE) {
 			// If someone passes in a -2, they probably mean 4294967294
-			// (For example, UNIX UID/GID's are 32 bit unsigned.)
+			// (For example, Unix UID/GID's are 32 bit unsigned.)
 			l = adjustToLong((int) l);
 		}
 		return BigInteger.valueOf(l);
 	}
 
 	/**
+	 * Constructs a new ZipException.
+	 *
+	 * @param message the detail message.
+	 * @param cause   throwable The cause of this Throwable.
+	 * @return a new ZipException.
+	 */
+	static ZipException newZipException(final String message, final Throwable cause) {
+		return (ZipException) new ZipException(message).initCause(cause);
+	}
+
+	/**
 	 * Reverses a byte[] array. Reverses in-place (thus provided array is mutated), but also returns same for convenience.
 	 *
 	 * @param array to reverse (mutated in-place, but also returned for convenience).
-	 *
 	 * @return the reversed array (mutated in-place, but also returned for convenience).
 	 * @since 1.5
 	 */
@@ -288,17 +286,18 @@ public abstract class ZipUtil {
 	}
 
 	/**
-	 * Converts a signed byte into an unsigned integer representation (e.g., -1 becomes 255).
+	 * Converts a signed byte into an unsigned integer representation (for example, -1 becomes 255).
 	 *
 	 * @param b byte to convert to int
 	 * @return int representation of the provided byte
 	 * @since 1.5
 	 */
 	public static int signedByteToUnsignedInt(final byte b) {
-		if (b >= 0) {
-			return b;
-		}
-		return 256 + b;
+//		if (b >= 0) {
+//			return b;
+//		}
+//		return 256 + b;
+		return ((int) b) & 0xff; // from java.lang.Byte#toUnsignedInt()
 	}
 
 	/**
@@ -316,13 +315,34 @@ public abstract class ZipUtil {
 	 * @return true if the compression method is supported
 	 */
 	private static boolean supportsMethodOf(final ZipArchiveEntry entry) {
-		return entry.getMethod() == ZipEntry.STORED || entry.getMethod() == ZipMethod.UNSHRINKING.getCode()
-				|| entry.getMethod() == ZipMethod.IMPLODING.getCode() || entry.getMethod() == ZipEntry.DEFLATED
-				|| entry.getMethod() == ZipMethod.ENHANCED_DEFLATED.getCode() || entry.getMethod() == ZipMethod.BZIP2.getCode();
+		final int method = entry.getMethod();
+		return method == ZipEntry.STORED || method == ZipMethod.UNSHRINKING.getCode()
+				|| method == ZipMethod.IMPLODING.getCode() || method == ZipEntry.DEFLATED
+				|| method == ZipMethod.ENHANCED_DEFLATED.getCode() || method == ZipMethod.BZIP2.getCode()
+				|| ZipMethod.isZstd(method)
+				|| method == ZipMethod.XZ.getCode();
 	}
 
 	/**
-	 * Converts an unsigned integer to a signed byte (e.g., 255 becomes -1).
+	 * Converts a BigInteger to a long, and throws a NumberFormatException if the BigInteger is too big.
+	 *
+	 * @param big BigInteger to convert.
+	 * @return {@code BigInteger} converted to a {@code long}.
+	 */
+	static long toLong(final BigInteger big) {
+//		try {
+//			return big.longValueExact();
+//		} catch (final ArithmeticException e) {
+//			throw new NumberFormatException("The BigInteger cannot fit inside a 64 bit java long: [" + big + "]");
+//		}
+		if (big.bitLength() <= 63) { // bitLength() doesn't count the sign bit.
+			return big.longValue();
+		}
+		throw new NumberFormatException("The BigInteger cannot fit inside a 64 bit java long: [" + big + "]");
+	}
+
+	/**
+	 * Converts an unsigned integer to a signed byte (for example, 255 becomes -1).
 	 *
 	 * @param i integer to convert to byte
 	 * @return byte representation of the provided int

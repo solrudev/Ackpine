@@ -40,6 +40,11 @@ public final class IOUtils {
 	private static final ThreadLocal<byte[]> SCRATCH_BYTE_BUFFER_RW = new ThreadLocal<>();
 
 	/**
+	 * Internal byte array buffer, intended for write only operations.
+	 */
+	private static final byte[] SCRATCH_BYTE_BUFFER_WO = byteArray();
+
+	/**
 	 * The default buffer size ({@value}) to use in copy methods.
 	 */
 	public static final int DEFAULT_BUFFER_SIZE = 8192;
@@ -54,6 +59,17 @@ public final class IOUtils {
 		byte[] buffer = byteArray();
 		Arrays.fill(buffer, (byte) 0);
 		SCRATCH_BYTE_BUFFER_RW.set(buffer);
+	}
+
+	/**
+	 * Gets the internal byte array intended for write only operations.
+	 *
+	 * @return the internal byte array intended for write only operations.
+	 */
+	static byte[] getScratchByteArrayWriteOnly() {
+		Arrays.fill(SCRATCH_BYTE_BUFFER_WO, (byte) 0);
+		return SCRATCH_BYTE_BUFFER_WO;
+//		return fill0(SCRATCH_BYTE_BUFFER_WO);
 	}
 
 	/**
@@ -221,6 +237,50 @@ public final class IOUtils {
 			read += readCount;
 		}
 		return output.toByteArray();
+	}
+
+	/**
+	 * Skips bytes from an input byte stream.
+	 * This implementation guarantees that it will read as many bytes
+	 * as possible before giving up; this may not always be the case for
+	 * skip() implementations in subclasses of {@link InputStream}.
+	 * <p>
+	 * Note that the implementation uses {@link InputStream#read(byte[], int, int)} rather
+	 * than delegating to {@link InputStream#skip(long)}.
+	 * This means that the method may be considerably less efficient than using the actual skip implementation,
+	 * this is done to guarantee that the correct number of bytes are skipped.
+	 * </p>
+	 *
+	 * @param input byte stream to skip
+	 * @param skip number of bytes to skip.
+	 * @return number of bytes actually skipped.
+	 * @throws IOException              if there is a problem reading the file
+	 * @throws IllegalArgumentException if toSkip is negative
+	 * @see InputStream#skip(long)
+	 * @see <a href="https://issues.apache.org/jira/browse/IO-203">IO-203 - Add skipFully() method for InputStreams</a>
+	 * @since 2.0
+	 */
+	public static long skip(final InputStream input, final long skip) throws IOException {
+		if (skip < 0) {
+			throw new IllegalArgumentException("Skip count must be non-negative, actual: " + skip);
+		}
+		//
+		// No need to synchronize access to SCRATCH_BYTE_BUFFER_WO: We don't care if the buffer is written multiple
+		// times or in parallel since the data is ignored. We reuse the same buffer, if the buffer size were variable or read-write,
+		// we would need to synch or use a thread local to ensure some other thread safety.
+		//
+		long remain = skip;
+		while (remain > 0) {
+			final byte[] skipBuffer = getScratchByteArrayWriteOnly();
+//			final byte[] skipBuffer = skipBufferSupplier.get();
+			// See https://issues.apache.org/jira/browse/IO-203 for why we use read() rather than delegating to skip()
+			final long n = input.read(skipBuffer, 0, (int) Math.min(remain, skipBuffer.length));
+			if (n < 0) { // EOF
+				break;
+			}
+			remain -= n;
+		}
+		return skip - remain;
 	}
 
 	private static byte[] byteArray() {

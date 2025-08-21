@@ -47,6 +47,7 @@ import ru.solrudev.ackpine.compress.archivers.ArchiveEntry;
 import ru.solrudev.ackpine.compress.archivers.ArchiveInputStream;
 import ru.solrudev.ackpine.compress.compressors.bzip2.BZip2CompressorInputStream;
 import ru.solrudev.ackpine.compress.compressors.deflate64.Deflate64CompressorInputStream;
+import ru.solrudev.ackpine.compress.compressors.zstandard.ZstdCompressorInputStream;
 import ru.solrudev.ackpine.compress.utils.ArchiveUtils;
 import ru.solrudev.ackpine.compress.utils.IOUtils;
 import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
@@ -180,25 +181,28 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 		}
 	}
 
+	/**
+	 * Maximum size of data in the first local file header.
+	 */
 	public static final int PREAMBLE_GARBAGE_MAX_SIZE = 4096;
 
 	private static final int LFH_LEN = 30;
 
 	/*
 	 * local file header signature WORD version needed to extract SHORT general purpose bit flag SHORT compression method SHORT last mod file time SHORT last
-	 * mod file date SHORT crc-32 WORD compressed size WORD uncompressed size WORD file name length SHORT extra field length SHORT
+	 * mod file date SHORT CRC-32 WORD compressed size WORD uncompressed size WORD file name length SHORT extra field length SHORT
 	 */
 	private static final int CFH_LEN = 46;
 
 	/*
 	 * central file header signature WORD version made by SHORT version needed to extract SHORT general purpose bit flag SHORT compression method SHORT last mod
-	 * file time SHORT last mod file date SHORT crc-32 WORD compressed size WORD uncompressed size WORD file name length SHORT extra field length SHORT file
+	 * file time SHORT last mod file date SHORT CRC-32 WORD compressed size WORD uncompressed size WORD file name length SHORT extra field length SHORT file
 	 * comment length SHORT disk number start SHORT internal file attributes SHORT external file attributes WORD relative offset of local header WORD
 	 */
 	private static final long TWO_EXP_32 = ZIP64_MAGIC + 1;
 
 	private static final String USE_ZIPFILE_INSTEAD_OF_STREAM_DISCLAIMER = " while reading a stored entry using data descriptor. Either the archive is broken"
-			+ " or it can not be read using ZipArchiveInputStream and you must use ZipFile."
+			+ " or it cannot be read using ZipArchiveInputStream and you must use ZipFile."
 			+ " A common cause for this is a ZIP archive containing a ZIP archive."
 			+ " See https://commons.apache.org/proper/commons-compress/zip.html#ZipArchiveInputStream_vs_ZipFile";
 
@@ -212,7 +216,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 
 	private static final BigInteger LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
 
-	private static boolean checksig(final byte[] expected, final byte[] signature) {
+	private static boolean checkSig(final byte[] expected, final byte[] signature) {
 		for (int i = 0; i < expected.length; i++) {
 			if (signature[i] != expected[i]) {
 				return false;
@@ -233,10 +237,10 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 			return false;
 		}
 
-		return checksig(ZipFile.LFH_SIG, signature) // normal file
-				|| checksig(ZipFile.EOCD_SIG, signature) // empty zip
-				|| checksig(ZipFile.DD_SIG, signature) // split zip
-				|| checksig(ZipLong.SINGLE_SEGMENT_SPLIT_MARKER.getBytes(), signature);
+		return checkSig(ZipFile.LFH_SIG, signature) // normal file
+				|| checkSig(ZipFile.EOCD_SIG, signature) // empty zip
+				|| checkSig(ZipFile.DD_SIG, signature) // split zip
+				|| checkSig(ZipLong.SINGLE_SEGMENT_SPLIT_MARKER.getBytes(), signature);
 	}
 
 	/** The ZIP encoding to use for file names and the file comment. */
@@ -424,7 +428,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 	}
 
 	/**
-	 * Whether this class is able to read the given entry.
+	 * Tests whether this class is able to read the given entry.
 	 * <p>
 	 * May return false if it is set up to use encryption or a compression method that hasn't been implemented yet.
 	 * </p>
@@ -512,6 +516,18 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 	}
 
 	/**
+	 * Creates the appropriate InputStream for the Zstd compression method.
+	 *
+	 * @param in the input stream which should be used for compression.
+	 * @return the {@link InputStream} for handling the Zstd compression.
+	 * @throws IOException if an I/O error occurs.
+	 * @since 1.28.0
+	 */
+	protected InputStream createZstdInputStream(final InputStream in) throws IOException {
+		return new ZstdCompressorInputStream(in);
+	}
+
+	/**
 	 * If the compressed size of the current entry is included in the entry header and there are any outstanding bytes in the underlying stream, then this
 	 * returns true.
 	 *
@@ -522,7 +538,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 	}
 
 	/**
-	 * Read all data of the current entry from the underlying stream that hasn't been read, yet.
+	 * Reads all data of the current entry from the underlying stream that hasn't been read, yet.
 	 */
 	private void drainCurrentEntryData() throws IOException {
 		long remaining = current.entry.getCompressedSize() - current.bytesReadFromStream;
@@ -615,6 +631,9 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 	@SuppressWarnings("resource") // checkInputStream() does not allocate.
 	@Override
 	public long getCompressedCount() {
+		if (current == null) {
+			return -1;
+		}
 		final int method = current.entry.getMethod();
 		if (method == ZipEntry.STORED) {
 			return current.bytesRead;
@@ -682,13 +701,13 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 			}
 			throw new ZipException(String.format("Unexpected record signature: 0x%x", sig.getValue()));
 		}
-
+		// off: go past the signature
 		int off = WORD;
 		current = new CurrentEntry();
-
+		// get version
 		final int versionMadeBy = ZipShort.getValue(lfhBuf, off);
 		off += SHORT;
-		current.entry.setPlatform(versionMadeBy >> ZipFile.BYTE_SHIFT & ZipFile.NIBLET_MASK);
+		current.entry.setPlatform(ZipFile.toPlatform(versionMadeBy));
 
 		final GeneralPurposeBit gpFlag = GeneralPurposeBit.parse(lfhBuf, off);
 		final boolean hasUTF8Flag = gpFlag.usesUTF8ForNames();
@@ -705,7 +724,8 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 		current.entry.setTime(time);
 		off += WORD;
 
-		ZipLong size = null, cSize = null;
+		ZipLong size = null;
+		ZipLong cSize = null;
 		if (!current.hasDataDescriptor) {
 			current.entry.setCrc(ZipLong.getValue(lfhBuf, off));
 			off += WORD;
@@ -736,9 +756,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 		try {
 			current.entry.setExtra(extraData);
 		} catch (final RuntimeException ex) {
-			final ZipException z = new ZipException("Invalid extra data in entry " + current.entry.getName());
-			z.initCause(ex);
-			throw z;
+			throw ZipUtil.newZipException("Invalid extra data in entry " + current.entry.getName(), ex);
 		}
 
 		if (!hasUTF8Flag && useUnicodeExtraFields) {
@@ -772,6 +790,10 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 						break;
 					case ENHANCED_DEFLATED:
 						current.inputStream = new Deflate64CompressorInputStream(bis);
+						break;
+					case ZSTD:
+					case ZSTD_DEPRECATED:
+						current.inputStream = createZstdInputStream(bis);
 						break;
 					default:
 						// we should never get here as all supported methods have been covered
@@ -925,15 +947,18 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 		}
 
 		final int read;
-		if (current.entry.getMethod() == ZipEntry.STORED) {
+		final int method = current.entry.getMethod();
+		if (method == ZipEntry.STORED) {
 			read = readStored(buffer, offset, length);
-		} else if (current.entry.getMethod() == ZipEntry.DEFLATED) {
+		} else if (method == ZipEntry.DEFLATED) {
 			read = readDeflated(buffer, offset, length);
-		} else if (current.entry.getMethod() == ZipMethod.UNSHRINKING.getCode() || current.entry.getMethod() == ZipMethod.IMPLODING.getCode()
-				|| current.entry.getMethod() == ZipMethod.ENHANCED_DEFLATED.getCode() || current.entry.getMethod() == ZipMethod.BZIP2.getCode()) {
+		} else if (method == ZipMethod.UNSHRINKING.getCode() || method == ZipMethod.IMPLODING.getCode()
+				|| method == ZipMethod.ENHANCED_DEFLATED.getCode() || method == ZipMethod.BZIP2.getCode()
+				|| ZipMethod.isZstd(method)
+				|| method == ZipMethod.XZ.getCode()) {
 			read = current.inputStream.read(buffer, offset, length);
 		} else {
-			throw new UnsupportedZipFeatureException(ZipMethod.getMethodByCode(current.entry.getMethod()), current.entry);
+			throw new UnsupportedZipFeatureException(ZipMethod.getMethodByCode(method), current.entry);
 		}
 
 		if (read >= 0) {
@@ -1003,7 +1028,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 				return -1;
 			}
 			if (inf.needsDictionary()) {
-				throw new ZipException("This archive needs a preset dictionary" + " which is not supported by Commons" + " Compress.");
+				throw new ZipException("This archive needs a preset dictionary which is not supported by Commons Compress.");
 			}
 			if (read == -1) {
 				throw new IOException("Truncated ZIP file");
@@ -1082,7 +1107,7 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 			try {
 				read = inf.inflate(buffer, offset, length);
 			} catch (final DataFormatException e) {
-				throw (IOException) new ZipException(e.getMessage()).initCause(e);
+				throw ZipUtil.newZipException(e.getMessage(), e);
 			}
 		} while (read == 0 && inf.needsInput());
 		return read;
@@ -1320,22 +1345,28 @@ public class ZipArchiveInputStream extends ArchiveInputStream<ZipArchiveEntry> i
 	}
 
 	/**
-	 * Whether the compressed size for the entry is either known or not required by the compression method being used.
+	 * Tests whether the compressed size for the entry is either known or not required by the compression method being used.
 	 */
 	private boolean supportsCompressedSizeFor(final ZipArchiveEntry entry) {
-		return entry.getCompressedSize() != ArchiveEntry.SIZE_UNKNOWN || entry.getMethod() == ZipEntry.DEFLATED
-				|| entry.getMethod() == ZipMethod.ENHANCED_DEFLATED.getCode()
-				|| entry.getGeneralPurposeBit().usesDataDescriptor() && allowStoredEntriesWithDataDescriptor && entry.getMethod() == ZipEntry.STORED;
+		final int method = entry.getMethod();
+		return entry.getCompressedSize() != ArchiveEntry.SIZE_UNKNOWN || method == ZipEntry.DEFLATED
+				|| method == ZipMethod.ENHANCED_DEFLATED.getCode()
+				|| entry.getGeneralPurposeBit().usesDataDescriptor() && allowStoredEntriesWithDataDescriptor && method == ZipEntry.STORED
+				|| ZipMethod.isZstd(method)
+				|| method == ZipMethod.XZ.getCode();
 	}
 
 	/**
-	 * Whether this entry requires a data descriptor this library can work with.
+	 * Tests whether this entry requires a data descriptor this library can work with.
 	 *
 	 * @return true if allowStoredEntriesWithDataDescriptor is true, the entry doesn't require any data descriptor or the method is DEFLATED or
 	 *         ENHANCED_DEFLATED.
 	 */
 	private boolean supportsDataDescriptorFor(final ZipArchiveEntry entry) {
-		return !entry.getGeneralPurposeBit().usesDataDescriptor() || allowStoredEntriesWithDataDescriptor && entry.getMethod() == ZipEntry.STORED
-				|| entry.getMethod() == ZipEntry.DEFLATED || entry.getMethod() == ZipMethod.ENHANCED_DEFLATED.getCode();
+		final int method = entry.getMethod();
+		return !entry.getGeneralPurposeBit().usesDataDescriptor() || allowStoredEntriesWithDataDescriptor && method == ZipEntry.STORED
+				|| method == ZipEntry.DEFLATED || method == ZipMethod.ENHANCED_DEFLATED.getCode()
+				|| ZipMethod.isZstd(method)
+				|| method == ZipMethod.XZ.getCode();
 	}
 }

@@ -18,45 +18,82 @@
  */
 package ru.solrudev.ackpine.compress;
 
-import java.io.IOException;
-
 /**
  * If a stream checks for estimated memory allocation, and the estimate goes above the memory limit, this is thrown. This can also be thrown if a stream tries
  * to allocate a byte array that is larger than the allowable limit.
  *
  * @since 1.14
  */
-public class MemoryLimitException extends IOException {
+public class MemoryLimitException extends CompressException {
 
 	private static final long serialVersionUID = 1L;
 
 	private static String buildMessage(final long memoryNeededInKb, final int memoryLimitInKb) {
-		return memoryNeededInKb + " kb of memory would be needed; limit was " + memoryLimitInKb + " kb. "
-				+ "If the file is not corrupt, consider increasing the memory limit.";
+		return String.format("%,d KiB of memory would be needed; limit was %,d KiB. If the file is not corrupt, consider increasing the memory limit.",
+				memoryNeededInKb, memoryLimitInKb);
 	}
 
 	/** A long instead of int to account for overflow for corrupt files. */
-	private final long memoryNeededInKb;
+	private final long memoryNeededKiB;
+	private final int memoryLimitKiB;
 
-	private final int memoryLimitInKb;
-
-	public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb) {
-		super(buildMessage(memoryNeededInKb, memoryLimitInKb));
-		this.memoryNeededInKb = memoryNeededInKb;
-		this.memoryLimitInKb = memoryLimitInKb;
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param memoryNeededKiB The memory needed in kibibytes (KiB).
+	 * @param memoryLimitKiB  The memory limit in kibibytes (KiB).
+	 */
+	public MemoryLimitException(final long memoryNeededKiB, final int memoryLimitKiB) {
+		super(buildMessage(memoryNeededKiB, memoryLimitKiB));
+		this.memoryNeededKiB = memoryNeededKiB;
+		this.memoryLimitKiB = memoryLimitKiB;
 	}
 
-	public MemoryLimitException(final long memoryNeededInKb, final int memoryLimitInKb, final Exception e) {
-		super(buildMessage(memoryNeededInKb, memoryLimitInKb), e);
-		this.memoryNeededInKb = memoryNeededInKb;
-		this.memoryLimitInKb = memoryLimitInKb;
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param memoryNeededKiB The memory needed in kibibytes (KiB).
+	 * @param memoryLimitKiB  The memory limit in kibibytes (KiB).
+	 * @param cause            The cause (which is saved for later retrieval by the {@link #getCause()} method). (A null value is permitted, and indicates that
+	 *                         the cause is nonexistent or unknown.)
+	 * @deprecated Use {@link #MemoryLimitException(long, int, Throwable)}.
+	 */
+	@Deprecated
+	public MemoryLimitException(final long memoryNeededKiB, final int memoryLimitKiB, final Exception cause) {
+		super(buildMessage(memoryNeededKiB, memoryLimitKiB), cause);
+		this.memoryNeededKiB = memoryNeededKiB;
+		this.memoryLimitKiB = memoryLimitKiB;
 	}
 
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param memoryNeededKiB The memory needed in kibibytes (KiB).
+	 * @param memoryLimitKiB  The memory limit in kibibytes (KiB).
+	 * @param cause            The cause (which is saved for later retrieval by the {@link #getCause()} method). (A null value is permitted, and indicates that
+	 *                         the cause is nonexistent or unknown.)
+	 */
+	public MemoryLimitException(final long memoryNeededKiB, final int memoryLimitKiB, final Throwable cause) {
+		super(buildMessage(memoryNeededKiB, memoryLimitKiB), cause);
+		this.memoryNeededKiB = memoryNeededKiB;
+		this.memoryLimitKiB = memoryLimitKiB;
+	}
+
+	/**
+	 * Gets the memory limit in kibibytes (KiB).
+	 *
+	 * @return the memory limit in kibibytes (KiB).
+	 */
 	public int getMemoryLimitInKb() {
-		return memoryLimitInKb;
+		return memoryLimitKiB;
 	}
 
+	/**
+	 * Gets the memory needed in kibibytes (KiB).
+	 *
+	 * @return the memory needed in kibibytes (KiB).
+	 */
 	public long getMemoryNeededInKb() {
-		return memoryNeededInKb;
+		return memoryNeededKiB;
 	}
 }

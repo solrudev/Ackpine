@@ -32,7 +32,7 @@ import java.util.zip.ZipException;
  * strong encryption.
  * </p>
  *
- * <b>Algorithm IDs</b> - integer identifier of the encryption algorithm from the following range
+ * <strong>Algorithm IDs</strong> - integer identifier of the encryption algorithm from the following range
  *
  * <ul>
  * <li>0x6601 - DES</li>
@@ -49,7 +49,7 @@ import java.util.zip.ZipException;
  * <li>0xFFFF - Unknown algorithm</li>
  * </ul>
  *
- * <b>Hash Algorithms</b> - integer identifier of the hash algorithm from the following range
+ * <strong>Hash Algorithms</strong> - integer identifier of the hash algorithm from the following range
  *
  * <ul>
  * <li>0x0000 - none</li>
@@ -67,12 +67,60 @@ import java.util.zip.ZipException;
 public abstract class PKWareExtraHeader implements ZipExtraField {
 
 	/**
-	 * Encryption algorithm.
+	 * Enumerates encryption algorithm.
 	 *
 	 * @since 1.11
 	 */
 	public enum EncryptionAlgorithm {
-		DES(0x6601), RC2pre52(0x6602), TripleDES168(0x6603), TripleDES192(0x6609), AES128(0x660E), AES192(0x660F), AES256(0x6610), RC2(0x6702), RC4(0x6801),
+
+		/**
+		 * DES with code 0x6601.
+		 */
+		DES(0x6601),
+
+		/**
+		 * RC2pre52 with code 0x6602.
+		 */
+		RC2pre52(0x6602),
+
+		/**
+		 * TripleDES168 with code 0x6603.
+		 */
+		TripleDES168(0x6603),
+
+		/**
+		 * TripleDES192 with code 0x6609.
+		 */
+		TripleDES192(0x6609),
+
+		/**
+		 * AES128 with code 0x660E.
+		 */
+		AES128(0x660E),
+
+		/**
+		 * AES192 with code 0x660F.
+		 */
+		AES192(0x660F),
+
+		/**
+		 * AES256 with code 0x6610.
+		 */
+		AES256(0x6610),
+
+		/**
+		 * RC2 with code 0x6702.
+		 */
+		RC2(0x6702),
+
+		/**
+		 * RC4 with code 0x6801.
+		 */
+		RC4(0x6801),
+
+		/**
+		 * UNKNOWN with code 0xFFFF.
+		 */
 		UNKNOWN(0xFFFF);
 
 		private static final Map<Integer, EncryptionAlgorithm> codeToEnum;
@@ -98,14 +146,14 @@ public abstract class PKWareExtraHeader implements ZipExtraField {
 		private final int code;
 
 		/**
-		 * private constructor for enum style class.
+		 * Constructs a new instance.
 		 */
 		EncryptionAlgorithm(final int code) {
 			this.code = code;
 		}
 
 		/**
-		 * the algorithm id.
+		 * Gets the algorithm ID.
 		 *
 		 * @return the PKWare AlgorithmId
 		 */
@@ -115,12 +163,51 @@ public abstract class PKWareExtraHeader implements ZipExtraField {
 	}
 
 	/**
-	 * Hash Algorithm
+	 * Enumerates hash Algorithm
 	 *
 	 * @since 1.11
 	 */
 	public enum HashAlgorithm {
-		NONE(0), CRC32(1), MD5(0x8003), SHA1(0x8004), RIPEND160(0x8007), SHA256(0x800C), SHA384(0x800D), SHA512(0x800E);
+
+		/**
+		 * NONE with code 0.
+		 */
+		NONE(0),
+
+		/**
+		 * CRC32 with code 1.
+		 */
+		CRC32(1),
+
+		/**
+		 * MD5 with code 0x8003.
+		 */
+		MD5(0x8003),
+
+		/**
+		 * SHA1 with code 0x8004.
+		 */
+		SHA1(0x8004),
+
+		/**
+		 * RIPEND160 with code 0x8007.
+		 */
+		RIPEND160(0x8007),
+
+		/**
+		 * SHA256 with code 0x800C.
+		 */
+		SHA256(0x800C),
+
+		/**
+		 * SHA384 with code 0x800D.
+		 */
+		SHA384(0x800D),
+
+		/**
+		 * SHA512 with code 0x800E.
+		 */
+		SHA512(0x800E);
 
 		private static final Map<Integer, HashAlgorithm> codeToEnum;
 
@@ -145,14 +232,14 @@ public abstract class PKWareExtraHeader implements ZipExtraField {
 		private final int code;
 
 		/**
-		 * private constructor for enum style class.
+		 * Constructs a new instance.
 		 */
 		HashAlgorithm(final int code) {
 			this.code = code;
 		}
 
 		/**
-		 * the hash algorithm ID.
+		 * Gets the hash algorithm ID.
 		 *
 		 * @return the PKWare hashAlg
 		 */
@@ -173,10 +260,22 @@ public abstract class PKWareExtraHeader implements ZipExtraField {
 	 */
 	private byte[] centralData;
 
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param headerId The header ID.
+	 */
 	protected PKWareExtraHeader(final ZipShort headerId) {
 		this.headerId = headerId;
 	}
 
+	/**
+	 * Asserts the given length is greater or equal to the given minimum.
+	 *
+	 * @param minimum the minimum.
+	 * @param length the length.
+	 * @throws ZipException Thrown if the length is less than the minimum.
+	 */
 	protected final void assertMinimalLength(final int minimum, final int length) throws ZipException {
 		if (length < minimum) {
 			throw new ZipException(getClass().getName() + " is too short, only " + length + " bytes, expected at least " + minimum);
@@ -232,11 +331,11 @@ public abstract class PKWareExtraHeader implements ZipExtraField {
 	/**
 	 * Gets the length of the local data.
 	 *
-	 * @return the length of the local data
+	 * @return the length of the local data.
 	 */
 	@Override
 	public ZipShort getLocalFileDataLength() {
-		return new ZipShort(localData != null ? localData.length : 0);
+		return ZipShort.lengthOf(localData);
 	}
 
 	/**

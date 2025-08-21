@@ -37,11 +37,16 @@ import java.util.zip.ZipException;
  */
 public class ResourceAlignmentExtraField implements ZipExtraField {
 
+	private static final int MAX_ALIGNMENT = Short.MAX_VALUE;
+
 	/**
 	 * Extra field id used for storing alignment and padding.
 	 */
 	public static final ZipShort ID = new ZipShort(0xa11e);
 
+	/**
+	 * Base field size.
+	 */
 	public static final int BASE_SIZE = 2;
 
 	private static final int ALLOW_METHOD_MESSAGE_CHANGE_FLAG = 0x8000;
@@ -52,19 +57,40 @@ public class ResourceAlignmentExtraField implements ZipExtraField {
 
 	private int padding;
 
+	/**
+	 * Constructs a new instance.
+	 */
 	public ResourceAlignmentExtraField() {
 	}
 
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param alignment A positive alignment less than {@link Short#MAX_VALUE}.
+	 */
 	public ResourceAlignmentExtraField(final int alignment) {
 		this(alignment, false);
 	}
 
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param alignment A positive alignment less than {@link Short#MAX_VALUE}.
+	 * @param allowMethodChange whether a method change is allowed when re-compressing the ZIP file.
+	 */
 	public ResourceAlignmentExtraField(final int alignment, final boolean allowMethodChange) {
 		this(alignment, allowMethodChange, 0);
 	}
 
+	/**
+	 * Constructs a new instance.
+	 *
+	 * @param alignment A positive alignment less than {@link Short#MAX_VALUE}.
+	 * @param allowMethodChange whether a method change is allowed when re-compressing the ZIP file.
+	 * @param padding padding.
+	 */
 	public ResourceAlignmentExtraField(final int alignment, final boolean allowMethodChange, final int padding) {
-		if (alignment < 0 || alignment > 0x7fff) {
+		if (alignment < 0 || alignment > MAX_ALIGNMENT) {
 			throw new IllegalArgumentException("Alignment must be between 0 and 0x7fff, was: " + alignment);
 		}
 		if (padding < 0) {
@@ -76,9 +102,9 @@ public class ResourceAlignmentExtraField implements ZipExtraField {
 	}
 
 	/**
-	 * Indicates whether method change is allowed when re-compressing the ZIP file.
+	 * Indicates whether a method change is allowed when re-compressing the ZIP file.
 	 *
-	 * @return true if method change is allowed, false otherwise.
+	 * @return true if a method change is allowed, false otherwise.
 	 */
 	public boolean allowMethodChange() {
 		return allowMethodChange;

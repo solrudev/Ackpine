@@ -35,6 +35,7 @@ import java.util.zip.ZipException;
 
 import ru.solrudev.ackpine.compress.archivers.ArchiveEntry;
 import ru.solrudev.ackpine.compress.archivers.EntryStreamOffsets;
+import ru.solrudev.ackpine.compress.utils.ArrayUtils;
 import ru.solrudev.ackpine.compress.utils.ByteUtils;
 
 /**
@@ -59,16 +60,18 @@ import ru.solrudev.ackpine.compress.utils.ByteUtils;
 public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStreamOffsets {
 
 	/**
-	 * Indicates how the comment of this entry has been determined.
+	 * Enumerates how the comment of this entry has been determined.
 	 *
 	 * @since 1.16
 	 */
 	public enum CommentSource {
+
 		/**
 		 * The comment has been read from the archive using the encoding of the archive specified when creating the {@link ZipArchiveInputStream} or
 		 * {@link ZipFile} (defaults to the platform's default encoding).
 		 */
 		COMMENT,
+
 		/**
 		 * The comment has been read from an {@link UnicodeCommentExtraField Unicode Extra Field}.
 		 */
@@ -76,7 +79,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * How to try to parse the extra fields.
+	 * Enumerates how to try to parse the extra fields.
 	 *
 	 * <p>
 	 * Configures the behavior for:
@@ -90,6 +93,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * @since 1.19
 	 */
 	public enum ExtraFieldParsingMode implements ExtraFieldParsingBehavior {
+
 		/**
 		 * Try to parse as many extra fields as possible and wrap unknown extra fields as well as supported extra fields that cannot be parsed in
 		 * {@link UnrecognizedExtraField}.
@@ -108,6 +112,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 				return fillAndMakeUnrecognizedOnError(field, data, off, len, local);
 			}
 		},
+
 		/**
 		 * Try to parse as many extra fields as possible and wrap unknown extra fields in {@link UnrecognizedExtraField}.
 		 *
@@ -124,6 +129,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 		 * </p>
 		 */
 		STRICT_FOR_KNOW_EXTRA_FIELDS(ExtraFieldUtils.UnparseableExtraField.READ),
+
 		/**
 		 * Try to parse as many extra fields as possible and wrap unknown extra fields as well as supported extra fields that cannot be parsed in
 		 * {@link UnrecognizedExtraField}.
@@ -138,6 +144,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 				return fillAndMakeUnrecognizedOnError(field, data, off, len, local);
 			}
 		},
+
 		/**
 		 * Try to parse as many extra fields as possible and wrap unknown extra fields in {@link UnrecognizedExtraField}.
 		 *
@@ -150,6 +157,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 		 * </p>
 		 */
 		ONLY_PARSEABLE_STRICT(ExtraFieldUtils.UnparseableExtraField.SKIP),
+
 		/**
 		 * Throw an exception if any of the recognized extra fields cannot be parsed or any extra field violates the recommended pattern.
 		 */
@@ -200,15 +208,18 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * @since 1.16
 	 */
 	public enum NameSource {
+
 		/**
 		 * The name has been read from the archive using the encoding of the archive specified when creating the {@link ZipArchiveInputStream} or
 		 * {@link ZipFile} (defaults to the platform's default encoding).
 		 */
 		NAME,
+
 		/**
 		 * The name has been read from the archive and the archive specified the EFS flag which indicates the name has been encoded as UTF-8.
 		 */
 		NAME_WITH_EFS_FLAG,
+
 		/**
 		 * The name has been read from an {@link UnicodePathExtraField Unicode Extra Field}.
 		 */
@@ -220,8 +231,19 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	static final ZipArchiveEntry[] EMPTY_ARRAY = {};
 	static LinkedList<ZipArchiveEntry> EMPTY_LINKED_LIST = new LinkedList<>();
 
+	/**
+	 * Platform is UNIX.
+	 */
 	public static final int PLATFORM_UNIX = 3;
+
+	/**
+	 * Platform is FAT.
+	 */
 	public static final int PLATFORM_FAT = 0;
+
+	/**
+	 * Platform is unknown.
+	 */
 	public static final int CRC_UNKNOWN = -1;
 
 	private static final int SHORT_MASK = 0xFFFF;
@@ -246,7 +268,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * <p>
 	 * The default value -1 means that the method has not been specified.
 	 * </p>
-	 * @see <a href="https://issues.apache.org/jira/browse/COMPRESS-93" >COMPRESS-93</a>
+	 * @see <a href="https://issues.apache.org/jira/browse/COMPRESS-93">COMPRESS-93</a>
 	 */
 	private int method = ZipMethod.UNKNOWN_CODE;
 
@@ -438,7 +460,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 				internalRemoveExtraField(ze.getHeaderId());
 			}
 			final ZipExtraField[] copy = extraFields;
-			final int newLen = extraFields != null ? extraFields.length + 1 : 1;
+			final int newLen = ArrayUtils.getLength(extraFields) + 1;
 			extraFields = new ZipExtraField[newLen];
 			extraFields[0] = ze;
 			if (copy != null) {
@@ -560,7 +582,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Retrieves the extra data for the central directory.
+	 * Gets the extra data for the central directory.
 	 *
 	 * @return the central directory extra data
 	 */
@@ -569,7 +591,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * The source of the comment field value.
+	 * * Gets the source of the comment field value.
 	 *
 	 * @return source of the comment field value
 	 * @since 1.16
@@ -584,7 +606,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * The number of the split segment this entry starts at.
+	 * Gets the number of the split segment this entry starts at.
 	 *
 	 * @return the number of the split segment this entry starts at.
 	 * @since 1.20
@@ -594,11 +616,11 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Retrieves the external file attributes.
+	 * Gets the external file attributes.
 	 *
 	 * <p>
-	 * <b>Note</b>: {@link ZipArchiveInputStream} is unable to fill this field, you must use {@link ZipFile} if you want to read entries using this attribute.
-	 * </p>
+	 * <strong>Note</strong>: {@link ZipArchiveInputStream} is unable to fill this field, you must use {@link ZipFile} if you want to read entries using this
+	 * attribute.</p>
 	 *
 	 * @return the external file attributes
 	 */
@@ -627,8 +649,8 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Gets all extra fields that have been parsed successfully.
 	 *
 	 * <p>
-	 * <b>Note</b>: The set of extra fields may be incomplete when {@link ZipArchiveInputStream} has been used as some extra fields use the central directory to
-	 * store additional information.
+	 * <strong>Note</strong>: The set of extra fields may be incomplete when {@link ZipArchiveInputStream} has been used as some extra fields use the central
+	 * directory to store additional information.
 	 * </p>
 	 *
 	 * @return an array of the extra fields
@@ -642,7 +664,6 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 *
 	 * @param includeUnparseable whether to also return unparseable extra fields as {@link UnparseableExtraFieldData} if such data exists.
 	 * @return an array of the extra fields
-	 *
 	 * @since 1.1
 	 */
 	public ZipExtraField[] getExtraFields(final boolean includeUnparseable) {
@@ -654,7 +675,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 *
 	 * @param parsingBehavior controls parsing of extra fields.
 	 * @return an array of the extra fields
-	 * @throws ZipException if parsing fails, can not happen if {@code
+	 * @throws ZipException if parsing fails, cannot happen if {@code
 	 * parsingBehavior}  is {@link ExtraFieldParsingMode#BEST_EFFORT}.
 	 * @since 1.19
 	 */
@@ -671,7 +692,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 		final List<ZipExtraField> centralFields = new ArrayList<>(Arrays.asList(parseExtraFields(central, false, parsingBehavior)));
 		final List<ZipExtraField> merged = new ArrayList<>();
 		for (final ZipExtraField l : localFields) {
-			ZipExtraField c;
+			final ZipExtraField c;
 			if (l instanceof UnparseableExtraFieldData) {
 				c = findUnparseable(centralFields);
 			} else {
@@ -679,7 +700,7 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 			}
 			if (c != null) {
 				final byte[] cd = c.getCentralDirectoryData();
-				if (cd != null && cd.length > 0) {
+				if (!ArrayUtils.isEmpty(cd)) {
 					l.parseFromCentralDirectoryData(cd, 0, cd.length);
 				}
 				centralFields.remove(c);
@@ -704,7 +725,8 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Gets the internal file attributes.
 	 *
 	 * <p>
-	 * <b>Note</b>: {@link ZipArchiveInputStream} is unable to fill this field, you must use {@link ZipFile} if you want to read entries using this attribute.
+	 * <strong>Note</strong>: {@link ZipArchiveInputStream} is unable to fill this field, you must use {@link ZipFile} if you want to read entries using this
+	 * attribute.
 	 * </p>
 	 *
 	 * @return the internal file attributes
@@ -756,7 +778,6 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Gets the compression method of this entry, or -1 if the compression method has not been specified.
 	 *
 	 * @return compression method
-	 *
 	 * @since 1.1
 	 */
 	@Override
@@ -840,8 +861,8 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Gets the uncompressed size of the entry data.
 	 *
 	 * <p>
-	 * <b>Note</b>: {@link ZipArchiveInputStream} may create entries that return {@link #SIZE_UNKNOWN SIZE_UNKNOWN} as long as the entry hasn't been read
-	 * completely.
+	 * <strong>Note</strong>: {@link ZipArchiveInputStream} may create entries that return {@link #SIZE_UNKNOWN SIZE_UNKNOWN} as long as the entry hasn't been
+	 * read completely.
 	 * </p>
 	 *
 	 * @return the entry size
@@ -852,9 +873,9 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Gets the UNIX permission.
+	 * Gets the Unix permission.
 	 *
-	 * @return the unix permissions
+	 * @return the Unix permissions.
 	 */
 	public int getUnixMode() {
 		return platform != PLATFORM_UNIX ? 0 : (int) (getExternalAttributes() >> SHORT_SHIFT & SHORT_MASK);
@@ -864,7 +885,6 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Gets up extra field data that couldn't be parsed correctly.
 	 *
 	 * @return null if no such field exists.
-	 *
 	 * @since 1.1
 	 */
 	public UnparseableExtraFieldData getUnparseableExtraFieldData() {
@@ -941,9 +961,9 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Is this entry a directory?
+	 * Tests whether this entry is a directory.
 	 *
-	 * @return true if the entry is a directory
+	 * @return true if the entry is a directory.
 	 */
 	@Override
 	public boolean isDirectory() {
@@ -956,10 +976,10 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Returns true if this entry represents a unix symlink, in which case the entry's content contains the target path for the symlink.
+	 * Tests whether this entry represents a Unix symlink, in which case the entry's content contains the target path for the symlink.
 	 *
+	 * @return true if the entry represents a Unix symlink, false otherwise.
 	 * @since 1.5
-	 * @return true if the entry represents a unix symlink, false otherwise.
 	 */
 	public boolean isUnixSymlink() {
 		return (getUnixMode() & UnixStat.FILE_TYPE_FLAG) == UnixStat.LINK_FLAG;
@@ -1207,6 +1227,11 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 		this.internalAttributes = internalAttributes;
 	}
 
+	/**
+	 * Sets the local header offset.
+	 *
+	 * @param localHeaderOffset the local header offset.
+	 */
 	protected void setLocalHeaderOffset(final long localHeaderOffset) {
 		this.localHeaderOffset = localHeaderOffset;
 	}
@@ -1215,13 +1240,12 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	 * Sets the compression method of this entry.
 	 *
 	 * @param method compression method
-	 *
 	 * @since 1.1
 	 */
 	@Override
 	public void setMethod(final int method) {
 		if (method < 0) {
-			throw new IllegalArgumentException("ZIP compression method can not be negative: " + method);
+			throw new IllegalArgumentException("ZIP compression method cannot be negative: " + method);
 		}
 		this.method = method;
 	}
@@ -1261,9 +1285,9 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 	}
 
 	/**
-	 * Sets the platform (UNIX or FAT).
+	 * Sets the platform (Unix or FAT).
 	 *
-	 * @param platform an {@code int} value - 0 is FAT, 3 is UNIX
+	 * @param platform an {@code int} value - 0 is FAT, 3 is Unix
 	 */
 	protected void setPlatform(final int platform) {
 		this.platform = platform;
@@ -1293,12 +1317,17 @@ public class ZipArchiveEntry extends ZipEntry implements ArchiveEntry, EntryStre
 		this.size = size;
 	}
 
+	/**
+	 * Sets whether the stream is contiguous, that is, not split among several archive parts, interspersed with control blocks, and so on.
+	 *
+	 * @param isStreamContiguous whether the stream is contiguous
+	 */
 	protected void setStreamContiguous(final boolean isStreamContiguous) {
 		this.isStreamContiguous = isStreamContiguous;
 	}
 
 	/**
-	 * Sets UNIX permissions in a way that is understood by Info-Zip's unzip command.
+	 * Sets Unix permissions in a way that is understood by Info-Zip's unzip command.
 	 *
 	 * @param mode an {@code int} value
 	 */

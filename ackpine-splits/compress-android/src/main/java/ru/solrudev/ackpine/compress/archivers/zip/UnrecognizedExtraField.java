@@ -99,7 +99,7 @@ public class UnrecognizedExtraField implements ZipExtraField {
 	 */
 	@Override
 	public ZipShort getLocalFileDataLength() {
-		return new ZipShort(localData != null ? localData.length : 0);
+		return ZipShort.lengthOf(localData);
 	}
 
 	/**

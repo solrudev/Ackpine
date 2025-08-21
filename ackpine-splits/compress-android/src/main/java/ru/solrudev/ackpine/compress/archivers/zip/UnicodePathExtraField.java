@@ -27,13 +27,18 @@ package ru.solrudev.ackpine.compress.archivers.zip;
  * </p>
  *
  * @see <a href="https://www.pkware.com/documents/casestudies/APPNOTE.TXT">PKWARE APPNOTE.TXT, section 4.6.9</a>
- *
  * @NotThreadSafe super-class is not thread-safe
  */
 public class UnicodePathExtraField extends AbstractUnicodeExtraField {
 
+	/**
+	 * Field ID.
+	 */
 	public static final ZipShort UPATH_ID = new ZipShort(0x7075);
 
+	/**
+	 * Constructs a new instance.
+	 */
 	public UnicodePathExtraField() {
 	}
 
