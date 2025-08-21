@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.15.3 (2025-08-21)
+---------------------------
+
+### Bug fixes and improvements
+
+- Hotfix: add ProGuard rules for Ackpine Compress.
+
 Version 0.15.2 (2025-08-21)
 ---------------------------
 
