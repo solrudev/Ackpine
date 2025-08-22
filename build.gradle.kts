@@ -25,6 +25,7 @@ dependencies {
 	library(projects.ackpineKtx)
 	library(projects.ackpineSplits.splitsMain)
 	library(projects.ackpineSplits.splitsKtx)
+	library(projects.ackpineSplits.compressAndroid)
 	library(projects.ackpineAssets)
 	library(projects.ackpineRuntime)
 	library(projects.ackpineResources)
