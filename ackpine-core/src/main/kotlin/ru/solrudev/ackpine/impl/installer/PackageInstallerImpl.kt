@@ -225,6 +225,9 @@ internal class PackageInstallerImpl internal constructor(
 		@Volatile
 		private var packageInstaller: PackageInstallerImpl? = null
 
+		/**
+		 * Returns a singleton instance of [PackageInstallerImpl].
+		 */
 		// Hide from Java and don't mangle the function name so it can be linked to in ackpine-api
 		@JvmName("getInstance")
 		@JvmSynthetic

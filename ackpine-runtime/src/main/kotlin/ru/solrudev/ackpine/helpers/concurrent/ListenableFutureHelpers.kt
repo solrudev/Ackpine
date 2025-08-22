@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("UPPER_BOUND_VIOLATED_BASED_ON_JAVA_ANNOTATIONS")
+
 package ru.solrudev.ackpine.helpers.concurrent
 
 import android.annotation.SuppressLint
@@ -24,6 +26,13 @@ import com.google.common.util.concurrent.ListenableFuture
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executor
 
+/**
+ * Attaches a listener which will execute [block] on the [executor] when the future completes.
+ *
+ * In case when the future is completed with an exception, the exception will be thrown.
+ *
+ * @param executor an [Executor] on which the [block] will be executed.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 @JvmOverloads
@@ -44,6 +53,13 @@ public fun <V> ListenableFuture<V>.handleResult(
 	}, executor)
 }
 
+/**
+ * Attaches a listener which will execute [block] on the [executor] when the future completes.
+ *
+ * In case when the future is completed with an exception, the exception will be delivered via [onException] callback.
+ *
+ * @param executor an [Executor] on which the [block] will be executed.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 @JvmOverloads
@@ -77,6 +93,14 @@ public fun <V> ListenableFuture<V>.handleResult(
 	}, executor)
 }
 
+/**
+ * Returns a new [ListenableFuture] which will complete with a result of applying the given [transform] function to the
+ * value got from the original future.
+ *
+ * Any exception thrown from [transform] will be caught and delivered through this future.
+ *
+ * @param executor executor an [Executor] on which the [transform] will be executed.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 public fun <V, R> ListenableFuture<V>.map(
@@ -99,6 +123,14 @@ public fun <V, R> ListenableFuture<V>.map(
 	}
 }
 
+/**
+ * Returns a new [ListenableFuture] which will complete with a result of applying the given [transform] function to the
+ * value got from the original future.
+ *
+ * Any exception thrown from [transform] will be caught and delivered through this future.
+ *
+ * [transform] will be executed on whatever thread that completes the original future.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @SuppressLint("RestrictedApi")
 public fun <V, R> ListenableFuture<V>.map(transform: (V) -> R): ListenableFuture<R> {

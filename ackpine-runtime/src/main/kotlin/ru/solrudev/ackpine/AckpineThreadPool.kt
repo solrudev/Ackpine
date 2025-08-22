@@ -23,6 +23,9 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.roundToInt
 
+/**
+ * A thread pool shared between all Ackpine modules.
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object AckpineThreadPool : ExecutorService by Executors.newFixedThreadPool(
 	(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),

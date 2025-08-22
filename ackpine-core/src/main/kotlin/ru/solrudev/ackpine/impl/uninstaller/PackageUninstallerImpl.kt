@@ -189,6 +189,9 @@ internal class PackageUninstallerImpl internal constructor(
 		@Volatile
 		private var packageUninstaller: PackageUninstallerImpl? = null
 
+		/**
+		 * Returns a singleton instance of [PackageUninstallerImpl].
+		 */
 		// Hide from Java and don't mangle the function name so it can be linked to in ackpine-api
 		@JvmName("getInstance")
 		@JvmSynthetic
