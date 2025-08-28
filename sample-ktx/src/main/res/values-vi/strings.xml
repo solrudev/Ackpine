@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="screen_title_install">Cài đặt</string>
+    <string name="screen_title_uninstall">Gỡ cài đặt</string>
+    <string name="cancel">Huỷ</string>
+    <string name="fab_install">Cài đặt</string>
+    <string name="uninstall">Gỡ cài đặt</string>
+    <string name="session_error">Lỗi</string>
+    <string name="session_error_with_reason">Lỗi: %s</string>
+    <string name="no_install_sessions">Không có quá trình cài đặt nào</string>
+    <string name="no_installed_applications">Chưa có ứng dụng nào được cài đặt</string>
+    <string name="error_no_base_apk">Không tìm thấy tệp APK gốc(base.apk)</string>
+    <string name="error_conflicting_base_apk">Có nhiều hơn một tệp APK gốc(base.apk)</string>
+    <string name="error_conflicting_split_name">Tên split bị trùng: %s</string>
+    <string name="error_conflicting_package_name">Xung đột tên gói. Mong đợi: %1$s, nhưng tìm thấy: %2$s (tên: %3$s)</string>
+    <string name="error_conflicting_version_code">Mã phiên bản bị xung đột. Mong đợi: %1$s, nhưng tìm thấy: %2$s (tên: %3$s)</string>
+</resources>
