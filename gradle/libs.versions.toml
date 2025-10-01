@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "8.12.0"
+android-plugin = "8.12.3"
 dokka = "2.0.0"
 hidden-api-refine = "4.4.0"
 kotlin = "2.1.21"
@@ -22,7 +22,7 @@ hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", ver
 hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 listenableFuture = "com.google.guava:listenablefuture:1.0"
-materialComponents = "com.google.android.material:material:1.12.0"
+materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.1.0"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"

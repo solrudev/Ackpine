@@ -17,7 +17,6 @@
 package ru.solrudev.ackpine.plugability
 
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import java.io.Serializable
 
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
@@ -38,15 +37,11 @@ public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
 	/**
 	 * A set of parameters for [AckpinePlugin].
 	 */
-	public interface Parameters : Serializable {
+	public interface Parameters {
 
 		/**
 		 * Empty [AckpinePlugin] parameters for plugins without configuration.
 		 */
-		public data object None : Parameters {
-			@Suppress("Unused")
-			private const val serialVersionUID = -8443803615690115391L
-			private fun readResolve(): Any = None
-		}
+		public data object None : Parameters
 	}
 }

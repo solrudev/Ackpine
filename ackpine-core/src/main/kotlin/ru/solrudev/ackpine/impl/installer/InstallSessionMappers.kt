@@ -30,7 +30,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -101,12 +100,9 @@ internal fun SessionEntity.InstallSession.getConstraints(): InstallConstraints {
 
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-internal fun SessionEntity.InstallSession.getPlugins() = runCatching {
-	plugins.associate { pluginEntity ->
-		val pluginClass = Class.forName(pluginEntity.pluginClassName) as Class<AckpinePlugin<*>>
-		val plugin = AckpinePluginCache.get(pluginClass)
-		val params = pluginEntity.pluginParameters
-		plugin to params
+internal fun SessionEntity.InstallSession.getPlugins(): List<Class<out AckpinePlugin<*>>> {
+	return plugins.map { pluginEntity ->
+		Class.forName(pluginEntity.pluginClassName) as Class<out AckpinePlugin<*>>
 	}
 }
 
@@ -129,11 +125,10 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 
 @JvmSynthetic
 internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
-	return getPlugins().map { (pluginClass, params) ->
+	return getPlugins().map { (pluginClass, _) ->
 		PluginEntity(
 			sessionId = sessionId,
-			pluginClassName = pluginClass.name,
-			pluginParameters = params
+			pluginClassName = pluginClass.name
 		)
 	}
 }

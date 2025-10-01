@@ -50,6 +50,9 @@ public sealed interface ResolvableString : Serializable {
 	 */
 	public fun resolve(context: Context): String
 
+	/**
+	 * Static factories for [ResolvableString].
+	 */
 	public companion object {
 
 		/**

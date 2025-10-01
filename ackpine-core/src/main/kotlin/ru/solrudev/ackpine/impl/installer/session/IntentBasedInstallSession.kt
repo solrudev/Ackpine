@@ -65,7 +65,7 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
-	executor: Executor,
+	private val executor: Executor,
 	handler: Handler,
 	notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
@@ -77,7 +77,9 @@ internal class IntentBasedInstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ) {
 
-	private val apkFile = File(context.externalDir, "ackpine/sessions/$id/0.apk")
+	private val apkFile by lazy(LazyThreadSafetyMode.NONE) {
+		File(context.externalDir, "ackpine/sessions/$id/0.apk")
+	}
 
 	private val Context.externalDir: File
 		get() {
@@ -117,7 +119,7 @@ internal class IntentBasedInstallSession internal constructor(
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, getApkUri()) }
 	}
 
-	override fun doCleanup() {
+	override fun doCleanup() = executor.execute {
 		apkFile.delete()
 	}
 

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("ClassName")
+
 package ru.solrudev.ackpine.impl.database
 
 import android.os.Build
@@ -61,6 +63,37 @@ internal object Migration_7_8 : Migration(7, 8) {
 		execSQL("DELETE FROM sessions_names")
 		execSQL("DELETE FROM sessions_install_modes")
 		execSQL("DELETE FROM sessions_last_install_timestamps")
+	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal object Migration_12_13 : Migration(12, 13) {
+	override fun migrate(db: SupportSQLiteDatabase) = db.migrate {
+		execSQL("DROP TABLE sessions")
+		execSQL("CREATE TABLE IF NOT EXISTS sessions (id TEXT NOT NULL, type TEXT NOT NULL, state TEXT NOT NULL, confirmation TEXT NOT NULL, notification_title BLOB NOT NULL, notification_text BLOB NOT NULL, notification_icon BLOB NOT NULL, require_user_action INTEGER NOT NULL DEFAULT true, last_launch_timestamp INTEGER NOT NULL DEFAULT 0, last_commit_timestamp INTEGER NOT NULL DEFAULT 0, PRIMARY KEY(id))")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_type ON sessions (type)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_state ON sessions (state)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_last_launch_timestamp ON sessions (last_launch_timestamp)")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_last_commit_timestamp ON sessions (last_commit_timestamp)")
+		execSQL("DROP TABLE sessions_plugins")
+		execSQL("CREATE TABLE IF NOT EXISTS sessions_plugins (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, session_id TEXT NOT NULL, plugin_class_name TEXT NOT NULL, FOREIGN KEY(session_id) REFERENCES sessions(id) ON UPDATE CASCADE ON DELETE CASCADE )")
+		execSQL("CREATE INDEX IF NOT EXISTS index_sessions_plugins_session_id ON sessions_plugins (session_id)")
+		execSQL("DELETE FROM sessions_installer_types")
+		execSQL("DELETE FROM sessions_install_failures")
+		execSQL("DELETE FROM sessions_uninstall_failures")
+		execSQL("DELETE FROM sessions_install_uris")
+		execSQL("DELETE FROM sessions_package_names")
+		execSQL("DELETE FROM sessions_progress")
+		execSQL("DELETE FROM sessions_native_session_ids")
+		execSQL("DELETE FROM sessions_notification_ids")
+		execSQL("DELETE FROM sessions_names")
+		execSQL("DELETE FROM sessions_install_modes")
+		execSQL("DELETE FROM sessions_last_install_timestamps")
+		execSQL("DELETE FROM sessions_install_preapproval")
+		execSQL("DELETE FROM sessions_install_constraints")
+		execSQL("DELETE FROM sessions_update_ownership")
+		execSQL("DELETE FROM sessions_package_sources")
+		execSQL("DELETE FROM sessions_confirmation_launches")
 	}
 }
 

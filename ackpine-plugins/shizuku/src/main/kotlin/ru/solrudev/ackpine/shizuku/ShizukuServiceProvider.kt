@@ -16,12 +16,13 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import android.content.Context
 import androidx.annotation.RestrictTo
 import rikka.shizuku.Shizuku
+import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineService
+import ru.solrudev.ackpine.shizuku.database.ShizukuDatabase
 import kotlin.reflect.KClass
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -29,12 +30,19 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	serviceFactories = setOf(
 		ServiceFactory(PackageInstallerService::class, ShizukuPackageInstaller::create)
 	),
+	pluginParametersRepositoryFactory = { context ->
+		ShizukuPluginParametersRepository(
+			ShizukuDatabase
+				.getInstance(context, AckpineThreadPool)
+				.shizukuParamsDao()
+		)
+	},
 	pluginId = ShizukuPlugin.PLUGIN_ID
 ) {
-	override fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T? {
+	override fun <T : AckpineService> get(serviceClass: KClass<T>): T? {
 		if (Shizuku.isPreV11()) {
 			return null
 		}
-		return super.get(serviceClass, context)
+		return super.get(serviceClass)
 	}
 }

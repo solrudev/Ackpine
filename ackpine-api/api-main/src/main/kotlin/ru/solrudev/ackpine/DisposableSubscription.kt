@@ -72,6 +72,9 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	}
 }
 
+/**
+ * No-op [DisposableSubscription].
+ */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public data object DummyDisposableSubscription : DisposableSubscription {
 	override val isDisposed: Boolean = true

@@ -35,12 +35,21 @@ public interface AckpineServiceProvider {
 	public val pluginId: String
 
 	/**
+	 * Returns a repository for managing [AckpinePlugin parameters][AckpinePlugin.Parameters].
+	 */
+	public val pluginParameters: PluginParametersRepository
+
+	/**
+	 * Initializes this service provider with provided [Context].
+	 */
+	public fun initContext(context: Context)
+
+	/**
 	 * Returns an [AckpineService] of the given [class][serviceClass]. May return `null` if this provider doesn't hold
 	 * the requested service or if the requested service is not supported.
 	 * @param serviceClass a Kotlin class of the requested service.
-	 * @param context Android context.
 	 */
-	public fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T?
+	public operator fun <T : AckpineService> get(serviceClass: KClass<T>): T?
 }
 
 /**
@@ -50,14 +59,24 @@ public interface AckpineServiceProvider {
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractAckpineServiceProvider(
 	serviceFactories: Set<ServiceFactory<*>>,
+	pluginParametersRepositoryFactory: (Context) -> PluginParametersRepository,
 	override val pluginId: String
 ) : AckpineServiceProvider {
 
+	override val pluginParameters: PluginParametersRepository by lazy(LazyThreadSafetyMode.NONE) {
+		pluginParametersRepositoryFactory(context)
+	}
+
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }
 	private val services = ConcurrentHashMap<KClass<out AckpineService>, AckpineService>()
+	private lateinit var context: Context
+
+	override fun initContext(context: Context) {
+		this.context = context.applicationContext
+	}
 
 	@Suppress("UNCHECKED_CAST")
-	override fun <T : AckpineService> get(serviceClass: KClass<T>, context: Context): T? {
+	override fun <T : AckpineService> get(serviceClass: KClass<T>): T? {
 		if (serviceClass !in factories.keys) {
 			return null
 		}
@@ -79,6 +98,6 @@ public abstract class AbstractAckpineServiceProvider(
 }
 
 @JvmSynthetic
-internal inline fun <reified T : AckpineService> AckpineServiceProvider.get(context: Context): T? {
-	return get(T::class, context)
+internal inline fun <reified T : AckpineService> AckpineServiceProvider.get(): T? {
+	return get(T::class)
 }

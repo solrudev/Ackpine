@@ -21,7 +21,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
@@ -44,8 +43,5 @@ internal class PluginEntity internal constructor(
 	val sessionId: String,
 	@JvmField
 	@ColumnInfo(name = "plugin_class_name")
-	val pluginClassName: String,
-	@JvmField
-	@ColumnInfo(name = "plugin_parameters")
-	val pluginParameters: AckpinePlugin.Parameters
+	val pluginClassName: String
 )

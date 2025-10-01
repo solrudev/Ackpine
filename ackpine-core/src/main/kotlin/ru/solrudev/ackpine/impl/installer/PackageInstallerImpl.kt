@@ -36,6 +36,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
@@ -55,6 +56,7 @@ private typealias SessionsCollectionTransformer =
 internal class PackageInstallerImpl internal constructor(
 	private val installSessionDao: InstallSessionDao,
 	private val executor: Executor,
+	private val ackpineServiceProviders: AckpineServiceProviders,
 	private val installSessionFactory: InstallSessionFactory,
 	private val uuidFactory: () -> UUID,
 	private val notificationIdFactory: () -> Int
@@ -216,15 +218,30 @@ internal class PackageInstallerImpl internal constructor(
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
+		val plugins = parameters.pluginContainer.getPlugins()
+		val pluginParams = plugins.values
+		ackpineServiceProviders
+			.getByPlugins(plugins.keys)
+			.forEach { serviceProvider ->
+				for (params in pluginParams) {
+					serviceProvider
+						.pluginParameters
+						.setForSession(id, params)
+				}
+			}
 	}
 
 	internal companion object {
 
 		private val lock = Any()
 
+		@SuppressLint("StaticFieldLeak")
 		@Volatile
 		private var packageInstaller: PackageInstallerImpl? = null
 
+		/**
+		 * Returns a singleton instance of [PackageInstallerImpl].
+		 */
 		// Hide from Java and don't mangle the function name so it can be linked to in ackpine-api
 		@JvmName("getInstance")
 		@JvmSynthetic
@@ -246,13 +263,15 @@ internal class PackageInstallerImpl internal constructor(
 		private fun create(context: Context): PackageInstallerImpl {
 			val applicationContext = context.applicationContext
 			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
+			val ackpineServiceProviders = ackpineServiceProviders(applicationContext)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
+				ackpineServiceProviders,
 				InstallSessionFactoryImpl(
 					applicationContext,
 					defaultAndroidPackageInstaller(applicationContext),
-					ackpineServiceProviders(),
+					ackpineServiceProviders,
 					database.lastUpdateTimestampDao(),
 					database.installSessionDao(),
 					database.sessionDao(),
@@ -277,16 +296,19 @@ internal class PackageInstallerImpl internal constructor(
 			)
 		}
 
-		private fun ackpineServiceProviders() = lazy {
-			ServiceLoader
-				.load(
-					AckpineServiceProvider::class.java,
-					AckpineServiceProvider::class.java.classLoader
-				)
-				.iterator()
-				.asSequence()
-				.toSet()
-		}
+		private fun ackpineServiceProviders(applicationContext: Context) = AckpineServiceProviders(
+			serviceProviders = lazy {
+				ServiceLoader
+					.load(
+						AckpineServiceProvider::class.java,
+						AckpineServiceProvider::class.java.classLoader
+					)
+					.iterator()
+					.asSequence()
+					.onEach { provider -> provider.initContext(applicationContext) }
+					.toSet()
+			}
+		)
 
 		private fun sessionCallbackHandler() = lazy {
 			Handler(

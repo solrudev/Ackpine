@@ -39,7 +39,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
-import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.plugability.get
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -47,7 +47,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -82,7 +81,7 @@ internal interface InstallSessionFactory {
 internal class InstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
 	private val defaultPackageInstallerService: Lazy<PackageInstallerService>,
-	private val ackpineServiceProviders: Lazy<Set<AckpineServiceProvider>>,
+	private val ackpineServiceProviders: AckpineServiceProviders,
 	private val lastUpdateTimestampDao: LastUpdateTimestampDao,
 	private val installSessionDao: InstallSessionDao,
 	private val sessionDao: SessionDao,
@@ -114,36 +113,35 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, notificationId, dbWriteSemaphore
 		)
 
-		InstallerType.SESSION_BASED -> withPackageInstallerService(
-			id,
-			runCatching {
-				parameters
-					.pluginContainer
-					.getPlugins()
-					.mapKeys { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
-			}
-		) { packageInstallerService ->
-			SessionBasedInstallSession(
-				applicationContext,
-				packageInstallerService,
-				apks = parameters.apks.toList(),
+		InstallerType.SESSION_BASED -> {
+			val plugins = runCatching { parameters.pluginContainer.getPlugins() }
+			withPackageInstallerService(
 				id,
-				initialState = Session.State.Pending,
-				initialProgress = Progress(),
-				parameters.confirmation,
-				resolveNotificationData(parameters.notificationData, parameters.name),
-				parameters.requireUserAction, parameters.installMode, parameters.preapproval, parameters.constraints,
-				parameters.requestUpdateOwnership, parameters.packageSource,
-				sessionDao,
-				sessionFailureDao = installSessionDao,
-				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
-				executor, handler, sessionCallbackHandler.value,
-				nativeSessionId = -1,
-				notificationId,
-				commitAttemptsCount = 0,
-				isPreapproved = false,
-				dbWriteSemaphore
-			)
+				pluginClasses = plugins.map { it.keys },
+				pluginParameters = plugins.map { it.values }
+			) { packageInstallerService ->
+				SessionBasedInstallSession(
+					applicationContext,
+					packageInstallerService,
+					apks = parameters.apks.toList(),
+					id,
+					initialState = Session.State.Pending,
+					initialProgress = Progress(),
+					parameters.confirmation,
+					resolveNotificationData(parameters.notificationData, parameters.name),
+					parameters.requireUserAction, parameters.installMode, parameters.preapproval,
+					parameters.constraints, parameters.requestUpdateOwnership, parameters.packageSource,
+					sessionDao,
+					sessionFailureDao = installSessionDao,
+					sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
+					executor, handler, sessionCallbackHandler.value,
+					nativeSessionId = -1,
+					notificationId,
+					commitAttemptsCount = 0,
+					isPreapproved = false,
+					dbWriteSemaphore
+				)
+			}
 		}
 	}
 
@@ -176,22 +174,21 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 	private fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
 		sessionId: UUID,
-		pluginsMap: Result<Map<AckpinePlugin<*>, AckpinePlugin.Parameters>>,
+		pluginClasses: Result<Collection<Class<out AckpinePlugin<*>>>>,
+		pluginParameters: Result<Collection<AckpinePlugin.Parameters>>,
 		sessionFactory: (PackageInstallerService) -> R
 	): R {
-		val packageInstallerService = pluginsMap.mapCatching { plugins ->
+		val packageInstallerService = pluginClasses.mapCatching { plugins ->
 			if (plugins.isEmpty()) {
 				return sessionFactory(defaultPackageInstallerService.value)
 			}
-			val appliedPlugins = plugins.keys.map { plugin -> plugin.id }
-			val pluginParams = plugins.values
 			ackpineServiceProviders
-				.value
-				.filter { provider -> provider.pluginId in appliedPlugins }
-				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>(applicationContext) }
+				.getByPlugins(plugins)
+				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>() }
 				?.also { service ->
-					pluginParams
-						.filterNot { params -> params is AckpinePlugin.Parameters.None }
+					pluginParameters
+						.getOrThrow()
+						.filterNot { params -> params == AckpinePlugin.Parameters.None }
 						.forEach { params -> service.applyParameters(sessionId, params) }
 				}
 		}
@@ -254,7 +251,21 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
-		val session = withPackageInstallerService(sessionId, installSession.getPlugins()) { packageInstallerService ->
+		val plugins = runCatching { installSession.getPlugins() }
+		val pluginParams = plugins.mapCatching { plugins ->
+			ackpineServiceProviders
+				.getByPlugins(plugins)
+				.map { serviceProvider ->
+					serviceProvider
+						.pluginParameters
+						.getForSession(sessionId)
+				}
+		}
+		val session = withPackageInstallerService(
+			sessionId,
+			pluginClasses = plugins,
+			pluginParameters = pluginParams
+		) { packageInstallerService ->
 			SessionBasedInstallSession(
 				applicationContext,
 				packageInstallerService,
