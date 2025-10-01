@@ -59,12 +59,12 @@ public interface AckpineServiceProvider {
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractAckpineServiceProvider(
 	serviceFactories: Set<ServiceFactory<*>>,
-	pluginParametersFactory: (Context) -> PluginParametersRepository,
+	pluginParametersRepositoryFactory: (Context) -> PluginParametersRepository,
 	override val pluginId: String
 ) : AckpineServiceProvider {
 
 	override val pluginParameters: PluginParametersRepository by lazy(LazyThreadSafetyMode.NONE) {
-		pluginParametersFactory(context)
+		pluginParametersRepositoryFactory(context)
 	}
 
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }

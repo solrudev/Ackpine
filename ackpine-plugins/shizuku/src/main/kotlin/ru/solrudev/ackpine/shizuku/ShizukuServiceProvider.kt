@@ -30,7 +30,7 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	serviceFactories = setOf(
 		ServiceFactory(PackageInstallerService::class, ShizukuPackageInstaller::create)
 	),
-	pluginParametersFactory = { context ->
+	pluginParametersRepositoryFactory = { context ->
 		ShizukuPluginParametersRepository(
 			ShizukuDatabase
 				.getInstance(context, AckpineThreadPool)
