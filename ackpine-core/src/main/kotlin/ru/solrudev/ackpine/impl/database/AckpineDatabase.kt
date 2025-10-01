@@ -16,17 +16,12 @@
 
 package ru.solrudev.ackpine.impl.database
 
-import android.content.Context
 import androidx.annotation.RestrictTo
 import androidx.room.AutoMigration
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.SupportSQLiteOpenHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import ru.solrudev.ackpine.impl.database.converters.AckpinePluginParametersConverters
 import ru.solrudev.ackpine.impl.database.converters.DrawableIdConverters
 import ru.solrudev.ackpine.impl.database.converters.InstallFailureConverters
 import ru.solrudev.ackpine.impl.database.converters.PackageSourceConverters
@@ -63,7 +58,6 @@ import ru.solrudev.ackpine.impl.database.model.SessionNameEntity
 import ru.solrudev.ackpine.impl.database.model.SessionProgressEntity
 import ru.solrudev.ackpine.impl.database.model.UninstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.UpdateOwnershipEntity
-import java.util.concurrent.Executor
 import kotlin.time.Duration.Companion.days
 
 private const val ACKPINE_DATABASE_NAME = "ackpine.sessiondb"
@@ -102,7 +96,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 10, to = 11),
 		AutoMigration(from = 11, to = 12)
 	],
-	version = 12,
+	version = 13,
 	exportSchema = true
 )
 @TypeConverters(
@@ -112,8 +106,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		ResolvableStringConverters::class,
 		DrawableIdConverters::class,
 		TimeoutStrategyConverters::class,
-		PackageSourceConverters::class,
-		AckpinePluginParametersConverters::class
+		PackageSourceConverters::class
 	]
 )
 internal abstract class AckpineDatabase : RoomDatabase() {
@@ -130,46 +123,12 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun installConstraintsDao(): InstallConstraintsDao
 	abstract fun confirmationLaunchDao(): ConfirmationLaunchDao
 
-	internal companion object {
-
-		private val lock = Any()
-
-		@Volatile
-		private var database: AckpineDatabase? = null
-
-		@JvmSynthetic
-		internal fun getInstance(context: Context, executor: Executor): AckpineDatabase {
-			var instance = database
-			if (instance != null) {
-				return instance
-			}
-			synchronized(lock) {
-				instance = database
-				if (instance == null) {
-					instance = create(context, executor)
-					database = instance
-				}
-			}
-			return instance!!
-		}
-
-		private fun create(context: Context, executor: Executor): AckpineDatabase {
-			return Room.databaseBuilder(context, AckpineDatabase::class.java, ACKPINE_DATABASE_NAME)
-				.openHelperFactory { configuration ->
-					val config = SupportSQLiteOpenHelper.Configuration.builder(context)
-						.name(configuration.name)
-						.callback(configuration.callback)
-						.noBackupDirectory(true)
-						.allowDataLossOnRecovery(true)
-						.build()
-					FrameworkSQLiteOpenHelperFactory().create(config)
-				}
-				.setQueryExecutor(executor)
-				.addCallback(PurgeCallback)
-				.addMigrations(Migration_4_5, Migration_7_8)
-				.fallbackToDestructiveMigration()
-				.build()
-		}
+	internal companion object : DatabaseSingleton<AckpineDatabase>(
+		databaseClass = AckpineDatabase::class.java,
+		databaseName = ACKPINE_DATABASE_NAME
+	) {
+		override fun Builder<AckpineDatabase>.configureDatabase() = addCallback(PurgeCallback)
+			.addMigrations(Migration_4_5, Migration_7_8, Migration_12_13)
 	}
 }
 

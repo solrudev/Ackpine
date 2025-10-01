@@ -22,7 +22,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrate
 import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.installer.parameters.PackageSource.Unspecified
 import ru.solrudev.ackpine.installer.parameters.packageSources
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
@@ -79,13 +78,4 @@ internal object PackageSourceConverters {
 
 	@TypeConverter
 	internal fun toByteArray(packageSource: PackageSource) = packageSource.ordinal
-}
-
-internal object AckpinePluginParametersConverters {
-
-	@TypeConverter
-	internal fun fromByteArray(byteArray: ByteArray): AckpinePlugin.Parameters = byteArray.deserialize()
-
-	@TypeConverter
-	internal fun toByteArray(params: AckpinePlugin.Parameters): ByteArray = params.serialize()
 }

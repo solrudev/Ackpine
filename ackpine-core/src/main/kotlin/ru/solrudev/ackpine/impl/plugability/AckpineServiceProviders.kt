@@ -14,35 +14,22 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.database.model
+package ru.solrudev.ackpine.impl.plugability
 
 import androidx.annotation.RestrictTo
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginCache
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-@Entity(
-	tableName = "sessions_plugins",
-	foreignKeys = [ForeignKey(
-		entity = SessionEntity::class,
-		parentColumns = ["id"],
-		childColumns = ["session_id"],
-		onDelete = ForeignKey.CASCADE,
-		onUpdate = ForeignKey.CASCADE
-	)]
-)
-internal class PluginEntity internal constructor(
-	@JvmField
-	@PrimaryKey(autoGenerate = true)
-	@ColumnInfo(name = "id")
-	val id: Int = 0,
-	@JvmField
-	@ColumnInfo(name = "session_id", index = true)
-	val sessionId: String,
-	@JvmField
-	@ColumnInfo(name = "plugin_class_name")
-	val pluginClassName: String
-)
+internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<AckpineServiceProvider>>) {
+
+	@JvmSynthetic
+	internal fun getAll() = serviceProviders.value
+
+	@JvmSynthetic
+	internal fun getByPlugins(pluginClasses: Collection<Class<out AckpinePlugin<*>>>): List<AckpineServiceProvider> {
+		val plugins = pluginClasses.map { pluginClass -> AckpinePluginCache.get(pluginClass) }
+		val appliedPlugins = plugins.map { plugin -> plugin.id }
+		return getAll().filter { provider -> provider.pluginId in appliedPlugins }
+	}
+}

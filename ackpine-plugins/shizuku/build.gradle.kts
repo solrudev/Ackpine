@@ -21,6 +21,8 @@ plugins {
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
 	alias(libs.plugins.hiddenApiRefine)
+	alias(libs.plugins.kotlin.ksp)
+	alias(androidx.plugins.room)
 }
 
 ackpine {
@@ -32,9 +34,16 @@ ackpine {
 	}
 }
 
+room {
+	schemaDirectory(layout.projectDirectory.dir("schemas"))
+}
+
 dependencies {
+	ksp(androidx.room.compiler)
 	api(projects.ackpineCore)
 	compileOnly(projects.ackpinePlugins.shizukuStubs)
+	implementation(projects.ackpineRuntime)
+	implementation(androidx.room.runtime)
 	implementation(libs.shizuku.api)
 	implementation(libs.hiddenApiBypass)
 }
