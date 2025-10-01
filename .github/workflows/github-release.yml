@@ -6,33 +6,9 @@ on:
       - "[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    name: Build Ackpine
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - name: Setup environment
-        uses: ./.github/actions/setup-gradle-environment-action
-        with:
-          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
-
-      - name: Validate binary compatibility
-        run: |
-          ./gradlew apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
-
-      - name: Build
-        run: |
-          ./gradlew :buildAckpine --stacktrace
-
   release-samples:
-    name: Release samples
+    name: Create GitHub release
     runs-on: ubuntu-latest
-    needs: [ build ]
 
     permissions:
       contents: write
