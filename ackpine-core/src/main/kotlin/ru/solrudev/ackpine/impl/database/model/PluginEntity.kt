@@ -21,7 +21,6 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(
