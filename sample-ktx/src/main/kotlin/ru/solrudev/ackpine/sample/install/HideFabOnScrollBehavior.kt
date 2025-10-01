@@ -22,14 +22,18 @@ import android.view.View
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior
+import com.google.android.material.behavior.HideViewOnScrollBehavior
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 
 @Suppress("Unused")
-class HideFabOnScrollBehavior<V : View> : HideBottomViewOnScrollBehavior<V> {
+class HideFabOnScrollBehavior<V : View> : HideViewOnScrollBehavior<V> {
 
-	constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+	constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
 	constructor() : super()
+
+	init {
+		setViewEdge(EDGE_BOTTOM)
+	}
 
 	override fun layoutDependsOn(parent: CoordinatorLayout, child: V, dependency: View): Boolean {
 		return child is ExtendedFloatingActionButton && dependency is RecyclerView
@@ -39,8 +43,8 @@ class HideFabOnScrollBehavior<V : View> : HideBottomViewOnScrollBehavior<V> {
 		val dependency = parent.children.firstOrNull { it is RecyclerView }
 			?: return super.onLayoutChild(parent, child, layoutDirection)
 		val canScroll = dependency.canScrollVertically(1) || dependency.canScrollVertically(-1)
-		if (child is ExtendedFloatingActionButton && !canScroll && isScrolledDown) {
-			slideUp(child)
+		if (child is ExtendedFloatingActionButton && !canScroll && isScrolledOut) {
+			slideIn(child)
 		}
 		return super.onLayoutChild(parent, child, layoutDirection)
 	}

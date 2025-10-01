@@ -24,18 +24,20 @@ import androidx.annotation.NonNull;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.behavior.HideBottomViewOnScrollBehavior;
+import com.google.android.material.behavior.HideViewOnScrollBehavior;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 
 @SuppressWarnings("unused")
-public class HideFabOnScrollBehavior<V extends View> extends HideBottomViewOnScrollBehavior<V> {
+public class HideFabOnScrollBehavior<V extends View> extends HideViewOnScrollBehavior<V> {
 
 	public HideFabOnScrollBehavior(Context context, AttributeSet attrs) {
 		super(context, attrs);
+		setViewEdge(EDGE_BOTTOM);
 	}
 
 	public HideFabOnScrollBehavior() {
 		super();
+		setViewEdge(EDGE_BOTTOM);
 	}
 
 	@Override
@@ -54,8 +56,8 @@ public class HideFabOnScrollBehavior<V extends View> extends HideBottomViewOnScr
 				break;
 			}
 		}
-		if (child instanceof ExtendedFloatingActionButton && !canScroll && isScrolledDown()) {
-			slideUp(child);
+		if (child instanceof ExtendedFloatingActionButton && !canScroll && isScrolledOut()) {
+			slideIn(child);
 		}
 		return super.onLayoutChild(parent, child, layoutDirection);
 	}
