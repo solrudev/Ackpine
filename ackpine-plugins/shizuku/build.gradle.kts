@@ -32,6 +32,7 @@ ackpine {
 		name = "Ackpine Shizuku Plugin"
 		inceptionYear = "2025"
 	}
+	internalPackages("ru.solrudev.ackpine.shizuku.database")
 }
 
 room {
