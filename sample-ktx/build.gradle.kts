@@ -29,6 +29,7 @@ dependencies {
 	implementation(projects.ackpineResources)
 	implementation(androidx.activity)
 	implementation(androidx.appCompat)
+	implementation(androidx.documentFile)
 	implementation(androidx.recyclerView)
 	implementation(androidx.constraintLayout)
 	implementation(androidx.coordinatorLayout)
