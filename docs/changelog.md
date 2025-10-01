@@ -1,6 +1,22 @@
 Change Log
 ==========
 
+Version 0.16.0 (2025-10-01)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 8.12.3.
+
+### Bug fixes and improvements
+
+- Reimplement Ackpine plugin parameters persistence. Note that this changes internal Ackpine database schema, so all previous sessions will be cleared after update to this Ackpine version.
+- Move all file operations in intent-based install sessions to worker thread.
+
+### Public API changes
+
+- `AckpinePlugin.Parameters` and `AckpinePlugin.Parameters.None` no longer implement `java.io.Serializable`.
+
 Version 0.15.3 (2025-08-21)
 ---------------------------
 
