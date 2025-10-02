@@ -45,5 +45,5 @@ public interface PluginParametersRepository {
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object EmptyPluginParametersRepository : PluginParametersRepository {
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters = AckpinePlugin.Parameters.None
-	override fun setForSession(sessionId: UUID, params: AckpinePlugin.Parameters) {}
+	override fun setForSession(sessionId: UUID, params: AckpinePlugin.Parameters) { /* no-op */ }
 }
