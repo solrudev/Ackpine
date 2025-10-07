@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.16.1 (2025-10-07)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add Vietnamese language for default library messages and for sample apps. Thanks to @nqmgaming.
+- Rewrite last Ackpine internal database migration introduced in 0.16.0. If you didn't update to 0.16.0, only sessions with plugins applied (such as `ShizukuPlugin`) will be cleared after update to 0.16.1.
+
 Version 0.16.0 (2025-10-01)
 ---------------------------
 
