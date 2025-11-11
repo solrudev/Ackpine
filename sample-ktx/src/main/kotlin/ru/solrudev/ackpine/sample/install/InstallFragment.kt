@@ -108,11 +108,12 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 			viewModel.uiState.collect { uiState ->
 				if (!uiState.error.isEmpty) {
-					Snackbar.make(
-						requireActivity().findViewById(R.id.content_nav_host),
-						uiState.error.resolve(requireContext()),
-						Snackbar.LENGTH_LONG
-					)
+					Snackbar
+						.make(
+							requireActivity().findViewById(R.id.content_nav_host),
+							uiState.error.resolve(requireContext()),
+							Snackbar.LENGTH_LONG
+						)
 						.setAnchorView(binding.fabInstall)
 						.show()
 					viewModel.clearError()
