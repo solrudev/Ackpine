@@ -15,6 +15,8 @@ Key features of Ackpine:
 - **Persistent**: Ackpine persists every session so it can properly handle process death.
 - **Deferred**: Ackpine allows to defer user's intervention via customizable high-priority notification.
 - **Progress and state updates**: it's easy to observe every session's state and progress updates.
+- **Advanced features**: Ackpine allows to benefit from advanced features without juggling complex OS APIs (such as install pre-approval) introduced in later Android versions.
+- **Shizuku**: Shizuku is supported as an installer backend with advanced install flags.
 - **100% Java and Kotlin-friendly**: while maintaining full Java compatibility, Ackpine was developed as a Kotlin-first library.
 - **Compatibility**: Ackpine supports Android versions starting from API level 16.
 
