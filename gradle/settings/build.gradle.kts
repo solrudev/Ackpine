@@ -33,9 +33,5 @@ gradlePlugin {
 }
 
 dependencies {
-	implementation(
-		group = "org.gradle.toolchains.foojay-resolver-convention",
-		name = "org.gradle.toolchains.foojay-resolver-convention.gradle.plugin",
-		version = "0.9.0"
-	)
+	implementation("org.gradle.toolchains.foojay-resolver-convention:org.gradle.toolchains.foojay-resolver-convention.gradle.plugin:1.0.0")
 }

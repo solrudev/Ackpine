@@ -141,19 +141,6 @@ public sealed class Apk(
 	) : Apk(uri, name, size, packageName, versionCode, description = abi.name.lowercase()), ConfigSplit {
 
 		override fun isCompatible(context: Context): Boolean = abi in Abi.deviceAbis
-
-		/**
-		 * @deprecated
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(
-			uri: Uri = this.uri,
-			name: String = this.name,
-			size: Long = this.size,
-			packageName: String = this.packageName,
-			versionCode: Long = this.versionCode,
-			abi: Abi = this.abi
-		): Libs = Libs(uri, name, size, packageName, versionCode, abi, configForSplit)
 	}
 
 	/**
@@ -174,19 +161,6 @@ public sealed class Apk(
 	) : Apk(uri, name, size, packageName, versionCode, description = dpi.name.lowercase()), ConfigSplit {
 
 		override fun isCompatible(context: Context): Boolean = dpi == context.dpi
-
-		/**
-		 * @deprecated
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(
-			uri: Uri = this.uri,
-			name: String = this.name,
-			size: Long = this.size,
-			packageName: String = this.packageName,
-			versionCode: Long = this.versionCode,
-			dpi: Dpi = this.dpi
-		): ScreenDensity = ScreenDensity(uri, name, size, packageName, versionCode, dpi, configForSplit)
 	}
 
 	/**
@@ -212,19 +186,6 @@ public sealed class Apk(
 		override fun isCompatible(context: Context): Boolean {
 			return locale.language in deviceLocales(context).map { it.language }
 		}
-
-		/**
-		 * @deprecated
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(
-			uri: Uri = this.uri,
-			name: String = this.name,
-			size: Long = this.size,
-			packageName: String = this.packageName,
-			versionCode: Long = this.versionCode,
-			locale: Locale = this.locale
-		): Localization = Localization(uri, name, size, packageName, versionCode, locale, configForSplit)
 	}
 
 	/**

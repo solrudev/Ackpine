@@ -1,13 +1,13 @@
 [versions]
-android-plugin = "8.12.3"
-dokka = "2.0.0"
+android-plugin = "8.13.1"
+dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 kotlin = "2.1.21"
-kotlin-ksp = "2.1.21-2.0.2"
+kotlin-ksp = "2.3.0"
 shizuku = "13.1.5"
 
 [libraries]
-plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.34.0"
+plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-bcv = "org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1"

@@ -89,7 +89,7 @@ public interface Session<out F : Failure> {
 	 * In general, this method should not be used directly, use [TerminalStateListener.bind] or `await()` instead.
 	 *
 	 * @return `true` if this session has been committed due to this invocation. `false` if committing/confirmation is
-	 * in progress or has been already finished, or [session preparations][launch] hasn't been done beforehand, or
+	 * in progress or has been already finished, or [session preparations][launch] haven't been done beforehand, or
 	 * session was cancelled.
 	 */
 	public fun commit(): Boolean

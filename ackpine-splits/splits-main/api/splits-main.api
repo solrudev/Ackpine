@@ -158,9 +158,7 @@ public final class ru/solrudev/ackpine/splits/Apk$Libs : ru/solrudev/ackpine/spl
 	public final fun component5 ()J
 	public final fun component6 ()Lru/solrudev/ackpine/splits/Abi;
 	public final fun component7 ()Ljava/lang/String;
-	public final synthetic fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;)Lru/solrudev/ackpine/splits/Apk$Libs;
 	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;Ljava/lang/String;)Lru/solrudev/ackpine/splits/Apk$Libs;
-	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Libs;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Libs;
 	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Libs;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Abi;Ljava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Libs;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAbi ()Lru/solrudev/ackpine/splits/Abi;
@@ -186,9 +184,7 @@ public final class ru/solrudev/ackpine/splits/Apk$Localization : ru/solrudev/ack
 	public final fun component5 ()J
 	public final fun component6 ()Ljava/util/Locale;
 	public final fun component7 ()Ljava/lang/String;
-	public final synthetic fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;)Lru/solrudev/ackpine/splits/Apk$Localization;
 	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;Ljava/lang/String;)Lru/solrudev/ackpine/splits/Apk$Localization;
-	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Localization;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Localization;
 	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Localization;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/util/Locale;Ljava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Localization;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getConfigForSplit ()Ljava/lang/String;
@@ -235,9 +231,7 @@ public final class ru/solrudev/ackpine/splits/Apk$ScreenDensity : ru/solrudev/ac
 	public final fun component5 ()J
 	public final fun component6 ()Lru/solrudev/ackpine/splits/Dpi;
 	public final fun component7 ()Ljava/lang/String;
-	public final synthetic fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
 	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;Ljava/lang/String;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
-	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$ScreenDensity;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
 	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$ScreenDensity;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLru/solrudev/ackpine/splits/Dpi;Ljava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$ScreenDensity;
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getConfigForSplit ()Ljava/lang/String;

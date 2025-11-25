@@ -55,16 +55,7 @@ public sealed interface InstallMode {
 	public data class InheritExisting @JvmOverloads public constructor(
 		val packageName: String,
 		val dontKillApp: Boolean = false
-	) : InstallMode {
-
-		/**
-		 * @deprecated
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(packageName: String = this.packageName): InheritExisting {
-			return InheritExisting(packageName, dontKillApp)
-		}
-	}
+	) : InstallMode
 
 	private companion object {
 
