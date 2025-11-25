@@ -1,6 +1,24 @@
 Change Log
 ==========
 
+Version 0.17.0 (2025-11-25)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 8.13.1.
+
+### Bug fixes and improvements
+
+- Fix grammar in `Session` documentation.
+- Remove deprecated APIs. In particular, use `InstallParameters.pluginContainer` instead of the removed `InstallParameters.plugins`.
+
+### Public API changes
+
+- Removed `InstallParameters.plugins` property.
+- Removed hidden `copy` method from `InstallMode`.
+- Removed hidden `copy` method from `Apk.Libs`, `Apk.ScreenDensity` and `Apk.Localization` in `ackpine-splits`.
+
 Version 0.16.1 (2025-10-07)
 ---------------------------
 
