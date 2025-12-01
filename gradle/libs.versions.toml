@@ -4,12 +4,14 @@ dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
+kotlin = "2.2.21"
 kotlin-ksp = "2.3.3"
 shizuku = "13.1.5"
 
 [libraries]
 plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
+plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-bcv = "org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1"
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 apache-commons-io = "commons-io:commons-io:2.20.0"
@@ -32,4 +34,4 @@ zstd = "com.github.luben:zstd-jni:1.5.7-4"
 [plugins]
 hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.21" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
