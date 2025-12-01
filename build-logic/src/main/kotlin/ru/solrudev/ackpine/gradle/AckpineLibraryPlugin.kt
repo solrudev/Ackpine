@@ -20,9 +20,11 @@ import com.android.build.api.dsl.LibraryExtension
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.findByType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -42,13 +44,26 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		enableKotlin = true
 	}
 
+	@Suppress("NewApi")
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
-		coreLibrariesVersion = "2.1.21"
+		val stdlibVersion = extensions
+			.findByType<VersionCatalogsExtension>()
+			?.named("libs")
+			?.findVersion("kotlin-for-consumers")
+			?.get()
+			?.displayName
+			?: coreLibrariesVersion
+		val kotlinVersion = stdlibVersion
+			.split('.')
+			.take(2)
+			.joinToString(".")
+
+		coreLibrariesVersion = stdlibVersion
 		explicitApi()
 
 		compilerOptions {
-			languageVersion = KotlinVersion.KOTLIN_2_1
-			apiVersion = KotlinVersion.KOTLIN_2_1
+			languageVersion = KotlinVersion.fromVersion(kotlinVersion)
+			apiVersion = KotlinVersion.fromVersion(kotlinVersion)
 			jvmTarget = JVM_1_8
 			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}
