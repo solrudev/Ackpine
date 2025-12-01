@@ -3,7 +3,7 @@ android-plugin = "8.13.1"
 dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 kotlin = "2.1.21"
-kotlin-ksp = "2.3.0"
+kotlin-ksp = "2.3.3"
 shizuku = "13.1.5"
 
 [libraries]
