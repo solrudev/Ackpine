@@ -9,7 +9,6 @@ shizuku = "13.1.5"
 [libraries]
 plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
-plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-bcv = "org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1"
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 apache-commons-io = "commons-io:commons-io:2.20.0"
