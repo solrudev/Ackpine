@@ -66,6 +66,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
+		enableKotlin = false
 		compileSdk = Constants.COMPILE_SDK
 		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 

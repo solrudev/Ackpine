@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.gradle
 
+import com.android.build.api.dsl.LibraryExtension
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -24,7 +25,7 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
@@ -32,15 +33,22 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		pluginManager.run {
 			apply(BinaryCompatibilityValidatorPlugin::class)
 			apply(AckpineLibraryBasePlugin::class)
-			apply(KotlinAndroidPluginWrapper::class)
 		}
+		configureAndroid()
 		configureKotlin()
 	}
 
+	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
+		enableKotlin = true
+	}
+
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
+		coreLibrariesVersion = "2.1.21"
 		explicitApi()
 
 		compilerOptions {
+			languageVersion = KotlinVersion.KOTLIN_2_1
+			apiVersion = KotlinVersion.KOTLIN_2_1
 			jvmTarget = JVM_1_8
 			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}

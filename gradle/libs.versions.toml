@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "8.13.1"
+android-plugin = "9.0.0-beta03"
 dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 kotlin = "2.1.21"

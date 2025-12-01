@@ -48,6 +48,7 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<ApplicationExtension> {
+		enableKotlin = false
 		compileSdk = Constants.COMPILE_SDK
 		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 		namespace = SampleConstants.PACKAGE_NAME

@@ -16,21 +16,25 @@
 
 package ru.solrudev.ackpine.gradle.app
 
+import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
 public class AckpineKotlinSamplePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.run {
 			apply(AckpineSampleBasePlugin::class)
-			apply(KotlinAndroidPluginWrapper::class)
 		}
+		configureAndroid()
 		configureKotlin()
+	}
+
+	private fun Project.configureAndroid() = extensions.configure<ApplicationExtension> {
+		enableKotlin = true
 	}
 
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
