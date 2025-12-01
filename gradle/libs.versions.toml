@@ -32,4 +32,4 @@ zstd = "com.github.luben:zstd-jni:1.5.7-4"
 [plugins]
 hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin-ksp" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.2.21" }
