@@ -23,4 +23,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
  */
 public inline fun InstallParametersDsl.useShizuku(
 	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-) = usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
+) {
+	usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
+}
