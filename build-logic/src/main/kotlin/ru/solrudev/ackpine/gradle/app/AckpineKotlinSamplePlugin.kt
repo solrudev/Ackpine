@@ -20,7 +20,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
 public class AckpineKotlinSamplePlugin : Plugin<Project> {
@@ -33,7 +33,7 @@ public class AckpineKotlinSamplePlugin : Plugin<Project> {
 		configureKotlin()
 	}
 
-	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidProjectExtension> {
+	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
 		compilerOptions {
 			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}

@@ -23,7 +23,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
-import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
 public class AckpineLibraryPlugin : Plugin<Project> {
@@ -37,14 +37,12 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 		configureKotlin()
 	}
 
-	private fun Project.configureKotlin() {
-		extensions.configure<KotlinAndroidProjectExtension> {
-			explicitApi()
+	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
+		explicitApi()
 
-			compilerOptions {
-				jvmTarget = JVM_1_8
-				freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
-			}
+		compilerOptions {
+			jvmTarget = JVM_1_8
+			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}
 	}
 }
