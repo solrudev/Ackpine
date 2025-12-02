@@ -56,7 +56,7 @@ private class ActionDeletePackageContract(private val packageName: String) : Uni
 		if (!context.isPackageInstalled(packageName)) {
 			return Session.State.Succeeded
 		}
-		return Session.State.Failed(UninstallFailure.Generic)
+		return Session.State.Failed(UninstallFailure.Generic())
 	}
 
 	private fun Context.isPackageInstalled(packageName: String) = try {
@@ -87,7 +87,7 @@ private class ActionUninstallPackageContract(private val packageName: String) : 
 		return when (resultCode) {
 			Activity.RESULT_OK -> Session.State.Succeeded
 			Activity.RESULT_CANCELED -> Session.State.Failed(UninstallFailure.Aborted("Session was cancelled"))
-			else -> Session.State.Failed(UninstallFailure.Generic)
+			else -> Session.State.Failed(UninstallFailure.Generic())
 		}
 	}
 }
