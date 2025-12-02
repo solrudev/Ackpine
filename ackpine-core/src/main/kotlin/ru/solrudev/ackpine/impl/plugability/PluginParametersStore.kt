@@ -26,7 +26,7 @@ import java.util.UUID
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @WorkerThread
-public interface PluginParametersRepository {
+public interface PluginParametersStore {
 
 	/**
 	 * Returns plugin parameters for a session with ID equal to [sessionId].
@@ -40,10 +40,10 @@ public interface PluginParametersRepository {
 }
 
 /**
- * [PluginParametersRepository] for [AckpinePlugin.Parameters.None].
+ * [PluginParametersStore] for [AckpinePlugin.Parameters.None].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public object EmptyPluginParametersRepository : PluginParametersRepository {
+public object EmptyPluginParametersStore : PluginParametersStore {
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters = AckpinePlugin.Parameters.None
 	override fun setForSession(sessionId: UUID, params: AckpinePlugin.Parameters) { /* no-op */ }
 }

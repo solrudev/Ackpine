@@ -35,9 +35,9 @@ public interface AckpineServiceProvider {
 	public val pluginId: String
 
 	/**
-	 * Returns a repository for managing [AckpinePlugin parameters][AckpinePlugin.Parameters].
+	 * Returns a store for managing [AckpinePlugin parameters][AckpinePlugin.Parameters].
 	 */
-	public val pluginParameters: PluginParametersRepository
+	public val pluginParameters: PluginParametersStore
 
 	/**
 	 * Initializes this service provider with provided [Context].
@@ -59,12 +59,12 @@ public interface AckpineServiceProvider {
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractAckpineServiceProvider(
 	serviceFactories: Set<ServiceFactory<*>>,
-	pluginParametersRepositoryFactory: (Context) -> PluginParametersRepository,
+	pluginParametersStoreFactory: (Context) -> PluginParametersStore,
 	override val pluginId: String
 ) : AckpineServiceProvider {
 
-	override val pluginParameters: PluginParametersRepository by lazy(LazyThreadSafetyMode.NONE) {
-		pluginParametersRepositoryFactory(context)
+	override val pluginParameters: PluginParametersStore by lazy(LazyThreadSafetyMode.NONE) {
+		pluginParametersStoreFactory(context)
 	}
 
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }

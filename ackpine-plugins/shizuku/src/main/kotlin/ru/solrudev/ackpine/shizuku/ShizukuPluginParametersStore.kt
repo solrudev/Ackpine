@@ -16,15 +16,15 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.impl.plugability.PluginParametersRepository
+import ru.solrudev.ackpine.impl.plugability.PluginParametersStore
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.shizuku.database.ShizukuParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuParamsDao
 import java.util.UUID
 
-internal class ShizukuPluginParametersRepository(
+internal class ShizukuPluginParametersStore(
 	private val shizukuParamsDao: ShizukuParamsDao
-) : PluginParametersRepository {
+) : PluginParametersStore {
 
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
 		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
