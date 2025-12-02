@@ -17,8 +17,13 @@
 package ru.solrudev.ackpine.impl.plugability
 
 import androidx.annotation.RestrictTo
+import androidx.annotation.WorkerThread
+import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
+import java.util.UUID
+import kotlin.reflect.KClass
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<AckpineServiceProvider>>) {
@@ -31,5 +36,58 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 		val plugins = pluginClasses.map { pluginClass -> AckpinePluginCache.get(pluginClass) }
 		val appliedPlugins = plugins.map { plugin -> plugin.id }
 		return getAll().filter { provider -> provider.pluginId in appliedPlugins }
+	}
+
+	@WorkerThread
+	@JvmSynthetic
+	internal fun persistPluginParameters(sessionId: UUID, pluginContainer: AckpinePluginContainer) {
+		val plugins = pluginContainer.getPlugins()
+		val pluginParams = plugins.values
+		for (serviceProvider in getByPlugins(plugins.keys)) {
+			for (params in pluginParams) {
+				serviceProvider
+					.pluginParameters
+					.setForSession(sessionId, params)
+			}
+		}
+	}
+
+	@JvmSynthetic
+	internal fun <S : AckpineService, R : CompletableSession<*>> createSessionWithService(
+		serviceClass: KClass<S>,
+		defaultService: Lazy<S>,
+		sessionId: UUID,
+		pluginClasses: Result<Collection<Class<out AckpinePlugin<*>>>>,
+		serviceProviders: Result<List<AckpineServiceProvider>> = pluginClasses.mapCatching(::getByPlugins),
+		pluginParameters: Result<Collection<AckpinePlugin.Parameters>> = serviceProviders.mapCatching { providers ->
+			providers.map { serviceProvider ->
+				serviceProvider
+					.pluginParameters
+					.getForSession(sessionId)
+			}
+		},
+		sessionFactory: (S) -> R
+	): R {
+		val service = serviceProviders.mapCatching { providers ->
+			if (providers.isEmpty()) {
+				return sessionFactory(defaultService.value)
+			}
+			providers
+				.firstNotNullOfOrNull { provider -> provider[serviceClass] }
+				?.also { service ->
+					pluginParameters
+						.getOrThrow()
+						.filterNot { params -> params == AckpinePlugin.Parameters.None }
+						.forEach { params -> service.applyParameters(sessionId, params) }
+				}
+		}
+		val session = sessionFactory(service.getOrNull() ?: defaultService.value)
+		service.onFailure { throwable ->
+			when (throwable) {
+				is Error -> session.completeExceptionally(RuntimeException(throwable))
+				is Exception -> session.completeExceptionally(throwable)
+			}
+		}
+		return session
 	}
 }

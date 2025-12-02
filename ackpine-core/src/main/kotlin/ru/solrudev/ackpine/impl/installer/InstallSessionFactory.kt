@@ -40,13 +40,11 @@ import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
-import ru.solrudev.ackpine.impl.plugability.get
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.PackageSource
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
@@ -115,8 +113,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 
 		InstallerType.SESSION_BASED -> {
 			val plugins = runCatching { parameters.pluginContainer.getPlugins() }
-			withPackageInstallerService(
-				id,
+			ackpineServiceProviders.createSessionWithService(
+				serviceClass = PackageInstallerService::class,
+				defaultService = defaultPackageInstallerService,
+				sessionId = id,
 				pluginClasses = plugins.map { it.keys },
 				pluginParameters = plugins.map { it.values }
 			) { packageInstallerService ->
@@ -172,38 +172,6 @@ internal class InstallSessionFactoryImpl internal constructor(
 		return AckpinePromptInstallMessage
 	}
 
-	private fun <R : CompletableProgressSession<InstallFailure>> withPackageInstallerService(
-		sessionId: UUID,
-		pluginClasses: Result<Collection<Class<out AckpinePlugin<*>>>>,
-		pluginParameters: Result<Collection<AckpinePlugin.Parameters>>,
-		sessionFactory: (PackageInstallerService) -> R
-	): R {
-		val packageInstallerService = pluginClasses.mapCatching { plugins ->
-			if (plugins.isEmpty()) {
-				return sessionFactory(defaultPackageInstallerService.value)
-			}
-			ackpineServiceProviders
-				.getByPlugins(plugins)
-				.firstNotNullOfOrNull { provider -> provider.get<PackageInstallerService>() }
-				?.also { service ->
-					pluginParameters
-						.getOrThrow()
-						.filterNot { params -> params == AckpinePlugin.Parameters.None }
-						.forEach { params -> service.applyParameters(sessionId, params) }
-				}
-		}
-		val session = sessionFactory(
-			packageInstallerService.getOrNull() ?: defaultPackageInstallerService.value
-		)
-		packageInstallerService.onFailure { throwable ->
-			when (throwable) {
-				is Error -> session.completeExceptionally(RuntimeException(throwable))
-				is Exception -> session.completeExceptionally(throwable)
-			}
-		}
-		return session
-	}
-
 	private fun createIntentBasedInstallSession(
 		installSession: SessionEntity.InstallSession,
 		completeIfSucceeded: Boolean
@@ -252,19 +220,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
 		val plugins = runCatching { installSession.getPlugins() }
-		val pluginParams = plugins.mapCatching { plugins ->
-			ackpineServiceProviders
-				.getByPlugins(plugins)
-				.map { serviceProvider ->
-					serviceProvider
-						.pluginParameters
-						.getForSession(sessionId)
-				}
-		}
-		val session = withPackageInstallerService(
-			sessionId,
-			pluginClasses = plugins,
-			pluginParameters = pluginParams
+		val session = ackpineServiceProviders.createSessionWithService(
+			serviceClass = PackageInstallerService::class,
+			defaultService = defaultPackageInstallerService,
+			sessionId = sessionId,
+			pluginClasses = plugins
 		) { packageInstallerService ->
 			SessionBasedInstallSession(
 				applicationContext,

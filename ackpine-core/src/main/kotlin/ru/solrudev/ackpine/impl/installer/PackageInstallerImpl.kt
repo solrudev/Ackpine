@@ -218,17 +218,7 @@ internal class PackageInstallerImpl internal constructor(
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
-		val plugins = parameters.pluginContainer.getPlugins()
-		val pluginParams = plugins.values
-		ackpineServiceProviders
-			.getByPlugins(plugins.keys)
-			.forEach { serviceProvider ->
-				for (params in pluginParams) {
-					serviceProvider
-						.pluginParameters
-						.setForSession(id, params)
-				}
-			}
+		ackpineServiceProviders.persistPluginParameters(id, parameters.pluginContainer)
 	}
 
 	internal companion object {
