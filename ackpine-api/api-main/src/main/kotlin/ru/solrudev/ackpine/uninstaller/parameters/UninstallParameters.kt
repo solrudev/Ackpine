@@ -31,6 +31,13 @@ public class UninstallParameters private constructor(
 	public val packageName: String,
 
 	/**
+	 * Type of the package uninstaller implementation.
+	 *
+	 * Default value is [UninstallerType.DEFAULT].
+	 */
+	public val uninstallerType: UninstallerType,
+
+	/**
 	 * A strategy for handling user's confirmation of installation or uninstallation.
 	 *
 	 * Default strategy is [Confirmation.DEFERRED].
@@ -52,6 +59,7 @@ public class UninstallParameters private constructor(
 		if (javaClass != other?.javaClass) return false
 		other as UninstallParameters
 		if (packageName != other.packageName) return false
+		if (this@UninstallParameters.uninstallerType != other.uninstallerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		return true
@@ -59,14 +67,19 @@ public class UninstallParameters private constructor(
 
 	override fun hashCode(): Int {
 		var result = packageName.hashCode()
+		result = 31 * result + this@UninstallParameters.uninstallerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		return result
 	}
 
 	override fun toString(): String {
-		return "UninstallParameters(packageName=$packageName, confirmation=$confirmation, " +
-				"notificationData=$notificationData)"
+		return "UninstallParameters(" +
+				"packageName='$packageName', " +
+				"uninstallerType=${this@UninstallParameters.uninstallerType}, " +
+				"confirmation=$confirmation, " +
+				"notificationData=$notificationData" +
+				")"
 	}
 
 	/**
@@ -79,6 +92,13 @@ public class UninstallParameters private constructor(
 		 */
 		public var packageName: String = packageName
 			private set
+
+		/**
+		 * Type of the package uninstaller implementation.
+		 *
+		 * Default value is [UninstallerType.DEFAULT].
+		 */
+		public var uninstallerType: UninstallerType = UninstallerType.DEFAULT
 
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
@@ -106,6 +126,13 @@ public class UninstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [UninstallParameters.uninstallerType].
+		 */
+		public fun setUninstallerType(uninstallerType: UninstallerType): Builder = apply {
+			this.uninstallerType = uninstallerType
+		}
+
+		/**
 		 * Sets [UninstallParameters.confirmation].
 		 */
 		public fun setConfirmation(confirmation: Confirmation): Builder = apply {
@@ -123,7 +150,7 @@ public class UninstallParameters private constructor(
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			return UninstallParameters(packageName, confirmation, notificationData)
+			return UninstallParameters(packageName, uninstallerType, confirmation, notificationData)
 		}
 	}
 }

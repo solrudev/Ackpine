@@ -157,7 +157,8 @@ internal class PackageUninstallerImpl internal constructor(
 					notificationData.icon,
 					requireUserAction = true
 				),
-				packageName = parameters.packageName,
+				parameters.packageName,
+				parameters.uninstallerType,
 				notificationId
 			)
 		)
@@ -165,6 +166,7 @@ internal class PackageUninstallerImpl internal constructor(
 
 	private fun SessionEntity.UninstallSession.toUninstallSession(): CompletableSession<UninstallFailure> {
 		val parameters = UninstallParameters.Builder(packageName)
+			.setUninstallerType(uninstallerType)
 			.setConfirmation(session.confirmation)
 			.setNotificationData(
 				NotificationData.Builder()

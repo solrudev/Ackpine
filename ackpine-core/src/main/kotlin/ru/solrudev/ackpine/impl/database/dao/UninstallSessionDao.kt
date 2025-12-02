@@ -23,6 +23,7 @@ import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
@@ -42,6 +43,7 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 	open fun insertUninstallSession(session: SessionEntity.UninstallSession) {
 		database.sessionDao().insertSession(session.session)
 		insertPackageName(session.session.id, session.packageName)
+		insertUninstallerType(session.session.id, session.uninstallerType)
 		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)
 	}
 
@@ -52,6 +54,9 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 	@Transaction
 	@Query("SELECT * FROM sessions WHERE type = 'UNINSTALL'")
 	abstract fun getUninstallSessions(): List<SessionEntity.UninstallSession>
+
+	@Query("INSERT OR IGNORE INTO sessions_uninstaller_types(session_id, uninstaller_type) VALUES (:id, :uninstallerType)")
+	protected abstract fun insertUninstallerType(id: String, uninstallerType: UninstallerType)
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")
 	protected abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)

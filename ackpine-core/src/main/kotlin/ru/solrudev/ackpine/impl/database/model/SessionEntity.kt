@@ -27,6 +27,7 @@ import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.DrawableId
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
@@ -205,6 +206,14 @@ internal class SessionEntity internal constructor(
 			projection = ["package_name"]
 		)
 		val packageName: String,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = SessionUninstallerTypeEntity::class,
+			projection = ["uninstaller_type"]
+		)
+		val uninstallerType: UninstallerType,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
