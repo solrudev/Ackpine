@@ -31,6 +31,13 @@ public interface UninstallParametersDsl : ConfirmationDsl {
 	 * Name of the package to be uninstalled.
 	 */
 	public var packageName: String
+
+	/**
+	 * Type of the package uninstaller implementation.
+	 *
+	 * Default value is [UninstallerType.DEFAULT].
+	 */
+	public var uninstallerType: UninstallerType
 }
 
 @PublishedApi
@@ -54,6 +61,12 @@ internal class UninstallParametersDslBuilder(packageName: String) : UninstallPar
 		get() = builder.packageName
 		set(value) {
 			builder.setPackageName(value)
+		}
+
+	override var uninstallerType: UninstallerType
+		get() = builder.uninstallerType
+		set(value) {
+			builder.setUninstallerType(value)
 		}
 
 	fun build() = builder.build()
