@@ -53,17 +53,19 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			?.get()
 			?.displayName
 			?: coreLibrariesVersion
-		val kotlinVersion = stdlibVersion
-			.split('.')
-			.take(2)
-			.joinToString(".")
+		val kotlinVersion = KotlinVersion.fromVersion(
+			stdlibVersion
+				.split('.')
+				.take(2)
+				.joinToString(".")
+		)
 
 		coreLibrariesVersion = stdlibVersion
 		explicitApi()
 
 		compilerOptions {
-			languageVersion = KotlinVersion.fromVersion(kotlinVersion)
-			apiVersion = KotlinVersion.fromVersion(kotlinVersion)
+			languageVersion = kotlinVersion
+			apiVersion = kotlinVersion
 			jvmTarget = JVM_1_8
 			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
 		}
