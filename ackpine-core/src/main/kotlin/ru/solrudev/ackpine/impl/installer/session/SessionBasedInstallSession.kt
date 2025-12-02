@@ -19,9 +19,7 @@
 package ru.solrudev.ackpine.impl.installer.session
 
 import android.annotation.SuppressLint
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams.MODE_FULL_INSTALL
@@ -53,17 +51,16 @@ import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
-import ru.solrudev.ackpine.impl.helpers.NotificationIntents
-import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
-import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.helpers.createPackageInstallerStatusIntentSender
 import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
+import ru.solrudev.ackpine.impl.installer.InstallStatusReceiver
 import ru.solrudev.ackpine.impl.installer.PackageInstallerService
-import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
+import ru.solrudev.ackpine.impl.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout
@@ -315,21 +312,14 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
-		val receiverIntent = Intent(context, PackageInstallerStatusReceiver::class.java).apply {
-			action = PackageInstallerStatusReceiver.getAction(context)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
-			putExtra(PackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
-			addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
-		}
-		SessionIdIntents.putSessionId(receiverIntent, id)
-		NotificationIntents.putNotification(receiverIntent, notificationData, notificationId)
-		val receiverPendingIntent = PendingIntent.getBroadcast(
+		return createPackageInstallerStatusIntentSender<InstallStatusReceiver>(
 			context,
-			generateRequestCode(),
-			receiverIntent,
-			UPDATE_CURRENT_FLAGS
-		)
-		return receiverPendingIntent.intentSender
+			action = InstallStatusReceiver.getAction(context),
+			sessionId = id,
+			confirmation, notificationId, notificationData, generateRequestCode()
+		) { intent ->
+			intent.putExtra(PackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
+		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)

@@ -27,13 +27,15 @@ import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
-import ru.solrudev.ackpine.impl.uninstaller.session.UninstallSession
+import ru.solrudev.ackpine.impl.uninstaller.session.IntentBasedUninstallSession
+import ru.solrudev.ackpine.impl.uninstaller.session.PackageInstallerBasedUninstallSession
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -66,8 +68,18 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		initialState: Session.State<UninstallFailure>,
 		notificationId: Int,
 		dbWriteSemaphore: BinarySemaphore
-	): CompletableSession<UninstallFailure> {
-		return UninstallSession(
+	) = when (parameters.uninstallerType) {
+		UninstallerType.INTENT_BASED -> IntentBasedUninstallSession(
+			applicationContext,
+			parameters.packageName,
+			id, initialState,
+			parameters.confirmation,
+			resolveNotificationData(parameters.notificationData, parameters.packageName),
+			sessionDao, sessionFailureDao,
+			executor, handler, notificationId, dbWriteSemaphore
+		)
+
+		UninstallerType.PACKAGE_INSTALLER_BASED -> PackageInstallerBasedUninstallSession(
 			applicationContext,
 			parameters.packageName,
 			id, initialState,

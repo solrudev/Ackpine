@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,25 +16,34 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
-import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
-import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal abstract class UninstallActivity protected constructor(tag: String) : SessionCommitActivity<UninstallFailure>(
-	tag, abortedStateFailureFactory = UninstallFailure::Aborted
+@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+internal class PackageInstallerBasedUninstallActivity : UninstallActivity(
+	tag = "PackageInstallerBasedUninstallActivity"
 ) {
 
-	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {
-		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId)
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
+		if (savedInstanceState == null) {
+			intent.extras
+				?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
+				?.let(::startActivityForResult)
+		}
 	}
 
-	private lateinit var ackpinePackageUninstaller: PackageUninstallerImpl
-
-	override fun onCreate(savedInstanceState: Bundle?) {
-		ackpinePackageUninstaller = PackageUninstallerImpl.getInstance(this)
-		super.onCreate(savedInstanceState)
+	override fun onActivityResult(resultCode: Int) {
+		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME) ?: return
+		if (isPackageInstalled(packageName)) {
+			abortSession("Aborted by user")
+			finish()
+		}
 	}
 }

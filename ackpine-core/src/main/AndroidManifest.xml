@@ -37,16 +37,29 @@
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
 			tools:targetApi="35" />
 		<activity
-			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity"
+			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.IntentBasedUninstallActivity"
 			android:exported="false"
 			android:theme="@style/Theme.Ackpine.SessionCommitActivity" />
+		<activity
+			android:name="ru.solrudev.ackpine.impl.uninstaller.activity.PackageInstallerBasedUninstallActivity"
+			android:exported="false"
+			android:theme="@style/Theme.Ackpine.SessionCommitActivity"
+			tools:targetApi="35" />
 
 		<receiver
-			android:name="ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver"
+			android:name="ru.solrudev.ackpine.impl.installer.InstallStatusReceiver"
 			android:exported="false"
 			tools:targetApi="35">
 			<intent-filter>
 				<action android:name="${applicationId}.PACKAGE_INSTALLER_STATUS" />
+			</intent-filter>
+		</receiver>
+		<receiver
+			android:name="ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver"
+			android:exported="false"
+			tools:targetApi="35">
+			<intent-filter>
+				<action android:name="${applicationId}.PACKAGE_UNINSTALLER_STATUS" />
 			</intent-filter>
 		</receiver>
 		<receiver

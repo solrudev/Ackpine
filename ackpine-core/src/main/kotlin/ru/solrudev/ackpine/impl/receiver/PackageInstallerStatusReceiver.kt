@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2023-2025 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer.receiver
+package ru.solrudev.ackpine.impl.receiver
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -24,51 +24,53 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
+import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.helpers.CANCEL_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.NotificationIntents
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.helpers.showConfirmationNotification
-import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
-import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
 import ru.solrudev.ackpine.impl.installer.session.PackageInstallerStatus
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalListener
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.installer.InstallFailure.Aborted
-import ru.solrudev.ackpine.installer.InstallFailure.Blocked
-import ru.solrudev.ackpine.installer.InstallFailure.Conflict
-import ru.solrudev.ackpine.installer.InstallFailure.Generic
-import ru.solrudev.ackpine.installer.InstallFailure.Incompatible
-import ru.solrudev.ackpine.installer.InstallFailure.Invalid
-import ru.solrudev.ackpine.installer.InstallFailure.Storage
-import ru.solrudev.ackpine.installer.InstallFailure.Timeout
+import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-private const val TAG = "PackageInstallerStatusReceiver"
-
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
+internal abstract class PackageInstallerStatusReceiver<F : Failure> protected constructor(
+	private val confirmationWrapperActivityClass: Class<out SessionCommitActivity<F>>,
+	private val tag: String
+) : BroadcastReceiver() {
 
-	override fun onReceive(context: Context, intent: Intent) {
+	abstract fun getAckpineSessionAsync(
+		context: Context,
+		ackpineSessionId: UUID
+	): ListenableFuture<out CompletableSession<F>?>
+
+	abstract fun getFailure(status: Int, message: String?, otherPackageName: String?, storagePath: String?): F
+	abstract fun getAction(context: Context): String
+	open fun modifyConfirmationWrapperIntent(intent: Intent, wrapperIntent: Intent): Intent = wrapperIntent
+
+	final override fun onReceive(context: Context, intent: Intent) {
 		if (intent.action != getAction(context)) {
 			return
 		}
 		val pendingResult = goAsync()
-		val packageInstaller = PackageInstallerImpl.getInstance(context)
-		val ackpineSessionId = SessionIdIntents.getSessionId(intent, TAG)
-		packageInstaller.getSessionAsync(ackpineSessionId).handleResult(
+		val ackpineSessionId = SessionIdIntents.getSessionId(intent, tag)
+		getAckpineSessionAsync(context, ackpineSessionId).handleResult(
 			onException = { exception ->
 				pendingResult.finish()
-				Log.e("InstallerStatusReceiver", null, exception)
+				Log.e(tag, null, exception)
 			},
 			block = { session ->
 				handlePackageInstallerStatus(session, ackpineSessionId, intent, context, pendingResult)
@@ -76,7 +78,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	}
 
 	private fun handlePackageInstallerStatus(
-		session: CompletableSession<InstallFailure>?,
+		session: CompletableSession<F>?,
 		ackpineSessionId: UUID,
 		intent: Intent,
 		context: Context,
@@ -94,7 +96,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
 					if (confirmationIntent == null) {
 						session?.completeExceptionally(
-							IllegalArgumentException("$TAG: confirmationIntent was null.")
+							IllegalArgumentException("$tag: confirmationIntent was null.")
 						)
 						return
 					}
@@ -126,9 +128,10 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		val confirmation = Confirmation.entries[
 			intent.getIntExtra(EXTRA_CONFIRMATION, Confirmation.DEFERRED.ordinal)
 		]
-		val wrapperIntent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+		val wrapperIntent = Intent(context, confirmationWrapperActivityClass)
 			.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 			.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+			.let { wrapperIntent -> modifyConfirmationWrapperIntent(intent, wrapperIntent) }
 		SessionIdIntents.putSessionId(wrapperIntent, ackpineSessionId)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
 			wrapperIntent.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, isPreapproval)
@@ -145,20 +148,20 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 	}
 
 	private fun handleSessionResult(
-		session: CompletableSession<InstallFailure>?,
+		session: CompletableSession<F>?,
 		status: Int,
 		message: String?,
 		intent: Intent
 	) {
 		val result = when (status) {
 			PackageInstaller.STATUS_SUCCESS -> Session.State.Succeeded
-			else -> Session.State.Failed(getInstallFailure(intent, status, message))
+			else -> Session.State.Failed(getFailure(intent, status, message))
 		}
 		session?.complete(result)
 	}
 
 	private fun handlePreapprovalResult(
-		session: CompletableSession<InstallFailure>?,
+		session: CompletableSession<F>?,
 		status: Int,
 		packageInstallerStatus: PackageInstallerStatus?,
 		message: String?,
@@ -168,7 +171,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		when (status) {
 			PackageInstaller.STATUS_SUCCESS -> session.onPreapprovalSucceeded()
 			else -> {
-				val publicFailure = getInstallFailure(intent, status, message)
+				val publicFailure = getFailure(intent, status, message) as InstallFailure
 				session.onPreapprovalFailed(packageInstallerStatus, publicFailure)
 			}
 		}
@@ -181,7 +184,7 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 		ackpineSessionId: UUID
 	) {
 		val notificationId = intent.getIntExtra(NotificationIntents.EXTRA_NOTIFICATION_ID, 0)
-		val notificationData = NotificationIntents.getNotificationData(intent, TAG)
+		val notificationData = NotificationIntents.getNotificationData(intent, tag)
 		context.showConfirmationNotification(
 			confirmationIntent,
 			notificationData,
@@ -206,29 +209,16 @@ internal class PackageInstallerStatusReceiver : BroadcastReceiver() {
 
 	private fun getRequireUserAction(intent: Intent) = intent.getBooleanExtra(EXTRA_REQUIRE_USER_ACTION, true)
 
-	private fun getInstallFailure(intent: Intent, status: Int, message: String?): InstallFailure {
+	private fun getFailure(intent: Intent, status: Int, message: String?): F {
 		val otherPackageName = intent.getStringExtra(PackageInstaller.EXTRA_OTHER_PACKAGE_NAME)
 		val storagePath = intent.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH)
-		return when (status) {
-			PackageInstaller.STATUS_FAILURE -> Generic(message)
-			PackageInstaller.STATUS_FAILURE_ABORTED -> Aborted(message)
-			PackageInstaller.STATUS_FAILURE_BLOCKED -> Blocked(message, otherPackageName)
-			PackageInstaller.STATUS_FAILURE_CONFLICT -> Conflict(message, otherPackageName)
-			PackageInstaller.STATUS_FAILURE_INCOMPATIBLE -> Incompatible(message)
-			PackageInstaller.STATUS_FAILURE_INVALID -> Invalid(message)
-			PackageInstaller.STATUS_FAILURE_STORAGE -> Storage(message, storagePath)
-			PackageInstaller.STATUS_FAILURE_TIMEOUT -> Timeout(message)
-			else -> Generic()
-		}
+		return getFailure(status, message, otherPackageName, storagePath)
 	}
 
 	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal companion object {
-
-		@JvmSynthetic
-		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_INSTALLER_STATUS"
 
 		@JvmSynthetic
 		internal const val EXTRA_CONFIRMATION = "ru.solrudev.ackpine.extra.CONFIRMATION"
