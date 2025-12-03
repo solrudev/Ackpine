@@ -35,7 +35,10 @@ public sealed class UninstallFailure(public open val message: String?) : Failure
 
 		private companion object {
 
-			@Deprecated(message = "Binary and Java source compatibility", level = DeprecationLevel.HIDDEN)
+			@Deprecated(
+				message = "Binary and Java source compatibility. Will be removed in the next minor release",
+				level = DeprecationLevel.HIDDEN
+			)
 			@Suppress("RedundantVisibilityModifier")
 			@JvmField
 			public val INSTANCE: Generic = Generic()
