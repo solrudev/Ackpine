@@ -22,7 +22,7 @@ import android.content.Intent.ACTION_UNINSTALL_PACKAGE
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
-import ru.solrudev.ackpine.installer.parameters.areSplitPackagesSupported
+import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.PACKAGE_INSTALLER_BASED
 
@@ -31,7 +31,7 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.PACKAGE_INSTAL
  *
  * * [INTENT_BASED] &mdash; package uninstaller will use the [ACTION_UNINSTALL_PACKAGE] or [ACTION_DELETE] intent action
  *   to uninstall the package.
- * * [PACKAGE_INSTALLER_BASED] &mdash; package installer will use system's [PackageInstaller] API to uninstall the
+ * * [PACKAGE_INSTALLER_BASED] &mdash; package uninstaller will use system's [PackageInstaller] API to uninstall the
  *   package.
  */
 public enum class UninstallerType {
@@ -57,11 +57,12 @@ public enum class UninstallerType {
 		/**
 		 * Default type of the package uninstaller implementation.
 		 *
-		 * On API level < 21, the default value is [INTENT_BASED].
+		 * On API level < 21, the default value is [UninstallerType.INTENT_BASED].
 		 *
-		 * On API level >= 21, the default value is [PACKAGE_INSTALLER_BASED].
+		 * On API level >= 21, the default value is [UninstallerType.PACKAGE_INSTALLER_BASED].
 		 */
 		@JvmField
-		public val DEFAULT: UninstallerType = if (areSplitPackagesSupported()) PACKAGE_INSTALLER_BASED else INTENT_BASED
+		public val DEFAULT: UninstallerType =
+			if (isPackageInstallerApiAvailable()) PACKAGE_INSTALLER_BASED else INTENT_BASED
 	}
 }

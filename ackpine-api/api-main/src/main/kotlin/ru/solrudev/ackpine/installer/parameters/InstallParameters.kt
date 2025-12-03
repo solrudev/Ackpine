@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
+import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
@@ -465,8 +466,8 @@ public class InstallParameters private constructor(
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
-			!areSplitPackagesSupported() -> InstallerType.INTENT_BASED
-			apks.size > 1 && areSplitPackagesSupported() -> InstallerType.SESSION_BASED
+			!isPackageInstallerApiAvailable() -> InstallerType.INTENT_BASED
+			apks.size > 1 && isPackageInstallerApiAvailable() -> InstallerType.SESSION_BASED
 			else -> value
 		}
 	}
@@ -521,7 +522,7 @@ private class RealMutableApkList : MutableApkList {
 	override fun toString() = "ApkList($apks)"
 
 	private fun checkSplitPackagesSupport() {
-		if (!areSplitPackagesSupported()) {
+		if (!isPackageInstallerApiAvailable()) {
 			throw SplitPackagesNotSupportedException()
 		}
 	}
