@@ -1,0 +1,44 @@
+/*
+ * Copyright (C) 2025 Ilya Fomichev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package ru.solrudev.ackpine.plugability
+
+/**
+ * A registry allowing to add plugins to a session.
+ */
+public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
+
+	/**
+	 * Applies a [plugin] to a session.
+	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 * @param parameters parameters of the applied plugin for the session being configured.
+	 */
+	public fun <Params : AckpinePlugin.Parameters> usePlugin(
+		plugin: Class<out AckpinePlugin<Params>>,
+		parameters: Params
+	): Self
+
+	/**
+	 * Applies a [plugin] to a session.
+	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
+	 */
+	public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Self
+
+	/**
+	 * Returns a snapshot of all plugins applied to a session.
+	 */
+	public fun getPluginContainer(): AckpinePluginContainer
+}
