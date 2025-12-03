@@ -37,7 +37,7 @@ internal class PackageInstallerStatusReceiver : SystemPackageInstallerStatusRece
 	override fun getAckpineSessionAsync(
 		context: Context,
 		ackpineSessionId: UUID
-	) = PackageInstallerImpl.Companion.getInstance(context).getSessionAsync(ackpineSessionId)
+	) = PackageInstallerImpl.getInstance(context).getSessionAsync(ackpineSessionId)
 
 	override fun getFailure(
 		status: Int,
