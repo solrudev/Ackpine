@@ -35,7 +35,9 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 	internal fun getByPlugins(pluginClasses: Collection<Class<out AckpinePlugin<*>>>): List<AckpineServiceProvider> {
 		val plugins = pluginClasses.map { pluginClass -> AckpinePluginCache.get(pluginClass) }
 		val appliedPlugins = plugins.map { plugin -> plugin.id }
-		return getAll().filter { provider -> provider.pluginId in appliedPlugins }
+		return getAll().filter { provider ->
+			provider.pluginIdentifiers.any { it in appliedPlugins }
+		}
 	}
 
 	@WorkerThread
@@ -43,13 +45,15 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 	internal fun persistPluginParameters(sessionId: UUID, pluginContainer: AckpinePluginContainer) {
 		val plugins = pluginContainer.getPlugins()
 		val pluginParams = plugins.values
-		for (serviceProvider in getByPlugins(plugins.keys)) {
-			for (params in pluginParams) {
-				serviceProvider
-					.pluginParameters
-					.setForSession(sessionId, params)
+		getByPlugins(plugins.keys)
+			.flatMap { serviceProvider ->
+				serviceProvider.getPluginParametersStores()
 			}
-		}
+			.forEach { parametersStore ->
+				for (params in pluginParams) {
+					parametersStore.setForSession(sessionId, params)
+				}
+			}
 	}
 
 	@JvmSynthetic
@@ -60,10 +64,10 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 		pluginClasses: Result<Collection<Class<out AckpinePlugin<*>>>>,
 		serviceProviders: Result<List<AckpineServiceProvider>> = pluginClasses.mapCatching(::getByPlugins),
 		pluginParameters: Result<Collection<AckpinePlugin.Parameters>> = serviceProviders.mapCatching { providers ->
-			providers.map { serviceProvider ->
+			providers.flatMap { serviceProvider ->
 				serviceProvider
-					.pluginParameters
-					.getForSession(sessionId)
+					.getPluginParametersStores()
+					.map { parametersStore -> parametersStore.getForSession(sessionId) }
 			}
 		},
 		sessionFactory: (S) -> R

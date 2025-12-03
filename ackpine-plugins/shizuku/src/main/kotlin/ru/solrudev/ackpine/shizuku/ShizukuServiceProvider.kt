@@ -30,14 +30,15 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	serviceFactories = setOf(
 		ServiceFactory(PackageInstallerService::class, ShizukuPackageInstaller::create)
 	),
-	pluginParametersStoreFactory = { context ->
-		ShizukuPluginParametersStore(
-			ShizukuDatabase
-				.getInstance(context, AckpineThreadPool)
-				.shizukuParamsDao()
-		)
-	},
-	pluginId = ShizukuPlugin.PLUGIN_ID
+	pluginEntries = setOf(
+		PluginEntry(ShizukuPlugin.PLUGIN_ID) { context ->
+			ShizukuPluginParametersStore(
+				ShizukuDatabase
+					.getInstance(context, AckpineThreadPool)
+					.shizukuParamsDao()
+			)
+		}
+	)
 ) {
 	override fun <T : AckpineService> get(serviceClass: KClass<T>): T? {
 		if (Shizuku.isPreV11()) {
