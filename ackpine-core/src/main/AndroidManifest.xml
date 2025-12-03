@@ -47,7 +47,7 @@
 			tools:targetApi="35" />
 
 		<receiver
-			android:name="ru.solrudev.ackpine.impl.installer.InstallStatusReceiver"
+			android:name="ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver"
 			android:exported="false"
 			tools:targetApi="35">
 			<intent-filter>

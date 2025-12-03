@@ -22,14 +22,14 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Build
 import androidx.annotation.RequiresApi
-import ru.solrudev.ackpine.impl.receiver.PackageInstallerStatusReceiver
+import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 
 @JvmSynthetic
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal inline fun <reified T : PackageInstallerStatusReceiver<*>> createPackageInstallerStatusIntentSender(
+internal inline fun <reified T : SystemPackageInstallerStatusReceiver<*>> createPackageInstallerStatusIntentSender(
 	context: Context,
 	action: String,
 	sessionId: UUID,
@@ -41,7 +41,7 @@ internal inline fun <reified T : PackageInstallerStatusReceiver<*>> createPackag
 ): IntentSender {
 	val receiverIntent = Intent(context, T::class.java).apply {
 		this.action = action
-		putExtra(PackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
+		putExtra(SystemPackageInstallerStatusReceiver.EXTRA_CONFIRMATION, confirmation.ordinal)
 		putExtra(this)
 		addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
 	}

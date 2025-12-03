@@ -22,7 +22,7 @@ import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.receiver.PackageInstallerStatusReceiver
+import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.uninstaller.activity.PackageInstallerBasedUninstallActivity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Aborted
@@ -33,7 +33,7 @@ import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal class UninstallStatusReceiver : PackageInstallerStatusReceiver<UninstallFailure>(
+internal class UninstallStatusReceiver : SystemPackageInstallerStatusReceiver<UninstallFailure>(
 	confirmationWrapperActivityClass = PackageInstallerBasedUninstallActivity::class.java,
 	tag = "UninstallStatusReceiver"
 ) {

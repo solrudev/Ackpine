@@ -47,7 +47,7 @@ import kotlin.random.nextInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal abstract class PackageInstallerStatusReceiver<F : Failure> protected constructor(
+internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protected constructor(
 	private val confirmationWrapperActivityClass: Class<out SessionCommitActivity<F>>,
 	private val tag: String
 ) : BroadcastReceiver() {

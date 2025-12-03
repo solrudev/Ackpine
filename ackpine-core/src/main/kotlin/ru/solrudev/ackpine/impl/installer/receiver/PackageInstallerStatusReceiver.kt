@@ -14,29 +14,30 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer
+package ru.solrudev.ackpine.impl.installer.receiver
 
 import android.content.Context
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.installer.activity.SessionBasedInstallConfirmationActivity
-import ru.solrudev.ackpine.impl.receiver.PackageInstallerStatusReceiver
+import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.installer.InstallFailure
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-internal class InstallStatusReceiver : PackageInstallerStatusReceiver<InstallFailure>(
+internal class PackageInstallerStatusReceiver : SystemPackageInstallerStatusReceiver<InstallFailure>(
 	confirmationWrapperActivityClass = SessionBasedInstallConfirmationActivity::class.java,
-	tag = "InstallStatusReceiver"
+	tag = "PackageInstallerStatusReceiver"
 ) {
 
 	override fun getAckpineSessionAsync(
 		context: Context,
 		ackpineSessionId: UUID
-	) = PackageInstallerImpl.getInstance(context).getSessionAsync(ackpineSessionId)
+	) = PackageInstallerImpl.Companion.getInstance(context).getSessionAsync(ackpineSessionId)
 
 	override fun getFailure(
 		status: Int,
