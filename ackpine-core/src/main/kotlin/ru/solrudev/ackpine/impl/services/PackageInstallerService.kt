@@ -85,6 +85,7 @@ public interface PackageInstallerService : AckpineService {
 	public fun abandonSession(sessionId: Int)
 
 	/**
+	 * @param ackpineSessionId ID of the Ackpine install session.
 	 * @see PackageInstaller.uninstall
 	 */
 	public fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID)
