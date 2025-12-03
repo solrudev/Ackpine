@@ -171,13 +171,11 @@ public class UninstallParameters private constructor(
 			plugins[plugin] = AckpinePlugin.Parameters.None
 		}
 
-		override fun getPluginContainer(): AckpinePluginContainer = AckpinePluginContainer.from(plugins)
-
 		/**
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			val pluginContainer = getPluginContainer()
+			val pluginContainer = AckpinePluginContainer.from(plugins)
 			val pluginInstances = pluginContainer
 				.getPlugins()
 				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }

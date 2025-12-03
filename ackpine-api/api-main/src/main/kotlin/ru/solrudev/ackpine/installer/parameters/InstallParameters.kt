@@ -435,14 +435,12 @@ public class InstallParameters private constructor(
 			plugins[plugin] = AckpinePlugin.Parameters.None
 		}
 
-		override fun getPluginContainer(): AckpinePluginContainer = AckpinePluginContainer.from(plugins)
-
 		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			val pluginContainer = getPluginContainer()
+			val pluginContainer = AckpinePluginContainer.from(plugins)
 			val pluginInstances = pluginContainer
 				.getPlugins()
 				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }

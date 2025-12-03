@@ -36,9 +36,4 @@ public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 	 */
 	public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Self
-
-	/**
-	 * Returns a snapshot of all plugins applied to a session.
-	 */
-	public fun getPluginContainer(): AckpinePluginContainer
 }
