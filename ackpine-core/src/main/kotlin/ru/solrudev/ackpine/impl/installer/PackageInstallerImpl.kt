@@ -30,12 +30,12 @@ import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.database.toEntityList
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
@@ -44,7 +44,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
-import java.util.ServiceLoader
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -253,7 +252,7 @@ internal class PackageInstallerImpl internal constructor(
 		private fun create(context: Context): PackageInstallerImpl {
 			val applicationContext = context.applicationContext
 			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
-			val ackpineServiceProviders = ackpineServiceProviders(applicationContext)
+			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
@@ -285,20 +284,6 @@ internal class PackageInstallerImpl internal constructor(
 				Process.myUid()
 			)
 		}
-
-		private fun ackpineServiceProviders(applicationContext: Context) = AckpineServiceProviders(
-			serviceProviders = lazy {
-				ServiceLoader
-					.load(
-						AckpineServiceProvider::class.java,
-						AckpineServiceProvider::class.java.classLoader
-					)
-					.iterator()
-					.asSequence()
-					.onEach { provider -> provider.initContext(applicationContext) }
-					.toSet()
-			}
-		)
 
 		private fun sessionCallbackHandler() = lazy {
 			Handler(

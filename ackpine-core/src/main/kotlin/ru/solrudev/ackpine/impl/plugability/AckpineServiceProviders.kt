@@ -16,12 +16,14 @@
 
 package ru.solrudev.ackpine.impl.plugability
 
+import android.content.Context
 import androidx.annotation.RestrictTo
 import androidx.annotation.WorkerThread
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
+import java.util.ServiceLoader
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -93,5 +95,23 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 			}
 		}
 		return session
+	}
+
+	internal companion object Factory {
+
+		@JvmSynthetic
+		internal fun create(context: Context) = AckpineServiceProviders(
+			serviceProviders = lazy {
+				ServiceLoader
+					.load(
+						AckpineServiceProvider::class.java,
+						AckpineServiceProvider::class.java.classLoader
+					)
+					.iterator()
+					.asSequence()
+					.onEach { provider -> provider.initContext(context) }
+					.toSet()
+			}
+		)
 	}
 }
