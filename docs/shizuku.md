@@ -1,7 +1,7 @@
 Shizuku
 =======
 
-`ackpine-shizuku` artifact provides a plugin for Ackpine which, when applied, uses Shizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of root user or ADB shell even if your app doesn't have such privileges. This enables possibility of using such flags as bypassing low target SDK of the installed app on Android 14+, requesting version downgrade, and others. Also it can bypass requirement for user's confirmation for fresh installs.
+`ackpine-shizuku` artifact provides plugins for Ackpine which, when applied, use Shizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of root user or ADB shell even if your app doesn't have such privileges. This enables possibility of using such flags as bypassing low target SDK of the installed app on Android 14+, requesting version downgrade, keeping app data when uninstalling and others. Also it can bypass requirement for user's confirmation for uninstalls and fresh installs.
 
 Kotlin examples below use APIs from `ackpine-shizuku-ktx` artifact.
 
@@ -123,36 +123,83 @@ To apply the plugin to an install session, just add this to your install paramet
             .build();
     ```
 
+Also, you can use Shizuku for uninstall sessions:
+
+=== "Kotlin"
+
+    ```kotlin
+    val session = packageUninstaller.createSession(packageName) {
+        // ...some session configuration...
+        useShizuku()
+    
+        // Or, if you want to configure some parameters for the plugin
+        useShizuku {
+            keepData = true
+            allUsers = true
+        }
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var parameters = new UninstallParameters.Builder(packageName)
+            // ...some session configuration...
+            .usePlugin(ShizukuUninstallPlugin.class, ShizukuUninstallPlugin.Parameters.DEFAULT)
+            .build();
+    
+    // Or, if you want to configure some parameters for the plugin
+    var shizukuParameters = new ShizukuUninstallPlugin.Parameters.Builder()
+            .setKeepData(true)
+            .setAllUsers(true)
+            .build()
+    var parameters = new UninstallParameters.Builder(packageName)
+            .usePlugin(ShizukuUninstallPlugin.class, shizukuParameters)
+            .build();
+    ```
+
 !!! Note
     Shizuku versions below 11 are not supported, and with these versions installations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer (if was set).
 
-If Shizuku service is not running, or if Shizuku permission is not granted for your app, install session will fail.
+If Shizuku service is not running, or if Shizuku permission is not granted for your app, session will fail.
 
 Plugin parameters
 -----------------
 
 By default, all flags are disabled.
 
-### `bypassLowTargetSdkBlock`
+### Install flags
+
+#### `bypassLowTargetSdkBlock`
 
 Flag to bypass the low target SDK version block for this install.
 
-### `allowTest`
+#### `allowTest`
 
 Flag to indicate that you want to allow test packages (those that have set android:testOnly in their manifest) to be installed.
 
-### `replaceExisting`
+#### `replaceExisting`
 
 Flag to indicate that you want to replace an already installed package, if one exists.
 
-### `requestDowngrade`
+#### `requestDowngrade`
 
 Flag to indicate that an upgrade to a lower version of a package than currently installed has been requested.
 
-### `grantAllRequestedPermissions`
+#### `grantAllRequestedPermissions`
 
 Flag parameter for package install to indicate that all requested permissions should be granted to the package. If `allUsers` is set the runtime permissions will be granted to all users, otherwise only to the owner.
 
-### `allUsers`
+#### `allUsers`
 
 Flag to indicate that this install should immediately be visible to all users.
+
+### Uninstall flags
+
+#### `keepData`
+
+Flag parameter to indicate that you don't want to delete the package's data directory.
+
+#### `allUsers`
+
+Flag parameter to indicate that you want the package deleted for all users.
