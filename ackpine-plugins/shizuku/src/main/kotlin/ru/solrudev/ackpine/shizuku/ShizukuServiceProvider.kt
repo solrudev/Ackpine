@@ -19,9 +19,9 @@ package ru.solrudev.ackpine.shizuku
 import androidx.annotation.RestrictTo
 import rikka.shizuku.Shizuku
 import ru.solrudev.ackpine.AckpineThreadPool
-import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineService
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.shizuku.database.ShizukuDatabase
 import kotlin.reflect.KClass
 
@@ -36,6 +36,13 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 				ShizukuDatabase
 					.getInstance(context, AckpineThreadPool)
 					.shizukuParamsDao()
+			)
+		},
+		PluginEntry(ShizukuUninstallPlugin.PLUGIN_ID) { context ->
+			ShizukuUninstallPluginParametersStore(
+				ShizukuDatabase
+					.getInstance(context, AckpineThreadPool)
+					.shizukuUninstallParamsDao()
 			)
 		}
 	)

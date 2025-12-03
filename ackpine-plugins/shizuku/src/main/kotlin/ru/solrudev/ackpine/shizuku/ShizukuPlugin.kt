@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 
 /**
  * Ackpine plugin which enables installation through Shizuku when applied.
@@ -48,6 +49,13 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			setRequireUserAction(false)
 			setPreapproval(InstallPreapproval.NONE)
 		}
+	}
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		error(
+			"ShizukuPlugin must be applied to install sessions only. " +
+					"Use ShizukuUninstallPlugin for uninstall sessions."
+		)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin
