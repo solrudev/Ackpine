@@ -31,7 +31,7 @@ import java.io.OutputStream
 import java.util.UUID
 
 /**
- * Provides functionality of Android's [android.content.pm.PackageInstaller].
+ * Provides functionality of Android's [PackageInstaller].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -44,7 +44,7 @@ public interface PackageInstallerService : AckpineService {
 
 	/**
 	 * @param ackpineSessionId ID of the Ackpine install session.
-	 * @see android.content.pm.PackageInstaller.createSession
+	 * @see PackageInstaller.createSession
 	 */
 	public fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int
 
@@ -85,7 +85,7 @@ public interface PackageInstallerService : AckpineService {
 	public fun abandonSession(sessionId: Int)
 
 	/**
-	 * @see [PackageInstaller.uninstall]
+	 * @see PackageInstaller.uninstall
 	 */
 	public fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID)
 
