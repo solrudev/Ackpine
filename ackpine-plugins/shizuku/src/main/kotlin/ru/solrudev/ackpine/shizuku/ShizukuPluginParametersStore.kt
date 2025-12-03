@@ -16,15 +16,19 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.impl.plugability.PluginParametersRepository
+import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.impl.plugability.PluginParametersStore
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.shizuku.database.ShizukuParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuParamsDao
+import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParametersEntity
+import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParamsDao
 import java.util.UUID
 
-internal class ShizukuPluginParametersRepository(
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal class ShizukuPluginParametersStore(
 	private val shizukuParamsDao: ShizukuParamsDao
-) : PluginParametersRepository {
+) : PluginParametersStore {
 
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
 		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
@@ -52,7 +56,36 @@ internal class ShizukuPluginParametersRepository(
 			replaceExisting = params.replaceExisting,
 			requestDowngrade = params.requestDowngrade,
 			grantAllRequestedPermissions = params.grantAllRequestedPermissions,
-			allUsers = params.allUsers,
+			allUsers = params.allUsers
+		)
+		shizukuParamsDao.insertParameters(shizukuParams)
+	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal class ShizukuUninstallPluginParametersStore(
+	private val shizukuParamsDao: ShizukuUninstallParamsDao
+) : PluginParametersStore {
+
+	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
+		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
+		return ShizukuUninstallPlugin.Parameters.Builder()
+			.setKeepData(shizukuParams.keepData)
+			.setAllUsers(shizukuParams.allUsers)
+			.build()
+	}
+
+	override fun setForSession(
+		sessionId: UUID,
+		params: AckpinePlugin.Parameters
+	) {
+		if (params !is ShizukuUninstallPlugin.Parameters) {
+			return
+		}
+		val shizukuParams = ShizukuUninstallParametersEntity(
+			sessionId = sessionId.toString(),
+			keepData = params.keepData,
+			allUsers = params.allUsers
 		)
 		shizukuParamsDao.insertParameters(shizukuParams)
 	}

@@ -20,7 +20,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Process
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
@@ -30,13 +29,14 @@ import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.database.toEntityList
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
-import ru.solrudev.ackpine.impl.plugability.AckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
+import ru.solrudev.ackpine.impl.services.PackageInstallerWrapper
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
@@ -44,7 +44,6 @@ import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
-import java.util.ServiceLoader
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
@@ -218,17 +217,7 @@ internal class PackageInstallerImpl internal constructor(
 				parameters.requestUpdateOwnership, parameters.packageSource
 			)
 		)
-		val plugins = parameters.pluginContainer.getPlugins()
-		val pluginParams = plugins.values
-		ackpineServiceProviders
-			.getByPlugins(plugins.keys)
-			.forEach { serviceProvider ->
-				for (params in pluginParams) {
-					serviceProvider
-						.pluginParameters
-						.setForSession(id, params)
-				}
-			}
+		ackpineServiceProviders.persistPluginParameters(id, parameters.pluginContainer)
 	}
 
 	internal companion object {
@@ -263,14 +252,14 @@ internal class PackageInstallerImpl internal constructor(
 		private fun create(context: Context): PackageInstallerImpl {
 			val applicationContext = context.applicationContext
 			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
-			val ackpineServiceProviders = ackpineServiceProviders(applicationContext)
+			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext)
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
 				ackpineServiceProviders,
 				InstallSessionFactoryImpl(
 					applicationContext,
-					defaultAndroidPackageInstaller(applicationContext),
+					PackageInstallerWrapper.default(applicationContext),
 					ackpineServiceProviders,
 					database.lastUpdateTimestampDao(),
 					database.installSessionDao(),
@@ -287,28 +276,6 @@ internal class PackageInstallerImpl internal constructor(
 				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
 			)
 		}
-
-		@SuppressLint("NewApi")
-		private fun defaultAndroidPackageInstaller(applicationContext: Context) = lazy {
-			PackageInstallerWrapper(
-				applicationContext.packageManager.packageInstaller,
-				Process.myUid()
-			)
-		}
-
-		private fun ackpineServiceProviders(applicationContext: Context) = AckpineServiceProviders(
-			serviceProviders = lazy {
-				ServiceLoader
-					.load(
-						AckpineServiceProvider::class.java,
-						AckpineServiceProvider::class.java.classLoader
-					)
-					.iterator()
-					.asSequence()
-					.onEach { provider -> provider.initContext(applicationContext) }
-					.toSet()
-			}
-		)
 
 		private fun sessionCallbackHandler() = lazy {
 			Handler(

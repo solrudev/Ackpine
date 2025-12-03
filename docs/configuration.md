@@ -208,7 +208,14 @@ Available for install sessions. Ackpine supports two different package installer
 - When on API level < 21, `INTENT_BASED` is always set regardless of the provided value;
 - When on API level >= 21 and `InstallParameters.Builder.apks` contains more than one entry, `SESSION_BASED` is always set regardless of the provided value.
 
-By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level >= 21 is `SESSION_BASED`.
+By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level >= 21 it is `SESSION_BASED`.
+
+Uninstaller type
+--------------
+
+Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` or `ACTION_DELETE` action. They're configured with `UninstallerType` enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
+
+By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level >= 21 it is `PACKAGE_INSTALLER_BASED`.
 
 Install mode
 ------------
@@ -289,6 +296,6 @@ Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile
 Plugins
 -------
 
-Ackpine supports plugins. For now they are limited to install sessions. Other limitations include affecting only sessions of `SESSION_BASED` installer by changing Android's `PackageInstaller` behavior.
+Ackpine supports plugins. They are available for sessions that use Android's `PackageInstaller` API.
 
-At the moment, only one Ackpine plugin exists: [ShizukuPlugin](shizuku.md).
+At the moment, there are two Ackpine plugins: [ShizukuPlugin and ShizukuUninstallPlugin](shizuku.md).

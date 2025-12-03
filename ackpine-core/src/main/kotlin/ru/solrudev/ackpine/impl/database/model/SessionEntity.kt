@@ -27,6 +27,7 @@ import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.DrawableId
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
@@ -83,9 +84,8 @@ internal class SessionEntity internal constructor(
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal class InstallSession internal constructor(
-		@JvmField
 		@Embedded
-		val session: SessionEntity,
+		override val session: SessionEntity,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -102,12 +102,11 @@ internal class SessionEntity internal constructor(
 			projection = ["uri"]
 		)
 		val uris: List<String>,
-		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
-		val plugins: List<PluginEntity>,
+		override val plugins: List<PluginEntity>,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -190,13 +189,12 @@ internal class SessionEntity internal constructor(
 			projection = ["was_confirmation_launched"]
 		)
 		val wasConfirmationLaunched: Boolean? = false
-	)
+	) : HasSession, HasPlugins
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal class UninstallSession internal constructor(
-		@JvmField
 		@Embedded
-		val session: SessionEntity,
+		override val session: SessionEntity,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -209,9 +207,32 @@ internal class SessionEntity internal constructor(
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id",
+			entity = SessionUninstallerTypeEntity::class,
+			projection = ["uninstaller_type"]
+		)
+		val uninstallerType: UninstallerType,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
 			entity = NotificationIdEntity::class,
 			projection = ["notification_id"]
 		)
-		val notificationId: Int?
-	)
+		val notificationId: Int?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id"
+		)
+		override val plugins: List<PluginEntity>
+	) : HasSession, HasPlugins
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface HasSession {
+	val session: SessionEntity
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface HasPlugins {
+	val plugins: List<PluginEntity>
 }

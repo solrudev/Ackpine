@@ -30,14 +30,14 @@ import kotlin.reflect.KClass
 public interface AckpineServiceProvider {
 
 	/**
-	 * ID of the [AckpinePlugin] to which this provider belongs.
+	 * IDs of the [AckpinePlugins][AckpinePlugin] to which this provider belongs.
 	 */
-	public val pluginId: String
+	public val pluginIdentifiers: Set<String>
 
 	/**
-	 * Returns a repository for managing [AckpinePlugin parameters][AckpinePlugin.Parameters].
+	 * Returns stores for managing [AckpinePlugin parameters][AckpinePlugin.Parameters].
 	 */
-	public val pluginParameters: PluginParametersRepository
+	public fun getPluginParametersStores(): List<PluginParametersStore>
 
 	/**
 	 * Initializes this service provider with provided [Context].
@@ -59,15 +59,19 @@ public interface AckpineServiceProvider {
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class AbstractAckpineServiceProvider(
 	serviceFactories: Set<ServiceFactory<*>>,
-	pluginParametersRepositoryFactory: (Context) -> PluginParametersRepository,
-	override val pluginId: String
+	pluginEntries: Set<PluginEntry>
 ) : AckpineServiceProvider {
 
-	override val pluginParameters: PluginParametersRepository by lazy(LazyThreadSafetyMode.NONE) {
-		pluginParametersRepositoryFactory(context)
+	override val pluginIdentifiers: Set<String> = pluginEntries
+		.map { pluginEntry -> pluginEntry.pluginId }
+		.toSet()
+
+	private val pluginParametersStoreFactories = pluginEntries.associate {
+		it.pluginId to it.pluginParametersStoreFactory
 	}
 
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }
+	private val pluginParameters = ConcurrentHashMap<String, PluginParametersStore>()
 	private val services = ConcurrentHashMap<KClass<out AckpineService>, AckpineService>()
 	private lateinit var context: Context
 
@@ -85,6 +89,14 @@ public abstract class AbstractAckpineServiceProvider(
 		} as? T
 	}
 
+	override fun getPluginParametersStores(): List<PluginParametersStore> {
+		return pluginIdentifiers.mapNotNull { pluginId ->
+			pluginParameters.computeIfAbsentCompat(pluginId) {
+				pluginParametersStoreFactories[pluginId]?.invoke(context)
+			}
+		}
+	}
+
 	/**
 	 * Entry for the [AbstractAckpineServiceProvider] set of service factories.
 	 * @property serviceClass Kotlin class of the created service.
@@ -95,9 +107,15 @@ public abstract class AbstractAckpineServiceProvider(
 		public val serviceClass: KClass<T>,
 		public val serviceFactory: (Context) -> T
 	)
-}
 
-@JvmSynthetic
-internal inline fun <reified T : AckpineService> AckpineServiceProvider.get(): T? {
-	return get(T::class)
+	/**
+	 * Entry for the [AbstractAckpineServiceProvider] set of plugins which own this provider.
+	 * @property pluginId ID of the plugin.
+	 * @property pluginParametersStoreFactory function which creates [PluginParametersStore] for the plugin.
+	 */
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public class PluginEntry(
+		public val pluginId: String,
+		public val pluginParametersStoreFactory: (Context) -> PluginParametersStore = { EmptyPluginParametersStore }
+	)
 }

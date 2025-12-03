@@ -16,13 +16,13 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
 
 /**
- * Applies [ShizukuPlugin] to the session.
+ * Applies [ShizukuUninstallPlugin] to the session.
  */
-public inline fun InstallParametersDsl.useShizuku(
-	configure: ShizukuPluginParametersDsl.() -> Unit = {}
+public inline fun UninstallParametersDsl.useShizuku(
+	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
 ) {
-	usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
+	usePlugin(ShizukuUninstallPlugin::class, ShizukuUninstallPluginParameters(configure))
 }

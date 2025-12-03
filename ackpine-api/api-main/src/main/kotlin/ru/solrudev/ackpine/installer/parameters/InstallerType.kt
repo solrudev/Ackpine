@@ -21,10 +21,10 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Intent.ACTION_INSTALL_PACKAGE
 import android.content.pm.PackageInstaller
 import android.os.Build
-import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.installer.parameters.InstallerType.SESSION_BASED
+import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 
 /**
  * Type of the package installer implementation.
@@ -60,18 +60,6 @@ public enum class InstallerType {
 		 * On API level >= 21, the default value is [InstallerType.SESSION_BASED].
 		 */
 		@JvmField
-		public val DEFAULT: InstallerType = if (areSplitPackagesSupported()) SESSION_BASED else INTENT_BASED
+		public val DEFAULT: InstallerType = if (isPackageInstallerApiAvailable()) SESSION_BASED else INTENT_BASED
 	}
-}
-
-@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-@JvmSynthetic
-internal fun areSplitPackagesSupported(): Boolean = isPackageInstallerAvailable
-
-// To avoid referencing Build.VERSION.SDK_INT
-private val isPackageInstallerAvailable = try {
-	Class.forName("android.content.pm.PackageInstaller")
-	true
-} catch (_: ClassNotFoundException) {
-	false
 }

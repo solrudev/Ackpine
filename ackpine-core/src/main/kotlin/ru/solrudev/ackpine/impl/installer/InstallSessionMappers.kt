@@ -17,42 +17,20 @@
 package ru.solrudev.ackpine.impl.installer
 
 import androidx.core.net.toUri
-import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
-import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
-import ru.solrudev.ackpine.impl.session.toSessionState
-import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
-import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.NotificationData
-
-@JvmSynthetic
-internal fun SessionEntity.InstallSession.getState(
-	installSessionDao: InstallSessionDao
-): Session.State<InstallFailure> {
-	return session.state.toSessionState(session.id, installSessionDao)
-}
 
 @JvmSynthetic
 internal fun SessionEntity.InstallSession.getProgress(sessionProgressDao: SessionProgressDao): Progress {
 	return sessionProgressDao.getProgress(session.id) ?: Progress()
 }
-
-@JvmSynthetic
-internal fun SessionEntity.InstallSession.getNotificationData() = NotificationData.Builder()
-	.setTitle(session.notificationTitle)
-	.setContentText(session.notificationText)
-	.setIcon(session.notificationIcon)
-	.build()
 
 @JvmSynthetic
 internal fun SessionEntity.InstallSession.getInstallMode(): InstallMode {
@@ -98,14 +76,6 @@ internal fun SessionEntity.InstallSession.getConstraints(): InstallConstraints {
 		.build()
 }
 
-@Suppress("UNCHECKED_CAST")
-@JvmSynthetic
-internal fun SessionEntity.InstallSession.getPlugins(): List<Class<out AckpinePlugin<*>>> {
-	return plugins.map { pluginEntity ->
-		Class.forName(pluginEntity.pluginClassName) as Class<out AckpinePlugin<*>>
-	}
-}
-
 @JvmSynthetic
 internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 	return when (this) {
@@ -119,16 +89,6 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 			sessionId,
 			InstallModeEntity.InstallMode.INHERIT_EXISTING,
 			dontKillApp
-		)
-	}
-}
-
-@JvmSynthetic
-internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
-	return getPlugins().map { (pluginClass, _) ->
-		PluginEntity(
-			sessionId = sessionId,
-			pluginClassName = pluginClass.name
 		)
 	}
 }

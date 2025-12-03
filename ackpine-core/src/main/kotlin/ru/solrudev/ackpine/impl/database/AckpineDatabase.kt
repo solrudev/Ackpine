@@ -56,6 +56,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity.State.Companion.TER
 import ru.solrudev.ackpine.impl.database.model.SessionInstallerTypeEntity
 import ru.solrudev.ackpine.impl.database.model.SessionNameEntity
 import ru.solrudev.ackpine.impl.database.model.SessionProgressEntity
+import ru.solrudev.ackpine.impl.database.model.SessionUninstallerTypeEntity
 import ru.solrudev.ackpine.impl.database.model.UninstallFailureEntity
 import ru.solrudev.ackpine.impl.database.model.UpdateOwnershipEntity
 import kotlin.time.Duration.Companion.days
@@ -83,7 +84,8 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		UpdateOwnershipEntity::class,
 		PackageSourceEntity::class,
 		ConfirmationLaunchEntity::class,
-		PluginEntity::class
+		PluginEntity::class,
+		SessionUninstallerTypeEntity::class
 	],
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
@@ -94,9 +96,10 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 8, to = 9),
 		AutoMigration(from = 9, to = 10),
 		AutoMigration(from = 10, to = 11),
-		AutoMigration(from = 11, to = 12)
+		AutoMigration(from = 11, to = 12),
+		AutoMigration(from = 13, to = 14)
 	],
-	version = 13,
+	version = 14,
 	exportSchema = true
 )
 @TypeConverters(

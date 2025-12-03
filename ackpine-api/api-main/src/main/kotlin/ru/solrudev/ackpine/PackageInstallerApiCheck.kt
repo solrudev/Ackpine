@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.shizuku
+package ru.solrudev.ackpine
 
-import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
+import android.os.Build
+import androidx.annotation.ChecksSdkIntAtLeast
 
-/**
- * Applies [ShizukuPlugin] to the session.
- */
-public inline fun InstallParametersDsl.useShizuku(
-	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-) {
-	usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
+@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
+@JvmSynthetic
+internal fun isPackageInstallerApiAvailable(): Boolean = isPackageInstallerAvailable
+
+// To avoid referencing Build.VERSION.SDK_INT
+private val isPackageInstallerAvailable = try {
+	Class.forName("android.content.pm.PackageInstaller")
+	true
+} catch (_: ClassNotFoundException) {
+	false
 }

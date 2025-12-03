@@ -16,13 +16,8 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
+@JvmSynthetic
+internal const val DELETE_KEEP_DATA = 0x00000001
 
-/**
- * Applies [ShizukuPlugin] to the session.
- */
-public inline fun InstallParametersDsl.useShizuku(
-	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-) {
-	usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
-}
+@JvmSynthetic
+internal const val DELETE_ALL_USERS = 0x00000002

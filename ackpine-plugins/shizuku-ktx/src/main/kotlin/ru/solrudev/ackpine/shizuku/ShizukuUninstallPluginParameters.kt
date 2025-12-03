@@ -16,13 +16,12 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
-
 /**
- * Applies [ShizukuPlugin] to the session.
+ * Constructs a new instance of [ShizukuUninstallPlugin.Parameters].
  */
-public inline fun InstallParametersDsl.useShizuku(
-	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-) {
-	usePlugin(ShizukuPlugin::class, ShizukuPluginParameters(configure))
+@Suppress("FunctionName")
+public inline fun ShizukuUninstallPluginParameters(
+	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
+): ShizukuUninstallPlugin.Parameters {
+	return ShizukuUninstallPluginParametersDslBuilder().apply(configure).build()
 }

@@ -14,15 +14,52 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.session
+package ru.solrudev.ackpine.impl.database
 
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
+import ru.solrudev.ackpine.impl.database.model.HasPlugins
+import ru.solrudev.ackpine.impl.database.model.HasSession
+import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.session.parameters.NotificationData
 
 @JvmSynthetic
-internal fun <F : Failure> SessionEntity.State.toSessionState(
+internal fun <F : Failure> HasSession.getState(
+	sessionFailureDao: SessionFailureDao<F>
+): Session.State<F> {
+	return session.state.toSessionState(session.id, sessionFailureDao)
+}
+
+@JvmSynthetic
+internal fun HasSession.getNotificationData() = NotificationData.Builder()
+	.setTitle(session.notificationTitle)
+	.setContentText(session.notificationText)
+	.setIcon(session.notificationIcon)
+	.build()
+
+@Suppress("UNCHECKED_CAST")
+@JvmSynthetic
+internal fun HasPlugins.getPlugins(): List<Class<out AckpinePlugin<*>>> {
+	return plugins.map { pluginEntity ->
+		Class.forName(pluginEntity.pluginClassName) as Class<out AckpinePlugin<*>>
+	}
+}
+
+@JvmSynthetic
+internal fun AckpinePluginContainer.toEntityList(sessionId: String): List<PluginEntity> {
+	return getPlugins().map { (pluginClass, _) ->
+		PluginEntity(
+			sessionId = sessionId,
+			pluginClassName = pluginClass.name
+		)
+	}
+}
+
+private fun <F : Failure> SessionEntity.State.toSessionState(
 	id: String,
 	sessionFailureDao: SessionFailureDao<F>
 ): Session.State<F> = when (this) {

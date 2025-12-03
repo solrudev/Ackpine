@@ -54,7 +54,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallConstraintsKt
 	public static synthetic fun InstallConstraints-VtjQ1oo$default (JLkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 }
 
-public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl : ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
+public abstract interface class ru/solrudev/ackpine/installer/parameters/InstallParametersDsl : ru/solrudev/ackpine/plugability/AckpinePluginRegistryDsl, ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
 	public abstract fun getApks ()Lru/solrudev/ackpine/installer/parameters/MutableApkList;
 	public abstract fun getConstraints ()Lru/solrudev/ackpine/installer/parameters/InstallConstraints;
 	public abstract fun getInstallMode ()Lru/solrudev/ackpine/installer/parameters/InstallMode;
@@ -72,8 +72,6 @@ public abstract interface class ru/solrudev/ackpine/installer/parameters/Install
 	public abstract fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)V
 	public abstract fun setRequestUpdateOwnership (Z)V
 	public abstract fun setRequireUserAction (Z)V
-	public abstract fun usePlugin (Lkotlin/reflect/KClass;)V
-	public abstract fun usePlugin (Lkotlin/reflect/KClass;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParametersDslBuilder : ru/solrudev/ackpine/installer/parameters/InstallParametersDsl {
@@ -153,6 +151,11 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallPreapprovalKt
 	public static synthetic fun InstallPreapproval$default (Ljava/lang/String;Ljava/lang/String;Ljava/util/Locale;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 }
 
+public abstract interface class ru/solrudev/ackpine/plugability/AckpinePluginRegistryDsl {
+	public abstract fun usePlugin (Lkotlin/reflect/KClass;)V
+	public abstract fun usePlugin (Lkotlin/reflect/KClass;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
+}
+
 public final class ru/solrudev/ackpine/session/SessionAwaitKt {
 	public static final fun awaitCompletedState (Lru/solrudev/ackpine/session/Session;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -208,9 +211,11 @@ public final class ru/solrudev/ackpine/uninstaller/PackageUninstallerKt {
 	public static final fun getSessions (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
 
-public abstract interface class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl : ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
+public abstract interface class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl : ru/solrudev/ackpine/plugability/AckpinePluginRegistryDsl, ru/solrudev/ackpine/session/parameters/ConfirmationDsl {
 	public abstract fun getPackageName ()Ljava/lang/String;
+	public abstract fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
 	public abstract fun setPackageName (Ljava/lang/String;)V
+	public abstract fun setUninstallerType (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)V
 }
 
 public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDslBuilder : ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl {
@@ -219,9 +224,13 @@ public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParameter
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
 	public fun getPackageName ()Ljava/lang/String;
+	public fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
 	public fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)V
 	public fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)V
 	public fun setPackageName (Ljava/lang/String;)V
+	public fun setUninstallerType (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)V
+	public fun usePlugin (Lkotlin/reflect/KClass;)V
+	public fun usePlugin (Lkotlin/reflect/KClass;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
 }
 
 public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParametersKt {
