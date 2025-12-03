@@ -84,9 +84,8 @@ internal class SessionEntity internal constructor(
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal class InstallSession internal constructor(
-		@JvmField
 		@Embedded
-		val session: SessionEntity,
+		override val session: SessionEntity,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -103,12 +102,11 @@ internal class SessionEntity internal constructor(
 			projection = ["uri"]
 		)
 		val uris: List<String>,
-		@JvmField
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
-		val plugins: List<PluginEntity>,
+		override val plugins: List<PluginEntity>,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -191,13 +189,12 @@ internal class SessionEntity internal constructor(
 			projection = ["was_confirmation_launched"]
 		)
 		val wasConfirmationLaunched: Boolean? = false
-	)
+	) : HasSession, HasPlugins
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal class UninstallSession internal constructor(
-		@JvmField
 		@Embedded
-		val session: SessionEntity,
+		override val session: SessionEntity,
 		@JvmField
 		@Relation(
 			parentColumn = "id",
@@ -222,5 +219,15 @@ internal class SessionEntity internal constructor(
 			projection = ["notification_id"]
 		)
 		val notificationId: Int?
-	)
+	) : HasSession
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface HasSession {
+	val session: SessionEntity
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface HasPlugins {
+	val plugins: List<PluginEntity>
 }

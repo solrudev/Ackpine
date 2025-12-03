@@ -34,6 +34,9 @@ import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
+import ru.solrudev.ackpine.impl.database.getNotificationData
+import ru.solrudev.ackpine.impl.database.getPlugins
+import ru.solrudev.ackpine.impl.database.getState
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
