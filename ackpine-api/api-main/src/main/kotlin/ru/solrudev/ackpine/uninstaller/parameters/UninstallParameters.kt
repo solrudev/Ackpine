@@ -68,7 +68,7 @@ public class UninstallParameters private constructor(
 		if (javaClass != other?.javaClass) return false
 		other as UninstallParameters
 		if (packageName != other.packageName) return false
-		if (this@UninstallParameters.uninstallerType != other.uninstallerType) return false
+		if (uninstallerType != other.uninstallerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
 		if (pluginContainer != other.pluginContainer) return false
@@ -77,7 +77,7 @@ public class UninstallParameters private constructor(
 
 	override fun hashCode(): Int {
 		var result = packageName.hashCode()
-		result = 31 * result + this@UninstallParameters.uninstallerType.hashCode()
+		result = 31 * result + uninstallerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
 		result = 31 * result + pluginContainer.hashCode()
@@ -87,7 +87,7 @@ public class UninstallParameters private constructor(
 	override fun toString(): String {
 		return "UninstallParameters(" +
 				"packageName='$packageName', " +
-				"uninstallerType=${this@UninstallParameters.uninstallerType}, " +
+				"uninstallerType=$uninstallerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
 				"pluginContainer=$pluginContainer" +
