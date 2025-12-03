@@ -20,7 +20,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
-import android.os.Process
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
@@ -37,6 +36,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
+import ru.solrudev.ackpine.impl.services.PackageInstallerWrapper
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
@@ -259,7 +259,7 @@ internal class PackageInstallerImpl internal constructor(
 				ackpineServiceProviders,
 				InstallSessionFactoryImpl(
 					applicationContext,
-					defaultAndroidPackageInstaller(applicationContext),
+					PackageInstallerWrapper.default(applicationContext),
 					ackpineServiceProviders,
 					database.lastUpdateTimestampDao(),
 					database.installSessionDao(),
@@ -274,14 +274,6 @@ internal class PackageInstallerImpl internal constructor(
 				),
 				uuidFactory = UUID::randomUUID,
 				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
-			)
-		}
-
-		@SuppressLint("NewApi")
-		private fun defaultAndroidPackageInstaller(applicationContext: Context) = lazy {
-			PackageInstallerWrapper(
-				applicationContext.packageManager.packageInstaller,
-				Process.myUid()
 			)
 		}
 

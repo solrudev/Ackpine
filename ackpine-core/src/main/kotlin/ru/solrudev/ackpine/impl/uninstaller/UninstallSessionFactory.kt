@@ -18,13 +18,21 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.annotation.WorkerThread
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
+import ru.solrudev.ackpine.impl.database.getNotificationData
+import ru.solrudev.ackpine.impl.database.getPlugins
+import ru.solrudev.ackpine.impl.database.getState
+import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.impl.uninstaller.helpers.getApplicationLabel
 import ru.solrudev.ackpine.impl.uninstaller.session.IntentBasedUninstallSession
@@ -50,12 +58,18 @@ internal interface UninstallSessionFactory {
 		dbWriteSemaphore: BinarySemaphore
 	): CompletableSession<UninstallFailure>
 
+	@WorkerThread
+	fun create(uninstallSession: SessionEntity.UninstallSession): CompletableSession<UninstallFailure>
+
 	fun resolveNotificationData(notificationData: NotificationData, packageName: String): NotificationData
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@SuppressLint("NewApi")
 internal class UninstallSessionFactoryImpl internal constructor(
 	private val applicationContext: Context,
+	private val defaultPackageInstallerService: Lazy<PackageInstallerService>,
+	private val ackpineServiceProviders: AckpineServiceProviders,
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	private val executor: Executor,
@@ -79,15 +93,68 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			executor, handler, notificationId, dbWriteSemaphore
 		)
 
-		UninstallerType.PACKAGE_INSTALLER_BASED -> PackageInstallerBasedUninstallSession(
-			applicationContext,
-			parameters.packageName,
-			id, initialState,
-			parameters.confirmation,
-			resolveNotificationData(parameters.notificationData, parameters.packageName),
-			sessionDao, sessionFailureDao,
-			executor, handler, notificationId, dbWriteSemaphore
-		)
+		UninstallerType.PACKAGE_INSTALLER_BASED -> {
+			val plugins = runCatching { parameters.pluginContainer.getPlugins() }
+			ackpineServiceProviders.createSessionWithService(
+				serviceClass = PackageInstallerService::class,
+				defaultService = defaultPackageInstallerService,
+				sessionId = id,
+				pluginClasses = plugins.map { it.keys },
+				pluginParameters = plugins.map { it.values }
+			) { packageInstallerService ->
+				PackageInstallerBasedUninstallSession(
+					applicationContext,
+					packageInstallerService,
+					parameters.packageName,
+					id, initialState,
+					parameters.confirmation,
+					resolveNotificationData(parameters.notificationData, parameters.packageName),
+					sessionDao, sessionFailureDao,
+					executor, handler, notificationId, dbWriteSemaphore
+				)
+			}
+		}
+	}
+
+	override fun create(uninstallSession: SessionEntity.UninstallSession): CompletableSession<UninstallFailure> {
+		val sessionId = UUID.fromString(uninstallSession.session.id)
+		val packageName = uninstallSession.packageName
+		val initialState = uninstallSession.getState(sessionFailureDao)
+		val confirmation = uninstallSession.session.confirmation
+		val notificationData = uninstallSession.getNotificationData()
+		val notificationId = uninstallSession.notificationId!!
+		return when (uninstallSession.uninstallerType) {
+			UninstallerType.INTENT_BASED -> IntentBasedUninstallSession(
+				applicationContext,
+				packageName,
+				sessionId, initialState,
+				confirmation,
+				resolveNotificationData(notificationData, packageName),
+				sessionDao, sessionFailureDao,
+				executor, handler, notificationId, BinarySemaphore()
+			)
+
+			UninstallerType.PACKAGE_INSTALLER_BASED -> {
+				val plugins = runCatching { uninstallSession.getPlugins() }
+				ackpineServiceProviders.createSessionWithService(
+					serviceClass = PackageInstallerService::class,
+					defaultService = defaultPackageInstallerService,
+					sessionId,
+					pluginClasses = plugins
+				) { packageInstallerService ->
+					PackageInstallerBasedUninstallSession(
+						applicationContext,
+						packageInstallerService,
+						packageName,
+						sessionId, initialState,
+						confirmation,
+						resolveNotificationData(notificationData, packageName),
+						sessionDao, sessionFailureDao,
+						executor, handler, notificationId, BinarySemaphore()
+					)
+				}
+			}
+		}
 	}
 
 	override fun resolveNotificationData(

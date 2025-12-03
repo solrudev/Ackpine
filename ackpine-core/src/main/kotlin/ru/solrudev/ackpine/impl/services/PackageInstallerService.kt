@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.installer
+package ru.solrudev.ackpine.impl.services
 
+import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
 import android.os.Build
 import android.os.Handler
+import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.installer.PackageInstallerService.Session
 import ru.solrudev.ackpine.impl.plugability.AckpineService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.io.Closeable
@@ -30,7 +31,7 @@ import java.io.OutputStream
 import java.util.UUID
 
 /**
- * Provides functionality of Android's [PackageInstaller].
+ * Provides functionality of Android's [android.content.pm.PackageInstaller].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -43,7 +44,7 @@ public interface PackageInstallerService : AckpineService {
 
 	/**
 	 * @param ackpineSessionId ID of the Ackpine install session.
-	 * @see PackageInstaller.createSession
+	 * @see android.content.pm.PackageInstaller.createSession
 	 */
 	public fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int
 
@@ -82,6 +83,11 @@ public interface PackageInstallerService : AckpineService {
 	 * @see PackageInstaller.abandonSession
 	 */
 	public fun abandonSession(sessionId: Int)
+
+	/**
+	 * @see [PackageInstaller.uninstall]
+	 */
+	public fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID)
 
 	/**
 	 * A facade for [PackageInstaller.Session].
@@ -124,7 +130,8 @@ public interface PackageInstallerService : AckpineService {
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
-public class PackageInstallerSessionWrapper(private val session: PackageInstaller.Session) : Session {
+public class PackageInstallerSessionWrapper(private val session: PackageInstaller.Session) :
+	PackageInstallerService.Session {
 	override fun openWrite(name: String, offsetBytes: Long, lengthBytes: Long): OutputStream =
 		session.openWrite(name, offsetBytes, lengthBytes)
 
@@ -177,4 +184,14 @@ internal class PackageInstallerWrapper(
 		packageInstaller.unregisterSessionCallback(callback)
 
 	override fun abandonSession(sessionId: Int) = packageInstaller.abandonSession(sessionId)
+
+	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) =
+		packageInstaller.uninstall(packageName, statusReceiver)
+
+	internal companion object {
+		@JvmSynthetic
+		internal fun default(context: Context) = lazy {
+			PackageInstallerWrapper(context.packageManager.packageInstaller, Process.myUid())
+		}
+	}
 }

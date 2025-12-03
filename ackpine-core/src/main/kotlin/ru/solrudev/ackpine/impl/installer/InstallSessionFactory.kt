@@ -43,6 +43,7 @@ import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallParameters

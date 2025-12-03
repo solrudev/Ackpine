@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.plugability
 
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
@@ -32,7 +33,14 @@ public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
 	/**
 	 * Applies some settings to install parameters to accommodate the plugin's functionality.
 	 */
-	public fun apply(builder: InstallParameters.Builder)
+	public fun apply(builder: InstallParameters.Builder) { // no-op by default
+	}
+
+	/**
+	 * Applies some settings to uninstall parameters to accommodate the plugin's functionality.
+	 */
+	public fun apply(builder: UninstallParameters.Builder) { // no-op by default
+	}
 
 	/**
 	 * A set of parameters for [AckpinePlugin].

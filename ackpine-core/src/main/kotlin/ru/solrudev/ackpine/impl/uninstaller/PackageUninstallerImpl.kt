@@ -27,14 +27,15 @@ import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.database.toEntityList
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
+import ru.solrudev.ackpine.impl.services.PackageInstallerWrapper
 import ru.solrudev.ackpine.impl.session.CompletableSession
-import ru.solrudev.ackpine.impl.session.toSessionState
 import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
@@ -49,6 +50,7 @@ private typealias SessionsCollectionTransformer =
 internal class PackageUninstallerImpl internal constructor(
 	private val uninstallSessionDao: UninstallSessionDao,
 	private val executor: Executor,
+	private val ackpineServiceProviders: AckpineServiceProviders,
 	private val uninstallSessionFactory: UninstallSessionFactory,
 	private val uuidFactory: () -> UUID,
 	private val notificationIdFactory: () -> Int
@@ -94,7 +96,7 @@ internal class PackageUninstallerImpl internal constructor(
 		val session = sessions.computeIfAbsentCompat(sessionId) {
 			uninstallSessionDao
 				.getUninstallSession(sessionId.toString())
-				?.toUninstallSession()
+				?.let(uninstallSessionFactory::create)
 		}
 		completer.set(session)
 	}
@@ -129,7 +131,7 @@ internal class PackageUninstallerImpl internal constructor(
 			}
 			.forEach { session ->
 				val id = UUID.fromString(session.session.id)
-				sessions.computeIfAbsentCompat(id) { session.toUninstallSession() }
+				sessions.computeIfAbsentCompat(id) { uninstallSessionFactory.create(session) }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values
@@ -141,6 +143,7 @@ internal class PackageUninstallerImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore,
 		notificationId: Int
 	) = executor.executeWithSemaphore(dbWriteSemaphore) {
+		val sessionId = id.toString()
 		val notificationData = uninstallSessionFactory.resolveNotificationData(
 			parameters.notificationData,
 			parameters.packageName
@@ -148,7 +151,7 @@ internal class PackageUninstallerImpl internal constructor(
 		uninstallSessionDao.insertUninstallSession(
 			SessionEntity.UninstallSession(
 				session = SessionEntity(
-					id.toString(),
+					sessionId,
 					SessionEntity.Type.UNINSTALL,
 					SessionEntity.State.PENDING,
 					parameters.confirmation,
@@ -159,29 +162,11 @@ internal class PackageUninstallerImpl internal constructor(
 				),
 				parameters.packageName,
 				parameters.uninstallerType,
-				notificationId
+				notificationId,
+				plugins = parameters.pluginContainer.toEntityList(sessionId)
 			)
 		)
-	}
-
-	private fun SessionEntity.UninstallSession.toUninstallSession(): CompletableSession<UninstallFailure> {
-		val parameters = UninstallParameters.Builder(packageName)
-			.setUninstallerType(uninstallerType)
-			.setConfirmation(session.confirmation)
-			.setNotificationData(
-				NotificationData.Builder()
-					.setTitle(session.notificationTitle)
-					.setContentText(session.notificationText)
-					.setIcon(session.notificationIcon)
-					.build()
-			)
-			.build()
-		return uninstallSessionFactory.create(
-			parameters,
-			UUID.fromString(session.id),
-			initialState = session.state.toSessionState(session.id, uninstallSessionDao),
-			notificationId!!, BinarySemaphore()
-		)
+		ackpineServiceProviders.persistPluginParameters(id, parameters.pluginContainer)
 	}
 
 	internal companion object {
@@ -213,12 +198,17 @@ internal class PackageUninstallerImpl internal constructor(
 		}
 
 		private fun create(context: Context): PackageUninstallerImpl {
-			val database = AckpineDatabase.getInstance(context.applicationContext, AckpineThreadPool)
+			val applicationContext = context.applicationContext
+			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
+			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext)
 			return PackageUninstallerImpl(
 				database.uninstallSessionDao(),
 				AckpineThreadPool,
+				ackpineServiceProviders,
 				UninstallSessionFactoryImpl(
 					context.applicationContext,
+					PackageInstallerWrapper.default(applicationContext),
+					ackpineServiceProviders,
 					database.sessionDao(),
 					database.uninstallSessionDao(),
 					AckpineThreadPool,

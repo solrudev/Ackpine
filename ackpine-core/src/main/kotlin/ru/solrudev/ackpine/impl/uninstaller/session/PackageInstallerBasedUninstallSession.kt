@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.createPackageInstallerStatusIntentSender
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractSession
 import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 import ru.solrudev.ackpine.session.Session
@@ -41,6 +42,7 @@ import kotlin.random.nextInt
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerBasedUninstallSession internal constructor(
 	private val context: Context,
+	private val packageInstaller: PackageInstallerService,
 	private val packageName: String,
 	id: UUID,
 	initialState: Session.State<UninstallFailure>,
@@ -66,7 +68,11 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
-		context.packageManager.packageInstaller.uninstall(packageName, createPackageInstallerStatusIntentSender())
+		packageInstaller.uninstall(
+			packageName,
+			statusReceiver = createPackageInstallerStatusIntentSender(),
+			ackpineSessionId = id
+		)
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {

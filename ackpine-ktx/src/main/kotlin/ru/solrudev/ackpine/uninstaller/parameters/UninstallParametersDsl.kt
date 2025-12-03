@@ -16,16 +16,19 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginRegistryDsl
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import kotlin.reflect.KClass
 
 /**
  * DSL allowing to configure [parameters for creating uninstall session][UninstallParameters].
  */
 @SessionParametersDsl
-public interface UninstallParametersDsl : ConfirmationDsl {
+public interface UninstallParametersDsl : ConfirmationDsl, AckpinePluginRegistryDsl {
 
 	/**
 	 * Name of the package to be uninstalled.
@@ -68,6 +71,17 @@ internal class UninstallParametersDslBuilder(packageName: String) : UninstallPar
 		set(value) {
 			builder.setUninstallerType(value)
 		}
+
+	override fun <Params : AckpinePlugin.Parameters> usePlugin(
+		plugin: KClass<out AckpinePlugin<Params>>,
+		parameters: Params
+	) {
+		builder.usePlugin(plugin.java, parameters)
+	}
+
+	override fun usePlugin(plugin: KClass<out AckpinePlugin<AckpinePlugin.Parameters.None>>) {
+		builder.usePlugin(plugin.java)
+	}
 
 	fun build() = builder.build()
 }

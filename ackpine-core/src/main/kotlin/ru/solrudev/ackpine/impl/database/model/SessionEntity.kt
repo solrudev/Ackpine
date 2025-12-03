@@ -218,8 +218,13 @@ internal class SessionEntity internal constructor(
 			entity = NotificationIdEntity::class,
 			projection = ["notification_id"]
 		)
-		val notificationId: Int?
-	) : HasSession
+		val notificationId: Int?,
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id"
+		)
+		override val plugins: List<PluginEntity>
+	) : HasSession, HasPlugins
 }
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)

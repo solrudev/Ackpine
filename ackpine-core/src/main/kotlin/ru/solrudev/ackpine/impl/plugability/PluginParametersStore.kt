@@ -22,7 +22,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 
 /**
- * A repository for [Ackpine plugin parameters][AckpinePlugin.Parameters].
+ * A store for [Ackpine plugin parameters][AckpinePlugin.Parameters].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @WorkerThread

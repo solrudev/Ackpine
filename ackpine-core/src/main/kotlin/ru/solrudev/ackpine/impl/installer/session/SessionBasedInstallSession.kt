@@ -56,11 +56,11 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.createPackageInstallerStatusIntentSender
 import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
 import ru.solrudev.ackpine.impl.installer.InstallStatusReceiver
-import ru.solrudev.ackpine.impl.installer.PackageInstallerService
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
 import ru.solrudev.ackpine.impl.receiver.PackageInstallerStatusReceiver
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.InstallFailure.Timeout

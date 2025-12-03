@@ -16,6 +16,10 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpinePluginCache
+import ru.solrudev.ackpine.plugability.AckpinePluginContainer
+import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -51,7 +55,12 @@ public class UninstallParameters private constructor(
 	 *
 	 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 	 */
-	public override val notificationData: NotificationData
+	public override val notificationData: NotificationData,
+
+	/**
+	 * [Plugins][AckpinePlugin] applied to the uninstall session.
+	 */
+	public val pluginContainer: AckpinePluginContainer
 ) : ConfirmationAware {
 
 	override fun equals(other: Any?): Boolean {
@@ -62,6 +71,7 @@ public class UninstallParameters private constructor(
 		if (this@UninstallParameters.uninstallerType != other.uninstallerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
+		if (pluginContainer != other.pluginContainer) return false
 		return true
 	}
 
@@ -70,6 +80,7 @@ public class UninstallParameters private constructor(
 		result = 31 * result + this@UninstallParameters.uninstallerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
+		result = 31 * result + pluginContainer.hashCode()
 		return result
 	}
 
@@ -78,14 +89,17 @@ public class UninstallParameters private constructor(
 				"packageName='$packageName', " +
 				"uninstallerType=${this@UninstallParameters.uninstallerType}, " +
 				"confirmation=$confirmation, " +
-				"notificationData=$notificationData" +
+				"notificationData=$notificationData, " +
+				"pluginContainer=$pluginContainer" +
 				")"
 	}
 
 	/**
 	 * Builder for [UninstallParameters].
 	 */
-	public class Builder(packageName: String) : ConfirmationAware {
+	public class Builder(packageName: String) : ConfirmationAware, AckpinePluginRegistry<Builder> {
+
+		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
 
 		/**
 		 * Name of the package to be uninstalled.
@@ -146,11 +160,31 @@ public class UninstallParameters private constructor(
 			this.notificationData = notificationData
 		}
 
+		override fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin<Params>>,
+			parameters: Params
+		): Builder = apply {
+			plugins[plugin] = parameters
+		}
+
+		override fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+			plugins[plugin] = AckpinePlugin.Parameters.None
+		}
+
+		override fun getPluginContainer(): AckpinePluginContainer = AckpinePluginContainer.from(plugins)
+
 		/**
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			return UninstallParameters(packageName, uninstallerType, confirmation, notificationData)
+			val pluginContainer = getPluginContainer()
+			val pluginInstances = pluginContainer
+				.getPlugins()
+				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
+			for (plugin in pluginInstances) {
+				plugin.apply(this)
+			}
+			return UninstallParameters(packageName, uninstallerType, confirmation, notificationData, pluginContainer)
 		}
 	}
 }
