@@ -22,6 +22,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -81,6 +82,16 @@ public final class UninstallFragment extends Fragment {
 			ViewKt.setVisible(binding.textViewUninstallNoApplications, list.isEmpty());
 			adapter.submitList(list);
 		});
+		viewModel.getFailure().observe(getViewLifecycleOwner(), failure -> {
+			if (failure != null) {
+				showFailure(failure);
+			}
+		});
+	}
+
+	private void showFailure(String failure) {
+		Toast.makeText(requireContext(), failure, Toast.LENGTH_LONG).show();
+		viewModel.clearFailure();
 	}
 
 	private void loadApplications(boolean refresh) {

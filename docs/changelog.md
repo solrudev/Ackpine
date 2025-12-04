@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.18.1 (2025-12-04)
+---------------------------
+
+### Bug fixes and improvements
+
+- Prioritize system `PackageInstaller` event for `PackageInstaller`-based uninstall failures. Now, if proper failure event is received from the OS, there won't be a generic `Aborted by user` failure message.
+- Show uninstall failure message toast in sample apps.
+
 Version 0.18.0 (2025-12-03)
 ---------------------------
 

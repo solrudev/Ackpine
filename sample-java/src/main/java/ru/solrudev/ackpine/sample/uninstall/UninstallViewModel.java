@@ -55,6 +55,7 @@ public final class UninstallViewModel extends ViewModel {
 	private static final String PACKAGE_NAME_KEY = "PACKAGE_NAME";
 	private final MutableLiveData<Boolean> isLoading = new MutableLiveData<>(false);
 	private final MutableLiveData<List<ApplicationData>> applications = new MutableLiveData<>(new ArrayList<>());
+	private final MutableLiveData<String> failure = new MutableLiveData<>(null);
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageUninstaller packageUninstaller;
 	private final SavedStateHandle savedStateHandle;
@@ -93,6 +94,11 @@ public final class UninstallViewModel extends ViewModel {
 		return applications;
 	}
 
+	@NonNull
+	public LiveData<String> getFailure() {
+		return failure;
+	}
+
 	public void loadApplications(boolean refresh, @NonNull Supplier<List<ApplicationData>> applicationsFactory) {
 		if (!refresh && !getCurrentApplications().isEmpty()) {
 			return;
@@ -113,6 +119,10 @@ public final class UninstallViewModel extends ViewModel {
 		savedStateHandle.set(SESSION_ID_KEY, session.getId());
 		savedStateHandle.set(PACKAGE_NAME_KEY, packageName);
 		attachSessionStateListener(session);
+	}
+
+	public void clearFailure() {
+		failure.setValue(null);
 	}
 
 	private UUID getSessionId() {
@@ -166,6 +176,7 @@ public final class UninstallViewModel extends ViewModel {
 					if (failure instanceof Failure.Exceptional f) {
 						Log.e("UninstallViewModel", null, f.getException());
 					}
+					UninstallViewModel.this.failure.setValue(failure.getMessage());
 				});
 	}
 

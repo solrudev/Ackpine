@@ -19,6 +19,8 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
@@ -29,6 +31,8 @@ import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 internal class PackageInstallerBasedUninstallActivity : UninstallActivity(
 	tag = "PackageInstallerBasedUninstallActivity"
 ) {
+
+	private val handler = Handler(Looper.getMainLooper())
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -41,9 +45,11 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(
 
 	override fun onActivityResult(resultCode: Int) {
 		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME) ?: return
-		if (isPackageInstalled(packageName)) {
-			abortSession("Aborted by user")
-			finish()
+		handler.post {
+			if (isPackageInstalled(packageName)) {
+				abortSession("Aborted by user")
+				finish()
+			}
 		}
 	}
 }
