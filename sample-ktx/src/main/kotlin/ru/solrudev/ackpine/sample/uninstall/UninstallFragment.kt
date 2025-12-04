@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -67,8 +68,16 @@ class UninstallFragment : Fragment(R.layout.fragment_uninstall) {
 				binding.root.isRefreshing = uiState.isLoading
 				binding.textViewUninstallNoApplications.isVisible = uiState.applications.isEmpty()
 				adapter.submitList(uiState.applications)
+				if (uiState.failure != null) {
+					showFailure(uiState.failure)
+				}
 			}
 		}
+	}
+
+	private fun showFailure(failure: String) {
+		Toast.makeText(requireContext(), failure, Toast.LENGTH_LONG).show()
+		viewModel.clearFailure()
 	}
 
 	private fun loadApplications(refresh: Boolean) {
