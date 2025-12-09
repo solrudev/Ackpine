@@ -21,6 +21,6 @@ import ru.solrudev.ackpine.SdkIntWrapper
 /**
  * Thrown if installation of split packages is not supported when creating session with split package is attempted.
  */
-public class SplitPackagesNotSupportedException : IllegalArgumentException(
+public class SplitPackagesNotSupportedException : IllegalStateException(
 	"Split packages are not supported on current Android API level: ${SdkIntWrapper.get()}"
 )
