@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.18.2 (2025-12-09)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add a slight delay before aborting a `PackageInstaller`-based uninstall session if failure event from OS wasn't received.
+
 Version 0.18.1 (2025-12-04)
 ---------------------------
 

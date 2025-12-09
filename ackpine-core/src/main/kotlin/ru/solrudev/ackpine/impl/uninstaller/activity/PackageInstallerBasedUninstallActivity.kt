@@ -34,6 +34,14 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(
 
 	private val handler = Handler(Looper.getMainLooper())
 
+	private val abortedSessionRunnable = Runnable {
+		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME)
+			?: error("PackageInstallerBasedUninstallActivity: packageName was null")
+		if (isPackageInstalled(packageName)) {
+			abortSession("Aborted by user")
+		}
+	}
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
@@ -44,12 +52,15 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(
 	}
 
 	override fun onActivityResult(resultCode: Int) {
-		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME) ?: return
-		handler.post {
-			if (isPackageInstalled(packageName)) {
-				abortSession("Aborted by user")
-				finish()
-			}
+		// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
+		setLoading(isLoading = true, delayMillis = 200)
+		handler.postDelayed(abortedSessionRunnable, 400)
+	}
+
+	override fun onDestroy() {
+		super.onDestroy()
+		if (isFinishing) {
+			handler.removeCallbacks(abortedSessionRunnable)
 		}
 	}
 }
