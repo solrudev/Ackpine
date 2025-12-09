@@ -35,7 +35,7 @@ internal object SessionIdIntents {
 		}
 		val sessionId = intent.getSerializableExtraCompat<UUID>(EXTRA_SESSION_ID)
 			?: intent.getSerializableExtraCompat(EXTRA_LEGACY_SESSION_ID)
-		return requireNotNull(sessionId) { "$tag: ackpineSessionId was null" }
+		return checkNotNull(sessionId) { "$tag: ackpineSessionId was null" }
 	}
 
 	@JvmSynthetic

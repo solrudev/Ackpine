@@ -479,7 +479,7 @@ internal class SessionBasedInstallSession internal constructor(
 		progressMax: Int,
 		cancellationSignal: CancellationSignal
 	) = afd.createInputStream().use { apkStream ->
-		requireNotNull(apkStream) { "APK $index InputStream was null." }
+		checkNotNull(apkStream) { "APK $index InputStream was null." }
 		val length = afd.declaredLength
 		val sessionStream = openWrite("$index.apk", 0, length)
 		sessionStream.buffered().use { bufferedSessionStream ->
