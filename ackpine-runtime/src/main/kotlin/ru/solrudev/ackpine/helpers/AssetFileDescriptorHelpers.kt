@@ -28,7 +28,7 @@ import java.io.IOException
  * @return the result of [block] function invoked on this [AssetFileDescriptor].
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
-public inline fun <T : AssetFileDescriptor?, R> T.use(block: (T) -> R): R {
+public inline fun <R> AssetFileDescriptor?.use(block: (AssetFileDescriptor?) -> R): R {
 	var exception: Throwable? = null
 	try {
 		return block(this)

@@ -38,7 +38,7 @@ internal fun SessionEntity.InstallSession.getInstallMode(): InstallMode {
 		null -> InstallMode.Full
 		InstallModeEntity.InstallMode.FULL -> InstallMode.Full
 		InstallModeEntity.InstallMode.INHERIT_EXISTING -> InstallMode.InheritExisting(
-			requireNotNull(packageName) {
+			checkNotNull(packageName) {
 				"Package name was null when install mode is INHERIT_EXISTING"
 			},
 			installMode.dontKillApp

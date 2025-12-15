@@ -96,7 +96,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
 					if (confirmationIntent == null) {
 						session?.completeExceptionally(
-							IllegalArgumentException("$tag: confirmationIntent was null.")
+							IllegalStateException("$tag: confirmationIntent was null.")
 						)
 						return
 					}
