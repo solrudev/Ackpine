@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version 0.18.3 (2025-12-15)
+---------------------------
+
+### Bug fixes and improvements
+
+- Throw `IllegalStateException` instead of `IllegalArgumentException` where more appropriate.
+- Remove `AckpinePlugin.Parameters` from ProGuard rules.
+
+### Public API changes
+
+- `SplitPackagesNotSupportedException` is now extending `IllegalStateException` instead of `IllegalArgumentException`.
+
 Version 0.18.2 (2025-12-09)
 ---------------------------
 
