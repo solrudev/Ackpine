@@ -1,6 +1,17 @@
 Change Log
 ==========
 
+Version 0.18.4 (2025-12-16)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add support for changing installer package name when using Shizuku.
+
+### Public API changes
+
+- Add `installerPackageName` property to `ShizukuPlugin.Parameters` and related APIs.
+
 Version 0.18.3 (2025-12-15)
 ---------------------------
 
