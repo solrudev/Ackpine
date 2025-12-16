@@ -65,6 +65,9 @@ internal class ShizukuPackageInstaller(
 		if (shizukuParams != null) {
 			@Suppress("CAST_NEVER_SUCCEEDS")
 			applyInstallFlags(params as PackageInstallerHidden.SessionParams, shizukuParams)
+			if (shizukuParams.installerPackageName.isNotEmpty()) {
+				params.setInstallerPackageName(shizukuParams.installerPackageName)
+			}
 		}
 		return packageInstaller.createSession(params)
 	}

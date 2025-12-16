@@ -39,6 +39,7 @@ internal class ShizukuPluginParametersStore(
 			.setRequestDowngrade(shizukuParams.requestDowngrade)
 			.setGrantAllRequestedPermissions(shizukuParams.grantAllRequestedPermissions)
 			.setAllUsers(shizukuParams.allUsers)
+			.setInstallerPackageName(shizukuParams.installerPackageName)
 			.build()
 	}
 
@@ -56,7 +57,8 @@ internal class ShizukuPluginParametersStore(
 			replaceExisting = params.replaceExisting,
 			requestDowngrade = params.requestDowngrade,
 			grantAllRequestedPermissions = params.grantAllRequestedPermissions,
-			allUsers = params.allUsers
+			allUsers = params.allUsers,
+			installerPackageName = params.installerPackageName
 		)
 		shizukuParamsDao.insertParameters(shizukuParams)
 	}
