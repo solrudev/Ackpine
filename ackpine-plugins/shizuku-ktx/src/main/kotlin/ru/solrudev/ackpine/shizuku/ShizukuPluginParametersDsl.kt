@@ -56,6 +56,11 @@ public interface ShizukuPluginParametersDsl {
 	 * Flag to indicate that this install should immediately be visible to all users.
 	 */
 	public var allUsers: Boolean
+
+	/**
+	 * Installer package for the app. Empty by default, so the calling app package name will be used.
+	 */
+	public var installerPackageName: String
 }
 
 @PublishedApi
@@ -97,6 +102,12 @@ internal class ShizukuPluginParametersDslBuilder : ShizukuPluginParametersDsl {
 		get() = builder.allUsers
 		set(value) {
 			builder.setAllUsers(value)
+		}
+
+	override var installerPackageName: String
+		get() = builder.installerPackageName
+		set(value) {
+			builder.setInstallerPackageName(value)
 		}
 
 	fun build() = builder.build()

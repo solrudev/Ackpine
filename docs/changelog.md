@@ -1,6 +1,68 @@
 Change Log
 ==========
 
+Version 0.18.4 (2025-12-16)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add support for changing installer package name when using Shizuku.
+
+### Public API changes
+
+- Add `installerPackageName` property to `ShizukuPlugin.Parameters` and related APIs.
+
+Version 0.18.3 (2025-12-15)
+---------------------------
+
+### Bug fixes and improvements
+
+- Throw `IllegalStateException` instead of `IllegalArgumentException` where more appropriate.
+- Remove `AckpinePlugin.Parameters` from ProGuard rules.
+
+### Public API changes
+
+- `SplitPackagesNotSupportedException` is now extending `IllegalStateException` instead of `IllegalArgumentException`.
+
+Version 0.18.2 (2025-12-09)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add a slight delay before aborting a `PackageInstaller`-based uninstall session if failure event from OS wasn't received.
+
+Version 0.18.1 (2025-12-04)
+---------------------------
+
+### Bug fixes and improvements
+
+- Prioritize system `PackageInstaller` event for `PackageInstaller`-based uninstall failures. Now, if proper failure event is received from the OS, there won't be a generic `Aborted by user` failure message.
+- Show uninstall failure message toast in sample apps.
+
+Version 0.18.0 (2025-12-03)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add support for Android's `PackageInstaller`-backed uninstallation. Make it the default implementation on API level >= 21.
+- Allow to configure uninstall implementation via `UninstallerType` enum. See [documentation](configuration.md#uninstaller-type) for details.
+- Introduce new `UninstallFailure` types which map to system's `PackageInstaller` uninstall status.
+- Add plugins support for uninstall sessions.
+- Implement Shizuku support for uninstall sessions via `ShizukuUninstallPlugin`. See [documentation](shizuku.md) for details.
+
+### Public API changes
+
+- Added `AckpinePluginRegistry` interface, which is implemented by `InstallParameters.Builder` and `UninstallParameters.Builder`.
+- Added `usePlugin()` functions to `UninstallParameters.Builder`.
+- Added `UninstallerType` enum and related APIs.
+- Added `pluginContainer` property to `UninstallParameters`.
+- Added `UninstallFailure.Blocked`, `UninstallFailure.Conflict` classes.
+- Source-incompatible: `UninstallFailure.Generic` is now a data class. Referencing to it as a singleton object is no longer possible in Kotlin. Static `INSTANCE` field is deprecated and will be removed in the next minor release.
+- `UninstallFailure` is now a sealed class with abstract `message` property, similar to `InstallFailure`.
+- Added some DSL APIs related to plugins in `ackpine-ktx`.
+- Removed `usePlugin()` inline extension function for `InstallParametersDsl` in `ackpine-ktx`.
+- Added `ShizukuUninstallPlugin` and related APIs in `ackpine-shizuku` and `ackpine-shizuku-ktx`.
+
 Version 0.17.0 (2025-11-25)
 ---------------------------
 

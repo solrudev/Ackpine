@@ -41,13 +41,13 @@ internal fun UninstallPackageContract(packageName: String): UninstallContract {
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface UninstallContract {
-	fun createIntent(context: Context): Intent
+	fun createIntent(): Intent
 	fun parseResult(context: Context, resultCode: Int): Session.State.Completed<UninstallFailure>
 }
 
 private class ActionDeletePackageContract(private val packageName: String) : UninstallContract {
 
-	override fun createIntent(context: Context): Intent {
+	override fun createIntent(): Intent {
 		val packageUri = Uri.parse("package:$packageName")
 		return Intent(Intent.ACTION_DELETE, packageUri)
 	}
@@ -56,28 +56,14 @@ private class ActionDeletePackageContract(private val packageName: String) : Uni
 		if (!context.isPackageInstalled(packageName)) {
 			return Session.State.Succeeded
 		}
-		return Session.State.Failed(UninstallFailure.Generic)
-	}
-
-	private fun Context.isPackageInstalled(packageName: String) = try {
-		packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
-		true
-	} catch (_: PackageManager.NameNotFoundException) {
-		false
-	}
-
-	private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			return getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
-		}
-		return getPackageInfo(packageName, flags)
+		return Session.State.Failed(UninstallFailure.Generic())
 	}
 }
 
 private class ActionUninstallPackageContract(private val packageName: String) : UninstallContract {
 
 	@Suppress("DEPRECATION")
-	override fun createIntent(context: Context) = Intent().apply {
+	override fun createIntent() = Intent().apply {
 		action = Intent.ACTION_UNINSTALL_PACKAGE
 		data = Uri.parse("package:$packageName")
 		putExtra(Intent.EXTRA_RETURN_RESULT, true)
@@ -87,7 +73,22 @@ private class ActionUninstallPackageContract(private val packageName: String) : 
 		return when (resultCode) {
 			Activity.RESULT_OK -> Session.State.Succeeded
 			Activity.RESULT_CANCELED -> Session.State.Failed(UninstallFailure.Aborted("Session was cancelled"))
-			else -> Session.State.Failed(UninstallFailure.Generic)
+			else -> Session.State.Failed(UninstallFailure.Generic())
 		}
 	}
+}
+
+@JvmSynthetic
+internal fun Context.isPackageInstalled(packageName: String) = try {
+	packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
+	true
+} catch (_: PackageManager.NameNotFoundException) {
+	false
+}
+
+private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+		return getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+	}
+	return getPackageInfo(packageName, flags)
 }

@@ -17,6 +17,7 @@
 package android.content.pm;
 
 import android.content.Context;
+import android.content.IntentSender;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
@@ -49,6 +50,10 @@ public class PackageInstallerHidden {
 								  IPackageInstaller packageInstaller,
 								  String installerPackageName,
 								  int userId) {
+		throw new UnsupportedOperationException();
+	}
+
+	public void uninstall(String packageName, int flags, IntentSender statusReceiver) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -181,7 +181,7 @@ class InstallSessionsAdapter(
 		) = false
 
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-			val sessionId = requireNotNull((viewHolder as SessionViewHolder).sessionId) { "sessionId" }
+			val sessionId = checkNotNull((viewHolder as SessionViewHolder).sessionId) { "sessionId" }
 			onItemSwipe(sessionId)
 		}
 

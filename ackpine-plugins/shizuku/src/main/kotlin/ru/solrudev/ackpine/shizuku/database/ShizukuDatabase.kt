@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.shizuku.database
 
+import androidx.room.AutoMigration
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
@@ -29,13 +30,18 @@ import ru.solrudev.ackpine.impl.database.DatabaseSingleton
 private const val DATABASE_NAME = "ackpine_shizuku.paramsdb"
 
 @Database(
-	entities = [ShizukuParametersEntity::class],
+	entities = [ShizukuParametersEntity::class, ShizukuUninstallParametersEntity::class],
 	exportSchema = true,
-	version = 1
+	autoMigrations = [
+		AutoMigration(from = 1, to = 2),
+		AutoMigration(from = 2, to = 3),
+	],
+	version = 3
 )
 internal abstract class ShizukuDatabase : RoomDatabase() {
 
 	abstract fun shizukuParamsDao(): ShizukuParamsDao
+	abstract fun shizukuUninstallParamsDao(): ShizukuUninstallParamsDao
 
 	internal companion object : DatabaseSingleton<ShizukuDatabase>(
 		databaseClass = ShizukuDatabase::class.java,
@@ -51,6 +57,16 @@ internal interface ShizukuParamsDao {
 
 	@Query("SELECT * FROM shizuku_parameters WHERE session_id = :sessionId")
 	fun getBySessionId(sessionId: String): ShizukuParametersEntity
+}
+
+@Dao
+internal interface ShizukuUninstallParamsDao {
+
+	@Insert
+	fun insertParameters(params: ShizukuUninstallParametersEntity)
+
+	@Query("SELECT * FROM shizuku_uninstall_parameters WHERE session_id = :sessionId")
+	fun getBySessionId(sessionId: String): ShizukuUninstallParametersEntity
 }
 
 @Entity(tableName = "shizuku_parameters")
@@ -74,6 +90,23 @@ internal class ShizukuParametersEntity(
 	@JvmField
 	@ColumnInfo(name = "grant_all_requested_permissions")
 	val grantAllRequestedPermissions: Boolean,
+	@JvmField
+	@ColumnInfo(name = "all_users")
+	val allUsers: Boolean,
+	@JvmField
+	@ColumnInfo(name = "installer_package_name", defaultValue = "")
+	val installerPackageName: String
+)
+
+@Entity(tableName = "shizuku_uninstall_parameters")
+internal class ShizukuUninstallParametersEntity(
+	@JvmField
+	@PrimaryKey
+	@ColumnInfo(name = "session_id")
+	val sessionId: String,
+	@JvmField
+	@ColumnInfo(name = "keep_data")
+	val keepData: Boolean,
 	@JvmField
 	@ColumnInfo(name = "all_users")
 	val allUsers: Boolean

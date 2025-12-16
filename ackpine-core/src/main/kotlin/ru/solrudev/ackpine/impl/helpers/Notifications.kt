@@ -136,11 +136,11 @@ private fun Context.showNotification(
 internal class NotificationDismissalReceiver : BroadcastReceiver() {
 
 	override fun onReceive(context: Context, intent: Intent) {
-		val pendingIntent = requireNotNull(intent.getParcelableExtraCompat<PendingIntent>(Intent.EXTRA_INTENT)) {
+		val pendingIntent = checkNotNull(intent.getParcelableExtraCompat<PendingIntent>(Intent.EXTRA_INTENT)) {
 			"$TAG: pendingIntent was null"
 		}
 		val notificationData = NotificationIntents.getNotificationData(intent, TAG)
-		val notificationTag = requireNotNull(intent.getStringExtra(EXTRA_NOTIFICATION_TAG)) {
+		val notificationTag = checkNotNull(intent.getStringExtra(EXTRA_NOTIFICATION_TAG)) {
 			"$TAG: notificationTag was null"
 		}
 		val notificationId = intent.getIntExtra(NotificationIntents.EXTRA_NOTIFICATION_ID, 0)
@@ -168,16 +168,16 @@ internal object NotificationIntents {
 
 	@JvmSynthetic
 	internal fun getNotificationData(intent: Intent, tag: String): NotificationData {
-		val bundle = requireNotNull(
+		val bundle = checkNotNull(
 			intent.getBundleExtra(EXTRA_NOTIFICATION_BUNDLE)
 		) { "$tag: notificationBundle was null" }
-		val notificationTitle = requireNotNull(
+		val notificationTitle = checkNotNull(
 			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_TITLE)
 		) { "$tag: notificationTitle was null." }
-		val notificationMessage = requireNotNull(
+		val notificationMessage = checkNotNull(
 			bundle.getSerializableCompat<ResolvableString>(EXTRA_NOTIFICATION_MESSAGE)
 		) { "$tag: notificationMessage was null." }
-		val notificationIcon = requireNotNull(
+		val notificationIcon = checkNotNull(
 			bundle.getSerializableCompat<DrawableId>(EXTRA_NOTIFICATION_ICON)
 		) { "$tag: notificationIcon was null." }
 		return NotificationData.Builder()

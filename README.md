@@ -15,7 +15,7 @@ A library providing consistent APIs for installing and uninstalling apps on an A
 Key features of Ackpine:
 
 - **Ease of use**: Ackpine reduces complexity of dealing with system `PackageInstaller` APIs.
-- **Unifying of different system APIs**: Ackpine provides an ability to choose system package installer API which will be used to install a package.
+- **Unifying of different system APIs**: Ackpine provides an ability to choose system package installer API which will be used to install/uninstall a package.
 - **Built-in split APKs support**: Ackpine provides simple lazy sequences-based APIs for reading, parsing and filtering split APKs.
 - **Persistent**: Ackpine persists every session so it can properly handle process death.
 - **Deferred**: Ackpine allows to defer user's intervention via customizable high-priority notification.
@@ -37,7 +37,7 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
 
 ```toml
 [versions]
-ackpine = "0.17.0"
+ackpine = "0.18.4"
 
 [libraries]
 ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
@@ -54,7 +54,7 @@ ackpine-splits-ktx = { module = "ru.solrudev.ackpine:ackpine-splits-ktx", versio
 # optional - support for asset files inside of application's package
 ackpine-assets = { module = "ru.solrudev.ackpine:ackpine-assets", version.ref = "ackpine" }
 
-# optional - plugin enabling installs through Shizuku
+# optional - plugin enabling installs/uninstalls through Shizuku
 ackpine-shizuku = { module = "ru.solrudev.ackpine:ackpine-shizuku", version.ref = "ackpine" }
 
 # optional - Kotlin extensions for Shizuku plugin
@@ -78,7 +78,7 @@ ackpine = [
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.17.0"
+    val ackpineVersion = "0.18.4"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
@@ -93,7 +93,7 @@ dependencies {
     // optional - support for asset files inside of application's package
     implementation("ru.solrudev.ackpine:ackpine-assets:$ackpineVersion")
 
-    // optional - plugin enabling installs through Shizuku
+    // optional - plugin enabling installs/uninstalls through Shizuku
     implementation("ru.solrudev.ackpine:ackpine-shizuku:$ackpineVersion")
 
     // optional - Kotlin extensions for Shizuku plugin

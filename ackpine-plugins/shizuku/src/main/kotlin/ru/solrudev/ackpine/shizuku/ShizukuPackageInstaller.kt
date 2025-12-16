@@ -32,8 +32,8 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
-import ru.solrudev.ackpine.impl.installer.PackageInstallerService
-import ru.solrudev.ackpine.impl.installer.PackageInstallerSessionWrapper
+import ru.solrudev.ackpine.impl.services.PackageInstallerService
+import ru.solrudev.ackpine.impl.services.PackageInstallerSessionWrapper
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -48,28 +48,36 @@ internal class ShizukuPackageInstaller(
 	override val uid: Int
 ) : PackageInstallerService {
 
-	private val pluginParameters = ConcurrentHashMap<UUID, ShizukuPlugin.Parameters>()
+	private val installParameters = ConcurrentHashMap<UUID, ShizukuPlugin.Parameters>()
+	private val uninstallParameters = ConcurrentHashMap<UUID, ShizukuUninstallPlugin.Parameters>()
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
 		if (parameters is ShizukuPlugin.Parameters) {
-			pluginParameters[sessionId] = parameters
+			installParameters[sessionId] = parameters
+		}
+		if (parameters is ShizukuUninstallPlugin.Parameters) {
+			uninstallParameters[sessionId] = parameters
 		}
 	}
 
-	@Suppress("KotlinConstantConditions")
 	override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int {
-		val shizukuParams = pluginParameters[ackpineSessionId]
+		val shizukuParams = installParameters[ackpineSessionId]
 		if (shizukuParams != null) {
+			@Suppress("CAST_NEVER_SUCCEEDS")
 			applyInstallFlags(params as PackageInstallerHidden.SessionParams, shizukuParams)
+			if (shizukuParams.installerPackageName.isNotEmpty()) {
+				params.setInstallerPackageName(shizukuParams.installerPackageName)
+			}
 		}
 		return packageInstaller.createSession(params)
 	}
 
-	@Suppress("KotlinConstantConditions")
 	override fun openSession(sessionId: Int): PackageInstallerService.Session {
 		val remoteSession = IPackageInstallerSession.Stub.asInterface(
 			ShizukuBinderWrapper(remotePackageInstaller.openSession(sessionId).asBinder())
 		)
+
+		@Suppress("CAST_NEVER_SUCCEEDS")
 		val session = PackageInstallerHidden.Session(remoteSession) as PackageInstaller.Session
 		return PackageInstallerSessionWrapper(session)
 	}
@@ -99,6 +107,17 @@ internal class ShizukuPackageInstaller(
 		remotePackageInstaller.abandonSession(sessionId)
 	}
 
+	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
+		val shizukuParams = uninstallParameters[ackpineSessionId]
+		var flags = 0
+		if (shizukuParams != null) {
+			flags = applyFlag(flags, shizukuParams.keepData, DELETE_KEEP_DATA)
+			flags = applyFlag(flags, shizukuParams.allUsers, DELETE_ALL_USERS)
+		}
+		@Suppress("CAST_NEVER_SUCCEEDS")
+		(packageInstaller as PackageInstallerHidden).uninstall(packageName, flags, statusReceiver)
+	}
+
 	private fun applyInstallFlags(
 		params: PackageInstallerHidden.SessionParams,
 		shizukuParams: ShizukuPlugin.Parameters
@@ -115,11 +134,11 @@ internal class ShizukuPackageInstaller(
 		params.installFlags = flags
 	}
 
-	private fun applyFlag(installFlags: Int, flag: Boolean, installFlag: Int): Int {
-		if (flag) {
-			return installFlags or installFlag
+	private fun applyFlag(flags: Int, isFlagPresent: Boolean, flag: Int): Int {
+		if (isFlagPresent) {
+			return flags or flag
 		}
-		return installFlags and installFlag.inv()
+		return flags and flag.inv()
 	}
 
 	internal companion object Factory {
@@ -146,7 +165,7 @@ internal class ShizukuPackageInstaller(
 			)
 		}
 
-		@Suppress("KotlinConstantConditions")
+		@Suppress("CAST_NEVER_SUCCEEDS")
 		private fun createPackageInstaller(
 			context: Context,
 			remotePackageInstaller: IPackageInstaller,
@@ -156,7 +175,7 @@ internal class ShizukuPackageInstaller(
 			Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PackageInstallerHidden(
 				remotePackageInstaller,
 				installerPackageName,
-				context.attributionTagCompat,
+				context.attributionTag,
 				userId
 			)
 
@@ -176,12 +195,5 @@ internal class ShizukuPackageInstaller(
 				)
 			}
 		} as PackageInstaller
-
-		private val Context.attributionTagCompat
-			get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-				attributionTag
-			} else {
-				null
-			}
 	}
 }

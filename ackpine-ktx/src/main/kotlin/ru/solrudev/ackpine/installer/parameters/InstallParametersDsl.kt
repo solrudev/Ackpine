@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin.Parameters
+import ru.solrudev.ackpine.plugability.AckpinePluginRegistryDsl
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -36,7 +37,7 @@ import kotlin.time.Duration
  * DSL allowing to configure [parameters for creating install session][InstallParameters].
  */
 @SessionParametersDsl
-public interface InstallParametersDsl : ConfirmationDsl {
+public interface InstallParametersDsl : ConfirmationDsl, AckpinePluginRegistryDsl {
 
 	/**
 	 * Mutable list of APKs [URIs][Uri] to install in one session.
@@ -129,22 +130,6 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Default value is [PackageSource.Unspecified].
 	 */
 	public var packageSource: PackageSource
-
-	/**
-	 * Applies a [plugin] to the session.
-	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
-	 * @param parameters parameters of the applied plugin for the session being configured.
-	 */
-	public fun <Params : Parameters> usePlugin(
-		plugin: KClass<out AckpinePlugin<Params>>,
-		parameters: Params
-	)
-
-	/**
-	 * Applies a [plugin] to the session.
-	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
-	 */
-	public fun usePlugin(plugin: KClass<out AckpinePlugin<Parameters.None>>)
 }
 
 @PublishedApi
@@ -345,11 +330,4 @@ public fun InstallParametersDsl.preapproval(
 	icon: Uri
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
-}
-
-/**
- * Applies a plugin to the session. [Plugin] is the type of the plugin being applied.
- */
-public inline fun <reified Plugin : AckpinePlugin<Parameters.None>> InstallParametersDsl.usePlugin() {
-	usePlugin(Plugin::class)
 }

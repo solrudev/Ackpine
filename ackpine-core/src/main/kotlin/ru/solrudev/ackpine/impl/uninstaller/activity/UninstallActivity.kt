@@ -22,11 +22,9 @@ import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
-private const val TAG = "UninstallActivity"
-
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
-	TAG, abortedStateFailureFactory = UninstallFailure::Aborted
+internal abstract class UninstallActivity protected constructor(tag: String) : SessionCommitActivity<UninstallFailure>(
+	tag, abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
 
 	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {
@@ -34,36 +32,9 @@ internal class UninstallActivity : SessionCommitActivity<UninstallFailure>(
 	}
 
 	private lateinit var ackpinePackageUninstaller: PackageUninstallerImpl
-	private lateinit var uninstallPackageContract: UninstallContract
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		ackpinePackageUninstaller = PackageUninstallerImpl.getInstance(this)
 		super.onCreate(savedInstanceState)
-		val packageNameToUninstall = intent.extras?.getString(PACKAGE_NAME_KEY)
-		if (packageNameToUninstall == null) {
-			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
-			finish()
-			return
-		}
-		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall)
-		if (savedInstanceState == null) {
-			launchUninstallActivity()
-		}
-	}
-
-	override fun onActivityResult(resultCode: Int) {
-		val result = uninstallPackageContract.parseResult(this, resultCode)
-		completeSession(result)
-	}
-
-	private fun launchUninstallActivity() {
-		val intent = uninstallPackageContract.createIntent(this)
-		startActivityForResult(intent)
-	}
-
-	internal companion object {
-
-		@JvmSynthetic
-		internal const val PACKAGE_NAME_KEY = "ACKPINE_UNINSTALLER_PACKAGE_NAME"
 	}
 }

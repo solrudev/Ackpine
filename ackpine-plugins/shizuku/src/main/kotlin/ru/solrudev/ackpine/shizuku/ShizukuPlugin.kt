@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 
 /**
  * Ackpine plugin which enables installation through Shizuku when applied.
@@ -48,6 +49,13 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			setRequireUserAction(false)
 			setPreapproval(InstallPreapproval.NONE)
 		}
+	}
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		error(
+			"ShizukuPlugin must be applied to install sessions only. " +
+					"Use ShizukuUninstallPlugin for uninstall sessions."
+		)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin
@@ -90,7 +98,12 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 		/**
 		 * Flag to indicate that this install should immediately be visible to all users.
 		 */
-		public val allUsers: Boolean
+		public val allUsers: Boolean,
+
+		/**
+		 * Installer package for the app. Empty by default, so the calling app package name will be used.
+		 */
+		public val installerPackageName: String
 	) : AckpinePlugin.Parameters {
 
 		override fun equals(other: Any?): Boolean {
@@ -103,6 +116,7 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			if (requestDowngrade != other.requestDowngrade) return false
 			if (grantAllRequestedPermissions != other.grantAllRequestedPermissions) return false
 			if (allUsers != other.allUsers) return false
+			if (installerPackageName != other.installerPackageName) return false
 			return true
 		}
 
@@ -113,6 +127,7 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			result = 31 * result + requestDowngrade.hashCode()
 			result = 31 * result + grantAllRequestedPermissions.hashCode()
 			result = 31 * result + allUsers.hashCode()
+			result = 31 * result + installerPackageName.hashCode()
 			return result
 		}
 
@@ -123,7 +138,8 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 					"replaceExisting=$replaceExisting, " +
 					"requestDowngrade=$requestDowngrade, " +
 					"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
-					"allUsers=$allUsers" +
+					"allUsers=$allUsers, " +
+					"installerPackageName=$installerPackageName" +
 					")"
 		}
 
@@ -173,6 +189,12 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 				private set
 
 			/**
+			 * Installer package for the app. Empty by default, so the calling app package name will be used.
+			 */
+			public var installerPackageName: String = ""
+				private set
+
+			/**
 			 * Sets [ShizukuPlugin.Parameters.bypassLowTargetSdkBlock].
 			 */
 			public fun setBypassLowTargetSdkBlock(value: Boolean): Builder = apply {
@@ -215,6 +237,13 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 			}
 
 			/**
+			 * Sets [ShizukuPlugin.Parameters.installerPackageName].
+			 */
+			public fun setInstallerPackageName(value: String): Builder = apply {
+				installerPackageName = value
+			}
+
+			/**
 			 * Constructs a new instance of [ShizukuPlugin.Parameters].
 			 */
 			public fun build(): Parameters = Parameters(
@@ -223,7 +252,8 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 				replaceExisting,
 				requestDowngrade,
 				grantAllRequestedPermissions,
-				allUsers
+				allUsers,
+				installerPackageName
 			)
 		}
 
@@ -241,7 +271,8 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 				replaceExisting = false,
 				requestDowngrade = false,
 				grantAllRequestedPermissions = false,
-				allUsers = false
+				allUsers = false,
+				installerPackageName = ""
 			)
 		}
 	}

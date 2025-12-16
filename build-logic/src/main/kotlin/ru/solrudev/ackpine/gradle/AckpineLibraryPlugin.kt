@@ -25,6 +25,7 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.findByType
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -67,7 +68,8 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			languageVersion = kotlinVersion
 			apiVersion = kotlinVersion
 			jvmTarget = JVM_1_8
-			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
+			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+			freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
 		}
 	}
 }

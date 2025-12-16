@@ -8,12 +8,14 @@ public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuPluginParamet
 	public abstract fun getAllowTest ()Z
 	public abstract fun getBypassLowTargetSdkBlock ()Z
 	public abstract fun getGrantAllRequestedPermissions ()Z
+	public abstract fun getInstallerPackageName ()Ljava/lang/String;
 	public abstract fun getReplaceExisting ()Z
 	public abstract fun getRequestDowngrade ()Z
 	public abstract fun setAllUsers (Z)V
 	public abstract fun setAllowTest (Z)V
 	public abstract fun setBypassLowTargetSdkBlock (Z)V
 	public abstract fun setGrantAllRequestedPermissions (Z)V
+	public abstract fun setInstallerPackageName (Ljava/lang/String;)V
 	public abstract fun setReplaceExisting (Z)V
 	public abstract fun setRequestDowngrade (Z)V
 }
@@ -25,12 +27,14 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersDslBuilder
 	public fun getAllowTest ()Z
 	public fun getBypassLowTargetSdkBlock ()Z
 	public fun getGrantAllRequestedPermissions ()Z
+	public fun getInstallerPackageName ()Ljava/lang/String;
 	public fun getReplaceExisting ()Z
 	public fun getRequestDowngrade ()Z
 	public fun setAllUsers (Z)V
 	public fun setAllowTest (Z)V
 	public fun setBypassLowTargetSdkBlock (Z)V
 	public fun setGrantAllRequestedPermissions (Z)V
+	public fun setInstallerPackageName (Ljava/lang/String;)V
 	public fun setReplaceExisting (Z)V
 	public fun setRequestDowngrade (Z)V
 }
@@ -38,5 +42,31 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersDslBuilder
 public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersKt {
 	public static final fun ShizukuPluginParameters (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
 	public static synthetic fun ShizukuPluginParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
+}
+
+public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuUninstallPluginParametersDsl {
+	public abstract fun getAllUsers ()Z
+	public abstract fun getKeepData ()Z
+	public abstract fun setAllUsers (Z)V
+	public abstract fun setKeepData (Z)V
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPluginParametersDslBuilder : ru/solrudev/ackpine/shizuku/ShizukuUninstallPluginParametersDsl {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
+	public fun getAllUsers ()Z
+	public fun getKeepData ()Z
+	public fun setAllUsers (Z)V
+	public fun setKeepData (Z)V
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPluginParametersKt {
+	public static final fun ShizukuUninstallPluginParameters (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
+	public static synthetic fun ShizukuUninstallPluginParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
+}
+
+public final class ru/solrudev/ackpine/shizuku/UninstallParametersDslKt {
+	public static final fun useShizuku (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun useShizuku$default (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 

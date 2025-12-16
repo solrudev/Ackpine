@@ -23,9 +23,11 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
+import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
+import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -193,7 +195,7 @@ public class InstallParameters private constructor(
 	/**
 	 * Builder for [InstallParameters].
 	 */
-	public class Builder : ConfirmationAware {
+	public class Builder : ConfirmationAware, AckpinePluginRegistry<Builder> {
 
 		@SuppressLint("NewApi")
 		public constructor(baseApk: Uri) {
@@ -422,23 +424,14 @@ public class InstallParameters private constructor(
 			this.packageSource = packageSource
 		}
 
-		/**
-		 * Applies a [plugin] to the session.
-		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
-		 * @param parameters parameters of the applied plugin for the session being configured.
-		 */
-		public fun <Params : AckpinePlugin.Parameters> usePlugin(
+		override fun <Params : AckpinePlugin.Parameters> usePlugin(
 			plugin: Class<out AckpinePlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
 			plugins[plugin] = parameters
 		}
 
-		/**
-		 * Applies a [plugin] to the session.
-		 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
-		 */
-		public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+		override fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
 			plugins[plugin] = AckpinePlugin.Parameters.None
 		}
 
@@ -471,8 +464,8 @@ public class InstallParameters private constructor(
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
-			!areSplitPackagesSupported() -> InstallerType.INTENT_BASED
-			apks.size > 1 && areSplitPackagesSupported() -> InstallerType.SESSION_BASED
+			!isPackageInstallerApiAvailable() -> InstallerType.INTENT_BASED
+			apks.size > 1 && isPackageInstallerApiAvailable() -> InstallerType.SESSION_BASED
 			else -> value
 		}
 	}
@@ -527,7 +520,7 @@ private class RealMutableApkList : MutableApkList {
 	override fun toString() = "ApkList($apks)"
 
 	private fun checkSplitPackagesSupport() {
-		if (!areSplitPackagesSupported()) {
+		if (!isPackageInstallerApiAvailable()) {
 			throw SplitPackagesNotSupportedException()
 		}
 	}
