@@ -97,6 +97,7 @@ To apply the plugin to an install session, just add this to your install paramet
             requestDowngrade = true
             grantAllRequestedPermissions = true
             allUsers = true
+            installerPackageName = "com.android.vending"
         }
     }
     ```
@@ -117,7 +118,8 @@ To apply the plugin to an install session, just add this to your install paramet
             .setRequestDowngrade(true)
             .setGrantAllRequestedPermissions(true)
             .setAllUsers(true)
-            .build()
+            .setInstallerPackageName("com.android.vending")
+            .build();
     var parameters = new InstallParameters.Builder(uri)
             .usePlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
@@ -152,7 +154,7 @@ Also, you can use Shizuku for uninstall sessions:
     var shizukuParameters = new ShizukuUninstallPlugin.Parameters.Builder()
             .setKeepData(true)
             .setAllUsers(true)
-            .build()
+            .build();
     var parameters = new UninstallParameters.Builder(packageName)
             .usePlugin(ShizukuUninstallPlugin.class, shizukuParameters)
             .build();
@@ -193,6 +195,10 @@ Flag parameter for package install to indicate that all requested permissions sh
 #### `allUsers`
 
 Flag to indicate that this install should immediately be visible to all users.
+
+#### `installerPackageName`
+
+Installer package for the app. Empty by default, so the calling app package name will be used.
 
 ### Uninstall flags
 
