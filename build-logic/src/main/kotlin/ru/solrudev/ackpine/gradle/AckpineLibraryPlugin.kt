@@ -19,11 +19,15 @@ package ru.solrudev.ackpine.gradle
 import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.findByType
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
 public class AckpineLibraryPlugin : Plugin<Project> {
@@ -38,11 +42,27 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
+		val stdlibVersion = extensions
+			.findByType<VersionCatalogsExtension>()
+			?.named("libs")
+			?.findVersion("kotlin-for-consumers")
+			?.get()
+			?.displayName
+			?: coreLibrariesVersion
+		val kotlinVersion = stdlibVersion
+			.split('.')
+			.take(2)
+			.joinToString(".")
+
+		coreLibrariesVersion = stdlibVersion
 		explicitApi()
 
 		compilerOptions {
+			languageVersion = KotlinVersion.fromVersion(kotlinVersion)
+			apiVersion = KotlinVersion.fromVersion(kotlinVersion)
 			jvmTarget = JVM_1_8
-			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
+			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+			freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
 		}
 	}
 }

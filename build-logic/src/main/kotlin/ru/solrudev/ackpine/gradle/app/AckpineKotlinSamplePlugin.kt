@@ -19,7 +19,9 @@ package ru.solrudev.ackpine.gradle.app
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
@@ -35,7 +37,8 @@ public class AckpineKotlinSamplePlugin : Plugin<Project> {
 
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
 		compilerOptions {
-			freeCompilerArgs.addAll("-Xjvm-default=all", "-Xconsistent-data-class-copy-visibility")
+			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
+			freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
 		}
 	}
 }
