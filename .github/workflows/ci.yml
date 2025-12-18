@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate binary compatibility
         run: |
-          ./gradlew apiCheck || { exit_code=$?; printf "*** This PR changes Ackpine's public API. If this is intentional, run './gradlew apiDump' and commit the new API dumps. ***"; exit $exit_code; }
+          ./gradlew :checkAckpineAbi || { exit_code=$?; printf "*** This PR changes Ackpine's public ABI. If this is intentional, run './gradlew :updateAckpineAbi' and commit the new ABI dumps. ***"; exit $exit_code; }
 
       - name: Build
         run: |

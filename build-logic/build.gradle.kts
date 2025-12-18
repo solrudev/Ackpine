@@ -69,6 +69,5 @@ dependencies {
 	implementation(libs.plugin.kotlin)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
-	implementation(libs.plugin.bcv)
 	implementation(kotlinx.serialization.json)
 }
