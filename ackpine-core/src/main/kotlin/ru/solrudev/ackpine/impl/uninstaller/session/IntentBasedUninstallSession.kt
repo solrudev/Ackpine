@@ -26,7 +26,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.session.AbstractSession
 import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
-import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
+import ru.solrudev.ackpine.impl.uninstaller.activity.IntentBasedUninstallActivity
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -64,7 +64,7 @@ internal class IntentBasedUninstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
-		context.launchConfirmation<UninstallActivity>(
+		context.launchConfirmation<IntentBasedUninstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
 			notificationId,
