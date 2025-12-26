@@ -4,6 +4,10 @@ Change Log
 Version 0.18.5 (2025-12-26)
 ---------------------------
 
+### Dependencies
+
+- Updated `apksig` to 8.13.2.
+
 ### Bug fixes and improvements
 
 - Fix intent-based uninstall sessions hanging and not showing confirmation screen.
