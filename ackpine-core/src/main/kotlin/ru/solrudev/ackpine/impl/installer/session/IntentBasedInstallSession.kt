@@ -16,12 +16,15 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
+import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
@@ -78,18 +81,8 @@ internal class IntentBasedInstallSession internal constructor(
 ) {
 
 	private val apkFile by lazy(LazyThreadSafetyMode.NONE) {
-		File(context.externalDir, "ackpine/sessions/$id/0.apk")
+		File(getRootApkDir(), "ackpine/sessions/$id/0.apk")
 	}
-
-	private val Context.externalDir: File
-		get() {
-			val externalFilesDir = getExternalFilesDir(null)
-			return if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
-				externalFilesDir
-			} else {
-				filesDir
-			}
-		}
 
 	override fun prepare() {
 		createApkCopy()
@@ -132,6 +125,23 @@ internal class IntentBasedInstallSession internal constructor(
 			setProgress(PROGRESS_MAX)
 		}
 		return true
+	}
+
+	private fun getRootApkDir(): File {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return context.filesDir
+		}
+		val externalFilesDir = context.getExternalFilesDir(null)
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
+			return externalFilesDir
+		}
+		val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
+			" WRITE_EXTERNAL_STORAGE permission denied."
+		} else {
+			""
+		}
+		completeExceptionally(IllegalStateException("External storage is not available.$cause"))
+		return File("")
 	}
 
 	private fun getApkUri(): Uri {

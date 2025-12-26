@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.gradle
 
-import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -28,19 +27,25 @@ import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
+import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK_CONFIGURATION
+import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE_CONFIGURATION
+import ru.solrudev.ackpine.gradle.helpers.abiValidation
 
+@OptIn(ExperimentalAbiValidation::class)
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.run {
-			apply(BinaryCompatibilityValidatorPlugin::class)
 			apply(AckpineLibraryBasePlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)
 		}
 		configureKotlin()
 	}
 
+	@Suppress("NewApi")
 	private fun Project.configureKotlin() = extensions.configure<KotlinAndroidExtension> {
 		val stdlibVersion = extensions
 			.findByType<VersionCatalogsExtension>()
@@ -49,20 +54,40 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			?.get()
 			?.displayName
 			?: coreLibrariesVersion
-		val kotlinVersion = stdlibVersion
-			.split('.')
-			.take(2)
-			.joinToString(".")
+		val kotlinVersion = KotlinVersion.fromVersion(
+			stdlibVersion
+				.split('.')
+				.take(2)
+				.joinToString(".")
+		)
 
 		coreLibrariesVersion = stdlibVersion
 		explicitApi()
 
 		compilerOptions {
-			languageVersion = KotlinVersion.fromVersion(kotlinVersion)
-			apiVersion = KotlinVersion.fromVersion(kotlinVersion)
+			languageVersion = kotlinVersion
+			apiVersion = kotlinVersion
 			jvmTarget = JVM_1_8
 			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
 			freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
+		}
+
+		abiValidation {
+			enabled = true
+			filters.excluded.annotatedWith.add("androidx.annotation.RestrictTo")
+		}
+
+		configureAbiValidationArtifacts(abiValidation)
+	}
+
+	private fun Project.configureAbiValidationArtifacts(abiValidation: AbiValidationExtension) {
+		configurations.named(ABI_UPDATE_CONFIGURATION) {
+			outgoing.artifact(abiValidation.legacyDump.legacyUpdateTaskProvider)
+		}
+		configurations.named(ABI_CHECK_CONFIGURATION) {
+			outgoing.artifact(layout.buildDirectory.dir("abiCheck")) {
+				builtBy(abiValidation.legacyDump.legacyCheckTaskProvider)
+			}
 		}
 	}
 }

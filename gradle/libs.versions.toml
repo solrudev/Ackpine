@@ -1,18 +1,17 @@
 [versions]
-android-plugin = "8.13.1"
+android-plugin = "8.13.2"
 dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
 kotlin = "2.3.0"
-kotlin-ksp = "2.3.3"
+kotlin-ksp = "2.3.4"
 shizuku = "13.1.5"
 
 [libraries]
 plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-plugin-bcv = "org.jetbrains.kotlinx:binary-compatibility-validator:0.18.1"
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }

@@ -20,7 +20,6 @@ import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.LibraryExtension
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
-import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -32,11 +31,14 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.the
+import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
+import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.helpers.abiValidation
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
-import java.util.Optional
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
 
@@ -48,17 +50,16 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		}
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
-		val apiValidationExtension = extensions.findByType<ApiValidationExtension>()?.apply {
-			nonPublicMarkers += "androidx.annotation.RestrictTo"
-		}
+		val abiValidationExtension = lazy { extensions.findByType<KotlinBaseExtension>()?.abiValidation }
 		extensions.create(
 			"ackpine",
 			AckpineLibraryExtension::class.java,
 			libraryExtension,
-			Optional.ofNullable(apiValidationExtension)
+			abiValidationExtension
 		)
 		configureAndroid()
 		registerConsumableLibraryConfiguration()
+		registerAbiValidationConfigurations()
 	}
 
 	private fun Project.configureJava() = extensions.configure<JavaPluginExtension> {
@@ -97,8 +98,25 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		}
 	}
 
+	private fun Project.registerAbiValidationConfigurations() {
+		configurations.consumable(ABI_UPDATE_CONFIGURATION) {
+			attributes {
+				attribute(ABI_VALIDATION_UPDATE_ATTRIBUTE, objects.named(ABI_UPDATE))
+			}
+		}
+		configurations.consumable(ABI_CHECK_CONFIGURATION) {
+			attributes {
+				attribute(ABI_VALIDATION_CHECK_ATTRIBUTE, objects.named(ABI_CHECK))
+			}
+		}
+	}
+
 	internal companion object {
 		internal const val LIBRARY_ELEMENTS = "aar"
 		internal const val PLUGIN_ID = "ru.solrudev.ackpine.library.base"
+		internal const val ABI_UPDATE_CONFIGURATION = "abiValidationUpdateElements"
+		internal const val ABI_CHECK_CONFIGURATION = "abiValidationCheckElements"
+		internal const val ABI_UPDATE = "update"
+		internal const val ABI_CHECK = "check"
 	}
 }
