@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.18.5 (2025-12-26)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix intent-based uninstall sessions hanging and not showing confirmation screen.
+
 Version 0.18.4 (2025-12-16)
 ---------------------------
 
