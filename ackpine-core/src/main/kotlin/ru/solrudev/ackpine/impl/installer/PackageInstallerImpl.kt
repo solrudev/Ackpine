@@ -259,6 +259,7 @@ internal class PackageInstallerImpl internal constructor(
 				ackpineServiceProviders,
 				InstallSessionFactoryImpl(
 					applicationContext,
+					@SuppressLint("NewApi")
 					PackageInstallerWrapper.default(applicationContext),
 					ackpineServiceProviders,
 					database.lastUpdateTimestampDao(),
