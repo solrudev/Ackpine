@@ -6,7 +6,7 @@ Version 0.18.6 (2025-12-29)
 
 ### Bug fixes and improvements
 
-- Fix crash on Android < 9 when using `installerPackageName` with Shizuku plugin.
+- Fix install session fail on Android < 9 when using `installerPackageName` with Shizuku plugin.
 
 Version 0.18.5 (2025-12-26)
 ---------------------------
