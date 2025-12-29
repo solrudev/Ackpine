@@ -198,7 +198,7 @@ Flag to indicate that this install should immediately be visible to all users.
 
 #### `installerPackageName`
 
-Installer package for the app. Empty by default, so the calling app package name will be used.
+Installer package for the app. Empty by default, so the calling app package name will be used. Works only on Android 9+.
 
 ### Uninstall flags
 

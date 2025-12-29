@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.shizuku
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
 import android.content.pm.IPackageInstaller
@@ -65,7 +66,8 @@ internal class ShizukuPackageInstaller(
 		if (shizukuParams != null) {
 			@Suppress("CAST_NEVER_SUCCEEDS")
 			applyInstallFlags(params as PackageInstallerHidden.SessionParams, shizukuParams)
-			if (shizukuParams.installerPackageName.isNotEmpty()) {
+			if (shizukuParams.installerPackageName.isNotEmpty() && Build.VERSION.SDK_INT >= 28) {
+				@SuppressLint("NewApi") // method is available since API 28, but was hidden before API 34
 				params.setInstallerPackageName(shizukuParams.installerPackageName)
 			}
 		}
