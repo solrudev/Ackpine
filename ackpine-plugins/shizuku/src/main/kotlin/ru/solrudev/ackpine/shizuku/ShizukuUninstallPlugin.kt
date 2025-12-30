@@ -48,7 +48,7 @@ public class ShizukuUninstallPlugin private constructor() : AckpinePlugin<Shizuk
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		builder.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
+		builder.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuUninstallPlugin
