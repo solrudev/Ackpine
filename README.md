@@ -37,7 +37,7 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
 
 ```toml
 [versions]
-ackpine = "0.18.6"
+ackpine = "0.19.0"
 
 [libraries]
 ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
@@ -78,7 +78,7 @@ ackpine = [
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.18.6"
+    val ackpineVersion = "0.19.0"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
@@ -105,7 +105,7 @@ dependencies {
 License
 -------
 
-    Copyright (C) 2023-2025 Ilya Fomichev
+    Copyright (C) 2023-2026 Ilya Fomichev
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

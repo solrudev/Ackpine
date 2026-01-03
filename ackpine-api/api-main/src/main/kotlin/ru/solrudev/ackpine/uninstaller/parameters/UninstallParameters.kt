@@ -112,6 +112,11 @@ public class UninstallParameters private constructor(
 		 *
 		 * Default value is [UninstallerType.DEFAULT].
 		 */
+		@set:Deprecated(
+			message = "The setter was mistakenly left public and will be removed in the next minor release. " +
+					"Use setUninstallerType function instead.",
+			level = DeprecationLevel.ERROR
+		)
 		public var uninstallerType: UninstallerType = UninstallerType.DEFAULT
 
 		/**
@@ -143,6 +148,7 @@ public class UninstallParameters private constructor(
 		 * Sets [UninstallParameters.uninstallerType].
 		 */
 		public fun setUninstallerType(uninstallerType: UninstallerType): Builder = apply {
+			@Suppress("DEPRECATION_ERROR")
 			this.uninstallerType = uninstallerType
 		}
 

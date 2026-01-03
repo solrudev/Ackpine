@@ -20,6 +20,8 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
 
 /**
  * Applies [ShizukuUninstallPlugin] to the session.
+ *
+ * The plugin's parameters take effect only on Android 8+.
  */
 public inline fun UninstallParametersDsl.useShizuku(
 	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}

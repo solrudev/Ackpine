@@ -1,6 +1,18 @@
 Change Log
 ==========
 
+Version 0.19.0 (2026-01-03)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix uninstall session crash when using Shizuku on Android < 8.
+
+### Public API changes
+
+- Removed `UninstallFailure.Generic.INSTANCE` static field.
+- Deprecated with error setter for `uninstallerType` property in `UninstallParameters.Builder`. Use `setUninstallerType()` method. The setter will be made private in the next minor release.
+
 Version 0.18.6 (2025-12-29)
 ---------------------------
 
