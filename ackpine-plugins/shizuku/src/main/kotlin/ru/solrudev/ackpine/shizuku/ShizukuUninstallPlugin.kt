@@ -27,7 +27,7 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
 /**
  * Ackpine plugin which enables uninstallation through Shizuku when applied.
  *
- * This plugin's parameters take effect only on Android 8+.
+ * This plugin's parameters take effect only on Android 8.1+.
  *
  * Shizuku versions below 11 are not supported, and with these versions uninstallations will fall back to normal
  * system's [PackageInstaller], or [INTENT_BASED] uninstaller (if was set).
@@ -58,7 +58,7 @@ public class ShizukuUninstallPlugin private constructor() : AckpinePlugin<Shizuk
 	override fun toString(): String = "ShizukuUninstallPlugin"
 
 	/**
-	 * Parameters for [ShizukuUninstallPlugin]. Take effect only on Android 8+.
+	 * Parameters for [ShizukuUninstallPlugin]. Take effect only on Android 8.1+.
 	 */
 	public class Parameters private constructor(
 

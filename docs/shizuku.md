@@ -202,7 +202,7 @@ Installer package for the app. Empty by default, so the calling app package name
 
 ### Uninstall flags
 
-Take effect only on Android 8+.
+Take effect only on Android 8.1+.
 
 #### `keepData`
 

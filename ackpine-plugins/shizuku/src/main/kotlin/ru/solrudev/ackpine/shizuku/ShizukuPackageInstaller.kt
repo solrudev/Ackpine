@@ -110,7 +110,7 @@ internal class ShizukuPackageInstaller(
 	}
 
 	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
-		if (Build.VERSION.SDK_INT < 26) {
+		if (Build.VERSION.SDK_INT < 27) {
 			packageInstaller.uninstall(packageName, statusReceiver)
 			return
 		}
