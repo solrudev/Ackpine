@@ -110,6 +110,10 @@ internal class ShizukuPackageInstaller(
 	}
 
 	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
+		if (Build.VERSION.SDK_INT < 26) {
+			packageInstaller.uninstall(packageName, statusReceiver)
+			return
+		}
 		val shizukuParams = uninstallParameters[ackpineSessionId]
 		var flags = 0
 		if (shizukuParams != null) {
