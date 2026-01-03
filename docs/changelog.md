@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+Version 0.19.1 (2026-01-03)
+---------------------------
+
+- Hotfix: uninstall session crash when using Shizuku on Android 8.
+
 Version 0.19.0 (2026-01-03)
 ---------------------------
 
