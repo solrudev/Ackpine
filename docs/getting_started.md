@@ -207,4 +207,11 @@ Error causes are delivered as `Failure` objects through state listener or as a r
 
 When using `await()`, exceptions are never delivered as a `Failure.Exceptional` object. Instead, they are thrown.
 
+Testing
+-------
+
+The `ackpine-test` artifact provides test doubles and utilities to drive session state and progress deterministically.
+
+See [Testing](testing.md) section for details and examples.
+
 Every example on this page is using `PackageInstaller`, but APIs for `PackageUninstaller` are absolutely the same except for progress updates.

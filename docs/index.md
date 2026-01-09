@@ -54,6 +54,9 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     # optional - Kotlin extensions for Shizuku plugin
     ackpine-shizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-shizuku-ktx", version.ref = "ackpine" }
     
+    # optional - testing utilities
+    ackpine-test = { module = "ru.solrudev.ackpine:ackpine-test", version.ref = "ackpine" }
+    
     [bundles]
     ackpine = [
         "ackpine-core",
@@ -90,6 +93,9 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     
         // optional - Kotlin extensions for Shizuku plugin
         implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
+    
+        // optional - testing utilities
+        testImplementation("ru.solrudev.ackpine:ackpine-test:$ackpineVersion")
     }
     ```
 
