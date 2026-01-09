@@ -39,4 +39,8 @@ dependencies {
 	implementation(libs.materialComponents)
 	implementation(libs.vbpd)
 	implementation(libs.insetter)
+	testImplementation(projects.ackpineTest)
+	testImplementation(libs.kotlin.test)
+	testImplementation(kotlinx.coroutines.test)
+	testImplementation(libs.turbine)
 }

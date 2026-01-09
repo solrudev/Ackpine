@@ -22,10 +22,13 @@ hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.1"
 hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
 hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
+junit4 = "junit:junit:4.13.2"
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.1.0"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+turbine = "app.cash.turbine:turbine:1.2.1"
 vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"
 xz = "org.tukaani:xz:1.10"
 zstd = "com.github.luben:zstd-jni:1.5.7-4"
