@@ -23,11 +23,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
-import ru.solrudev.ackpine.sample.testing.MainDispatcherRule
+import ru.solrudev.ackpine.sample.MainDispatcherRule
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.test.TestPackageUninstaller
 import ru.solrudev.ackpine.test.TestSessionScript
 import ru.solrudev.ackpine.test.TestUninstallSession
-import ru.solrudev.ackpine.test.TestPackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import kotlin.test.Test

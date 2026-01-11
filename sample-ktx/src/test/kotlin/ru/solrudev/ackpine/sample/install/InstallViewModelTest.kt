@@ -26,8 +26,8 @@ import org.junit.Rule
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.sample.MainDispatcherRule
 import ru.solrudev.ackpine.sample.R
-import ru.solrudev.ackpine.sample.testing.MainDispatcherRule
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.splits.Apk
