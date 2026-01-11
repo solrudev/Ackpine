@@ -74,10 +74,9 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 	/**
 	 * Adds an existing [session] to this repository.
 	 */
-	public fun seedSession(session: TestUninstallSession): TestUninstallSession {
+	public fun seedSession(session: TestUninstallSession) {
 		sessions[session.id] = session
 		sessionsValues += session
-		return session
 	}
 
 	/**

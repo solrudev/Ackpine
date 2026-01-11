@@ -74,10 +74,9 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 	/**
 	 * Adds an existing [session] to this repository.
 	 */
-	public fun seedSession(session: TestInstallSession): TestInstallSession {
+	public fun seedSession(session: TestInstallSession) {
 		sessions[session.id] = session
 		sessionsValues += session
-		return session
 	}
 
 	/**
