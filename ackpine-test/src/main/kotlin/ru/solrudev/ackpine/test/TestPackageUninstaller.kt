@@ -30,8 +30,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  * An in-memory [PackageUninstaller] test double.
  *
  * Sessions are stored in memory and returned via [ImmediateFuture] from async accessors, which makes it suitable
- * for deterministic JVM tests. Use [seedSession] or [createSession] with a predefined ID when you need stable
- * session identifiers.
+ * for deterministic JVM tests.
  *
  * By default, creates sessions with [TestSessionScript.auto], completing with [Session.State.Succeeded].
  */
@@ -55,16 +54,6 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
 		sessions[id] = session
-		sessionsValues += session
-		return session
-	}
-
-	/**
-	 * Creates and tracks a session with a predefined [sessionId].
-	 */
-	public fun createSession(sessionId: UUID, parameters: UninstallParameters): TestUninstallSession {
-		val session = sessionFactory.create(sessionId, parameters)
-		sessions[sessionId] = session
 		sessionsValues += session
 		return session
 	}
