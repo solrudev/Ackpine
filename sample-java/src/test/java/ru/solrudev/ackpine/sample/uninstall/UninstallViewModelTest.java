@@ -106,7 +106,6 @@ public class UninstallViewModelTest {
 
 		viewModel.loadApplications(true, () -> List.of(app));
 		viewModel.uninstallPackage(app.packageName());
-		uninstaller.getSessions().getLast().getController().fail(new UninstallFailure.Generic("Failure"));
 
 		assertEquals("Failure", viewModel.getFailure().getValue());
 		assertEquals(List.of(app), viewModel.getApplications().getValue());
