@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Ackpine
 
+    permissions:
+      checks: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
@@ -37,6 +40,12 @@ jobs:
       - name: Run tests
         run: |
           ./gradlew test
+
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@a294a61c909bd8a4b563024a2faa28897fd53ebc # 6.1.0
+        if: success() || failure()
+        with:
+          report_paths: '**/build/test-results/*/TEST-*.xml'
 
   status-check:
     runs-on: ubuntu-latest
