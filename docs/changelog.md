@@ -1,6 +1,19 @@
 Change Log
 ==========
 
+Version 0.19.2 (2026-01-11)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add `ackpine-test` module with testing utilities for Ackpine. See Testing documentation page for more information.
+- `ResolvableString.transientResource()` no longer creates anonymous classes. Now these strings properly implement `hashCode()` and `equals()`.
+- Add unit tests to `sample-java` and `sample-ktx` using `ackpine-test`.
+
+### Public API changes
+
+- Added new `ackpine-test` module.
+
 Version 0.19.1 (2026-01-03)
 ---------------------------
 
