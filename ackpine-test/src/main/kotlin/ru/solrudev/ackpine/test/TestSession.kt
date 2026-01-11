@@ -34,8 +34,8 @@ import java.util.concurrent.CopyOnWriteArraySet
  * A controllable [Session] test double.
  *
  * State listeners are invoked on the calling thread, and the current state is delivered immediately when a
- * listener is added. Use [controller] to drive state transitions directly or to script transitions tied to
- * [Session.launch] and [Session.commit] calls.
+ * listener is added. Use [controller] to drive state transitions directly or script transitions tied to
+ * [Session.launch] and [Session.commit] calls with [TestSessionScript].
  */
 public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	script: TestSessionScript<F> = TestSessionScript.auto(Session.State.Succeeded),

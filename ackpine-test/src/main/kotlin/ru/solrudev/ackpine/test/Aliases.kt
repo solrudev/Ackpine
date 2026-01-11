@@ -25,7 +25,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
  *
  * State and progress listeners are invoked on the calling thread, and the current state and progress are delivered
  * immediately when a listener is added. Use [TestSession.controller] to drive state and progress transitions directly
- * or to script transitions tied to [Session.launch] and [Session.commit] calls.
+ * or script transitions tied to [Session.launch] and [Session.commit] calls with [TestSessionScript].
  */
 public typealias TestInstallSession = TestProgressSession<InstallFailure>
 
@@ -33,7 +33,7 @@ public typealias TestInstallSession = TestProgressSession<InstallFailure>
  * A controllable uninstall [Session] test double for usage with [TestPackageUninstaller].
  *
  * State listeners are invoked on the calling thread, and the current state is delivered immediately when a
- * listener is added. Use [TestSession.controller] to drive state transitions directly or to script transitions tied to
- * [Session.launch] and [Session.commit] calls.
+ * listener is added. Use [TestSession.controller] to drive state transitions directly or script transitions tied to
+ * [Session.launch] and [Session.commit] calls with [TestSessionScript].
  */
 public typealias TestUninstallSession = TestSession<UninstallFailure>
