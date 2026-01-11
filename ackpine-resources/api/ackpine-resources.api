@@ -17,8 +17,8 @@ public final class ru/solrudev/ackpine/resources/ResolvableString$Companion {
 
 public abstract class ru/solrudev/ackpine/resources/ResolvableString$Resource : ru/solrudev/ackpine/resources/ResolvableString {
 	public fun <init> ([Ljava/io/Serializable;)V
-	public final fun equals (Ljava/lang/Object;)Z
-	public final fun hashCode ()I
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
 	public final fun resolve (Landroid/content/Context;)Ljava/lang/String;
 	protected abstract fun stringId ()I
 }
