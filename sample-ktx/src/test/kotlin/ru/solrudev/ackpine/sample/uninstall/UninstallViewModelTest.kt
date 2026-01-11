@@ -78,7 +78,7 @@ class UninstallViewModelTest {
 			awaitItem() // apps loaded
 
 			viewModel.uninstallPackage(app.packageName)
-			assertEquals(uninstaller.getSessions().last().id, savedStateHandle[SESSION_ID_KEY])
+			assertEquals(uninstaller.sessions.last().id, savedStateHandle[SESSION_ID_KEY])
 			assertEquals(app.packageName, savedStateHandle[PACKAGE_NAME_KEY])
 
 			assertEquals(UninstallUiState(), awaitItem())

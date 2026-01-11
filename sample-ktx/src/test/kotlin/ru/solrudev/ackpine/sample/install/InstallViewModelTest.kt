@@ -59,7 +59,7 @@ class InstallViewModelTest {
 			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
 
 			advanceUntilIdle()
-			val session = installer.getSessions().last()
+			val session = installer.sessions.last()
 
 			val expectedState1 = InstallUiState(
 				error = ResolvableString.empty(),
@@ -106,7 +106,7 @@ class InstallViewModelTest {
 			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
 			awaitItem() // session created
 
-			val session = installer.getSessions().last()
+			val session = installer.sessions.last()
 			session
 				.controller
 				.fail(InstallFailure.Generic("Failure"))
@@ -138,7 +138,7 @@ class InstallViewModelTest {
 			awaitItem() // initial state
 			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
 			awaitItem() // session created
-			val session = installer.getSessions().last()
+			val session = installer.sessions.last()
 
 			viewModel.cancelSession(session.id)
 			assertEquals(InstallUiState(), awaitItem())
@@ -158,7 +158,7 @@ class InstallViewModelTest {
 			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
 			awaitItem() // session created
 			awaitItem() // error reported
-			val session = installer.getSessions().last()
+			val session = installer.sessions.last()
 
 			viewModel.removeSession(session.id)
 			assertEquals(InstallUiState(), awaitItem())

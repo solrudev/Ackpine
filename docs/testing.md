@@ -122,7 +122,7 @@ Then create a `TestPackageInstaller` or `TestPackageUninstaller` with the script
     // State transitions through TestSessionController
     val installer = TestPackageInstaller(TestSessionScript.empty())
     sut.createSession()
-    val session = installer.getSessions().last()
+    val session = installer.sessions.last()
     session.controller.setState(Session.State.Awaiting)
     session.controller.succeed()
     ```

@@ -47,27 +47,33 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 		TestInstallSessionFactory.withScript(script)
 	)
 
-	private val sessions = ConcurrentHashMap<UUID, TestInstallSession>()
+	/**
+	 * Returns a snapshot of all tracked sessions in the order they were added/created.
+	 */
+	public val sessions: List<TestInstallSession>
+		get() = sessionsValues.toList()
+
+	private val sessionsMap = ConcurrentHashMap<UUID, TestInstallSession>()
 	private val sessionsValues = CopyOnWriteArrayList<TestInstallSession>()
 
 	override fun createSession(parameters: InstallParameters): TestInstallSession {
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
-		sessions[id] = session
+		sessionsMap[id] = session
 		sessionsValues += session
 		return session
 	}
 
 	override fun getSessionAsync(sessionId: UUID): ListenableFuture<TestInstallSession?> {
-		return ImmediateFuture.success(sessions[sessionId])
+		return ImmediateFuture.success(sessionsMap[sessionId])
 	}
 
 	override fun getSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		return ImmediateFuture.success(sessions.values.toList())
+		return ImmediateFuture.success(sessionsMap.values.toList())
 	}
 
 	override fun getActiveSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		val activeSessions = sessions.values.filter { it.isActive }
+		val activeSessions = sessionsMap.values.filter { it.isActive }
 		return ImmediateFuture.success(activeSessions)
 	}
 
@@ -75,20 +81,15 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 	 * Adds an existing [session] to this repository.
 	 */
 	public fun seedSession(session: TestInstallSession) {
-		sessions[session.id] = session
+		sessionsMap[session.id] = session
 		sessionsValues += session
 	}
-
-	/**
-	 * Returns a snapshot of all tracked sessions in the order they were added/created.
-	 */
-	public fun getSessions(): List<TestInstallSession> = sessionsValues.toList()
 
 	/**
 	 * Clears all sessions in this repository.
 	 */
 	public fun clearSessions() {
-		sessions.clear()
+		sessionsMap.clear()
 		sessionsValues.clear()
 	}
 }
