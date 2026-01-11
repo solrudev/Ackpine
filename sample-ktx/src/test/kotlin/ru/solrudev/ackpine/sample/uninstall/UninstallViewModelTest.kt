@@ -47,7 +47,7 @@ class UninstallViewModelTest {
 
 	@Test
 	fun loadApplicationsPopulatesUiState() = runTest(mainDispatcherRule.dispatcher) {
-		val viewModel = UninstallViewModel(TestPackageUninstaller(), SavedStateHandle())
+		val viewModel = UninstallViewModel(TestPackageUninstaller(), SavedStateHandle(), coroutineContext)
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -69,7 +69,7 @@ class UninstallViewModelTest {
 	fun uninstallPackageSuccessfulFlow() = runTest(mainDispatcherRule.dispatcher) {
 		val uninstaller = TestPackageUninstaller()
 		val savedStateHandle = SavedStateHandle()
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -94,7 +94,7 @@ class UninstallViewModelTest {
 		)
 		val uninstaller = TestPackageUninstaller(script)
 		val savedStateHandle = SavedStateHandle()
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -131,7 +131,7 @@ class UninstallViewModelTest {
 				PACKAGE_NAME_KEY to PACKAGE_NAME
 			)
 		)
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
 		viewModel.uiState.first() // trigger collection
 		advanceUntilIdle()
 
