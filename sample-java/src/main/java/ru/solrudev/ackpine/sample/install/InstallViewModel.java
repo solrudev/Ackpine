@@ -58,7 +58,7 @@ import ru.solrudev.ackpine.splits.SplitPackage;
 
 public final class InstallViewModel extends ViewModel {
 
-	private final MutableLiveData<ResolvableString> error = new MutableLiveData<>();
+	private final MutableLiveData<ResolvableString> error = new MutableLiveData<>(ResolvableString.empty());
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;

@@ -50,6 +50,7 @@ nav:
   - 'Getting Started': getting_started.md
   - 'Configuration': configuration.md
   - 'Split APKs': split_apks.md
+  - 'Testing': testing.md
   - 'Shizuku': shizuku.md
   - 'Samples': samples.md
   - 'Permissions': permissions.md

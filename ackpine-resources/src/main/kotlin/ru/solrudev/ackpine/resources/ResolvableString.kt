@@ -20,6 +20,7 @@ package ru.solrudev.ackpine.resources
 
 import android.content.Context
 import androidx.annotation.StringRes
+import ru.solrudev.ackpine.resources.ResolvableString.Resource
 import java.io.Serializable
 
 /**
@@ -73,12 +74,12 @@ public sealed interface ResolvableString : Serializable {
 		}
 
 		/**
-		 * Creates an anonymous instance of [ResolvableString.Resource], which is a [ResolvableString] backed by
+		 * Creates a transient instance of [ResolvableString.Resource], which is a [ResolvableString] backed by
 		 * Android resource string with optional [arguments][args]. Arguments can be
 		 * [ResolvableStrings][ResolvableString] as well.
 		 *
-		 * This factory is meant to create only **transient** strings, i.e. not persisted in storage. For persisted
-		 * strings [ResolvableString.Resource] should be explicitly subclassed. Example:
+		 * This factory is meant to create only **transient** strings, i.e. not persisted in storage, because string IDs
+		 * are not stable. For persisted strings [ResolvableString.Resource] should be explicitly subclassed. Example:
 		 * ```
 		 * object InstallMessageTitle : ResolvableString.Resource() {
 		 *     override fun stringId() = R.string.install_message_title
@@ -97,12 +98,9 @@ public sealed interface ResolvableString : Serializable {
 		 * @param stringId Android string resource ID
 		 * @param args string format arguments
 		 */
-		@Suppress("serial")
 		@JvmStatic
 		public fun transientResource(@StringRes stringId: Int, vararg args: Serializable): ResolvableString {
-			return object : Resource(*args) {
-				override fun stringId() = stringId
-			}
+			return TransientResource(stringId, args)
 		}
 	}
 
@@ -147,20 +145,48 @@ public sealed interface ResolvableString : Serializable {
 			}
 		}.toTypedArray()
 
-		final override fun equals(other: Any?): Boolean {
+		override fun equals(other: Any?): Boolean {
 			if (this === other) return true
 			if (javaClass != other?.javaClass) return false
 			other as Resource
 			return args.contentEquals(other.args)
 		}
 
-		final override fun hashCode(): Int {
+		override fun hashCode(): Int {
 			return args.contentHashCode()
 		}
 
 		private companion object {
 			private const val serialVersionUID = -7766769726170724379L
 		}
+	}
+}
+
+private class TransientResource(
+	@param:StringRes private val stringId: Int,
+	private val args: Array<out Serializable>
+) : Resource(stringId, args) {
+
+	override fun stringId() = stringId
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+		other as TransientResource
+		if (stringId != other.stringId) return false
+		if (!args.contentDeepEquals(other.args)) return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = super.hashCode()
+		result = 31 * result + stringId
+		result = 31 * result + args.contentDeepHashCode()
+		return result
+	}
+
+	private companion object {
+		private const val serialVersionUID: Long = 2599070109225891907L
 	}
 }
 

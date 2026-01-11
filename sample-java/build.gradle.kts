@@ -37,4 +37,7 @@ dependencies {
 	implementation(libs.materialComponents)
 	implementation(libs.guava)
 	implementation(libs.insetter)
+	testImplementation(libs.junit4)
+	testImplementation(projects.ackpineTest)
+	testImplementation(androidx.core.testing)
 }

@@ -41,13 +41,15 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.createSession
 import ru.solrudev.ackpine.uninstaller.getSession
 import java.util.UUID
+import kotlin.coroutines.CoroutineContext
 
 private const val SESSION_ID_KEY = "SESSION_ID"
 private const val PACKAGE_NAME_KEY = "PACKAGE_NAME"
 
 class UninstallViewModel(
 	private val packageUninstaller: PackageUninstaller,
-	private val savedStateHandle: SavedStateHandle
+	private val savedStateHandle: SavedStateHandle,
+	private val defaultCoroutineContext: CoroutineContext
 ) : ViewModel() {
 
 	private val _uiState = MutableStateFlow(UninstallUiState())
@@ -62,7 +64,7 @@ class UninstallViewModel(
 		}
 		viewModelScope.launch {
 			_uiState.update { it.copy(isLoading = true) }
-			val applications = runInterruptible(Dispatchers.Default) { applicationsFactory() }
+			val applications = runInterruptible(defaultCoroutineContext) { applicationsFactory() }
 			_uiState.update { it.copy(isLoading = false, applications = applications) }
 		}
 	}
@@ -125,7 +127,7 @@ class UninstallViewModel(
 				val application = extras[APPLICATION_KEY]!!
 				val packageUninstaller = PackageUninstaller.getInstance(application)
 				val savedStateHandle = extras.createSavedStateHandle()
-				return UninstallViewModel(packageUninstaller, savedStateHandle) as T
+				return UninstallViewModel(packageUninstaller, savedStateHandle, Dispatchers.Default) as T
 			}
 		}
 	}
