@@ -38,6 +38,7 @@ import ru.solrudev.ackpine.test.TestSessionScript
 import ru.solrudev.ackpine.test.futures.ImmediateFuture
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 private const val TEST_APK_NAME = "base.apk"
 
@@ -138,11 +139,17 @@ class InstallViewModelTest {
 		val viewModel = InstallViewModel(installer, repository)
 		viewModel.uiState.test {
 			awaitItem() // initial state
-			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
-			awaitItem() // session created
-			val session = installer.sessions.last()
 
+			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
+
+			val sessionCreatedState = awaitItem()
+			assertTrue(sessionCreatedState.error.isEmpty)
+			assertTrue(sessionCreatedState.sessions.isNotEmpty())
+			assertTrue(sessionCreatedState.sessionsProgress.isNotEmpty())
+
+			val session = installer.sessions.last()
 			viewModel.cancelSession(session.id)
+
 			assertEquals(InstallUiState(), awaitItem())
 		}
 	}
