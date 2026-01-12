@@ -91,7 +91,7 @@ You can add any `Uri` methods you use in your code.
 
 To accommodate testing, it's recommended not to use static `getInstance()` methods to get `PackageInstaller` and `PackageUninstaller` instances inside of your logic. Instead, inject them into constructors.
 
-Even if you don't inject `PackageInstaller` and `PackageUninstaller` interfaces into your SUT (system under test) properly, their static `getInstance()` methods will return singleton test doubles when used in tests. You can cast sessions returned from them to `TestSession` and `TestProgressSession` manually.
+Even if you don't inject `PackageInstaller` and `PackageUninstaller` interfaces into your SUT (system under test) properly, their static `getInstance()` methods will return singleton test doubles when used in tests.
 
 To get these singletons, call `PackageInstaller.getInstance()` or `PackageUninstaller.getInstance()` and cast them to `TestPackageInstaller` / `TestPackageUninstaller`, however, these methods require you to provide `Context`. You can create a shim for `Context` like for `Uri` if you run pure JVM tests.
 

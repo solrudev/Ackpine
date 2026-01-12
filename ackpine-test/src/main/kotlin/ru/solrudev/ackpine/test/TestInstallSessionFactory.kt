@@ -23,8 +23,8 @@ import java.util.UUID
 /**
  * Factory for creating install test sessions.
  *
- * This factory is invoked by [TestPackageInstaller] when a session is created, letting tests configure scripted
- * transitions and capture session instances.
+ * This factory is invoked by [TestPackageInstaller] when a session is created, letting tests configure it depending on
+ * provided session parameters or with different [scripts][TestSessionScript].
  */
 public fun interface TestInstallSessionFactory {
 
