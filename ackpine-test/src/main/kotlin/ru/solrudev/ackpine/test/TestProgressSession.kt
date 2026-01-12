@@ -36,7 +36,7 @@ import java.util.concurrent.CopyOnWriteArraySet
  * listener is added. Use [controller] to drive progress updates alongside state transitions.
  */
 public class TestProgressSession<F : Failure> @JvmOverloads public constructor(
-	script: TestSessionScript<F>,
+	script: TestSessionScript<F> = TestSessionScript.auto(Session.State.Succeeded),
 	id: UUID = UUID.randomUUID(),
 	initialState: Session.State<F> = Pending,
 	private val initialProgress: Progress = Progress()
