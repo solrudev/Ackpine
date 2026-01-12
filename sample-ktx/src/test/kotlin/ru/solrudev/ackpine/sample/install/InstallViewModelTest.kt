@@ -97,7 +97,10 @@ class InstallViewModelTest {
 
 	@Test
 	fun installPackageFailureFlow() = runTest(mainDispatcherRule.dispatcher) {
-		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val script: TestSessionScript<InstallFailure> = TestSessionScript.auto(
+			Session.State.Failed(InstallFailure.Generic("Failure"))
+		)
+		val installer = TestPackageInstaller(script)
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
 		val viewModel = InstallViewModel(installer, repository)
 		viewModel.uiState.test {
@@ -105,11 +108,7 @@ class InstallViewModelTest {
 
 			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
 			awaitItem() // session created
-
 			val session = installer.sessions.last()
-			session
-				.controller
-				.fail(InstallFailure.Generic("Failure"))
 
 			val expectedState = InstallUiState(
 				error = ResolvableString.empty(),
@@ -126,6 +125,9 @@ class InstallViewModelTest {
 				)
 			)
 			assertEquals(expectedState, awaitItem())
+
+			viewModel.removeSession(session.id)
+			assertEquals(InstallUiState(), awaitItem())
 		}
 	}
 
@@ -141,26 +143,6 @@ class InstallViewModelTest {
 			val session = installer.sessions.last()
 
 			viewModel.cancelSession(session.id)
-			assertEquals(InstallUiState(), awaitItem())
-		}
-	}
-
-	@Test
-	fun removeSessionRemovesSession() = runTest(mainDispatcherRule.dispatcher) {
-		val script: TestSessionScript<InstallFailure> = TestSessionScript.auto(
-			Session.State.Failed(InstallFailure.Generic("Failure"))
-		)
-		val installer = TestPackageInstaller(script)
-		val repository = SessionDataRepositoryImpl(SavedStateHandle())
-		val viewModel = InstallViewModel(installer, repository)
-		viewModel.uiState.test {
-			awaitItem() // initial state
-			viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
-			awaitItem() // session created
-			awaitItem() // error reported
-			val session = installer.sessions.last()
-
-			viewModel.removeSession(session.id)
 			assertEquals(InstallUiState(), awaitItem())
 		}
 	}

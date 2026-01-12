@@ -85,21 +85,27 @@ public class InstallViewModelTest {
 
 	@Test
 	public void installPackageFailureFlow() {
-		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var failure = new Session.State.Failed<>(new InstallFailure.Generic("Failure"));
+		TestSessionScript<InstallFailure> script = TestSessionScript.auto(failure);
+		final var installer = new TestPackageInstaller(script);
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
 		final var viewModel = new InstallViewModel(installer, repository);
 
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
 		final var session = installer.getSessions().getLast();
-		session.getController().fail(new InstallFailure.Generic("Failure"));
-
 		final var expectedError = ResolvableString.transientResource(R.string.session_error_with_reason, "Failure");
 		final var expectedSession = new SessionData(session.getId(), TEST_APK_NAME, expectedError, true);
 		final var expectedProgress = new SessionProgress(session.getId(), new Progress());
 		assertTrue(viewModel.getError().getValue().isEmpty());
 		assertEquals(List.of(expectedSession), viewModel.getSessions().getValue());
 		assertEquals(List.of(expectedProgress), viewModel.getSessionsProgress().getValue());
+
+		viewModel.removeSession(session.getId());
+
+		assertTrue(viewModel.getError().getValue().isEmpty());
+		assertTrue(viewModel.getSessions().getValue().isEmpty());
+		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
 	}
 
 	@Test
@@ -112,23 +118,6 @@ public class InstallViewModelTest {
 
 		final var session = installer.getSessions().getLast();
 		viewModel.cancelSession(session.getId());
-
-		assertTrue(viewModel.getError().getValue().isEmpty());
-		assertTrue(viewModel.getSessions().getValue().isEmpty());
-		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
-	}
-
-	@Test
-	public void removeSessionRemovesSession() {
-		final var failure = new Session.State.Failed<>(new InstallFailure.Generic("Failure"));
-		TestSessionScript<InstallFailure> script = TestSessionScript.auto(failure);
-		final var installer = new TestPackageInstaller(script);
-		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
-		final var viewModel = new InstallViewModel(installer, repository);
-		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
-		final var session = installer.getSessions().getLast();
-
-		viewModel.removeSession(session.getId());
 
 		assertTrue(viewModel.getError().getValue().isEmpty());
 		assertTrue(viewModel.getSessions().getValue().isEmpty());
