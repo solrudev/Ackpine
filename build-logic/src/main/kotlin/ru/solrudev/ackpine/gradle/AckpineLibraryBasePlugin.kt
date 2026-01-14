@@ -67,11 +67,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
-		compileSdk = Constants.COMPILE_SDK
-		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
-
 		defaultConfig {
-			minSdk = Constants.MIN_SDK
 			consumerProguardFiles("consumer-rules.pro")
 		}
 

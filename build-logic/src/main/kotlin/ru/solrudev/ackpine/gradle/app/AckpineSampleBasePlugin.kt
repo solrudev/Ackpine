@@ -48,14 +48,10 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<ApplicationExtension> {
-		compileSdk = Constants.COMPILE_SDK
-		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 		namespace = SampleConstants.PACKAGE_NAME
 
 		defaultConfig {
 			applicationId = SampleConstants.PACKAGE_NAME
-			minSdk = SampleConstants.MIN_SDK
-			targetSdk = SampleConstants.TARGET_SDK
 			versionCode = ackpineVersion.get().versionCode
 			versionName = ackpineVersion.get().toString()
 		}
