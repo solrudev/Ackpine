@@ -30,8 +30,8 @@ import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATIO
 import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE
-import ru.solrudev.ackpine.gradle.app.AppReleasePlugin
-import ru.solrudev.ackpine.gradle.helpers.libraryElements
+import ru.solrudev.ackpine.gradle.helpers.resolvableAppArtifacts
+import ru.solrudev.ackpine.gradle.helpers.resolvableLibraryArtifacts
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
@@ -52,9 +52,8 @@ public class AckpinePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerBuildAckpineTask(library: Provider<out Configuration>) {
-		val libraryArtifacts = configurations.resolvable("ackpineLibraryArtifacts") {
+		val libraryArtifacts = configurations.resolvableLibraryArtifacts("ackpineLibraryArtifacts") {
 			extendsFrom(library.get())
-			libraryElements(objects.named(AckpineLibraryBasePlugin.LIBRARY_ELEMENTS))
 		}
 		tasks.register("buildAckpine") {
 			group = LifecycleBasePlugin.BUILD_GROUP
@@ -91,9 +90,8 @@ public class AckpinePlugin : Plugin<Project> {
 	private fun Project.registerBuildSamplesTask(): TaskProvider<*> {
 		val releaseDir = layout.projectDirectory.dir("release")
 		val sample = configurations.dependencyScope("sample")
-		val sampleArtifacts = configurations.resolvable("ackpineSampleArtifacts") {
+		val sampleArtifacts = configurations.resolvableAppArtifacts("ackpineSampleArtifacts") {
 			extendsFrom(sample.get())
-			libraryElements(objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
 		}
 		return tasks.register<Sync>("buildSamples") {
 			group = LifecycleBasePlugin.BUILD_GROUP
