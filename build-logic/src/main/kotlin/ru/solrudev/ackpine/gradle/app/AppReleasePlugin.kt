@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.gradle.app
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.Variant
+import com.android.build.api.variant.ApplicationVariant
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
@@ -93,18 +93,24 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private fun Project.registerProduceArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
+	private fun Project.registerProduceArtifactsTaskForVariant(variant: ApplicationVariant): TaskProvider<*> {
 		val releaseDir = layout.projectDirectory.dir(variant.name)
 		val apks = variant.artifacts.get(SingleArtifact.APK)
-		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+		val mapping = if (variant.isMinifyEnabled) {
+			variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+		} else {
+			null
+		}
 		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
 		val taskName = variant.computeTaskName(action = "produce", subject = "artifacts")
 		return tasks.register<Sync>(taskName) {
 			from(apks) {
 				include("*.apk")
 			}
-			from(mapping) {
-				rename { mappingDestinationName }
+			if (mapping != null) {
+				from(mapping) {
+					rename { mappingDestinationName }
+				}
 			}
 			into(releaseDir)
 		}
