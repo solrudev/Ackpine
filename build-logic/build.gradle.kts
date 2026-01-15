@@ -62,6 +62,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.dokka"
 			implementationClass = "ru.solrudev.ackpine.gradle.documentation.DokkaConventionPlugin"
 		}
+		register("ackpine-asset-app-artifacts") {
+			id = "ru.solrudev.ackpine.asset-app-artifacts"
+			implementationClass = "ru.solrudev.ackpine.gradle.assets.AssetAppArtifactsConsumerPlugin"
+		}
 	}
 }
 

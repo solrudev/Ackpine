@@ -17,8 +17,9 @@
 package ru.solrudev.ackpine.gradle.helpers
 
 import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.VariantSelector
 
 /**
- * Returns a selector for variants with `release` build type.
+ * Returns a [VariantSelector] for variants with `release` build type.
  */
 internal fun AndroidComponentsExtension<*, *, *>.withReleaseBuildType() = selector().withBuildType("release")

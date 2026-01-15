@@ -67,12 +67,12 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
-			val sampleElements = configurations.consumable("ackpineSampleElements") {
+			val appElements = configurations.consumable("ackpineAppElements") {
 				libraryElements(objects.named(LIBRARY_ELEMENTS))
 			}
 			onVariants(withReleaseBuildType()) { variant ->
 				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
-				sampleElements.addOutgoingArtifact(produceArtifactsTask)
+				appElements.addOutgoingArtifact(produceArtifactsTask)
 				configureCleanTask(produceArtifactsTask)
 			}
 		}
