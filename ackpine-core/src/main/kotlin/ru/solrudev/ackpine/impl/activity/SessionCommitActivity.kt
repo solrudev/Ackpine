@@ -38,7 +38,6 @@ import ru.solrudev.ackpine.session.Session
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 
@@ -103,7 +102,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		onActivityResult(resultCode)
 	}
 
-	protected open fun onActivityResult(resultCode: Int) { // no-op by default
+	open fun onActivityResult(resultCode: Int) { // no-op by default
 	}
 
 	protected fun startActivityForResult(intent: Intent) = startActivityForResult(intent, requestCode)
@@ -194,5 +193,9 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				finish()
 			}
 		}
+	}
+
+	protected companion object {
+		const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 	}
 }

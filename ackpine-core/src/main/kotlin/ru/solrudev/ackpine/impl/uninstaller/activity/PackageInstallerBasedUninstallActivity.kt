@@ -33,6 +33,8 @@ private const val TAG = "PackageInstallerBasedUninstallActivity"
 internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 
 	private val handler = Handler(Looper.getMainLooper())
+	private var isProcessRecreated = false
+	private var wasStopped = false
 
 	private val abortedSessionRunnable = Runnable {
 		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME)
@@ -45,13 +47,24 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
-			intent.extras
-				?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
-				?.let(::startActivityForResult)
+			launchUninstallActivity()
+		} else {
+			isProcessRecreated = !savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 		}
 	}
 
+	override fun onStop() {
+		super.onStop()
+		wasStopped = true
+	}
+
 	override fun onActivityResult(resultCode: Int) {
+		if (wasStopped || isProcessRecreated && resultCode < RESULT_FIRST_USER) {
+			wasStopped = false
+			isProcessRecreated = false
+			launchUninstallActivity()
+			return
+		}
 		// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
 		setLoading(isLoading = true, delayMillis = 200)
 		handler.postDelayed(abortedSessionRunnable, 400)
@@ -62,5 +75,11 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 		if (isFinishing) {
 			handler.removeCallbacks(abortedSessionRunnable)
 		}
+	}
+
+	private fun launchUninstallActivity() {
+		intent.extras
+			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
+			?.let(::startActivityForResult)
 	}
 }
