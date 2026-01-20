@@ -270,7 +270,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		// If app is killed while installing but system installer activity remains visible,
 		// session is stuck in Committed state after new process start.
 		// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
-		// success is not handled), so if native session doesn't exist, it can only mean that it succeeded.
+		// success is not always handled), so if native session doesn't exist, it can only mean that it succeeded.
 		// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
 		val packageInstaller = applicationContext.packageManager.packageInstaller
 		if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
