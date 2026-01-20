@@ -52,6 +52,7 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 
 		defaultConfig {
 			applicationId = SampleConstants.PACKAGE_NAME
+			minSdk = SampleConstants.MIN_SDK
 			versionCode = ackpineVersion.get().versionCode
 			versionName = ackpineVersion.get().toString()
 		}
