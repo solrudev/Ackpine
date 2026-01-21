@@ -25,8 +25,8 @@ import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.session.AbstractSession
-import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 import ru.solrudev.ackpine.impl.uninstaller.activity.IntentBasedUninstallActivity
+import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -70,7 +70,7 @@ internal class IntentBasedUninstallSession internal constructor(
 			notificationId,
 			generateRequestCode(),
 			UPDATE_CURRENT_FLAGS
-		) { intent -> intent.putExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME, packageName) }
+		) { intent -> intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName) }
 	}
 
 	private fun generateRequestCode() = Random.nextInt(3000000..4000000)

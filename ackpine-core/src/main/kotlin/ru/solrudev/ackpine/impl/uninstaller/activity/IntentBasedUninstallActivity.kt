@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 
 private const val TAG = "IntentBasedUninstallActivity"
 
@@ -67,7 +66,7 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	private fun getPackageNameToUninstall(): String? {
-		return intent.extras?.getString(UninstallStatusReceiver.EXTRA_PACKAGE_NAME)
+		return intent.extras?.getString(EXTRA_PACKAGE_NAME)
 			?: intent.extras?.getString("ACKPINE_UNINSTALLER_PACKAGE_NAME")
 	}
 }

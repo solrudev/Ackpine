@@ -24,7 +24,6 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
-import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 
 private const val TAG = "PackageInstallerBasedUninstallActivity"
 
@@ -37,7 +36,7 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	private var wasStopped = false
 
 	private val abortedSessionRunnable = Runnable {
-		val packageName = intent.getStringExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME)
+		val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
 			?: error("$TAG: packageName was null")
 		if (isPackageInstalled(packageName)) {
 			abortSession("Aborted by user")
