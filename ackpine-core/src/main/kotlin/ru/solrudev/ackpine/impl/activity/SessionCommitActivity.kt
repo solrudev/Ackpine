@@ -24,8 +24,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import android.widget.ProgressBar
 import androidx.annotation.RestrictTo
+import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
@@ -62,6 +65,13 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		WindowCompat.setDecorFitsSystemWindows(window, false)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			window.attributes.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+		}
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+			window.attributes.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+		}
 		window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
 		initializeState(savedInstanceState)
 		setContentView(R.layout.ackpine_activity_session_commit)
