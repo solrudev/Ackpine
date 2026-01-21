@@ -9,7 +9,7 @@ kotlin-ksp = "2.3.4"
 shizuku = "13.1.5"
 
 [libraries]
-plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.35.0"
+plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-android-settings = { module = "com.android.tools.build:gradle-settings", version.ref = "android-plugin" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
