@@ -88,10 +88,22 @@ class UninstallViewModelTest {
 	}
 
 	@Test
-	fun uninstallPackageFailureFlow() = runTest(mainDispatcherRule.dispatcher) {
-		val script: TestSessionScript<UninstallFailure> = TestSessionScript.auto(
-			Session.State.Failed(UninstallFailure.Generic("Failure"))
-		)
+	fun uninstallPackageFailureFlow() = testUninstallFailure(
+		failure = UninstallFailure.Generic("Failure"),
+		expectedError = "Failure"
+	)
+
+	@Test
+	fun uninstallPackageExceptionFlow() = testUninstallFailure(
+		failure = UninstallFailure.Exceptional(Exception("exception")),
+		expectedError = "exception"
+	)
+
+	private fun testUninstallFailure(
+		failure: UninstallFailure,
+		expectedError: String
+	) = runTest(mainDispatcherRule.dispatcher) {
+		val script: TestSessionScript<UninstallFailure> = TestSessionScript.auto(Session.State.Failed(failure))
 		val uninstaller = TestPackageUninstaller(script)
 		val savedStateHandle = SavedStateHandle()
 		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
@@ -107,7 +119,7 @@ class UninstallViewModelTest {
 			val expectedState = UninstallUiState(
 				isLoading = false,
 				applications = listOf(app),
-				failure = "Failure"
+				failure = expectedError
 			)
 			assertEquals(expectedState, awaitItem())
 			assertNull(savedStateHandle[SESSION_ID_KEY])

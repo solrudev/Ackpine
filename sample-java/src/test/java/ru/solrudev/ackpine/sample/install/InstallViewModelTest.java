@@ -31,7 +31,12 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
+import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
+import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException;
+import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException;
+import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException;
 import ru.solrudev.ackpine.exceptions.NoBaseApkException;
 import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.resources.ResolvableString;
@@ -86,8 +91,20 @@ public class InstallViewModelTest {
 
 	@Test
 	public void installPackageFailureFlow() {
-		final var failure = new Session.State.Failed<>(new InstallFailure.Generic("Failure"));
-		TestSessionScript<InstallFailure> script = TestSessionScript.auto(failure);
+		final var failure = new InstallFailure.Generic("Failure");
+		final var expectedError = ResolvableString.transientResource(R.string.session_error_with_reason, "Failure");
+		testInstallFailure(failure, expectedError);
+	}
+
+	@Test
+	public void installPackageExceptionFlow() {
+		final var failure = new InstallFailure.Exceptional(new Exception());
+		final var expectedError = ResolvableString.transientResource(R.string.session_error);
+		testInstallFailure(failure, expectedError);
+	}
+
+	private void testInstallFailure(InstallFailure failure, ResolvableString expectedError) {
+		TestSessionScript<InstallFailure> script = TestSessionScript.auto(new Session.State.Failed<>(failure));
 		final var installer = new TestPackageInstaller(script);
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
 		final var viewModel = new InstallViewModel(installer, repository);
@@ -95,7 +112,6 @@ public class InstallViewModelTest {
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
 		final var session = installer.getSessions().getLast();
-		final var expectedError = ResolvableString.transientResource(R.string.session_error_with_reason, "Failure");
 		final var expectedSession = new SessionData(session.getId(), TEST_APK_NAME, expectedError, true);
 		final var expectedProgress = new SessionProgress(session.getId(), new Progress());
 		assertTrue(viewModel.getError().getValue().isEmpty());
@@ -135,14 +151,40 @@ public class InstallViewModelTest {
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
 		final var viewModel = new InstallViewModel(installer, repository);
 
-		viewModel.installPackage(createFailingSplitPackageProvider(new NoBaseApkException()), "broken.apk");
+		final var errors = Map.of(
+				new NoBaseApkException(),
+				ResolvableString.transientResource(R.string.error_no_base_apk),
+				new ConflictingBaseApkException(),
+				ResolvableString.transientResource(R.string.error_conflicting_base_apk),
+				new ConflictingSplitNameException("config.en"),
+				ResolvableString.transientResource(R.string.error_conflicting_split_name,
+						"config.en"),
+				new ConflictingPackageNameException("com.package",
+						"com.pkg",
+						"config.en"),
+				ResolvableString.transientResource(R.string.error_conflicting_package_name,
+						"com.package",
+						"com.pkg",
+						"config.en"),
+				new ConflictingVersionCodeException(1L,
+						2L,
+						"config.en"),
+				ResolvableString.transientResource(R.string.error_conflicting_version_code,
+						1L,
+						2L,
+						"config.en"),
+				new Exception("exception"),
+				ResolvableString.raw("exception")
+		);
+		for (final var error : errors.entrySet()) {
+			viewModel.installPackage(createFailingSplitPackageProvider(error.getKey()), "broken.apk");
 
-		assertTrue(repository.getSessions().getValue().isEmpty());
-		final var expectedError = ResolvableString.transientResource(R.string.error_no_base_apk);
-		assertEquals(expectedError, viewModel.getError().getValue());
+			assertTrue(repository.getSessions().getValue().isEmpty());
+			assertEquals(error.getValue(), viewModel.getError().getValue());
 
-		viewModel.clearError();
-		assertTrue(viewModel.getError().getValue().isEmpty());
+			viewModel.clearError();
+			assertTrue(viewModel.getError().getValue().isEmpty());
+		}
 	}
 
 	@Test

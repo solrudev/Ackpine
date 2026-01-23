@@ -23,6 +23,10 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
+import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException
+import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException
+import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
+import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -97,10 +101,22 @@ class InstallViewModelTest {
 	}
 
 	@Test
-	fun installPackageFailureFlow() = runTest(mainDispatcherRule.dispatcher) {
-		val script: TestSessionScript<InstallFailure> = TestSessionScript.auto(
-			Session.State.Failed(InstallFailure.Generic("Failure"))
-		)
+	fun installPackageFailureFlow() = testInstallFailure(
+		failure = InstallFailure.Generic("Failure"),
+		expectedError = ResolvableString.transientResource(R.string.session_error_with_reason, "Failure")
+	)
+
+	@Test
+	fun installPackageExceptionFlow() = testInstallFailure(
+		failure = InstallFailure.Exceptional(Exception()),
+		expectedError = ResolvableString.transientResource(R.string.session_error)
+	)
+
+	private fun testInstallFailure(
+		failure: InstallFailure,
+		expectedError: ResolvableString
+	) = runTest(mainDispatcherRule.dispatcher) {
+		val script: TestSessionScript<InstallFailure> = TestSessionScript.auto(Session.State.Failed(failure))
 		val installer = TestPackageInstaller(script)
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
 		val viewModel = InstallViewModel(installer, repository)
@@ -117,7 +133,7 @@ class InstallViewModelTest {
 					SessionData(
 						session.id,
 						name = TEST_APK_NAME,
-						error = ResolvableString.transientResource(R.string.session_error_with_reason, "Failure"),
+						error = expectedError,
 						isCancellable = true
 					)
 				),
@@ -162,15 +178,49 @@ class InstallViewModelTest {
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
-			val provider = createFailingSplitPackageProvider(NoBaseApkException())
-			viewModel.installPackage(provider, "broken.apk")
-			val expectedState = InstallUiState(
-				error = ResolvableString.transientResource(R.string.error_no_base_apk)
-			)
-			assertEquals(expectedState, awaitItem())
+			mapOf(
+				NoBaseApkException() to ResolvableString.transientResource(
+					R.string.error_no_base_apk
+				),
+				ConflictingBaseApkException() to ResolvableString.transientResource(
+					R.string.error_conflicting_base_apk
+				),
+				ConflictingSplitNameException(
+					name = "config.en"
+				) to ResolvableString.transientResource(
+					R.string.error_conflicting_split_name,
+					"config.en"
+				),
+				ConflictingPackageNameException(
+					expected = "com.package",
+					actual = "com.pkg",
+					name = "config.en"
+				) to ResolvableString.transientResource(
+					R.string.error_conflicting_package_name,
+					"com.package",
+					"com.pkg",
+					"config.en"
+				),
+				ConflictingVersionCodeException(
+					expected = 1L,
+					actual = 2L,
+					name = "config.en"
+				) to ResolvableString.transientResource(
+					R.string.error_conflicting_version_code,
+					1L,
+					2L,
+					"config.en"
+				),
+				Exception("exception") to ResolvableString.raw("exception")
+			).forEach { (exception, error) ->
+				val provider = createFailingSplitPackageProvider(exception)
+				viewModel.installPackage(provider, "broken.apk")
+				val expectedState = InstallUiState(error = error)
+				assertEquals(expectedState, awaitItem())
 
-			viewModel.clearError()
-			assertEquals(InstallUiState(), awaitItem())
+				viewModel.clearError()
+				assertEquals(InstallUiState(), awaitItem())
+			}
 		}
 	}
 
