@@ -23,3 +23,8 @@ import com.android.build.api.variant.VariantSelector
  * Returns a [VariantSelector] for variants with `release` build type.
  */
 internal fun AndroidComponentsExtension<*, *, *>.withReleaseBuildType() = selector().withBuildType("release")
+
+/**
+ * Returns a [VariantSelector] for variants with `debug` build type.
+ */
+internal fun AndroidComponentsExtension<*, *, *>.withDebugBuildType() = selector().withBuildType("debug")

@@ -23,6 +23,7 @@ plugins {
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
 	id("ru.solrudev.ackpine.asset-app-artifacts")
+	id("ru.solrudev.ackpine.jacoco")
 	alias(libs.plugins.kotlin.ksp)
 	alias(androidx.plugins.room)
 }
