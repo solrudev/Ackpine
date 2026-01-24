@@ -3,6 +3,8 @@ android-plugin = "8.13.2"
 dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
+jacoco = "0.8.14"
+#noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
 kotlin = "2.3.0"
 kotlin-ksp = "2.3.4"
