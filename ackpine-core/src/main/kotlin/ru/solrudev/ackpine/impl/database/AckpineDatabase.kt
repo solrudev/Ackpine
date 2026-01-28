@@ -32,7 +32,7 @@ import ru.solrudev.ackpine.impl.database.dao.ConfirmationLaunchDao
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
-import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
+import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDaoImpl
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -121,7 +121,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun nativeSessionIdDao(): NativeSessionIdDao
 	abstract fun notificationIdDao(): NotificationIdDao
 	abstract fun sessionNameDao(): SessionNameDao
-	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
+	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDaoImpl
 	abstract fun installPreapprovalDao(): InstallPreapprovalDao
 	abstract fun installConstraintsDao(): InstallConstraintsDao
 	abstract fun confirmationLaunchDao(): ConfirmationLaunchDao

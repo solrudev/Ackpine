@@ -23,16 +23,24 @@ import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface LastUpdateTimestampDao {
+	fun setLastUpdateTimestamp(sessionId: String, packageName: String, lastUpdateTimestamp: Long)
+	fun setLastUpdateTimestamp(sessionId: String, lastUpdateTimestamp: Long)
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
-internal abstract class LastUpdateTimestampDao protected constructor(private val database: AckpineDatabase) {
+internal abstract class LastUpdateTimestampDaoImpl protected constructor(
+	private val database: AckpineDatabase
+) : LastUpdateTimestampDao {
 
 	@Transaction
-	open fun setLastUpdateTimestamp(sessionId: String, packageName: String, lastUpdateTimestamp: Long) {
+	override fun setLastUpdateTimestamp(sessionId: String, packageName: String, lastUpdateTimestamp: Long) {
 		database.installSessionDao().insertPackageName(sessionId, packageName)
 		setLastUpdateTimestamp(sessionId, lastUpdateTimestamp)
 	}
 
 	@Query("INSERT OR REPLACE INTO sessions_last_install_timestamps(session_id, last_update_timestamp) " +
 				"VALUES (:sessionId, :lastUpdateTimestamp)")
-	abstract fun setLastUpdateTimestamp(sessionId: String, lastUpdateTimestamp: Long)
+	abstract override fun setLastUpdateTimestamp(sessionId: String, lastUpdateTimestamp: Long)
 }
