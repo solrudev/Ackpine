@@ -21,6 +21,7 @@ import android.content.ComponentCallbacks
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Build
+import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
 import ru.solrudev.ackpine.core.R
@@ -88,6 +89,15 @@ public object Ackpine {
 				ctx.registerComponentCallbacks(configurationChangesCallback)
 				createNotificationChannel(ctx)
 			}
+		}
+	}
+
+	@VisibleForTesting
+	@JvmSynthetic
+	internal fun reset() {
+		synchronized(lock) {
+			applicationContext?.unregisterComponentCallbacks(configurationChangesCallback)
+			applicationContext = null
 		}
 	}
 

@@ -24,6 +24,7 @@ navigation-ui = { module = "androidx.navigation:navigation-ui", version.ref = "n
 recyclerView = "androidx.recyclerview:recyclerview:1.4.0"
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-testing = { module = "androidx.room:room-testing", version.ref = "room" }
 startup = "androidx.startup:startup-runtime:1.1.1"
 swipeRefreshLayout = "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 test-core = "androidx.test:core:1.7.0"

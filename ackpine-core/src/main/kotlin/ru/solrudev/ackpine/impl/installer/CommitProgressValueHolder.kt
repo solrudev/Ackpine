@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.installer
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import androidx.annotation.RestrictTo
+import androidx.annotation.VisibleForTesting
 import androidx.annotation.WorkerThread
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.edit
@@ -75,6 +76,21 @@ internal object CommitProgressValueHolder {
 			}
 			"CommitProgressValueHolder.getAsync"
 		}
+	}
+
+	@VisibleForTesting
+	@JvmSynthetic
+	internal fun clear(context: Context) {
+		commitProgressValue = -1f
+		clearPreferences(context)
+	}
+
+	@VisibleForTesting
+	@JvmSynthetic
+	internal fun clearPreferences(context: Context) {
+		context
+			.getSharedPreferences(ACKPINE_SESSION_BASED_INSTALLER, MODE_PRIVATE)
+			.edit { clear() }
 	}
 
 	private fun getValue(context: Context) = context

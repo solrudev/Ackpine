@@ -33,7 +33,7 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal class InstallModeEntity internal constructor(
+internal data class InstallModeEntity internal constructor(
 	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")

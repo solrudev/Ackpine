@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.database
 
 import androidx.annotation.RestrictTo
+import androidx.annotation.VisibleForTesting
 import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -135,7 +136,9 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	}
 }
 
-private object PurgeCallback : RoomDatabase.Callback() {
+@VisibleForTesting
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal object PurgeCallback : RoomDatabase.Callback() {
 
 	private val eligibleForPurgeTimestamp: Long
 		get() = System.currentTimeMillis() - 1.days.inWholeMilliseconds
