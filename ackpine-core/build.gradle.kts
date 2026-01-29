@@ -53,6 +53,11 @@ android {
 	defaultConfig {
 		testInstrumentationRunnerArguments["filter"] = "ru.solrudev.ackpine.impl.testutil.DeviceAwareTestFilter"
 	}
+	sourceSets {
+		named("test") {
+			assets.srcDir(layout.projectDirectory.dir("schemas"))
+		}
+	}
 	testOptions {
 		unitTests.isIncludeAndroidResources = true
 		managedDevices {
@@ -96,6 +101,7 @@ dependencies {
 	testImplementation(libs.robolectric)
 	testImplementation(kotlinx.coroutines.test)
 	testImplementation(androidx.test.core)
+	testImplementation(androidx.room.testing)
 	testImplementation(projects.ackpineKtx)
 	androidTestImplementation(libs.kotlin.test)
 	androidTestImplementation(androidx.bundles.test)

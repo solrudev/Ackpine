@@ -21,6 +21,7 @@ import android.content.Context
 import android.os.Handler
 import android.os.HandlerThread
 import androidx.annotation.RestrictTo
+import androidx.annotation.VisibleForTesting
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import com.google.common.util.concurrent.ListenableFuture
@@ -110,6 +111,18 @@ internal class PackageInstallerImpl internal constructor(
 		caller = "PackageInstallerImpl.getActiveSessionsAsync",
 		transform = { sessions -> sessions.filter { it.isActive } }
 	)
+
+	/**
+	 * Adds [session] to an in-memory map.
+	 */
+	@VisibleForTesting
+	@JvmSynthetic
+	internal fun addSession(
+		sessionId: UUID,
+		session: CompletableProgressSession<InstallFailure>
+	) {
+		sessions[sessionId] = session
+	}
 
 	@SuppressLint("NewApi")
 	private fun initializeCommittedSessions() = executor.executeWithSemaphore(committedSessionsInitSemaphore) {
