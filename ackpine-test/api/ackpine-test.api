@@ -37,6 +37,7 @@ public final class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev
 }
 
 public final class ru/solrudev/ackpine/test/TestProgressSession : ru/solrudev/ackpine/test/TestSession, ru/solrudev/ackpine/session/ProgressSession {
+	public fun <init> ()V
 	public fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;)V
 	public fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;Ljava/util/UUID;)V
 	public fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;)V
