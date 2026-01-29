@@ -51,9 +51,11 @@ If your tests depend on SDK-dependent behavior, configure `TestSdkInt` from the 
 
 For the most part, `TestSdkInt` is used only when constructing session parameters to determine whether Android `PackageInstaller` API is available. Use `TestSdkInt.reset()` to restore the default value.
 
+If you use instrumentation/Robolectric, you can set the value to `Build.VERSION.SDK_INT` for each test.
+
 ### `Uri` shim
 
-If you run tests on pure JVM without Android framework, provide a shim for `android.net.Uri` and place it under `android.net` package. Test doubles don't call any methods on the `Uri` objects, so their implementation can be simple stubs. Shim example:
+If you run tests on pure JVM without Android framework (without instrumentation/Robolectric), provide a shim for `android.net.Uri` and place it under `android.net` package. Test doubles don't call any methods on the `Uri` objects, so their implementation can be simple stubs. Shim example:
 
 === "Kotlin"
 
