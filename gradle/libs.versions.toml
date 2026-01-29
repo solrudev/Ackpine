@@ -29,6 +29,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.1.0"
+robolectric = "org.robolectric:robolectric:4.16.1"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 turbine = "app.cash.turbine:turbine:1.2.1"
 vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"
