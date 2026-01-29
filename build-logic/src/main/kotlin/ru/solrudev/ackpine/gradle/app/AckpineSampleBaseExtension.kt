@@ -19,14 +19,16 @@ package ru.solrudev.ackpine.gradle.app
 import com.android.build.api.dsl.ApplicationExtension
 import ru.solrudev.ackpine.gradle.AckpineCommonExtension
 import ru.solrudev.ackpine.gradle.SampleConstants
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import javax.inject.Inject
 
 /**
  * Extension for Ackpine `sample` plugin.
  */
 public abstract class AckpineSampleBaseExtension @Inject constructor(
-	private val applicationExtension: ApplicationExtension
-) : AckpineCommonExtension(applicationExtension, SampleConstants.PACKAGE_NAME) {
+	private val applicationExtension: ApplicationExtension,
+	testing: AckpineTestingOptions
+) : AckpineCommonExtension(applicationExtension, SampleConstants.PACKAGE_NAME, testing) {
 
 	override var id: String
 		get() = super.id

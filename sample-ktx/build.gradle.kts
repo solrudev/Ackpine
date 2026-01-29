@@ -22,6 +22,12 @@ plugins {
 	id("kotlin-parcelize")
 }
 
+ackpine {
+	testing {
+		enableHostTests = true
+	}
+}
+
 dependencies {
 	implementation(projects.ackpineCore)
 	implementation(projects.ackpineKtx)

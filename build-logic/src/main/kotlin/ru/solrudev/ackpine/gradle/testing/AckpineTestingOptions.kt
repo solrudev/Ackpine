@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,22 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle
+package ru.solrudev.ackpine.gradle.testing
 
-import org.gradle.api.JavaVersion
+import org.gradle.api.provider.Property
 
-public object Constants {
-	public const val TARGET_SDK: Int = 35
-	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine"
-	public const val JDK_VERSION: Int = 21
-}
+/**
+ * Configures testing for Ackpine module.
+ */
+public interface AckpineTestingOptions {
 
-public object SampleConstants {
-	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine.sample"
-	public const val MIN_SDK: Int = 21
-	public val JAVA_VERSION: JavaVersion = JavaVersion.VERSION_21
+	/**
+	 * Enables JVM host tests for the module.
+	 */
+	public val enableHostTests: Property<Boolean>
+
+	/**
+	 * Enables Android device tests for the module.
+	 */
+	public val enableDeviceTests: Property<Boolean>
 }

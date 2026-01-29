@@ -17,6 +17,8 @@
 package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.CommonExtension
+import org.gradle.api.Action
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 
 internal typealias IdListener = (id: String) -> Unit
 
@@ -25,7 +27,12 @@ internal typealias IdListener = (id: String) -> Unit
  */
 public abstract class AckpineCommonExtension(
 	private val commonExtension: CommonExtension<*, *, *, *, *, *>,
-	private val packageName: String
+	private val packageName: String,
+
+	/**
+	 * Configures testing for Ackpine module.
+	 */
+	public val testing: AckpineTestingOptions
 ) {
 
 	private val idListeners = mutableSetOf<IdListener>()
@@ -53,6 +60,13 @@ public abstract class AckpineCommonExtension(
 		set(value) {
 			commonExtension.defaultConfig.minSdk = value
 		}
+
+	/**
+	 * Configures testing for Ackpine module.
+	 */
+	public fun testing(action: Action<AckpineTestingOptions>) {
+		action.execute(testing)
+	}
 
 	/**
 	 * Adds a [listener] which will be called when [id] is set.

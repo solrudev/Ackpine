@@ -21,6 +21,12 @@ plugins {
 	id("ru.solrudev.ackpine.app-release")
 }
 
+ackpine {
+	testing {
+		enableHostTests = true
+	}
+}
+
 dependencies {
 	implementation(projects.ackpineCore)
 	implementation(projects.ackpineSplits.splitsMain)

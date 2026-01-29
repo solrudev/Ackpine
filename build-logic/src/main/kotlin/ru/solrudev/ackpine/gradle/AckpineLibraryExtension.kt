@@ -21,9 +21,11 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.setProperty
 import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import javax.inject.Inject
 
 private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
@@ -35,7 +37,11 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 	libraryExtension: LibraryExtension,
 	private val abiValidationExtension: Lazy<AbiValidationExtension?>,
 	objectFactory: ObjectFactory
-) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware {
+) : AckpineCommonExtension(
+	libraryExtension,
+	Constants.PACKAGE_NAME,
+	objectFactory.newInstance<AckpineTestingOptions>()
+), ExtensionAware {
 
 	private val _internalPackages = objectFactory.setProperty<String>()
 

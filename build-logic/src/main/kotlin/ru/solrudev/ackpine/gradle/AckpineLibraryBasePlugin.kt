@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.JavaVersion
@@ -38,6 +40,7 @@ import ru.solrudev.ackpine.gradle.helpers.abiValidation
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
@@ -51,13 +54,16 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
 		val abiValidationExtension = lazy { extensions.findByType<KotlinBaseExtension>()?.abiValidation }
-		extensions.create(
+		val extension = extensions.create(
 			"ackpine",
 			AckpineLibraryExtension::class.java,
 			libraryExtension,
 			abiValidationExtension
 		)
+		extension.testing.enableHostTests.convention(false)
+		extension.testing.enableDeviceTests.convention(false)
 		configureAndroid()
+		configureTests(extension.testing)
 		registerConsumableLibraryConfiguration()
 		registerAbiValidationConfigurations()
 	}
@@ -68,6 +74,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
 		defaultConfig {
+			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
@@ -79,6 +86,25 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
+		}
+
+		testOptions {
+			targetSdk = Constants.TARGET_SDK
+		}
+	}
+
+	private fun Project.configureTests(
+		testing: AckpineTestingOptions
+	) = extensions.configure<LibraryAndroidComponentsExtension> {
+		beforeVariants { variantBuilder ->
+			variantBuilder
+				.hostTests
+				.getValue(HostTestBuilder.UNIT_TEST_TYPE)
+				.enable = testing.enableHostTests.get() && variantBuilder.buildType == "debug"
+			variantBuilder
+				.deviceTests
+				.getValue(DeviceTestBuilder.ANDROID_TEST_TYPE)
+				.enable = testing.enableDeviceTests.get() && variantBuilder.buildType == "debug"
 		}
 	}
 
