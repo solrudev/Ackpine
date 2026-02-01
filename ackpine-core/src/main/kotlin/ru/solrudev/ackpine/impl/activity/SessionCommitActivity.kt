@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.activity
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -28,6 +29,7 @@ import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALW
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import android.widget.ProgressBar
 import androidx.annotation.RestrictTo
+import androidx.core.content.getSystemService
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
@@ -43,6 +45,7 @@ import kotlin.random.nextInt
 
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
+private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<F : Failure> protected constructor(
@@ -63,6 +66,9 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private var isLoading = false
 	private var isOnActivityResultCalled = false
 
+	protected var wasOnTopOnStart = false
+		private set
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -77,6 +83,11 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
+	}
+
+	override fun onStart() {
+		super.onStart()
+		wasOnTopOnStart = isOnTop()
 	}
 
 	override fun onDestroy() {
@@ -102,6 +113,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
+		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
 	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -166,6 +178,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		if (savedInstanceState != null) {
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
 			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
+			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 			setLoading(isLoading)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 			if (!isConfigChangeRecreation) {
@@ -203,6 +216,15 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				finish()
 			}
 		}
+	}
+
+	private fun isOnTop(): Boolean {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return false
+		}
+		val activityManager = getSystemService<ActivityManager>() ?: return false
+		val appTask = activityManager.appTasks.firstOrNull() ?: return false
+		return this::class.java.name == appTask.taskInfo.topActivity?.className
 	}
 
 	protected companion object {
