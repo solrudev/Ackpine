@@ -58,7 +58,9 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	override fun onActivityResult(resultCode: Int) {
-		if (wasStopped || isProcessRecreated && resultCode < RESULT_FIRST_USER) {
+		if ((wasStopped || isProcessRecreated) && wasOnTopOnStart) {
+			// Uninstaller activity sends meaningless result and is removed when stopped (since API 29),
+			// so we need to re-launch
 			wasStopped = false
 			isProcessRecreated = false
 			launchUninstallActivity()
