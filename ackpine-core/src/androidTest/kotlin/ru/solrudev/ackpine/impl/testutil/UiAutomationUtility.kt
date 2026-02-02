@@ -134,7 +134,8 @@ class UiAutomationUtility(
 				.uiAutomation
 				.grantRuntimePermission(ApkFixtures.INSTALLER_PACKAGE_NAME, POST_NOTIFICATIONS)
 		}
-		wait(Until.hasObject(By.pkg(ApkFixtures.INSTALLER_PACKAGE_NAME)), 1_000)
+		val launchTimeout = if (needsExtraStabilizationDelay()) 3_000L else 1_000L
+		wait(Until.hasObject(By.pkg(ApkFixtures.INSTALLER_PACKAGE_NAME)), launchTimeout)
 		grantInstallPermission(installPermissionRequest, 1.seconds)
 	}
 
@@ -142,9 +143,10 @@ class UiAutomationUtility(
 		installPermissionRequest: InstallPermissionRequest,
 		timeout: Duration = 30.seconds
 	) {
+		val packageWaitTimeout = if (needsExtraStabilizationDelay()) 3_000L else 1_000L
 		val found = waitForCondition(timeout) {
 			launchInstallerApp(installPermissionRequest)
-			device.wait(Until.hasObject(By.pkg(ApkFixtures.INSTALLER_PACKAGE_NAME)), 1_000)
+			device.wait(Until.hasObject(By.pkg(ApkFixtures.INSTALLER_PACKAGE_NAME)), packageWaitTimeout)
 		}
 		if (!found) {
 			assertionError("Package ${ApkFixtures.INSTALLER_PACKAGE_NAME} could not be launched after $timeout")
@@ -203,7 +205,7 @@ class UiAutomationUtility(
 			} else {
 				executeShellCommand("ps -A | grep ${ApkFixtures.INSTALLER_PACKAGE_NAME}")
 			}
-			result.isEmpty()
+			result.trim().isEmpty()
 		}
 		if (!killed) {
 			error("${ApkFixtures.INSTALLER_PACKAGE_NAME} process could not be killed after $timeout")
@@ -222,7 +224,7 @@ class UiAutomationUtility(
 	}
 
 	private fun UiDevice.canInstallPackages(packageName: String): Boolean {
-		val isGranted = executeShellCommand("appops get $packageName REQUEST_INSTALL_PACKAGES")
+		val isGranted = executeShellCommand("appops get $packageName REQUEST_INSTALL_PACKAGES").trim()
 		return isGranted == "REQUEST_INSTALL_PACKAGES: allow"
 	}
 
