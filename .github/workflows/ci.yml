@@ -109,6 +109,11 @@ jobs:
         with:
           gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
+      - name: Copy debug.keystore
+        run: |
+          mkdir -p /home/runner/.config/.android/
+          cp .github/debug.keystore /home/runner/.config/.android/debug.keystore
+
       - name: Cache AVD
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # 4.3.0
         with:
