@@ -23,7 +23,7 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
 import java.util.UUID
 
 /**
- * Creates a uninstall session. The returned session is in [pending][Session.State.Pending] state.
+ * Creates an uninstall session. The returned session is in [pending][Session.State.Pending] state.
  *
  * @see PackageUninstaller.createSession
  * @param packageName name of the package to be uninstalled.

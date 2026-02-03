@@ -37,20 +37,109 @@ jobs:
         run: |
           ./gradlew :buildAckpine --stacktrace
 
-      - name: Run tests
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit tests
+    needs: build
+    if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
+
+    permissions:
+      checks: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Run unit tests
         run: |
-          ./gradlew test
+          ./gradlew test --stacktrace
 
       - name: Publish test report
         uses: mikepenz/action-junit-report@a294a61c909bd8a4b563024a2faa28897fd53ebc # 6.1.0
         if: success() || failure()
         with:
-          report_paths: '**/build/test-results/*/TEST-*.xml'
+          report_paths: '**/build/**/TEST-*.xml'
+
+      - name: Publish JaCoCo report
+        uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848 # 1.7.2
+        if: success() || failure()
+        with:
+          paths: '**/build/jacocoReports/**/*.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Unit tests coverage
+          update-comment: true
+
+  device-tests:
+    runs-on: ubuntu-latest
+    name: Device tests (API ${{ matrix.api-level }})
+    needs: build
+    if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [ 30, 31, 34 ] # https://issuetracker.google.com/issues/377321470
+
+    permissions:
+      checks: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Copy debug.keystore
+        run: |
+          mkdir -p /home/runner/.config/.android/
+          cp .github/debug.keystore /home/runner/.config/.android/debug.keystore
+
+      - name: Accept Android licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      - name: Cache AVD
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # 4.3.0
+        with:
+          path: /home/runner/.config/.android/avd
+          key: avd-api${{ matrix.api-level }}-aosp-x86_64
+
+      - name: Run device tests
+        run: |
+          ./gradlew api${{ matrix.api-level }}DebugAndroidTest \
+            -Pandroid.testoptions.manageddevices.emulator.gpu=swiftshader_indirect \
+            --stacktrace
+
+      - name: Publish test report
+        uses: mikepenz/action-junit-report@a294a61c909bd8a4b563024a2faa28897fd53ebc # 6.1.0
+        if: success() || failure()
+        with:
+          report_paths: '**/build/**/TEST-*.xml'
 
   status-check:
     runs-on: ubuntu-latest
     if: always()
-    needs: [ build ]
+    needs: [ build, unit-tests, device-tests ]
 
     steps:
       - name: Check

@@ -115,6 +115,7 @@ class UninstallViewModel(
 			throw exception
 		} catch (exception: Exception) {
 			clearSavedState()
+			_uiState.update { it.copy(failure = exception.message) }
 			Log.e("UninstallViewModel", null, exception)
 		}
 	}

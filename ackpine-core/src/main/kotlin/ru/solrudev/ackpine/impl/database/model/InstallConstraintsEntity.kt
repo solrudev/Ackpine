@@ -34,7 +34,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrate
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal class InstallConstraintsEntity(
+internal data class InstallConstraintsEntity(
 	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")

@@ -174,9 +174,11 @@ public final class UninstallViewModel extends ViewModel {
 				.addOnFailureListener((sessionId, failure) -> {
 					clearSavedState();
 					if (failure instanceof Failure.Exceptional f) {
+						UninstallViewModel.this.failure.setValue(f.getException().getMessage());
 						Log.e("UninstallViewModel", null, f.getException());
+					} else {
+						UninstallViewModel.this.failure.setValue(failure.getMessage());
 					}
-					UninstallViewModel.this.failure.setValue(failure.getMessage());
 				});
 	}
 

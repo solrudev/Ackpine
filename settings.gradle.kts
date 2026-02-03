@@ -17,6 +17,21 @@
 rootProject.name = "Ackpine"
 
 pluginManagement {
+	repositories {
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+			}
+		}
+		mavenCentral()
+		gradlePluginPortal {
+			content {
+				includeGroupAndSubgroups("org.gradle")
+			}
+		}
+	}
 	includeBuild("build-logic")
 	includeBuild("gradle/settings")
 }
@@ -26,7 +41,6 @@ plugins {
 }
 
 ackpine {
-	configurePluginRepositories()
 	includeSubprojects()
 	versionCatalog("androidx")
 	versionCatalog("kotlinx")

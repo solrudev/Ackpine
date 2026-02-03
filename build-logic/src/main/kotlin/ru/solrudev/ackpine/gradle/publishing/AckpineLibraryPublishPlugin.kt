@@ -56,9 +56,7 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 	) = extensions.configure<MavenPublishBaseExtension> {
 		configure(
 			AndroidMultiVariantLibrary(
-				includedBuildTypeValues = setOf("release"),
-				sourcesJar = true,
-				publishJavadocJar = false
+				includedBuildTypeValues = setOf("release")
 			)
 		)
 		publishToMavenCentral()

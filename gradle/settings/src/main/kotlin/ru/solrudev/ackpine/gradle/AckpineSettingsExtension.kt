@@ -31,13 +31,6 @@ private val SANITIZING_REGEX = Regex("""\W+""")
 public abstract class AckpineSettingsExtension @Inject constructor(private val settings: Settings) {
 
 	/**
-	 * Configures plugin management repositories.
-	 */
-	public fun configurePluginRepositories(): Unit = settings.pluginManagement {
-		repositories.configureRepositories()
-	}
-
-	/**
 	 * Finds all subprojects and adds them to the build.
 	 */
 	public fun includeSubprojects() {

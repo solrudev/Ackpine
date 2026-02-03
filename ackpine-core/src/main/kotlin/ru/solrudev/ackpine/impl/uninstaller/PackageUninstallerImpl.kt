@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.uninstaller
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.annotation.VisibleForTesting
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.concurrent.futures.CallbackToFutureAdapter.Completer
 import com.google.common.util.concurrent.ListenableFuture
@@ -91,6 +92,18 @@ internal class PackageUninstallerImpl internal constructor(
 		caller = "PackageUninstallerImpl.getActiveSessionsAsync",
 		transform = { sessions -> sessions.filter { it.isActive } }
 	)
+
+	/**
+	 * Adds [session] to an in-memory map.
+	 */
+	@VisibleForTesting
+	@JvmSynthetic
+	internal fun addSession(
+		sessionId: UUID,
+		session: CompletableSession<UninstallFailure>
+	) {
+		sessions[sessionId] = session
+	}
 
 	private fun getSession(sessionId: UUID, completer: Completer<CompletableSession<UninstallFailure>?>) {
 		val session = sessions.computeIfAbsentCompat(sessionId) {

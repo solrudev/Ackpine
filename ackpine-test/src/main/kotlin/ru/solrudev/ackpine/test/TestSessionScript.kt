@@ -23,8 +23,8 @@ import java.util.ArrayDeque
 /**
  * Scripted transitions used to drive session state updates in tests.
  *
- * Launch and commit transitions are queued and consumed on each respective call. The optional [cancelState]
- * is applied when [Session.cancel] is invoked.
+ * Launch and commit transitions are queued and consumed on each respective call. The optional cancel state configured
+ * with [onCancel] is applied when [Session.cancel] is invoked.
  */
 public class TestSessionScript<F : Failure> private constructor() {
 

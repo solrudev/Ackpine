@@ -24,6 +24,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.uninstaller.activity.PackageInstallerBasedUninstallActivity
+import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Aborted
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Blocked
@@ -59,17 +60,13 @@ internal class UninstallStatusReceiver : SystemPackageInstallerStatusReceiver<Un
 	override fun getAction(context: Context) = Companion.getAction(context)
 
 	override fun modifyConfirmationWrapperIntent(intent: Intent, wrapperIntent: Intent): Intent {
-		val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
-		return wrapperIntent.putExtra(EXTRA_PACKAGE_NAME, packageName)
+		val packageName = intent.getStringExtra(UninstallActivity.EXTRA_PACKAGE_NAME)
+		return wrapperIntent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
 	}
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal companion object {
-
 		@JvmSynthetic
 		internal fun getAction(context: Context) = "${context.packageName}.PACKAGE_UNINSTALLER_STATUS"
-
-		@JvmSynthetic
-		internal const val EXTRA_PACKAGE_NAME = "ru.solrudev.ackpine.extra.PACKAGE_NAME"
 	}
 }

@@ -19,7 +19,6 @@
 package ru.solrudev.ackpine.impl.installer.activity
 
 import android.Manifest.permission.INSTALL_PACKAGES
-import android.app.ActivityManager
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -30,7 +29,6 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.core.os.ExecutorCompat
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.map
@@ -43,7 +41,6 @@ import ru.solrudev.ackpine.session.Session
 private const val TAG = "SessionBasedInstallConfirmationActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
-private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
@@ -66,7 +63,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var isOnActivityResultCalled = false
-	private var wasOnTopOnStart = false
 
 	private val packageInstaller: PackageInstaller
 		get() = packageManager.packageInstaller
@@ -93,13 +89,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		} else {
 			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
 			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
-			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 		}
-	}
-
-	override fun onStart() {
-		super.onStart()
-		wasOnTopOnStart = isOnTop()
 	}
 
 	override fun onResume() {
@@ -129,7 +119,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		super.onSaveInstanceState(outState)
 		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
 		outState.putBoolean(IS_FIRST_RESUME_KEY, isFirstResume)
-		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
 	override fun onActivityResult(resultCode: Int) {
@@ -194,15 +183,6 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 	) = CommitProgressValueHolder
 		.getAsync(this)
 		.map { value -> sessionInfo != null && sessionInfo.progress < value }
-
-	private fun isOnTop(): Boolean {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			return false
-		}
-		val activityManager = getSystemService<ActivityManager>() ?: return false
-		val appTask = activityManager.appTasks.firstOrNull() ?: return false
-		return this::class.java.name == appTask.taskInfo.topActivity?.className
-	}
 
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
 			|| packageManager.canRequestPackageInstalls()

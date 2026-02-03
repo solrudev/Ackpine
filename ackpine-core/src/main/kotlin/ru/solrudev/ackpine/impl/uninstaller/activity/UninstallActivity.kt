@@ -37,4 +37,10 @@ internal abstract class UninstallActivity protected constructor(tag: String) : S
 		ackpinePackageUninstaller = PackageUninstallerImpl.getInstance(this)
 		super.onCreate(savedInstanceState)
 	}
+
+	@RestrictTo(RestrictTo.Scope.LIBRARY)
+	internal companion object {
+		@JvmSynthetic
+		internal const val EXTRA_PACKAGE_NAME = "ru.solrudev.ackpine.extra.PACKAGE_NAME"
+	}
 }

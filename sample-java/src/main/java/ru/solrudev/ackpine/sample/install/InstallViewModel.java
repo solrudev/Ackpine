@@ -211,14 +211,15 @@ public final class InstallViewModel extends ViewModel {
 				.addOnCancelListener(sessionDataRepository::removeSessionData)
 				.addOnSuccessListener(sessionDataRepository::removeSessionData)
 				.addOnFailureListener((sessionId, failure) -> {
-					final var message = failure.getMessage();
+					var message = failure.getMessage();
+					if (failure instanceof Failure.Exceptional f) {
+						message = f.getException().getMessage();
+						Log.e("InstallViewModel", null, f.getException());
+					}
 					final var error = message != null
 							? ResolvableString.transientResource(R.string.session_error_with_reason, message)
 							: ResolvableString.transientResource(R.string.session_error);
 					sessionDataRepository.setError(sessionId, error);
-					if (failure instanceof Failure.Exceptional f) {
-						Log.e("InstallViewModel", null, f.getException());
-					}
 				});
 		session.addProgressListener(subscriptions, sessionDataRepository::updateSessionProgress);
 		session.addStateListener(subscriptions, (sessionId, state) -> {

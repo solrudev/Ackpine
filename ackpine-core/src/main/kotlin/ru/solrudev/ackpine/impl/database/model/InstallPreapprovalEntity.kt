@@ -33,7 +33,7 @@ import androidx.room.PrimaryKey
 		onUpdate = ForeignKey.CASCADE
 	)]
 )
-internal class InstallPreapprovalEntity(
+internal data class InstallPreapprovalEntity(
 	@JvmField
 	@PrimaryKey
 	@ColumnInfo(name = "session_id")

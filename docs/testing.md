@@ -51,9 +51,11 @@ If your tests depend on SDK-dependent behavior, configure `TestSdkInt` from the 
 
 For the most part, `TestSdkInt` is used only when constructing session parameters to determine whether Android `PackageInstaller` API is available. Use `TestSdkInt.reset()` to restore the default value.
 
+If you use instrumentation/Robolectric, you can set the value to `Build.VERSION.SDK_INT` for each test.
+
 ### `Uri` shim
 
-If you run tests on pure JVM without Android framework, provide a shim for `android.net.Uri` and place it under `android.net` package. Test doubles don't call any methods on the `Uri` objects, so their implementation can be simple stubs. Shim example:
+If you run tests on pure JVM without Android framework (without instrumentation/Robolectric), provide a shim for `android.net.Uri` and place it under `android.net` package. Test doubles don't call any methods on the `Uri` objects, so their implementation can be simple stubs. Shim example:
 
 === "Kotlin"
 
@@ -91,7 +93,7 @@ You can add any `Uri` methods you use in your code.
 
 To accommodate testing, it's recommended not to use static `getInstance()` methods to get `PackageInstaller` and `PackageUninstaller` instances inside of your logic. Instead, inject them into constructors.
 
-Even if you don't inject `PackageInstaller` and `PackageUninstaller` interfaces into your SUT (system under test) properly, their static `getInstance()` methods will return singleton test doubles when used in tests. You can cast sessions returned from them to `TestSession` and `TestProgressSession` manually.
+Even if you don't inject `PackageInstaller` and `PackageUninstaller` interfaces into your SUT (system under test) properly, their static `getInstance()` methods will return singleton test doubles when used in tests.
 
 To get these singletons, call `PackageInstaller.getInstance()` or `PackageUninstaller.getInstance()` and cast them to `TestPackageInstaller` / `TestPackageUninstaller`, however, these methods require you to provide `Context`. You can create a shim for `Context` like for `Uri` if you run pure JVM tests.
 

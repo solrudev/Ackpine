@@ -16,11 +16,14 @@
 
 package ru.solrudev.ackpine.gradle
 
+import com.android.build.api.dsl.SettingsExtension
+import com.android.build.gradle.SettingsPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.initialization.Settings
 import org.gradle.api.initialization.resolve.RepositoriesMode
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.toolchains.foojay.FoojayToolchainsConventionPlugin
 
@@ -29,11 +32,20 @@ public class AckpineSettingsPlugin : Plugin<Settings> {
 	override fun apply(target: Settings): Unit = target.run {
 		enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 		enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
-		pluginManager.apply(FoojayToolchainsConventionPlugin::class)
+		pluginManager.run {
+			apply(FoojayToolchainsConventionPlugin::class)
+			apply(SettingsPlugin::class)
+		}
 		dependencyResolutionManagement {
 			repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
 			repositories.configureRepositories()
 		}
 		extensions.create<AckpineSettingsExtension>("ackpine", this)
+		extensions.configure<SettingsExtension> {
+			compileSdk = 35
+			buildToolsVersion = "35.0.1"
+			minSdk = 16
+			targetSdk = 35
+		}
 	}
 }

@@ -80,14 +80,13 @@ internal class IntentBasedInstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ) {
 
-	private val apkFile by lazy(LazyThreadSafetyMode.NONE) {
-		File(getRootApkDir(), "ackpine/sessions/$id/0.apk")
-	}
+	@Volatile
+	private var apkFile: File? = null
 
 	override fun prepare() {
 		createApkCopy()
 		val apkPackageName = context.packageManager
-			.getPackageArchiveInfo(apkFile.absolutePath, 0)
+			.getPackageArchiveInfo(getOrCreateApkFile().absolutePath, 0)
 			?.packageName
 			.orEmpty()
 		if (context.packageName == apkPackageName) {
@@ -113,7 +112,8 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	override fun doCleanup() = executor.execute {
-		apkFile.delete()
+		val file = apkFile ?: getApkOrNull()
+		file?.delete()
 	}
 
 	override fun onCommitted() {
@@ -127,41 +127,25 @@ internal class IntentBasedInstallSession internal constructor(
 		return true
 	}
 
-	private fun getRootApkDir(): File {
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-			return context.filesDir
-		}
-		val externalFilesDir = context.getExternalFilesDir(null)
-		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
-			return externalFilesDir
-		}
-		val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
-			" WRITE_EXTERNAL_STORAGE permission denied."
-		} else {
-			""
-		}
-		completeExceptionally(IllegalStateException("External storage is not available.$cause"))
-		return File("")
-	}
-
 	private fun getApkUri(): Uri {
+		val file = getOrCreateApkFile()
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-			return apkFile.toUri()
+			return file.toUri()
 		}
-		return FileProvider.getUriForFile(context, AckpineFileProvider.authority, apkFile)
-
+		return FileProvider.getUriForFile(context, AckpineFileProvider.authority, file)
 	}
 
 	private fun createApkCopy() {
-		if (apkFile.exists()) {
-			apkFile.delete()
+		val file = getOrCreateApkFile()
+		if (file.exists()) {
+			file.delete()
 		}
-		apkFile.parentFile?.mkdirs()
-		apkFile.createNewFile()
+		file.parentFile?.mkdirs()
+		file.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: throw NullPointerException("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
-			val outputStream = apkFile.outputStream()
+			val outputStream = file.outputStream()
 			outputStream.buffered().use { bufferedOutputStream ->
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
@@ -172,6 +156,38 @@ internal class IntentBasedInstallSession internal constructor(
 				outputStream.fd.sync()
 			}
 		}
+	}
+
+	private fun getOrCreateApkFile(): File {
+		apkFile?.let { return it }
+		val file = getApkOrNull()
+		if (file == null) {
+			val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
+				" WRITE_EXTERNAL_STORAGE permission denied."
+			} else {
+				""
+			}
+			completeExceptionally(IllegalStateException("External storage is not available.$cause"))
+			return File("")
+		}
+		apkFile = file
+		return file
+	}
+
+	private fun getApkOrNull(): File? {
+		val rootDir = getRootApkDirOrNull() ?: return null
+		return File(rootDir, "ackpine/sessions/$id/0.apk")
+	}
+
+	private fun getRootApkDirOrNull(): File? {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return context.filesDir
+		}
+		val externalFilesDir = context.getExternalFilesDir(null)
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
+			return externalFilesDir
+		}
+		return null
 	}
 
 	private fun getLastSelfUpdateTimestamp(): Long {

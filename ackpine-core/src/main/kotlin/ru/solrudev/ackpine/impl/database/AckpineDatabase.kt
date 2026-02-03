@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.database
 
 import androidx.annotation.RestrictTo
+import androidx.annotation.VisibleForTesting
 import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
@@ -32,7 +33,7 @@ import ru.solrudev.ackpine.impl.database.dao.ConfirmationLaunchDao
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
 import ru.solrudev.ackpine.impl.database.dao.InstallPreapprovalDao
 import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
-import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
+import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDaoImpl
 import ru.solrudev.ackpine.impl.database.dao.NativeSessionIdDao
 import ru.solrudev.ackpine.impl.database.dao.NotificationIdDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
@@ -121,7 +122,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	abstract fun nativeSessionIdDao(): NativeSessionIdDao
 	abstract fun notificationIdDao(): NotificationIdDao
 	abstract fun sessionNameDao(): SessionNameDao
-	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDao
+	abstract fun lastUpdateTimestampDao(): LastUpdateTimestampDaoImpl
 	abstract fun installPreapprovalDao(): InstallPreapprovalDao
 	abstract fun installConstraintsDao(): InstallConstraintsDao
 	abstract fun confirmationLaunchDao(): ConfirmationLaunchDao
@@ -135,7 +136,9 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 	}
 }
 
-private object PurgeCallback : RoomDatabase.Callback() {
+@VisibleForTesting
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal object PurgeCallback : RoomDatabase.Callback() {
 
 	private val eligibleForPurgeTimestamp: Long
 		get() = System.currentTimeMillis() - 1.days.inWholeMilliseconds

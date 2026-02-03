@@ -19,13 +19,14 @@ package ru.solrudev.ackpine.gradle.app
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.Variant
+import com.android.build.api.variant.ApplicationVariant
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
@@ -35,6 +36,7 @@ import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.tasks.PrepareSingleApkTask
 import java.io.File
 
 private const val APP_SIGNING_KEY_ALIAS = "APP_SIGNING_KEY_ALIAS"
@@ -67,12 +69,15 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
-			val sampleElements = configurations.consumable("ackpineSampleElements") {
+			val appElements = configurations.consumable("ackpineAppElements") {
 				libraryElements(objects.named(LIBRARY_ELEMENTS))
 			}
+			val apkElements = configurations.consumable(APK_CONFIGURATION_NAME)
 			onVariants(withReleaseBuildType()) { variant ->
 				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
-				sampleElements.addOutgoingArtifact(produceArtifactsTask)
+				appElements.addOutgoingArtifact(produceArtifactsTask)
+				val prepareApk = registerPrepareApkFileTaskForVariant(variant)
+				apkElements.addOutgoingArtifact(prepareApk)
 				configureCleanTask(produceArtifactsTask)
 			}
 		}
@@ -93,20 +98,40 @@ public class AppReleasePlugin : Plugin<Project> {
 		enableV3Signing = true
 	}
 
-	private fun Project.registerProduceArtifactsTaskForVariant(variant: Variant): TaskProvider<*> {
+	private fun Project.registerProduceArtifactsTaskForVariant(variant: ApplicationVariant): TaskProvider<Sync> {
 		val releaseDir = layout.projectDirectory.dir(variant.name)
 		val apks = variant.artifacts.get(SingleArtifact.APK)
-		val mapping = variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+		val mapping = if (variant.isMinifyEnabled) {
+			variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+		} else {
+			null
+		}
 		val mappingDestinationName = "mapping-${project.name}-${variant.name}.txt"
 		val taskName = variant.computeTaskName(action = "produce", subject = "artifacts")
 		return tasks.register<Sync>(taskName) {
 			from(apks) {
 				include("*.apk")
 			}
-			from(mapping) {
-				rename { mappingDestinationName }
+			if (mapping != null) {
+				from(mapping) {
+					rename { mappingDestinationName }
+				}
 			}
 			into(releaseDir)
+		}
+	}
+
+	private fun Project.registerPrepareApkFileTaskForVariant(
+		variant: ApplicationVariant
+	): TaskProvider<PrepareSingleApkTask> {
+		val apk = variant.artifacts.get(SingleArtifact.APK)
+		val artifactsLoader = variant.artifacts.getBuiltArtifactsLoader()
+		val outputFile = layout.buildDirectory.file("generated/${variant.name}_apk/${project.name}-${variant.name}.apk")
+		val taskName = variant.computeTaskName(action = "prepare", subject = "apkFile")
+		return tasks.register<PrepareSingleApkTask>(taskName) {
+			apkDirectory = apk
+			builtArtifactsLoader = artifactsLoader
+			outputApk = outputFile
 		}
 	}
 
@@ -118,5 +143,6 @@ public class AppReleasePlugin : Plugin<Project> {
 
 	internal companion object {
 		internal const val LIBRARY_ELEMENTS = "appArtifacts"
+		internal const val APK_CONFIGURATION_NAME = "ackpineApkElements"
 	}
 }

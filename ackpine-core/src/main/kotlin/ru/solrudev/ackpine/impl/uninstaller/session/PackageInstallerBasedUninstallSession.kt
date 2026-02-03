@@ -29,6 +29,7 @@ import ru.solrudev.ackpine.impl.helpers.createPackageInstallerStatusIntentSender
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractSession
 import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
+import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -82,7 +83,7 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 			sessionId = id,
 			confirmation, notificationId, notificationData, generateRequestCode()
 		) { intent ->
-			intent.putExtra(UninstallStatusReceiver.EXTRA_PACKAGE_NAME, packageName)
+			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
 		}
 	}
 

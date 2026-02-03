@@ -17,3 +17,12 @@ If you don't need some of the features listed above and don't want to have unnee
     android:name="android.permission.PERMISSION_TO_REMOVE"
     tools:node="remove" />
 ```
+
+For getting correct uninstall results, your app must have permission to query the uninstalled package. Add this to your `AndroidManifest.xml`:
+```xml
+<queries>
+    <package android:name="com.your.uninstalled.package" />
+</queries>
+```
+
+Or, if you must, add the `QUERY_ALL_PACKAGES` permission. Be careful about not violating Google Play policies in regards to this permission.

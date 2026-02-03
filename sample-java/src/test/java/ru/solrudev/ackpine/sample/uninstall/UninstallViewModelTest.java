@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule;
 import androidx.lifecycle.SavedStateHandle;
 
@@ -37,9 +38,9 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
 import ru.solrudev.ackpine.session.Session;
+import ru.solrudev.ackpine.test.TestPackageUninstaller;
 import ru.solrudev.ackpine.test.TestSession;
 import ru.solrudev.ackpine.test.TestSessionScript;
-import ru.solrudev.ackpine.test.TestPackageUninstaller;
 import ru.solrudev.ackpine.uninstaller.UninstallFailure;
 
 public class UninstallViewModelTest {
@@ -97,8 +98,20 @@ public class UninstallViewModelTest {
 
 	@Test
 	public void uninstallPackageFailureFlow() {
-		final var failure = new Session.State.Failed<>(new UninstallFailure.Generic("Failure"));
-		TestSessionScript<UninstallFailure> script = TestSessionScript.auto(failure);
+		final var expectedError = "Failure";
+		final var failure = new UninstallFailure.Generic(expectedError);
+		testUninstallFailure(failure, expectedError);
+	}
+
+	@Test
+	public void uninstallPackageExceptionFlow() {
+		final var expectedError = "exception";
+		final var failure = new UninstallFailure.Exceptional(new Exception(expectedError));
+		testUninstallFailure(failure, expectedError);
+	}
+
+	private void testUninstallFailure(UninstallFailure failure, @Nullable String expectedError) {
+		TestSessionScript<UninstallFailure> script = TestSessionScript.auto(new Session.State.Failed<>(failure));
 		final var uninstaller = new TestPackageUninstaller(script);
 		final var savedStateHandle = new SavedStateHandle();
 		final var viewModel = new UninstallViewModel(uninstaller, savedStateHandle, directExecutor);
@@ -107,7 +120,7 @@ public class UninstallViewModelTest {
 		viewModel.loadApplications(true, () -> List.of(app));
 		viewModel.uninstallPackage(app.packageName());
 
-		assertEquals("Failure", viewModel.getFailure().getValue());
+		assertEquals(expectedError, viewModel.getFailure().getValue());
 		assertEquals(List.of(app), viewModel.getApplications().getValue());
 		assertNull(savedStateHandle.get(SESSION_ID_KEY));
 		assertNull(savedStateHandle.get(PACKAGE_NAME_KEY));
