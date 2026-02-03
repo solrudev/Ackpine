@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
-import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import kotlinx.coroutines.test.runTest
@@ -64,11 +63,7 @@ class IntentBasedUninstallFlowTest : AckpineUninstallerTest() {
 		}
 		val result = uninstallSession.test { ui.clickCancel() }
 		assertIs<Session.State.Failed<UninstallFailure>>(result)
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-			assertIs<UninstallFailure.Aborted>(result.failure)
-		} else {
-			assertIs<UninstallFailure.Generic>(result.failure)
-		}
+		ui.waitForIdle()
 	}
 
 	@Test

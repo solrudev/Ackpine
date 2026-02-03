@@ -60,6 +60,7 @@ class PackageInstallerBasedUninstallFlowTest : AckpineUninstallerTest() {
 		val result = uninstallSession.test { ui.clickCancel() }
 		assertIs<Session.State.Failed<UninstallFailure>>(result)
 		assertIs<UninstallFailure.Aborted>(result.failure)
+		ui.waitForIdle()
 	}
 
 	@Test

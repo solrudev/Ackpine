@@ -90,6 +90,7 @@ open class AckpineTest(
 			job.join()
 		}
 
+		ui.waitForIdle()
 		ui.hideAndKillInstallerApp()
 		ui.waitForIdle()
 		ui.openRecentInstallerApp()

@@ -65,40 +65,29 @@ class UiAutomationUtility(
 		val button = device.wait(
 			Until.findObject(By.text("Cancel|CANCEL".toPattern())),
 			timeout.inWholeMilliseconds
-		)
-		when {
-			button != null -> {
-				button.click()
-				device.waitForIdle()
-			}
-
-			context.isTv() -> device.run {
-				pressDPadUp()
-				pressDPadDown()
-				pressEnter()
-			}
-
-			else -> assertionError("Cancel button not found within $timeout")
+		) ?: assertionError("Cancel button not found within $timeout")
+		if (context.isTv()) {
+			device.pressDPadUp()
+			device.pressDPadDown()
+			device.pressEnter()
+			return
 		}
+		button.click()
+		device.waitForIdle()
 	}
 
 	suspend fun clickOk(timeout: Duration = 30.seconds) {
 		device.ensureAwake()
 		waitForIdle()
 		val button = device.wait(Until.findObject(By.text("Ok|OK".toPattern())), timeout.inWholeMilliseconds)
-		when {
-			button != null -> {
-				button.click()
-				device.waitForIdle()
-			}
-
-			context.isTv() -> device.run {
-				pressDPadUp()
-				pressEnter()
-			}
-
-			else -> assertionError("OK button not found within $timeout")
+			?: assertionError("OK button not found within $timeout")
+		if (context.isTv()) {
+			device.pressDPadUp()
+			device.pressEnter()
+			return
 		}
+		button.click()
+		device.waitForIdle()
 	}
 
 	fun clickNotification(title: String, timeout: Duration = 30.seconds): Unit = device.run {
@@ -161,7 +150,10 @@ class UiAutomationUtility(
 			return
 		}
 		val canInstallPackages = canInstallPackages(installPermissionRequest.packageName)
-		if (!canInstallPackages && installPermissionRequest is InstallPermissionRequest.Installing) {
+		if (canInstallPackages) {
+			return
+		}
+		if (installPermissionRequest is InstallPermissionRequest.Installing) {
 			wait(Until.findObject(By.text("SETTINGS")), timeout.inWholeMilliseconds)?.click() ?: return
 			waitForIdle()
 		}
@@ -224,7 +216,9 @@ class UiAutomationUtility(
 	}
 
 	private fun UiDevice.canInstallPackages(packageName: String): Boolean {
-		val isGranted = executeShellCommand("appops get $packageName REQUEST_INSTALL_PACKAGES").trim()
+		val isGranted = executeShellCommand("appops get $packageName REQUEST_INSTALL_PACKAGES")
+			.trim()
+			.substringBefore(';')
 		return isGranted == "REQUEST_INSTALL_PACKAGES: allow"
 	}
 
