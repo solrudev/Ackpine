@@ -62,9 +62,9 @@ android {
 	testOptions {
 		unitTests.isIncludeAndroidResources = true
 		managedDevices {
-			localDevices.register("api28") {
-				device = "Pixel 3"
-				sdkVersion = 28
+			localDevices.register("api27") {
+				device = "Pixel 2"
+				sdkVersion = 27
 				systemImageSource = "aosp"
 				require64Bit = true
 			}

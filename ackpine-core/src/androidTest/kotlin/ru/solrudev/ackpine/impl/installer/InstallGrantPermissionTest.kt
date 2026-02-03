@@ -35,7 +35,7 @@ import kotlin.test.assertEquals
 
 @AndroidTv
 @RunWith(AndroidJUnit4::class)
-@SdkSuppress(minSdkVersion = 28, maxSdkVersion = 28)
+@SdkSuppress(maxSdkVersion = 28)
 @LargeTest
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 class InstallGrantPermissionTest : AckpineInstallerTest(allowUnknownSources = false) {
