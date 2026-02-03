@@ -40,7 +40,7 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit tests
-    needs: build
+    needs: [ build ]
     if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
 
     permissions:
@@ -80,7 +80,7 @@ jobs:
   device-tests:
     runs-on: ubuntu-latest
     name: Device tests (API ${{ matrix.api-level }})
-    needs: build
+    needs: [ build ]
     if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
     timeout-minutes: 60
 
@@ -154,7 +154,7 @@ jobs:
     name: Upload artifacts
     runs-on: ubuntu-latest
     if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.base.ref == 'master' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release')
-    needs: [ status-check ]
+    needs: [ build ]
 
     steps:
       - name: Checkout
@@ -181,7 +181,7 @@ jobs:
     name: Publish documentation
     runs-on: ubuntu-latest
     if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.base.ref == 'master' && github.event.pull_request.merged == true
-    needs: [ status-check ]
+    needs: [ build ]
 
     permissions:
       contents: write
