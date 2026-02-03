@@ -1,6 +1,21 @@
 Change Log
 ==========
 
+Version 0.19.3 (2026-02-04)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix uninstall activities not handling stops and process death correctly on API >= 29.
+- Fix incorrectly applied `isAppNotForegroundRequired` install constraint instead of `isAppNotInteractingRequired` for session-based installer.
+- Fix `StackOverflowError` when an error occurs while reading APK for intent-based installer sessions on API < 24.
+- Make confirmation activities transparent in display cutout areas.
+- Add an overload for `TestProgressSession` constructor with default script in `ackpine-test`.
+
+### Public API changes
+
+- Added a no-arg constructor to `TestProgressSession`.
+
 Version 0.19.2 (2026-01-11)
 ---------------------------
 
