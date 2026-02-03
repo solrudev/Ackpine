@@ -200,7 +200,7 @@ class UiAutomationUtility(
 			result.trim().isEmpty()
 		}
 		if (!killed) {
-			error("${ApkFixtures.INSTALLER_PACKAGE_NAME} process could not be killed after $timeout")
+			assertionError("${ApkFixtures.INSTALLER_PACKAGE_NAME} process could not be killed after $timeout")
 		}
 		waitForIdle()
 		if (wait || needsExtraStabilizationDelay()) {
