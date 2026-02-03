@@ -192,6 +192,12 @@ class UiAutomationUtility(
 		waitForIdle()
 		val killed = waitForCondition(timeout) {
 			executeShellCommand("am $command ${ApkFixtures.INSTALLER_PACKAGE_NAME}")
+			if (Build.VERSION.SDK_INT in 24..27) {
+				val pid = executeShellCommand("pidof ${ApkFixtures.INSTALLER_PACKAGE_NAME}").trim()
+				if (pid.isNotEmpty()) {
+					executeShellCommand("su 0 kill -9 $pid")
+				}
+			}
 			val result = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 				executeShellCommand("pidof ${ApkFixtures.INSTALLER_PACKAGE_NAME}")
 			} else {
