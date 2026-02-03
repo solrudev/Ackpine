@@ -27,14 +27,21 @@ import ru.solrudev.ackpine.remote.await
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.await
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@OptIn(ExperimentalContracts::class)
 context(scope: CoroutineScope)
 suspend fun <F : Failure> Session<F>.test(
 	timeout: Duration = 30.seconds,
 	block: suspend (Session<F>) -> Unit
 ): Session.State.Completed<F> {
+	contract {
+		callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+	}
 	val resultDeferred = scope.async(start = UNDISPATCHED) {
 		withContext(Dispatchers.Default.limitedParallelism(1)) {
 			withTimeout(timeout) {
@@ -46,11 +53,15 @@ suspend fun <F : Failure> Session<F>.test(
 	return resultDeferred.await()
 }
 
+@OptIn(ExperimentalContracts::class)
 context(scope: CoroutineScope)
 suspend fun RemoteSession.test(
 	timeout: Duration = 30.seconds,
 	block: suspend (RemoteSession) -> Unit = {}
 ): RemoteSession.State {
+	contract {
+		callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+	}
 	val resultDeferred = scope.async(start = UNDISPATCHED) {
 		awaitWithTimeout(timeout)
 	}

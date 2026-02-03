@@ -32,6 +32,7 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
 import kotlin.test.assertIs
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 @SdkSuppress(maxSdkVersion = 28)
@@ -50,8 +51,16 @@ class SystemUnhandledFailureTest : AckpineInstallerTest() {
 			this.installerType = installerType
 			confirmation = Confirmation.IMMEDIATE
 		}
-		val result = session.test { ui.clickOk() }
+		val clicked: Boolean
+		val result = session.test {
+			clicked = ui.clickOkIfPresent(timeout = 3.seconds)
+		}
 		assertIs<Session.State.Failed<InstallFailure>>(result)
-		assertIs<InstallFailure.Generic>(result.failure)
+		if (clicked) {
+			assertIs<InstallFailure.Generic>(result.failure)
+		} else {
+			// Completing directly from PackageInstallerStatusReceiver
+			assertIs<InstallFailure.Invalid>(result.failure)
+		}
 	}
 }

@@ -77,17 +77,24 @@ class UiAutomationUtility(
 	}
 
 	suspend fun clickOk(timeout: Duration = 30.seconds) {
+		if (!clickOkIfPresent(timeout)) {
+			assertionError("OK button not found within $timeout")
+		}
+	}
+
+	suspend fun clickOkIfPresent(timeout: Duration): Boolean {
 		device.ensureAwake()
 		waitForIdle()
 		val button = device.wait(Until.findObject(By.text("Ok|OK".toPattern())), timeout.inWholeMilliseconds)
-			?: assertionError("OK button not found within $timeout")
+			?: return false
 		if (context.isTv()) {
 			device.pressDPadUp()
 			device.pressEnter()
-			return
+			return true
 		}
 		button.click()
 		device.waitForIdle()
+		return true
 	}
 
 	fun clickNotification(title: String, timeout: Duration = 30.seconds): Unit = device.run {
