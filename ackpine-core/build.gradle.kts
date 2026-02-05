@@ -56,7 +56,7 @@ android {
 	}
 	sourceSets {
 		named("test") {
-			assets.srcDir(layout.projectDirectory.dir("schemas"))
+			assets.directories.add(layout.projectDirectory.dir("schemas").toString())
 		}
 	}
 	testOptions {
