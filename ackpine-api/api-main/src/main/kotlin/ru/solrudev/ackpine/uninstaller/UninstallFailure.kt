@@ -32,17 +32,7 @@ public sealed class UninstallFailure(public open val message: String?) : Failure
 	public data class Generic @JvmOverloads public constructor(
 		public override val message: String? = null
 	) : UninstallFailure(message) {
-
 		private companion object {
-
-			@Deprecated(
-				message = "Binary and Java source compatibility. Will be removed in the next minor release",
-				level = DeprecationLevel.HIDDEN
-			)
-			@Suppress("RedundantVisibilityModifier")
-			@JvmField
-			public val INSTANCE: Generic = Generic()
-
 			private const val serialVersionUID: Long = 90119473338043981L
 		}
 	}

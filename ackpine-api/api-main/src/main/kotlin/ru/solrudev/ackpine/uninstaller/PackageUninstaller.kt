@@ -31,7 +31,7 @@ import java.util.UUID
 public interface PackageUninstaller {
 
 	/**
-	 * Creates a uninstall session with provided [parameters].The returned session is in
+	 * Creates an uninstall session with provided [parameters].The returned session is in
 	 * [pending][Session.State.Pending] state.
 	 *
 	 * @param parameters an instance of [UninstallParameters] which configures the uninstall session.

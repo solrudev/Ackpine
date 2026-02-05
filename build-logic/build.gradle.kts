@@ -21,6 +21,7 @@ plugins {
 kotlin {
 	jvmToolchain(21)
 	explicitApi()
+	compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
 }
 
 gradlePlugin {
@@ -61,6 +62,14 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.dokka"
 			implementationClass = "ru.solrudev.ackpine.gradle.documentation.DokkaConventionPlugin"
 		}
+		register("ackpine-asset-app-artifacts") {
+			id = "ru.solrudev.ackpine.asset-app-artifacts"
+			implementationClass = "ru.solrudev.ackpine.gradle.assets.AssetAppArtifactsConsumerPlugin"
+		}
+		register("ackpine-jacoco") {
+			id = "ru.solrudev.ackpine.jacoco"
+			implementationClass = "ru.solrudev.ackpine.gradle.testing.AckpineJacocoPlugin"
+		}
 	}
 }
 
@@ -68,6 +77,5 @@ dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
-	implementation(libs.plugin.bcv)
 	implementation(kotlinx.serialization.json)
 }

@@ -69,7 +69,10 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			apiVersion = kotlinVersion
 			jvmTarget = JVM_1_8
 			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
-			freeCompilerArgs.add("-Xconsistent-data-class-copy-visibility")
+			freeCompilerArgs.addAll(
+				"-Xconsistent-data-class-copy-visibility",
+				"-Xcontext-parameters"
+			)
 		}
 	}
 }

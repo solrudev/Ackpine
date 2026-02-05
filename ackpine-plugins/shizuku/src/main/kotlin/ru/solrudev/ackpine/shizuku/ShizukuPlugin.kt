@@ -101,7 +101,8 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 		public val allUsers: Boolean,
 
 		/**
-		 * Installer package for the app. Empty by default, so the calling app package name will be used.
+		 * Installer package for the app. Empty by default, so the calling app package name will be used. Works only on
+		 * Android 9+.
 		 */
 		public val installerPackageName: String
 	) : AckpinePlugin.Parameters {
@@ -189,7 +190,8 @@ public class ShizukuPlugin private constructor() : AckpinePlugin<ShizukuPlugin.P
 				private set
 
 			/**
-			 * Installer package for the app. Empty by default, so the calling app package name will be used.
+			 * Installer package for the app. Empty by default, so the calling app package name will be used. Takes
+			 * effect only on Android 9+.
 			 */
 			public var installerPackageName: String = ""
 				private set

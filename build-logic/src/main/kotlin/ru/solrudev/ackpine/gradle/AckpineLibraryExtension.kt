@@ -17,15 +17,16 @@
 package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.LibraryExtension
-import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
+import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.setProperty
-import java.util.Optional
+import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
+import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import javax.inject.Inject
-import kotlin.jvm.optionals.getOrNull
 
 private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
 
@@ -34,9 +35,13 @@ private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
  */
 public abstract class AckpineLibraryExtension @Inject constructor(
 	libraryExtension: LibraryExtension,
-	private val apiValidationExtension: Optional<ApiValidationExtension>,
+	private val abiValidationExtension: Lazy<AbiValidationExtension?>,
 	objectFactory: ObjectFactory
-) : AckpineCommonExtension(libraryExtension, Constants.PACKAGE_NAME), ExtensionAware {
+) : AckpineCommonExtension(
+	libraryExtension,
+	Constants.PACKAGE_NAME,
+	objectFactory.newInstance<AckpineTestingOptions>()
+), ExtensionAware {
 
 	private val _internalPackages = objectFactory.setProperty<String>()
 
@@ -49,11 +54,14 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 	/**
 	 * Adds [packageNames] to ignored packages. They will not appear in resulting public API dumps and documentation.
 	 */
+	@OptIn(ExperimentalAbiValidation::class)
 	public fun internalPackages(vararg packageNames: String) {
 		for (packageName in packageNames) {
 			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
 		}
 		_internalPackages = packageNames.toSet()
-		apiValidationExtension.getOrNull()?.ignoredPackages += packageNames
+		abiValidationExtension.value?.run {
+			filters.excluded.byNames.addAll(packageNames.map { "$it.**" })
+		}
 	}
 }

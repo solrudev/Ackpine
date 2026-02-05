@@ -20,7 +20,23 @@ plugins {
 
 dependencyResolutionManagement {
 	repositories {
+		google {
+			content {
+				includeGroupAndSubgroups("androidx")
+				includeGroupAndSubgroups("com.android")
+				includeGroupAndSubgroups("com.google")
+			}
+		}
 		mavenCentral()
-		gradlePluginPortal()
+		gradlePluginPortal {
+			content {
+				includeGroupAndSubgroups("org.gradle")
+			}
+		}
+	}
+	versionCatalogs {
+		register("libs") {
+			from(files("../libs.versions.toml"))
+		}
 	}
 }

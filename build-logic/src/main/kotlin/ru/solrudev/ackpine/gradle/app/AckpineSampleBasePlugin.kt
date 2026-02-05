@@ -17,6 +17,9 @@
 package ru.solrudev.ackpine.gradle.app
 
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -27,8 +30,10 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.getByType
+import org.gradle.kotlin.dsl.newInstance
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.SampleConstants
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineSampleBasePlugin : Plugin<Project> {
@@ -36,9 +41,16 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(AppPlugin::class)
 		val applicationExtension = extensions.getByType<ApplicationExtension>()
-		extensions.create<AckpineSampleBaseExtension>("ackpine", applicationExtension)
+		val extension = extensions.create<AckpineSampleBaseExtension>(
+			"ackpine",
+			applicationExtension,
+			objects.newInstance<AckpineTestingOptions>()
+		)
+		extension.testing.enableHostTests.convention(false)
+		extension.testing.enableDeviceTests.convention(false)
 		configureJava()
 		configureAndroid()
+		configureTests(extension.testing)
 	}
 
 	private fun Project.configureJava() = extensions.configure<JavaPluginExtension> {
@@ -49,14 +61,11 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 
 	private fun Project.configureAndroid() = extensions.configure<ApplicationExtension> {
 		enableKotlin = false
-		compileSdk = Constants.COMPILE_SDK
-		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 		namespace = SampleConstants.PACKAGE_NAME
 
 		defaultConfig {
 			applicationId = SampleConstants.PACKAGE_NAME
 			minSdk = SampleConstants.MIN_SDK
-			targetSdk = SampleConstants.TARGET_SDK
 			versionCode = ackpineVersion.get().versionCode
 			versionName = ackpineVersion.get().toString()
 		}
@@ -78,6 +87,21 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 
 		lint {
 			checkReleaseBuilds = false
+		}
+	}
+
+	private fun Project.configureTests(
+		testing: AckpineTestingOptions
+	) = extensions.configure<ApplicationAndroidComponentsExtension> {
+		beforeVariants { variantBuilder ->
+			variantBuilder
+				.hostTests
+				.getValue(HostTestBuilder.UNIT_TEST_TYPE)
+				.enable = testing.enableHostTests.get() && variantBuilder.buildType == "debug"
+			variantBuilder
+				.deviceTests
+				.getValue(DeviceTestBuilder.ANDROID_TEST_TYPE)
+				.enable = testing.enableDeviceTests.get() && variantBuilder.buildType == "debug"
 		}
 	}
 }

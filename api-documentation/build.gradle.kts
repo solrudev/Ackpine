@@ -41,6 +41,7 @@ dependencies {
 	dokka(projects.ackpineResources)
 	dokka(projects.ackpinePlugins.shizuku)
 	dokka(projects.ackpinePlugins.shizukuKtx)
+	dokka(projects.ackpineTest)
 }
 
 tasks.clean {

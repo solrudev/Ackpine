@@ -58,7 +58,8 @@ public interface ShizukuPluginParametersDsl {
 	public var allUsers: Boolean
 
 	/**
-	 * Installer package for the app. Empty by default, so the calling app package name will be used.
+	 * Installer package for the app. Empty by default, so the calling app package name will be used. Takes effect only
+	 * on Android 9+.
 	 */
 	public var installerPackageName: String
 }

@@ -1,6 +1,71 @@
 Change Log
 ==========
 
+Version 0.19.3 (2026-02-04)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix uninstall activities not handling stops and process death correctly on API >= 29.
+- Fix incorrectly applied `isAppNotForegroundRequired` install constraint instead of `isAppNotInteractingRequired` for session-based installer.
+- Fix `StackOverflowError` when an error occurs while reading APK for intent-based installer sessions on API < 24.
+- Make confirmation activities transparent in display cutout areas.
+- Add an overload for `TestProgressSession` constructor with default script in `ackpine-test`.
+
+### Public API changes
+
+- Added a no-arg constructor to `TestProgressSession`.
+
+Version 0.19.2 (2026-01-11)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add `ackpine-test` module with testing utilities for Ackpine. See Testing documentation page for more information.
+- `ResolvableString.transientResource()` no longer creates anonymous classes. Now these strings properly implement `hashCode()` and `equals()`.
+- Add unit tests to `sample-java` and `sample-ktx` using `ackpine-test`.
+
+### Public API changes
+
+- Added new `ackpine-test` module.
+
+Version 0.19.1 (2026-01-03)
+---------------------------
+
+### Bug fixes and improvements
+
+- Hotfix: uninstall session crash when using Shizuku on Android 8.
+
+Version 0.19.0 (2026-01-03)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix uninstall session crash when using Shizuku on Android < 8.
+
+### Public API changes
+
+- Removed `UninstallFailure.Generic.INSTANCE` static field.
+- Deprecated with error setter for `uninstallerType` property in `UninstallParameters.Builder`. Use `setUninstallerType()` method. The setter will be made private in the next minor release.
+
+Version 0.18.6 (2025-12-29)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix install session fail on Android < 9 when using `installerPackageName` with Shizuku plugin.
+
+Version 0.18.5 (2025-12-26)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 8.13.2.
+
+### Bug fixes and improvements
+
+- Fix intent-based uninstall sessions hanging and not showing confirmation screen.
+
 Version 0.18.4 (2025-12-16)
 ---------------------------
 

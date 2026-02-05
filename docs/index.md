@@ -31,7 +31,7 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
 
     ```toml
     [versions]
-    ackpine = "0.18.4"
+    ackpine = "0.19.3"
     
     [libraries]
     ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
@@ -54,6 +54,9 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     # optional - Kotlin extensions for Shizuku plugin
     ackpine-shizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-shizuku-ktx", version.ref = "ackpine" }
     
+    # optional - testing utilities
+    ackpine-test = { module = "ru.solrudev.ackpine:ackpine-test", version.ref = "ackpine" }
+    
     [bundles]
     ackpine = [
         "ackpine-core",
@@ -70,7 +73,7 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
 
     ```kotlin
     dependencies {
-        val ackpineVersion = "0.18.4"
+        val ackpineVersion = "0.19.3"
         implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
     
         // optional - Kotlin extensions and Coroutines support
@@ -90,13 +93,16 @@ Ackpine depends on Jetpack libraries, so it's also necessary to add the `google(
     
         // optional - Kotlin extensions for Shizuku plugin
         implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
+    
+        // optional - testing utilities
+        testImplementation("ru.solrudev.ackpine:ackpine-test:$ackpineVersion")
     }
     ```
 
 License
 -------
 
-    Copyright (C) 2023-2025 Ilya Fomichev
+    Copyright (C) 2023-2026 Ilya Fomichev
     
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.

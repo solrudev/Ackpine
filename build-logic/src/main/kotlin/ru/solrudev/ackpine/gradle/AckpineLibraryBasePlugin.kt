@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.gradle.LibraryPlugin
 import kotlinx.validation.ApiValidationExtension
@@ -35,8 +37,8 @@ import org.gradle.kotlin.dsl.the
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
-import java.util.Optional
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
 
@@ -48,16 +50,21 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		}
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
-		val apiValidationExtension = extensions.findByType<ApiValidationExtension>()?.apply {
-			nonPublicMarkers += "androidx.annotation.RestrictTo"
+		val apiValidationExtension = lazy {
+			extensions.findByType<ApiValidationExtension>()?.apply {
+				nonPublicMarkers += "androidx.annotation.RestrictTo"
+			}
 		}
-		extensions.create(
+		val extension = extensions.create(
 			"ackpine",
 			AckpineLibraryExtension::class.java,
 			libraryExtension,
-			Optional.ofNullable(apiValidationExtension)
+			abiValidationExtension
 		)
+		extension.testing.enableHostTests.convention(false)
+		extension.testing.enableDeviceTests.convention(false)
 		configureAndroid()
+		configureTests(extension.testing)
 		registerConsumableLibraryConfiguration()
 	}
 
@@ -67,11 +74,9 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
 		enableKotlin = false
-		compileSdk = Constants.COMPILE_SDK
-		buildToolsVersion = Constants.BUILD_TOOLS_VERSION
 
 		defaultConfig {
-			minSdk = Constants.MIN_SDK
+			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 			consumerProguardFiles("consumer-rules.pro")
 		}
 
@@ -83,6 +88,25 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		compileOptions {
 			sourceCompatibility = JavaVersion.VERSION_1_8
 			targetCompatibility = JavaVersion.VERSION_1_8
+		}
+
+		testOptions {
+			targetSdk = Constants.TARGET_SDK
+		}
+	}
+
+	private fun Project.configureTests(
+		testing: AckpineTestingOptions
+	) = extensions.configure<LibraryAndroidComponentsExtension> {
+		beforeVariants { variantBuilder ->
+			variantBuilder
+				.hostTests
+				.getValue(HostTestBuilder.UNIT_TEST_TYPE)
+				.enable = testing.enableHostTests.get() && variantBuilder.buildType == "debug"
+			variantBuilder
+				.deviceTests
+				.getValue(DeviceTestBuilder.ANDROID_TEST_TYPE)
+				.enable = testing.enableDeviceTests.get() && variantBuilder.buildType == "debug"
 		}
 	}
 

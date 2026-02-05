@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 
 import android.os.Bundle
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
 
 private const val TAG = "IntentBasedUninstallActivity"
 
@@ -26,6 +25,8 @@ private const val TAG = "IntentBasedUninstallActivity"
 internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 
 	private lateinit var uninstallPackageContract: UninstallContract
+	private var isProcessRecreated = false
+	private var wasStopped = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -38,10 +39,25 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
+		} else {
+			isProcessRecreated = !savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 		}
 	}
 
+	override fun onStop() {
+		super.onStop()
+		wasStopped = true
+	}
+
 	override fun onActivityResult(resultCode: Int) {
+		if ((wasStopped || isProcessRecreated) && wasOnTopOnStart) {
+			// Uninstaller activity sends meaningless result and is removed when stopped (since API 29),
+			// so we need to re-launch
+			wasStopped = false
+			isProcessRecreated = false
+			launchUninstallActivity()
+			return
+		}
 		val result = uninstallPackageContract.parseResult(this, resultCode)
 		completeSession(result)
 	}
@@ -52,7 +68,7 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	private fun getPackageNameToUninstall(): String? {
-		return intent.extras?.getString(UninstallStatusReceiver.EXTRA_PACKAGE_NAME)
+		return intent.extras?.getString(EXTRA_PACKAGE_NAME)
 			?: intent.extras?.getString("ACKPINE_UNINSTALLER_PACKAGE_NAME")
 	}
 }

@@ -16,12 +16,15 @@
 
 package ru.solrudev.ackpine.impl.installer.session
 
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
+import android.content.pm.PackageManager.PERMISSION_DENIED
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
@@ -77,24 +80,13 @@ internal class IntentBasedInstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ) {
 
-	private val apkFile by lazy(LazyThreadSafetyMode.NONE) {
-		File(context.externalDir, "ackpine/sessions/$id/0.apk")
-	}
-
-	private val Context.externalDir: File
-		get() {
-			val externalFilesDir = getExternalFilesDir(null)
-			return if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
-				externalFilesDir
-			} else {
-				filesDir
-			}
-		}
+	@Volatile
+	private var apkFile: File? = null
 
 	override fun prepare() {
 		createApkCopy()
 		val apkPackageName = context.packageManager
-			.getPackageArchiveInfo(apkFile.absolutePath, 0)
+			.getPackageArchiveInfo(getOrCreateApkFile().absolutePath, 0)
 			?.packageName
 			.orEmpty()
 		if (context.packageName == apkPackageName) {
@@ -120,7 +112,8 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	override fun doCleanup() = executor.execute {
-		apkFile.delete()
+		val file = apkFile ?: getApkOrNull()
+		file?.delete()
 	}
 
 	override fun onCommitted() {
@@ -135,23 +128,24 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	private fun getApkUri(): Uri {
+		val file = getOrCreateApkFile()
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-			return apkFile.toUri()
+			return file.toUri()
 		}
-		return FileProvider.getUriForFile(context, AckpineFileProvider.authority, apkFile)
-
+		return FileProvider.getUriForFile(context, AckpineFileProvider.authority, file)
 	}
 
 	private fun createApkCopy() {
-		if (apkFile.exists()) {
-			apkFile.delete()
+		val file = getOrCreateApkFile()
+		if (file.exists()) {
+			file.delete()
 		}
-		apkFile.parentFile?.mkdirs()
-		apkFile.createNewFile()
+		file.parentFile?.mkdirs()
+		file.createNewFile()
 		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
 			?: throw NullPointerException("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
-			val outputStream = apkFile.outputStream()
+			val outputStream = file.outputStream()
 			outputStream.buffered().use { bufferedOutputStream ->
 				var currentProgress = 0
 				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
@@ -162,6 +156,38 @@ internal class IntentBasedInstallSession internal constructor(
 				outputStream.fd.sync()
 			}
 		}
+	}
+
+	private fun getOrCreateApkFile(): File {
+		apkFile?.let { return it }
+		val file = getApkOrNull()
+		if (file == null) {
+			val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
+				" WRITE_EXTERNAL_STORAGE permission denied."
+			} else {
+				""
+			}
+			completeExceptionally(IllegalStateException("External storage is not available.$cause"))
+			return File("")
+		}
+		apkFile = file
+		return file
+	}
+
+	private fun getApkOrNull(): File? {
+		val rootDir = getRootApkDirOrNull() ?: return null
+		return File(rootDir, "ackpine/sessions/$id/0.apk")
+	}
+
+	private fun getRootApkDirOrNull(): File? {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			return context.filesDir
+		}
+		val externalFilesDir = context.getExternalFilesDir(null)
+		if (Environment.getExternalStorageState() == Environment.MEDIA_MOUNTED && externalFilesDir != null) {
+			return externalFilesDir
+		}
+		return null
 	}
 
 	private fun getLastSelfUpdateTimestamp(): Long {

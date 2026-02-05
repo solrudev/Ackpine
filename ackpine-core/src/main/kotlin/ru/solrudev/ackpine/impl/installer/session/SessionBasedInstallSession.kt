@@ -329,7 +329,7 @@ internal class SessionBasedInstallSession internal constructor(
 			builder.setAppNotForegroundRequired()
 		}
 		if (constraints.isAppNotInteractingRequired) {
-			builder.setAppNotForegroundRequired()
+			builder.setAppNotInteractingRequired()
 		}
 		if (constraints.isAppNotTopVisibleRequired) {
 			builder.setAppNotTopVisibleRequired()

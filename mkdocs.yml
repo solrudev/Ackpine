@@ -1,6 +1,6 @@
 site_name: Ackpine
 site_description: A library providing consistent APIs for installing and uninstalling apps on an Android device
-site_author: 2023-2025 Ilya Fomichev
+site_author: 2023-2026 Ilya Fomichev
 site_url: 'https://ackpine.solrudev.ru'
 remote_branch: gh-pages
 edit_uri: ""
@@ -8,7 +8,7 @@ edit_uri: ""
 repo_name: Ackpine
 repo_url: 'https://github.com/solrudev/Ackpine'
 
-copyright: 'Copyright &copy; 2023-2025 Ilya Fomichev'
+copyright: 'Copyright &copy; 2023-2026 Ilya Fomichev'
 
 theme:
   name: material
@@ -50,6 +50,7 @@ nav:
   - 'Getting Started': getting_started.md
   - 'Configuration': configuration.md
   - 'Split APKs': split_apks.md
+  - 'Testing': testing.md
   - 'Shizuku': shizuku.md
   - 'Samples': samples.md
   - 'Permissions': permissions.md
