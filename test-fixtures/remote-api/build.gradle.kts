@@ -24,6 +24,10 @@ ackpine {
 	id = "remote-api"
 }
 
+apiValidation {
+	validationDisabled = true
+}
+
 android {
 	buildFeatures {
 		aidl = true
