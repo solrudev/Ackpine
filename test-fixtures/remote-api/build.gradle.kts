@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-@file:OptIn(ExperimentalAbiValidation::class)
-
-import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
-
 description = "Ackpine APIs for IPC"
 
 plugins {
@@ -26,12 +22,6 @@ plugins {
 
 ackpine {
 	id = "remote-api"
-}
-
-kotlin {
-	abiValidation {
-		enabled = false
-	}
 }
 
 android {

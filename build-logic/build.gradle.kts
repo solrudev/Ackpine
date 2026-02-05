@@ -77,5 +77,6 @@ dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
+	implementation(libs.plugin.bcv)
 	implementation(kotlinx.serialization.json)
 }

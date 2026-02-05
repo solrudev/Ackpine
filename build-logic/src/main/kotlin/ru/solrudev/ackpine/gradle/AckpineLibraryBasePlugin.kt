@@ -50,7 +50,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		}
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
-		val apiValidationExtension = lazy {
+		val abiValidationExtension = lazy {
 			extensions.findByType<ApiValidationExtension>()?.apply {
 				nonPublicMarkers += "androidx.annotation.RestrictTo"
 			}

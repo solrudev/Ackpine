@@ -17,13 +17,13 @@
 package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.dsl.LibraryExtension
+import kotlinx.validation.ApiValidationExtension
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.setProperty
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
 import javax.inject.Inject
@@ -35,7 +35,7 @@ private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
  */
 public abstract class AckpineLibraryExtension @Inject constructor(
 	libraryExtension: LibraryExtension,
-	private val abiValidationExtension: Lazy<AbiValidationExtension?>,
+	private val abiValidationExtension: Lazy<ApiValidationExtension?>,
 	objectFactory: ObjectFactory
 ) : AckpineCommonExtension(
 	libraryExtension,
@@ -60,8 +60,6 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
 		}
 		_internalPackages = packageNames.toSet()
-		abiValidationExtension.value?.run {
-			filters.excluded.byNames.addAll(packageNames.map { "$it.**" })
-		}
+		abiValidationExtension.value?.ignoredPackages += packageNames
 	}
 }
