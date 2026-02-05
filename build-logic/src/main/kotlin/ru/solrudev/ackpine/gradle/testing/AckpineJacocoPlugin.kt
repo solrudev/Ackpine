@@ -179,13 +179,16 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		reportNameAction: String
 	): TaskProvider<AckpineJacocoReportTask> {
 		val executionData = objects.fileCollection()
-		executionData.from(
-			providers.provider {
-				tasks.findByName(testTaskName)?.outputs?.files?.asFileTree?.matching {
-					include("**/coverage.ec", "**/*.ec", "**/*.exec")
+		val executionDataFiles = providers
+			.provider { tasks.named(testTaskName) }
+			.flatMap { taskProvider ->
+				taskProvider.map { task ->
+					task.outputs.files.asFileTree.matching {
+						include("**/coverage.ec", "**/*.ec", "**/*.exec")
+					}
 				}
 			}
-		)
+		executionData.from(executionDataFiles)
 		val reportTaskName = variant.computeTaskName(action = reportNameAction, subject = "androidTestReport")
 		val reportTask = tasks.registerJacocoReportTask(reportTaskName, sources, executionData)
 		variant.artifacts
