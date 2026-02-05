@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "9.0.0-beta05"
+android-plugin = "9.0.0"
 dokka = "2.1.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
