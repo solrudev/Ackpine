@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.19.4 (2026-02-07)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix introduced in 0.19.3 repeated uninstall confirmation on some devices.
+
 Version 0.19.3 (2026-02-04)
 ---------------------------
 

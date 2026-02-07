@@ -9,6 +9,11 @@ Root `Ackpine` project has the following Gradle tasks:
 - `:checkAckpineAbi`: validates public ABI surface of the library projects against dumps;
 - `:updateAckpineAbi`: dumps public ABI surface of the library projects.
 
+Tests:
+
+- `test`: runs unit tests for all projects where they are configured;
+- `api<ApiLevel>DebugAndroidTest`: runs device tests on Gradle managed device with `ApiLevel` for all projects where they are configured and if they have `api<ApiLevel>` managed device registered.
+
 Other useful tasks provided by third-party Gradle plugins:
 
 - `:api-documentation:dokkaGenerate`: generates API documentation for the library projects and places it into `docs/api` directory;

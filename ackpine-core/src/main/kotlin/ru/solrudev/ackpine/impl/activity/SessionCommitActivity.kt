@@ -45,7 +45,7 @@ import kotlin.random.nextInt
 
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
-private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
+private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<F : Failure> protected constructor(
@@ -66,9 +66,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private var isLoading = false
 	private var isOnActivityResultCalled = false
 
-	protected var wasOnTopOnStart = false
-		private set
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -83,11 +80,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		setContentView(R.layout.ackpine_activity_session_commit)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
-	}
-
-	override fun onStart() {
-		super.onStart()
-		wasOnTopOnStart = isOnTop()
 	}
 
 	override fun onDestroy() {
@@ -113,7 +105,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
-		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
 	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -165,6 +156,15 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		ackpineSessionFuture.handleResult(block = block)
 	}
 
+	protected fun isOnTop(): Boolean {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+			return false
+		}
+		val activityManager = getSystemService<ActivityManager>() ?: return false
+		val appTask = activityManager.appTasks.firstOrNull() ?: return false
+		return this::class.java.name == appTask.taskInfo.topActivity?.className
+	}
+
 	private fun notifySessionCommitted() {
 		if (!shouldNotifyWhenCommitted()) {
 			return
@@ -178,7 +178,6 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		if (savedInstanceState != null) {
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
 			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
-			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 			setLoading(isLoading)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 			if (!isConfigChangeRecreation) {
@@ -216,18 +215,5 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				finish()
 			}
 		}
-	}
-
-	private fun isOnTop(): Boolean {
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-			return false
-		}
-		val activityManager = getSystemService<ActivityManager>() ?: return false
-		val appTask = activityManager.appTasks.firstOrNull() ?: return false
-		return this::class.java.name == appTask.taskInfo.topActivity?.className
-	}
-
-	protected companion object {
-		const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
 	}
 }

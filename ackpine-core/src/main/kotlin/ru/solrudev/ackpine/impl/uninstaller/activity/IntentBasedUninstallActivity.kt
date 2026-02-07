@@ -25,8 +25,6 @@ private const val TAG = "IntentBasedUninstallActivity"
 internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 
 	private lateinit var uninstallPackageContract: UninstallContract
-	private var isProcessRecreated = false
-	private var wasStopped = false
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -39,30 +37,15 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
-		} else {
-			isProcessRecreated = !savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 		}
 	}
 
-	override fun onStop() {
-		super.onStop()
-		wasStopped = true
-	}
-
-	override fun onActivityResult(resultCode: Int) {
-		if ((wasStopped || isProcessRecreated) && wasOnTopOnStart) {
-			// Uninstaller activity sends meaningless result and is removed when stopped (since API 29),
-			// so we need to re-launch
-			wasStopped = false
-			isProcessRecreated = false
-			launchUninstallActivity()
-			return
-		}
+	override fun processResult(resultCode: Int) {
 		val result = uninstallPackageContract.parseResult(this, resultCode)
 		completeSession(result)
 	}
 
-	private fun launchUninstallActivity() {
+	override fun launchUninstallActivity() {
 		val intent = uninstallPackageContract.createIntent()
 		startActivityForResult(intent)
 	}
