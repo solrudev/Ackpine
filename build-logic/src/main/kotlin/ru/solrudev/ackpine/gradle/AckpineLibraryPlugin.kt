@@ -52,7 +52,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			?.named("libs")
 			?.findVersion("kotlin-for-consumers")
 			?.get()
-			?.displayName
+			?.requiredVersion
 			?: coreLibrariesVersion
 		val kotlinVersion = KotlinVersion.fromVersion(
 			stdlibVersion
