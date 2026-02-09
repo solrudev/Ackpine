@@ -41,6 +41,7 @@ import ru.solrudev.ackpine.session.Session
 private const val TAG = "SessionBasedInstallConfirmationActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
+private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
@@ -62,6 +63,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 	private val executor = ExecutorCompat.create(handler)
 	private var canInstallPackages = false
 	private var isFirstResume = true
+	private var wasOnTopOnStart = false
 	private var isOnActivityResultCalled = false
 
 	private val packageInstaller: PackageInstaller
@@ -89,7 +91,13 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		} else {
 			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
 			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
+			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
 		}
+	}
+
+	override fun onStart() {
+		super.onStart()
+		wasOnTopOnStart = isOnTop()
 	}
 
 	override fun onResume() {
@@ -119,6 +127,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		super.onSaveInstanceState(outState)
 		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
 		outState.putBoolean(IS_FIRST_RESUME_KEY, isFirstResume)
+		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
 	}
 
 	override fun onActivityResult(resultCode: Int) {
