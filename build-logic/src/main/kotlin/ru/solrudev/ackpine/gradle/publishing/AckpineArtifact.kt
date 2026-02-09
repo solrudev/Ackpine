@@ -16,23 +16,20 @@
 
 package ru.solrudev.ackpine.gradle.publishing
 
-import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
-import org.gradle.kotlin.dsl.property
-import javax.inject.Inject
 
 /**
  * Extension for Ackpine `library-publish` plugin.
  */
-public open class AckpineArtifact @Inject constructor(objectFactory: ObjectFactory) {
+public interface AckpineArtifact {
 
 	/**
 	 * Name of the published artifact.
 	 */
-	public val name: Property<String> = objectFactory.property<String>().convention("")
+	public val name: Property<String>
 
 	/**
 	 * Inception year of the published artifact.
 	 */
-	public val inceptionYear: Property<String> = objectFactory.property<String>().convention("2023")
+	public val inceptionYear: Property<String>
 }

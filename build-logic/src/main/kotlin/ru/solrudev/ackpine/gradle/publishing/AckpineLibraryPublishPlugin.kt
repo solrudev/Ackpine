@@ -41,6 +41,8 @@ public class AckpineLibraryPublishPlugin : Plugin<Project> {
 				}
 			}
 			val artifact = ackpineLibraryExtension.extensions.create<AckpineArtifact>("artifact")
+			artifact.name.convention("")
+			artifact.inceptionYear.convention("2023")
 			configurePublishing(artifact.name, provider { description }, artifact.inceptionYear)
 		}
 	}
