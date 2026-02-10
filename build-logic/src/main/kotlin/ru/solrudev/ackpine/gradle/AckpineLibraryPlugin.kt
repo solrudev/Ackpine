@@ -52,7 +52,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			?.named("libs")
 			?.findVersion("kotlin-for-consumers")
 			?.get()
-			?.displayName
+			?.requiredVersion
 			?: coreLibrariesVersion
 		val kotlinVersion = KotlinVersion.fromVersion(
 			stdlibVersion
@@ -69,10 +69,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			apiVersion = kotlinVersion
 			jvmTarget = JVM_1_8
 			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
-			freeCompilerArgs.addAll(
-				"-Xconsistent-data-class-copy-visibility",
-				"-Xcontext-parameters"
-			)
+			freeCompilerArgs.addAll("-Xconsistent-data-class-copy-visibility")
 		}
 	}
 }
