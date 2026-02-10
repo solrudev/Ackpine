@@ -1,0 +1,80 @@
+name: publish
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Upload artifacts
+    runs-on: ubuntu-latest
+    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'release')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Publish
+        run: |
+          ./gradlew publishAndReleaseToMavenCentral
+        env:
+          ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.OSSRH_USERNAME }}
+          ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.OSSRH_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyId: ${{ secrets.SIGNING_KEY_ID }}
+          ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_PASSWORD }}
+          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
+
+  publish-docs:
+    name: Publish documentation
+    runs-on: ubuntu-latest
+    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.merged == true
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # 6.0.0
+        with:
+          python-version: 3.13.12
+
+      - name: Prepare API docs
+        run: |
+          ./gradlew :api-documentation:dokkaGenerate
+
+      - name: Build MkDocs
+        run: |
+          pip3 install --upgrade pip && pip3 install mkdocs-material mkdocs-minify-plugin
+          mkdocs build
+
+      - name: Deploy docs
+        if: success()
+        uses: JamesIves/github-pages-deploy-action@4a3abc783e1a24aeb44c16e869ad83caf6b4cc23 # 4.7.4
+        with:
+          branch: gh-pages
+          folder: site
+          single-commit: true
