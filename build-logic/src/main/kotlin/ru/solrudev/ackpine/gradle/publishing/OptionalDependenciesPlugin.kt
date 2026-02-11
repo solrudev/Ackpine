@@ -20,6 +20,7 @@ import groovy.util.Node
 import groovy.util.NodeList
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ModuleComponentSelector
 import org.gradle.api.artifacts.result.ResolvedComponentResult
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
@@ -58,25 +59,30 @@ public class OptionalDependenciesPlugin : Plugin<Project> {
 	}
 
 	private fun Project.configurePom(
-		optionalDependencies: Provider<ResolvedComponentResult>
+		resolvedOptionalDependencies: Provider<ResolvedComponentResult>
 	) = extensions.configure<PublishingExtension> {
 		publications.withType<MavenPublication>().configureEach {
 			pom.withXml {
-				val dependencies = (asNode()
-					.get("dependencies") as NodeList)
-					.first() as Node
-				optionalDependencies
-					.get()
-					.dependencies
-					.forEach { optionalDependency ->
-						val (groupId, artifactId, version) = optionalDependency.requested.displayName.split(':')
-						dependencies.appendNode("dependency").run {
-							appendNode("groupId", groupId)
-							appendNode("artifactId", artifactId)
-							appendNode("version", version)
-							appendNode("optional", true)
-						}
+				val optionalDependencies = resolvedOptionalDependencies.get().dependencies
+				if (optionalDependencies.isEmpty()) {
+					return@withXml
+				}
+				val root = asNode()
+				val dependencies = (root.get("dependencies") as NodeList).firstOrNull() as Node?
+					?: root.appendNode("dependencies")
+				for (optionalDependency in optionalDependencies) {
+					val componentSelector = optionalDependency.requested
+					check(componentSelector is ModuleComponentSelector) {
+						"Optional dependency '${componentSelector.displayName}' is not a module dependency. " +
+								"Only external module dependencies are supported."
 					}
+					dependencies.appendNode("dependency").run {
+						appendNode("groupId", componentSelector.group)
+						appendNode("artifactId", componentSelector.module)
+						appendNode("version", componentSelector.version)
+						appendNode("optional", true)
+					}
+				}
 			}
 		}
 	}
