@@ -46,6 +46,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import ru.solrudev.ackpine.gradle.helpers.withDebugBuildType
 import ru.solrudev.ackpine.gradle.tasks.AckpineJacocoReportTask
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Configures JaCoCo report generation for Ackpine Android library modules.
@@ -62,13 +63,12 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	@Suppress("NewApi")
 	private fun Project.configureJacoco() = extensions.configure<JacocoPluginExtension> {
 		val jacocoVersion = extensions
 			.findByType<VersionCatalogsExtension>()
 			?.named("libs")
 			?.findVersion("jacoco")
-			?.get()
+			?.getOrNull()
 			?.requiredVersion
 		if (jacocoVersion != null) {
 			toolVersion = jacocoVersion
