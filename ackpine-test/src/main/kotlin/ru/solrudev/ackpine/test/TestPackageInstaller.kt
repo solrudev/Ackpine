@@ -85,11 +85,12 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	}
 
 	/**
-	 * Adds an existing [session] to this repository.
+	 * Adds an existing [session] to this repository if a session with the provided ID doesn't exist.
 	 */
 	public fun seedSession(session: TestInstallSession) {
-		sessionsMap[session.id] = session
-		sessionsValues += session
+		if (sessionsMap.putIfAbsent(session.id, session) == null) {
+			sessionsValues += session
+		}
 	}
 
 	/**
