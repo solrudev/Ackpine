@@ -69,12 +69,11 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	}
 
 	override fun getSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		return ImmediateFuture.success(sessionsMap.values.toList())
+		return ImmediateFuture.success(sessions)
 	}
 
 	override fun getActiveSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		val activeSessions = sessionsMap.values.filter { it.isActive }
-		return ImmediateFuture.success(activeSessions)
+		return ImmediateFuture.success(sessions.filter { it.isActive })
 	}
 
 	/**

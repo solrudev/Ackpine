@@ -69,12 +69,11 @@ public open class TestPackageUninstaller @JvmOverloads public constructor(
 	}
 
 	override fun getSessionsAsync(): ListenableFuture<List<TestUninstallSession>> {
-		return ImmediateFuture.success(sessionsMap.values.toList())
+		return ImmediateFuture.success(sessions)
 	}
 
 	override fun getActiveSessionsAsync(): ListenableFuture<List<TestUninstallSession>> {
-		val activeSessions = sessionsMap.values.filter { it.isActive }
-		return ImmediateFuture.success(activeSessions)
+		return ImmediateFuture.success(sessions.filter { it.isActive })
 	}
 
 	/**
