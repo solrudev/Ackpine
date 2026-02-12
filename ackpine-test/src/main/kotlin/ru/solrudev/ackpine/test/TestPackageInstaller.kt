@@ -66,6 +66,9 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	override fun createSession(parameters: InstallParameters): TestInstallSession {
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
+		check(session.id == id) {
+			"Session factory must return session with the provided id=$id, but was ${session.id}"
+		}
 		sessionsMap[id] = session
 		sessionsValues += session
 		createdParametersMap[id] = parameters
