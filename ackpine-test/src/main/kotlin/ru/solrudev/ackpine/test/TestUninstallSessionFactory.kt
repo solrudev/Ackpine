@@ -40,7 +40,7 @@ public fun interface TestUninstallSessionFactory {
 		@JvmSynthetic
 		internal fun withScript(script: TestSessionScript<UninstallFailure>): TestUninstallSessionFactory {
 			return TestUninstallSessionFactory { id, _ ->
-				TestUninstallSession(script, id)
+				TestUninstallSession(script.copy(), id)
 			}
 		}
 	}

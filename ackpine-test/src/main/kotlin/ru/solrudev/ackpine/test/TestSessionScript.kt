@@ -94,6 +94,19 @@ public class TestSessionScript<F : Failure> private constructor() {
 	}
 
 	@JvmSynthetic
+	internal fun copy(): TestSessionScript<F> {
+		val copy = TestSessionScript<F>()
+		for (states in launchQueue) {
+			copy.launchQueue.addLast(states.toList())
+		}
+		for (states in commitQueue) {
+			copy.commitQueue.addLast(states.toList())
+		}
+		copy.cancelState = cancelState
+		return copy
+	}
+
+	@JvmSynthetic
 	internal fun nextLaunchStates(): List<Session.State<F>>? {
 		return if (launchQueue.isEmpty()) null else launchQueue.removeFirst()
 	}
