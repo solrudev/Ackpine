@@ -165,7 +165,7 @@ public sealed interface ResolvableString : Serializable {
 private class TransientResource(
 	@param:StringRes private val stringId: Int,
 	private val args: Array<out Serializable>
-) : Resource(stringId, args) {
+) : Resource(*args) {
 
 	override fun stringId() = stringId
 
