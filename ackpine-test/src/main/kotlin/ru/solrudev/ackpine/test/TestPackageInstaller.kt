@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * By default, creates sessions with [TestSessionScript.auto], completing with [Session.State.Succeeded].
  */
-public class TestPackageInstaller @JvmOverloads public constructor(
+public open class TestPackageInstaller @JvmOverloads public constructor(
 	private val sessionFactory: TestInstallSessionFactory = TestInstallSessionFactory.withScript(
 		TestSessionScript.auto(Session.State.Succeeded)
 	)

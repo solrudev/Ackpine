@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * By default, creates sessions with [TestSessionScript.auto], completing with [Session.State.Succeeded].
  */
-public class TestPackageUninstaller @JvmOverloads public constructor(
+public open class TestPackageUninstaller @JvmOverloads public constructor(
 	private val sessionFactory: TestUninstallSessionFactory = TestUninstallSessionFactory.withScript(
 		TestSessionScript.auto(Session.State.Succeeded)
 	)
