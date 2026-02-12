@@ -30,7 +30,12 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 public open class TestSessionController<F : Failure> protected constructor(
 	private val session: TestSession<F>,
-	private val script: TestSessionScript<F>
+
+	/**
+	 * Scripted transitions used to drive session state updates in tests.
+	 * @see TestSessionScript
+	 */
+	public val script: TestSessionScript<F>
 ) {
 
 	private val launchCallsValue = AtomicInteger(0)

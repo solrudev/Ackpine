@@ -114,6 +114,7 @@ public class ru/solrudev/ackpine/test/TestSessionController {
 	public final fun getCancelCalls ()I
 	public final fun getCommitCalls ()I
 	public final fun getLaunchCalls ()I
+	public final fun getScript ()Lru/solrudev/ackpine/test/TestSessionScript;
 	public fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
 	public fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
