@@ -130,8 +130,8 @@ public class TestSessionScript<F : Failure> private constructor() {
 				where S : Session.State.Terminal,
 					  S : Session.State<F> {
 			return TestSessionScript<F>()
-				.onLaunch(Session.State.Active, Session.State.Awaiting)
-				.onCommit(Session.State.Committed, terminalState)
+				.onLaunch(Session.State.Awaiting)
+				.onCommit(terminalState)
 		}
 
 		/**
