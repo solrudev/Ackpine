@@ -1,6 +1,29 @@
 Change Log
 ==========
 
+Version 0.20.0 (2026-02-12)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix `TestPackageUninstaller.clearSessions()` not clearing `sessions`.
+- Fix `NoClassDefFoundError` when calling `PackageInstaller.getInstance()` and `PackageUninstaller.getInstance()` in tests with `ackpine-test`.
+- Add `removeSession()` to `TestPackageInstaller` and `TestPackageUninstaller`.
+- Add `createdParameters` to `TestPackageInstaller` and `TestPackageUninstaller`.
+- Expose `val script: TestSessionScript` in `TestSessionController`.
+- Make a copy of `TestSessionScript` for each created session if default session factory is used. This makes multi-session tests with `auto` script viable.
+
+### Public API changes
+
+- `uninstallerType` property setter was made private in `UninstallParameters.Builder`.
+- Added `removeSession()` to `TestPackageInstaller` and `TestPackageUninstaller`.
+- Added `createdParameters` property to `TestPackageInstaller` and `TestPackageUninstaller`.
+- `TestPackageInstaller` and `TestPackageUninstaller` were made non-final.
+- `TestSessionController` was made non-final.
+- `script` property of `TestSessionController` was made public.
+- Added `TestProgressSessionController` in `ackpine-test`. Now `TestProgressSession.controller` returns `TestProgressSessionController`.
+- Deprecated `TestSessionController.setProgress()` with error. This method will be removed in the next minor release. This may be source-incompatible if you were calling `setProgress()` on uninstall session controllers in tests (which anyway would have caused runtime exceptions).
+
 Version 0.19.5 (2026-02-12)
 ---------------------------
 
