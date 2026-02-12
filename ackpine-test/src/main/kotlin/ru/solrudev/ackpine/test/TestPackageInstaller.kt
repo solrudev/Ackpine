@@ -93,7 +93,7 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	}
 
 	/**
-	 * Removes the session with provided [sessionId] from this repository.
+	 * Removes the session with provided [sessionId] and its parameters from this repository.
 	 */
 	public fun removeSession(sessionId: UUID) {
 		val session = sessionsMap.remove(sessionId)
