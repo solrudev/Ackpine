@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.test
 
 import ru.solrudev.ackpine.session.Failure
+import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -84,6 +85,20 @@ public open class TestSessionController<F : Failure> protected constructor(
 	 * Marks the session as cancelled.
 	 */
 	public open fun cancel(): TestSessionController<F> = setState(Session.State.Cancelled)
+
+	/**
+	 * Updates session progress, if supported.
+	 */
+	@Deprecated(
+		message = "Calling this method will cause a runtime failure. It's replaced with " +
+				"TestProgressSessionController.setProgress(). This method will be removed in the next minor release.",
+		level = DeprecationLevel.ERROR
+	)
+	public open fun setProgress(progress: Progress): TestSessionController<F> = apply {
+		val progressSession = session as? TestProgressSession<F> // will never succeed
+			?: error("Progress can only be set for TestProgressSession.")
+		progressSession.updateProgress(progress)
+	}
 
 	@JvmSynthetic
 	internal fun handleLaunch() {

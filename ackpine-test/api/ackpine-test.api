@@ -68,7 +68,8 @@ public final class ru/solrudev/ackpine/test/TestProgressSessionController : ru/s
 	public synthetic fun fail (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun resetCalls ()Lru/solrudev/ackpine/test/TestProgressSessionController;
 	public synthetic fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
-	public final fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestProgressSessionController;
 	public synthetic fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun succeed ()Lru/solrudev/ackpine/test/TestProgressSessionController;
@@ -114,6 +115,7 @@ public class ru/solrudev/ackpine/test/TestSessionController {
 	public final fun getCommitCalls ()I
 	public final fun getLaunchCalls ()I
 	public fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
 	public fun succeed ()Lru/solrudev/ackpine/test/TestSessionController;
 }

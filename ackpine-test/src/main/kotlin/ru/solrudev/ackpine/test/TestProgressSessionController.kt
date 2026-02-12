@@ -45,7 +45,8 @@ public class TestProgressSessionController<F : Failure> private constructor(
 	/**
 	 * Updates session progress.
 	 */
-	public fun setProgress(progress: Progress): TestProgressSessionController<F> = apply {
+	@Suppress("OVERRIDE_DEPRECATION")
+	override fun setProgress(progress: Progress): TestProgressSessionController<F> = apply {
 		session.updateProgress(progress)
 	}
 
