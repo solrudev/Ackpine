@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * By default, creates sessions with [TestSessionScript.auto], completing with [Session.State.Succeeded].
  */
-public class TestPackageUninstaller @JvmOverloads public constructor(
+public open class TestPackageUninstaller @JvmOverloads public constructor(
 	private val sessionFactory: TestUninstallSessionFactory = TestUninstallSessionFactory.withScript(
 		TestSessionScript.auto(Session.State.Succeeded)
 	)
@@ -53,14 +53,25 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 	public val sessions: List<TestUninstallSession>
 		get() = sessionsValues.toList()
 
+	/**
+	 * Returns a snapshot of all parameters used to create sessions.
+	 */
+	public val createdParameters: Map<UUID, UninstallParameters>
+		get() = createdParametersMap.toMap()
+
 	private val sessionsMap = ConcurrentHashMap<UUID, TestUninstallSession>()
 	private val sessionsValues = CopyOnWriteArrayList<TestUninstallSession>()
+	private val createdParametersMap = ConcurrentHashMap<UUID, UninstallParameters>()
 
 	override fun createSession(parameters: UninstallParameters): TestUninstallSession {
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
+		check(session.id == id) {
+			"Session factory must return session with the provided id=$id, but was ${session.id}"
+		}
 		sessionsMap[id] = session
 		sessionsValues += session
+		createdParametersMap[id] = parameters
 		return session
 	}
 
@@ -69,20 +80,29 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 	}
 
 	override fun getSessionsAsync(): ListenableFuture<List<TestUninstallSession>> {
-		return ImmediateFuture.success(sessionsMap.values.toList())
+		return ImmediateFuture.success(sessions)
 	}
 
 	override fun getActiveSessionsAsync(): ListenableFuture<List<TestUninstallSession>> {
-		val activeSessions = sessionsMap.values.filter { it.isActive }
-		return ImmediateFuture.success(activeSessions)
+		return ImmediateFuture.success(sessions.filter { it.isActive })
 	}
 
 	/**
-	 * Adds an existing [session] to this repository.
+	 * Adds an existing [session] to this repository if a session with the provided ID doesn't exist.
 	 */
 	public fun seedSession(session: TestUninstallSession) {
-		sessionsMap[session.id] = session
-		sessionsValues += session
+		if (sessionsMap.putIfAbsent(session.id, session) == null) {
+			sessionsValues += session
+		}
+	}
+
+	/**
+	 * Removes the session with provided [sessionId] and its parameters from this repository.
+	 */
+	public fun removeSession(sessionId: UUID) {
+		val session = sessionsMap.remove(sessionId)
+		sessionsValues -= session
+		createdParametersMap.remove(sessionId)
 	}
 
 	/**
@@ -90,5 +110,7 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 	 */
 	public fun clearSessions() {
 		sessionsMap.clear()
+		sessionsValues.clear()
+		createdParametersMap.clear()
 	}
 }

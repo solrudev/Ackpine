@@ -63,7 +63,7 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	/**
 	 * Returns the controller used to drive this session in tests.
 	 */
-	public val controller: TestSessionController<F> = TestSessionController.create(this, script)
+	public open val controller: TestSessionController<F> = TestSessionController.create(this, script)
 
 	override val isActive: Boolean
 		get() = state.let { it !is Pending && !it.isTerminal }

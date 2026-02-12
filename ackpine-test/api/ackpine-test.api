@@ -6,7 +6,7 @@ public abstract interface class ru/solrudev/ackpine/test/TestInstallSessionFacto
 public final class ru/solrudev/ackpine/test/TestInstallSessionFactory$Companion {
 }
 
-public final class ru/solrudev/ackpine/test/TestPackageInstaller : ru/solrudev/ackpine/installer/PackageInstaller {
+public class ru/solrudev/ackpine/test/TestPackageInstaller : ru/solrudev/ackpine/installer/PackageInstaller {
 	public fun <init> ()V
 	public fun <init> (Lru/solrudev/ackpine/test/TestInstallSessionFactory;)V
 	public synthetic fun <init> (Lru/solrudev/ackpine/test/TestInstallSessionFactory;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
@@ -15,13 +15,15 @@ public final class ru/solrudev/ackpine/test/TestPackageInstaller : ru/solrudev/a
 	public synthetic fun createSession (Lru/solrudev/ackpine/installer/parameters/InstallParameters;)Lru/solrudev/ackpine/session/ProgressSession;
 	public fun createSession (Lru/solrudev/ackpine/installer/parameters/InstallParameters;)Lru/solrudev/ackpine/test/TestProgressSession;
 	public fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun getCreatedParameters ()Ljava/util/Map;
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun removeSession (Ljava/util/UUID;)V
 	public final fun seedSession (Lru/solrudev/ackpine/test/TestProgressSession;)V
 }
 
-public final class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev/ackpine/uninstaller/PackageUninstaller {
+public class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev/ackpine/uninstaller/PackageUninstaller {
 	public fun <init> ()V
 	public fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;)V
 	public fun <init> (Lru/solrudev/ackpine/test/TestUninstallSessionFactory;)V
@@ -30,9 +32,11 @@ public final class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev
 	public synthetic fun createSession (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;)Lru/solrudev/ackpine/session/Session;
 	public fun createSession (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;)Lru/solrudev/ackpine/test/TestSession;
 	public fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun getCreatedParameters ()Ljava/util/Map;
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun removeSession (Ljava/util/UUID;)V
 	public final fun seedSession (Lru/solrudev/ackpine/test/TestSession;)V
 }
 
@@ -44,6 +48,8 @@ public final class ru/solrudev/ackpine/test/TestProgressSession : ru/solrudev/ac
 	public fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;Lru/solrudev/ackpine/session/Progress;)V
 	public synthetic fun <init> (Lru/solrudev/ackpine/test/TestSessionScript;Ljava/util/UUID;Lru/solrudev/ackpine/session/Session$State;Lru/solrudev/ackpine/session/Progress;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun addProgressListener (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/session/ProgressSession$ProgressListener;)Lru/solrudev/ackpine/DisposableSubscription;
+	public fun getController ()Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun getController ()Lru/solrudev/ackpine/test/TestSessionController;
 	public final fun getProgress ()Lru/solrudev/ackpine/session/Progress;
 	public final fun getProgressHistory ()Ljava/util/List;
 	public fun removeProgressListener (Lru/solrudev/ackpine/session/ProgressSession$ProgressListener;)V
@@ -52,6 +58,22 @@ public final class ru/solrudev/ackpine/test/TestProgressSession : ru/solrudev/ac
 	public final fun resetProgress (Lru/solrudev/ackpine/session/Progress;)V
 	public final fun resetProgress (Lru/solrudev/ackpine/session/Progress;Z)V
 	public static synthetic fun resetProgress$default (Lru/solrudev/ackpine/test/TestProgressSession;Lru/solrudev/ackpine/session/Progress;ZILjava/lang/Object;)V
+}
+
+public final class ru/solrudev/ackpine/test/TestProgressSessionController : ru/solrudev/ackpine/test/TestSessionController {
+	public synthetic fun <init> (Lru/solrudev/ackpine/test/TestProgressSession;Lru/solrudev/ackpine/test/TestSessionScript;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun cancel ()Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun cancel ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun fail (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun fail (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/test/TestSessionController;
+	public fun resetCalls ()Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
+	public fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
+	public fun succeed ()Lru/solrudev/ackpine/test/TestProgressSessionController;
+	public synthetic fun succeed ()Lru/solrudev/ackpine/test/TestSessionController;
 }
 
 public final class ru/solrudev/ackpine/test/TestSdkInt {
@@ -70,7 +92,7 @@ public class ru/solrudev/ackpine/test/TestSession : ru/solrudev/ackpine/session/
 	public fun addStateListener (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/session/Session$StateListener;)Lru/solrudev/ackpine/DisposableSubscription;
 	public fun cancel ()V
 	public fun commit ()Z
-	public final fun getController ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun getController ()Lru/solrudev/ackpine/test/TestSessionController;
 	public fun getId ()Ljava/util/UUID;
 	public final fun getState ()Lru/solrudev/ackpine/session/Session$State;
 	public final fun getStateHistory ()Ljava/util/List;
@@ -85,17 +107,18 @@ public class ru/solrudev/ackpine/test/TestSession : ru/solrudev/ackpine/session/
 	public static synthetic fun reset$default (Lru/solrudev/ackpine/test/TestSession;Lru/solrudev/ackpine/session/Session$State;ZILjava/lang/Object;)V
 }
 
-public final class ru/solrudev/ackpine/test/TestSessionController {
-	public synthetic fun <init> (Lru/solrudev/ackpine/test/TestSession;Lru/solrudev/ackpine/test/TestSessionScript;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public final fun cancel ()Lru/solrudev/ackpine/test/TestSessionController;
-	public final fun fail (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/test/TestSessionController;
+public class ru/solrudev/ackpine/test/TestSessionController {
+	protected fun <init> (Lru/solrudev/ackpine/test/TestSession;Lru/solrudev/ackpine/test/TestSessionScript;)V
+	public fun cancel ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun fail (Lru/solrudev/ackpine/session/Failure;)Lru/solrudev/ackpine/test/TestSessionController;
 	public final fun getCancelCalls ()I
 	public final fun getCommitCalls ()I
 	public final fun getLaunchCalls ()I
-	public final fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
-	public final fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
-	public final fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
-	public final fun succeed ()Lru/solrudev/ackpine/test/TestSessionController;
+	public final fun getScript ()Lru/solrudev/ackpine/test/TestSessionScript;
+	public fun resetCalls ()Lru/solrudev/ackpine/test/TestSessionController;
+	public fun setProgress (Lru/solrudev/ackpine/session/Progress;)Lru/solrudev/ackpine/test/TestSessionController;
+	public fun setState (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionController;
+	public fun succeed ()Lru/solrudev/ackpine/test/TestSessionController;
 }
 
 public final class ru/solrudev/ackpine/test/TestSessionScript {

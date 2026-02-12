@@ -722,7 +722,6 @@ public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParameter
 	public final fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setUninstallerType (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
-	public final fun setUninstallerType (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)V
 	public synthetic fun usePlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/plugability/AckpinePluginRegistry;
 	public fun usePlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public synthetic fun usePlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/plugability/AckpinePluginRegistry;

@@ -22,15 +22,20 @@ import ru.solrudev.ackpine.session.Session
 import java.util.concurrent.atomic.AtomicInteger
 
 /**
- * Drives a [TestSession] state and progress in tests.
+ * Drives a [TestSession] state in tests.
  *
  * Use [setState], [succeed], [fail], or [cancel] to force transitions directly. Scripted transitions configured via
  * [TestSessionScript] are applied when the session methods are invoked, including via `await()` or
  * [Session.TerminalStateListener.bind].
  */
-public class TestSessionController<F : Failure> private constructor(
+public open class TestSessionController<F : Failure> protected constructor(
 	private val session: TestSession<F>,
-	private val script: TestSessionScript<F>
+
+	/**
+	 * Scripted transitions used to drive session state updates in tests.
+	 * @see TestSessionScript
+	 */
+	public val script: TestSessionScript<F>
 ) {
 
 	private val launchCallsValue = AtomicInteger(0)
@@ -58,7 +63,7 @@ public class TestSessionController<F : Failure> private constructor(
 	/**
 	 * Resets launch/commit/cancel invocation counters.
 	 */
-	public fun resetCalls(): TestSessionController<F> = apply {
+	public open fun resetCalls(): TestSessionController<F> = apply {
 		launchCallsValue.set(0)
 		commitCallsValue.set(0)
 		cancelCallsValue.set(0)
@@ -67,30 +72,35 @@ public class TestSessionController<F : Failure> private constructor(
 	/**
 	 * Sets the current state of the session.
 	 */
-	public fun setState(state: Session.State<F>): TestSessionController<F> = apply {
+	public open fun setState(state: Session.State<F>): TestSessionController<F> = apply {
 		session.updateState(state)
 	}
 
 	/**
 	 * Marks the session as succeeded.
 	 */
-	public fun succeed(): TestSessionController<F> = setState(Session.State.Succeeded)
+	public open fun succeed(): TestSessionController<F> = setState(Session.State.Succeeded)
 
 	/**
 	 * Marks the session as failed with the provided [failure].
 	 */
-	public fun fail(failure: F): TestSessionController<F> = setState(Session.State.Failed(failure))
+	public open fun fail(failure: F): TestSessionController<F> = setState(Session.State.Failed(failure))
 
 	/**
 	 * Marks the session as cancelled.
 	 */
-	public fun cancel(): TestSessionController<F> = setState(Session.State.Cancelled)
+	public open fun cancel(): TestSessionController<F> = setState(Session.State.Cancelled)
 
 	/**
 	 * Updates session progress, if supported.
 	 */
-	public fun setProgress(progress: Progress): TestSessionController<F> = apply {
-		val progressSession = session as? TestProgressSession<F>
+	@Deprecated(
+		message = "Calling this method will cause a runtime failure. It's replaced with " +
+				"TestProgressSessionController.setProgress(). This method will be removed in the next minor release.",
+		level = DeprecationLevel.ERROR
+	)
+	public open fun setProgress(progress: Progress): TestSessionController<F> = apply {
+		val progressSession = session as? TestProgressSession<F> // will never succeed
 			?: error("Progress can only be set for TestProgressSession.")
 		progressSession.updateProgress(progress)
 	}
