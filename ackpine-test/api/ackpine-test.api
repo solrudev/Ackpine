@@ -18,6 +18,7 @@ public class ru/solrudev/ackpine/test/TestPackageInstaller : ru/solrudev/ackpine
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun removeSession (Ljava/util/UUID;)V
 	public final fun seedSession (Lru/solrudev/ackpine/test/TestProgressSession;)V
 }
 
@@ -33,6 +34,7 @@ public class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev/ackpi
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun removeSession (Ljava/util/UUID;)V
 	public final fun seedSession (Lru/solrudev/ackpine/test/TestSession;)V
 }
 

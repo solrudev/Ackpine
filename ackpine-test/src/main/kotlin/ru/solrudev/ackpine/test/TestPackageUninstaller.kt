@@ -86,6 +86,14 @@ public open class TestPackageUninstaller @JvmOverloads public constructor(
 	}
 
 	/**
+	 * Removes the session with provided [sessionId] from this repository.
+	 */
+	public fun removeSession(sessionId: UUID) {
+		val session = sessionsMap.remove(sessionId)
+		sessionsValues -= session
+	}
+
+	/**
 	 * Clears all sessions in this repository.
 	 */
 	public fun clearSessions() {
