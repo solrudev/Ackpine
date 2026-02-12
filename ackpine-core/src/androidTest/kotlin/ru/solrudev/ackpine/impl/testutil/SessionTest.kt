@@ -16,10 +16,10 @@
 
 package ru.solrudev.ackpine.impl.testutil
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart.UNDISPATCHED
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import ru.solrudev.ackpine.remote.RemoteSession
@@ -34,7 +34,6 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalContracts::class)
-context(scope: CoroutineScope)
 suspend fun <F : Failure> Session<F>.test(
 	timeout: Duration = 30.seconds,
 	block: suspend (Session<F>) -> Unit
@@ -42,19 +41,21 @@ suspend fun <F : Failure> Session<F>.test(
 	contract {
 		callsInPlace(block, InvocationKind.EXACTLY_ONCE)
 	}
-	val resultDeferred = scope.async(start = UNDISPATCHED) {
-		withContext(Dispatchers.Default.limitedParallelism(1)) {
+	return coroutineScope {
+		val resultDeferred = async(
+			context = Dispatchers.Default.limitedParallelism(1),
+			start = UNDISPATCHED
+		) {
 			withTimeout(timeout) {
 				await()
 			}
 		}
+		block(this@test)
+		resultDeferred.await()
 	}
-	block(this)
-	return resultDeferred.await()
 }
 
 @OptIn(ExperimentalContracts::class)
-context(scope: CoroutineScope)
 suspend fun RemoteSession.test(
 	timeout: Duration = 30.seconds,
 	block: suspend (RemoteSession) -> Unit = {}
@@ -62,11 +63,13 @@ suspend fun RemoteSession.test(
 	contract {
 		callsInPlace(block, InvocationKind.EXACTLY_ONCE)
 	}
-	val resultDeferred = scope.async(start = UNDISPATCHED) {
-		awaitWithTimeout(timeout)
+	return coroutineScope {
+		val resultDeferred = async(start = UNDISPATCHED) {
+			awaitWithTimeout(timeout)
+		}
+		block(this@test)
+		resultDeferred.await()
 	}
-	block(this)
-	return resultDeferred.await()
 }
 
 suspend fun RemoteSession.awaitWithTimeout(timeout: Duration = 30.seconds): RemoteSession.State {

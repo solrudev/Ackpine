@@ -30,7 +30,6 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.ProviderFactory
-import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.TaskContainer
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.api.tasks.testing.Test
@@ -38,7 +37,6 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.getByType
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.withType
 import org.gradle.language.base.plugins.LifecycleBasePlugin
@@ -46,6 +44,7 @@ import org.gradle.testing.jacoco.plugins.JacocoPluginExtension
 import org.gradle.testing.jacoco.plugins.JacocoTaskExtension
 import ru.solrudev.ackpine.gradle.helpers.withDebugBuildType
 import ru.solrudev.ackpine.gradle.tasks.AckpineJacocoReportTask
+import kotlin.jvm.optionals.getOrNull
 
 /**
  * Configures JaCoCo report generation for Ackpine Android library modules.
@@ -62,15 +61,16 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	@Suppress("NewApi")
 	private fun Project.configureJacoco() = extensions.configure<JacocoPluginExtension> {
-		toolVersion = extensions
+		val jacocoVersion = extensions
 			.findByType<VersionCatalogsExtension>()
 			?.named("libs")
 			?.findVersion("jacoco")
-			?.get()
-			?.displayName
-			.orEmpty()
+			?.getOrNull()
+			?.requiredVersion
+		if (jacocoVersion != null) {
+			toolVersion = jacocoVersion
+		}
 		reportsDirectory = layout.buildDirectory.dir("jacocoReports")
 	}
 
@@ -91,8 +91,10 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 	private fun Project.configureAndroidComponents() = extensions.configure<LibraryAndroidComponentsExtension> {
 		onVariants(withDebugBuildType()) { variant ->
 			val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
-			configureConnectedAndroidTest(variant, jacocoConfig)
-			configureManagedDevices(variant, jacocoConfig)
+			if (jacocoConfig.hasAndroidTests) {
+				configureConnectedAndroidTest(variant, jacocoConfig)
+				configureManagedDevices(variant, jacocoConfig)
+			}
 		}
 	}
 
@@ -101,30 +103,23 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		jacocoConfig: JacocoConfig
 	) = extensions.configure<LibraryExtension> {
 		testOptions.managedDevices.allDevices.configureEach {
-			val deviceName = name
-			val testTaskName = variant.computeTaskName(action = deviceName, subject = "androidTest")
-			val reportTask = registerAndroidTestReportTask(
-				variant = variant,
-				sources = jacocoConfig.sources,
-				testTaskName = testTaskName,
-				reportNameAction = "${deviceName}Jacoco"
-			)
-			tasks.matching { it.name == testTaskName }.configureEach {
-				finalizedBy(reportTask)
-			}
+			configureManagedDeviceReport(variant, jacocoConfig.sources, testTaskAction = name)
 		}
 		testOptions.managedDevices.groups.configureEach {
-			val groupName = name
-			val testTaskName = variant.computeTaskName(action = "${groupName}Group", subject = "androidTest")
-			val reportTask = registerAndroidTestReportTask(
-				variant = variant,
-				sources = jacocoConfig.sources,
-				testTaskName = testTaskName,
-				reportNameAction = "${groupName}GroupJacoco"
-			)
-			tasks.matching { it.name == testTaskName }.configureEach {
-				finalizedBy(reportTask)
-			}
+			configureManagedDeviceReport(variant, jacocoConfig.sources, testTaskAction = "${name}Group")
+		}
+	}
+
+	private fun Project.configureManagedDeviceReport(
+		variant: LibraryVariant,
+		sources: FileCollection,
+		testTaskAction: String
+	) {
+		val reportTaskAction = "${testTaskAction}Jacoco"
+		val testTaskName = variant.computeTaskName(action = testTaskAction, subject = "androidTest")
+		val reportTask = registerAndroidTestReportTask(variant, sources, testTaskName, reportTaskAction)
+		tasks.matching { it.name == testTaskName }.configureEach {
+			finalizedBy(reportTask)
 		}
 	}
 
@@ -150,7 +145,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		val hostTestExecutionData = objects.fileCollection()
 		val androidTestExecutionData = objects.fileCollection()
 		val reportTaskName = variant.computeTaskName(action = "jacoco", subject = "testReport")
-		val reportTaskProvider = tasks.registerJacocoReportTask(
+		val reportTask = tasks.registerJacocoReportTask(
 			reportTaskName,
 			sources,
 			hostTestExecutionData,
@@ -158,18 +153,15 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		)
 		hostTest?.configureTestTask { testTask ->
 			hostTestExecutionData.from(testTask.extensions.getByType<JacocoTaskExtension>().destinationFile)
-			testTask.finalizedBy(reportTaskProvider)
+			testTask.finalizedBy(reportTask)
 		}
-		variant.artifacts
-			.forScope(ScopedArtifacts.Scope.PROJECT)
-			.use(reportTaskProvider)
-			.toGet(
-				ScopedArtifact.CLASSES,
-				AckpineJacocoReportTask::classJars,
-				AckpineJacocoReportTask::classDirs
-			)
-		configureCleanTask(reportTaskProvider)
-		return JacocoConfig(reportTaskProvider, androidTestExecutionData, sources)
+		reportTask.wireProjectClasses(variant)
+		return JacocoConfig(
+			hasAndroidTests = androidTest != null,
+			reportTask,
+			androidTestExecutionData,
+			sources
+		)
 	}
 
 	private fun Project.registerAndroidTestReportTask(
@@ -183,40 +175,20 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 			.provider { tasks.named(testTaskName) }
 			.flatMap { taskProvider ->
 				taskProvider.map { task ->
-					task.outputs.files.asFileTree.matching {
-						include("**/coverage.ec", "**/*.ec", "**/*.exec")
-					}
+					task.coverageExecutionDataFiles()
 				}
 			}
 		executionData.from(executionDataFiles)
 		val reportTaskName = variant.computeTaskName(action = reportNameAction, subject = "androidTestReport")
 		val reportTask = tasks.registerJacocoReportTask(reportTaskName, sources, executionData)
-		variant.artifacts
-			.forScope(ScopedArtifacts.Scope.PROJECT)
-			.use(reportTask)
-			.toGet(
-				ScopedArtifact.CLASSES,
-				AckpineJacocoReportTask::classJars,
-				AckpineJacocoReportTask::classDirs
-			)
-		configureCleanTask(reportTask)
+		reportTask.wireProjectClasses(variant)
 		return reportTask
 	}
 
 	private fun TaskContainer.registerJacocoReportTask(
 		name: String,
 		sources: FileCollection,
-		hostTestExecutionData: FileCollection,
-		androidTestExecutionData: FileCollection
-	) = registerJacocoReportTask(name, sources, hostTestExecutionData) {
-		executionData.from(androidTestExecutionData)
-	}
-
-	private fun TaskContainer.registerJacocoReportTask(
-		name: String,
-		sources: FileCollection,
-		executionData: FileCollection,
-		configure: AckpineJacocoReportTask.() -> Unit = {}
+		vararg executionData: FileCollection
 	) = register<AckpineJacocoReportTask>(name) {
 		group = LifecycleBasePlugin.VERIFICATION_GROUP
 		description = "Generates JaCoCo coverage report."
@@ -238,17 +210,25 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		)
 		sourceDirectories.setFrom(sources)
 		additionalSourceDirs.setFrom(sources)
-		this.executionData.from(executionData)
+		for (data in executionData) {
+			this.executionData.from(data)
+		}
 		reports {
 			xml.required = true
 			html.required = true
 			csv.required = false
 		}
-		configure()
 	}
 
-	private fun Project.configureCleanTask(task: TaskProvider<*>) = tasks.named<Delete>("clean") {
-		delete(task)
+	private fun TaskProvider<AckpineJacocoReportTask>.wireProjectClasses(variant: LibraryVariant) {
+		variant.artifacts
+			.forScope(ScopedArtifacts.Scope.PROJECT)
+			.use(this)
+			.toGet(
+				ScopedArtifact.CLASSES,
+				AckpineJacocoReportTask::classJars,
+				AckpineJacocoReportTask::classDirs
+			)
 	}
 
 	private fun ConfigurableFileCollection.fromCoverageTask(
@@ -256,13 +236,16 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		providerFactory: ProviderFactory
 	) = from(
 		providerFactory.provider {
-			task.outputs.files.asFileTree.matching {
-				include("**/coverage.ec", "**/*.ec", "**/*.exec")
-			}
+			task.coverageExecutionDataFiles()
 		}
 	)
 
+	private fun Task.coverageExecutionDataFiles() = outputs.files.asFileTree.matching {
+		include("**/coverage.ec", "**/*.ec", "**/*.exec")
+	}
+
 	private data class JacocoConfig(
+		val hasAndroidTests: Boolean,
 		val task: TaskProvider<AckpineJacocoReportTask>,
 		val androidTestExecutionData: ConfigurableFileCollection,
 		val sources: FileCollection

@@ -1,6 +1,13 @@
 Change Log
 ==========
 
+Version 0.19.5 (2026-02-12)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix strings created with `ResolvableString.transientResource()` resolving incorrectly.
+
 Version 0.19.4 (2026-02-07)
 ---------------------------
 
