@@ -90,5 +90,6 @@ public class TestPackageUninstaller @JvmOverloads public constructor(
 	 */
 	public fun clearSessions() {
 		sessionsMap.clear()
+		sessionsValues.clear()
 	}
 }
