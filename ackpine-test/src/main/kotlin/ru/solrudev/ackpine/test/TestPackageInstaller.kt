@@ -53,14 +53,22 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	public val sessions: List<TestInstallSession>
 		get() = sessionsValues.toList()
 
+	/**
+	 * Returns a snapshot of all parameters used to create sessions.
+	 */
+	public val createdParameters: Map<UUID, InstallParameters>
+		get() = createdParametersMap.toMap()
+
 	private val sessionsMap = ConcurrentHashMap<UUID, TestInstallSession>()
 	private val sessionsValues = CopyOnWriteArrayList<TestInstallSession>()
+	private val createdParametersMap = ConcurrentHashMap<UUID, InstallParameters>()
 
 	override fun createSession(parameters: InstallParameters): TestInstallSession {
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
 		sessionsMap[id] = session
 		sessionsValues += session
+		createdParametersMap[id] = parameters
 		return session
 	}
 
@@ -90,6 +98,7 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	public fun removeSession(sessionId: UUID) {
 		val session = sessionsMap.remove(sessionId)
 		sessionsValues -= session
+		createdParametersMap.remove(sessionId)
 	}
 
 	/**
@@ -98,5 +107,6 @@ public open class TestPackageInstaller @JvmOverloads public constructor(
 	public fun clearSessions() {
 		sessionsMap.clear()
 		sessionsValues.clear()
+		createdParametersMap.clear()
 	}
 }

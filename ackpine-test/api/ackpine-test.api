@@ -15,6 +15,7 @@ public class ru/solrudev/ackpine/test/TestPackageInstaller : ru/solrudev/ackpine
 	public synthetic fun createSession (Lru/solrudev/ackpine/installer/parameters/InstallParameters;)Lru/solrudev/ackpine/session/ProgressSession;
 	public fun createSession (Lru/solrudev/ackpine/installer/parameters/InstallParameters;)Lru/solrudev/ackpine/test/TestProgressSession;
 	public fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun getCreatedParameters ()Ljava/util/Map;
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
@@ -31,6 +32,7 @@ public class ru/solrudev/ackpine/test/TestPackageUninstaller : ru/solrudev/ackpi
 	public synthetic fun createSession (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;)Lru/solrudev/ackpine/session/Session;
 	public fun createSession (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;)Lru/solrudev/ackpine/test/TestSession;
 	public fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public final fun getCreatedParameters ()Ljava/util/Map;
 	public fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public final fun getSessions ()Ljava/util/List;
 	public fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
