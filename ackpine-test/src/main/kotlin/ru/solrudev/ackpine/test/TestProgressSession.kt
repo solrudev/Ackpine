@@ -58,6 +58,8 @@ public class TestProgressSession<F : Failure> @JvmOverloads public constructor(
 	public val progressHistory: List<Progress>
 		get() = progressHistoryValues.toList()
 
+	override val controller: TestProgressSessionController<F> = TestProgressSessionController.create(this, script)
+
 	override fun addProgressListener(
 		subscriptionContainer: DisposableSubscriptionContainer,
 		listener: ProgressListener

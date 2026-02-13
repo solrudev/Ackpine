@@ -40,7 +40,7 @@ public fun interface TestInstallSessionFactory {
 		@JvmSynthetic
 		internal fun withScript(script: TestSessionScript<InstallFailure>): TestInstallSessionFactory {
 			return TestInstallSessionFactory { id, _ ->
-				TestInstallSession(script, id)
+				TestInstallSession(script.copy(), id)
 			}
 		}
 	}

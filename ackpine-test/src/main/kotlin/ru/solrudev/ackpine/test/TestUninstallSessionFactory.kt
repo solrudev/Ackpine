@@ -23,8 +23,8 @@ import java.util.UUID
 /**
  * Factory for creating uninstall test sessions.
  *
- * This factory is invoked by [TestPackageUninstaller] when a session is created, configure it depending on provided
- * session parameters or with different [scripts][TestSessionScript]
+ * This factory is invoked by [TestPackageUninstaller] when a session is created, letting tests configure it depending
+ * on provided session parameters or with different [scripts][TestSessionScript].
  */
 public fun interface TestUninstallSessionFactory {
 
@@ -40,7 +40,7 @@ public fun interface TestUninstallSessionFactory {
 		@JvmSynthetic
 		internal fun withScript(script: TestSessionScript<UninstallFailure>): TestUninstallSessionFactory {
 			return TestUninstallSessionFactory { id, _ ->
-				TestUninstallSession(script, id)
+				TestUninstallSession(script.copy(), id)
 			}
 		}
 	}

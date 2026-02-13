@@ -34,7 +34,7 @@ import java.util.concurrent.CopyOnWriteArrayList
  *
  * By default, creates sessions with [TestSessionScript.auto], completing with [Session.State.Succeeded].
  */
-public class TestPackageInstaller @JvmOverloads public constructor(
+public open class TestPackageInstaller @JvmOverloads public constructor(
 	private val sessionFactory: TestInstallSessionFactory = TestInstallSessionFactory.withScript(
 		TestSessionScript.auto(Session.State.Succeeded)
 	)
@@ -53,14 +53,25 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 	public val sessions: List<TestInstallSession>
 		get() = sessionsValues.toList()
 
+	/**
+	 * Returns a snapshot of all parameters used to create sessions.
+	 */
+	public val createdParameters: Map<UUID, InstallParameters>
+		get() = createdParametersMap.toMap()
+
 	private val sessionsMap = ConcurrentHashMap<UUID, TestInstallSession>()
 	private val sessionsValues = CopyOnWriteArrayList<TestInstallSession>()
+	private val createdParametersMap = ConcurrentHashMap<UUID, InstallParameters>()
 
 	override fun createSession(parameters: InstallParameters): TestInstallSession {
 		val id = UUID.randomUUID()
 		val session = sessionFactory.create(id, parameters)
+		check(session.id == id) {
+			"Session factory must return session with the provided id=$id, but was ${session.id}"
+		}
 		sessionsMap[id] = session
 		sessionsValues += session
+		createdParametersMap[id] = parameters
 		return session
 	}
 
@@ -69,20 +80,29 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 	}
 
 	override fun getSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		return ImmediateFuture.success(sessionsMap.values.toList())
+		return ImmediateFuture.success(sessions)
 	}
 
 	override fun getActiveSessionsAsync(): ListenableFuture<List<TestInstallSession>> {
-		val activeSessions = sessionsMap.values.filter { it.isActive }
-		return ImmediateFuture.success(activeSessions)
+		return ImmediateFuture.success(sessions.filter { it.isActive })
 	}
 
 	/**
-	 * Adds an existing [session] to this repository.
+	 * Adds an existing [session] to this repository if a session with the provided ID doesn't exist.
 	 */
 	public fun seedSession(session: TestInstallSession) {
-		sessionsMap[session.id] = session
-		sessionsValues += session
+		if (sessionsMap.putIfAbsent(session.id, session) == null) {
+			sessionsValues += session
+		}
+	}
+
+	/**
+	 * Removes the session with provided [sessionId] and its parameters from this repository.
+	 */
+	public fun removeSession(sessionId: UUID) {
+		val session = sessionsMap.remove(sessionId)
+		sessionsValues -= session
+		createdParametersMap.remove(sessionId)
 	}
 
 	/**
@@ -91,5 +111,6 @@ public class TestPackageInstaller @JvmOverloads public constructor(
 	public fun clearSessions() {
 		sessionsMap.clear()
 		sessionsValues.clear()
+		createdParametersMap.clear()
 	}
 }
