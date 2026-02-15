@@ -257,7 +257,7 @@ private val excludePatterns = listOf(
 	"**/R$*.class",
 	"**/BuildConfig.*",
 	"**/Manifest*.*",
-	"**/*Test*.*",
+	"**/*Test.*",
 	"android/**/*.*",
 	"**/*_Impl*"
 )
