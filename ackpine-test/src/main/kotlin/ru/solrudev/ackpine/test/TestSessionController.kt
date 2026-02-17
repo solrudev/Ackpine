@@ -123,10 +123,7 @@ public open class TestSessionController<F : Failure> protected constructor(
 		session.updateState(script.cancelState ?: Session.State.Cancelled)
 	}
 
-	private fun applyStates(states: List<Session.State<F>>?) {
-		if (states == null) {
-			return
-		}
+	private fun applyStates(states: List<Session.State<F>>) {
 		for (state in states) {
 			session.updateState(state)
 		}

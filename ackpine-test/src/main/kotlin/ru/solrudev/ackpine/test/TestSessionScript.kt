@@ -107,13 +107,13 @@ public class TestSessionScript<F : Failure> private constructor() {
 	}
 
 	@JvmSynthetic
-	internal fun nextLaunchStates(): List<Session.State<F>>? {
-		return if (launchQueue.isEmpty()) null else launchQueue.removeFirst()
+	internal fun nextLaunchStates(): List<Session.State<F>> {
+		return if (launchQueue.isEmpty()) emptyList() else launchQueue.removeFirst()
 	}
 
 	@JvmSynthetic
-	internal fun nextCommitStates(): List<Session.State<F>>? {
-		return if (commitQueue.isEmpty()) null else commitQueue.removeFirst()
+	internal fun nextCommitStates(): List<Session.State<F>> {
+		return if (commitQueue.isEmpty()) emptyList() else commitQueue.removeFirst()
 	}
 
 	/**
