@@ -135,20 +135,37 @@ class InstallSessionsAdapter(
 	}
 
 	fun submitProgress(progress: List<SessionProgress>) {
+		val oldProgress = currentProgress
 		currentProgress = progress
 		if (isReattaching) {
 			handler.post {
-				notifyProgressChanged(progress)
+				notifyProgressChanged(oldProgress, progress)
 				isReattaching = false
 			}
 			return
 		}
-		notifyProgressChanged(progress)
+		notifyProgressChanged(oldProgress, progress)
 	}
 
-	private fun notifyProgressChanged(progress: List<SessionProgress>) {
+	private fun notifyProgressChanged(oldProgress: List<SessionProgress>, progress: List<SessionProgress>) {
+		if (oldProgress.size == progress.size) {
+			progress.forEachIndexed { index, sessionProgress ->
+				val newProgress = sessionProgress.progress
+				if (newProgress != oldProgress[index].progress) {
+					notifyItemChanged(index, ProgressUpdate(newProgress, !isReattaching))
+				}
+			}
+			return
+		}
+		val oldProgressById = oldProgress.associateBy(
+			keySelector = { sessionProgress -> sessionProgress.id },
+			valueTransform = { sessionProgress -> sessionProgress.progress }
+		)
 		progress.forEachIndexed { index, sessionProgress ->
-			notifyItemChanged(index, ProgressUpdate(sessionProgress.progress, !isReattaching))
+			val newProgress = sessionProgress.progress
+			if (newProgress != oldProgressById[sessionProgress.id]) {
+				notifyItemChanged(index, ProgressUpdate(newProgress, !isReattaching))
+			}
 		}
 	}
 
