@@ -115,6 +115,23 @@ public class TestSessionScript<F : Failure> private constructor() {
 		return if (commitQueue.isEmpty()) emptyList() else commitQueue.removeFirst()
 	}
 
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+		other as TestSessionScript<*>
+		if (launchQueue != other.launchQueue) return false
+		if (commitQueue != other.commitQueue) return false
+		if (cancelState != other.cancelState) return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = launchQueue.hashCode()
+		result = 31 * result + commitQueue.hashCode()
+		result = 31 * result + (cancelState?.hashCode() ?: 0)
+		return result
+	}
+
 	/**
 	 * Factories for [TestSessionScript].
 	 */
