@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.test
 
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
-import java.util.ArrayDeque
 
 /**
  * Scripted transitions used to drive session state updates in tests.
