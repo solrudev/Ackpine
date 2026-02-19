@@ -65,6 +65,7 @@ import java.util.UUID
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -315,7 +316,7 @@ class IntentBasedInstallSessionTest {
 		assertIs<Session.State.Failed<InstallFailure>>(state)
 		val failure = assertIs<InstallFailure.Exceptional>(state.failure)
 		val message = assertNotNull(failure.exception.message)
-		assertTrue("External storage is not available" in message)
+		assertContains(message, "External storage is not available")
 	}
 
 	@Test
@@ -335,8 +336,8 @@ class IntentBasedInstallSessionTest {
 		assertIs<Session.State.Failed<InstallFailure>>(state)
 		val failure = assertIs<InstallFailure.Exceptional>(state.failure)
 		val message = assertNotNull(failure.exception.message)
-		assertTrue("External storage is not available" in message)
-		assertTrue("WRITE_EXTERNAL_STORAGE permission denied" in message)
+		assertContains(message, "External storage is not available")
+		assertContains(message, "WRITE_EXTERNAL_STORAGE permission denied")
 	}
 
 	private fun createSession(

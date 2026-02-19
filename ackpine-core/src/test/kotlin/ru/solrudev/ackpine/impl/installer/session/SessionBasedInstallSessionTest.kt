@@ -56,6 +56,7 @@ import java.io.File
 import java.util.UUID
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -118,7 +119,7 @@ class SessionBasedInstallSessionTest {
 		session.launch()
 		idleMainThread()
 
-		assertTrue(Session.State.Awaiting in states)
+		assertContains(states, Session.State.Awaiting)
 		assertEquals(3, packageInstaller.session.writes.size)
 		val writtenApk0 = packageInstaller.session.writes["0.apk"]
 		val writtenApk1 = packageInstaller.session.writes["1.apk"]
@@ -170,7 +171,7 @@ class SessionBasedInstallSessionTest {
 
 		assertFalse(packageInstaller.session.commits.isEmpty())
 		val expectedUpdate = CommitAttemptsUpdate(sessionId.toString(), commitAttemptsCount = 1)
-		assertTrue(expectedUpdate in constraintsDao.commitAttemptsUpdates)
+		assertContains(constraintsDao.commitAttemptsUpdates, expectedUpdate)
 	}
 
 	@Test
@@ -207,7 +208,7 @@ class SessionBasedInstallSessionTest {
 		session.onPreapprovalSucceeded()
 		idleMainThread()
 
-		assertTrue(session.id.toString() in preapprovalDao.preapprovedSessions)
+		assertContains(preapprovalDao.preapprovedSessions, session.id.toString())
 	}
 
 	@Test
@@ -256,7 +257,7 @@ class SessionBasedInstallSessionTest {
 		)
 		idleMainThread()
 
-		assertTrue(sessionId.toString() in nativeSessionIdDao.removed)
+		assertContains(nativeSessionIdDao.removed, sessionId.toString())
 		assertFalse(packageInstaller.session.writes.isEmpty())
 		assertEquals(Session.State.Awaiting, states.last())
 	}
@@ -463,7 +464,7 @@ class SessionBasedInstallSessionTest {
 		session.cancel()
 		idleMainThread()
 
-		assertTrue(123 in packageInstaller.abandonedSessions)
+		assertContains(packageInstaller.abandonedSessions, 123)
 		assertEquals(1, packageInstaller.unregisteredCallbacks.size)
 	}
 
