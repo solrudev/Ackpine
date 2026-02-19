@@ -32,15 +32,11 @@ public class ImmediateFuture<V> private constructor(
 	private val throwable: Throwable?
 ) : ListenableFuture<V> {
 
-	override fun addListener(listener: Runnable, executor: Executor) {
-		executor.execute(listener)
-	}
-
+	override fun addListener(listener: Runnable, executor: Executor): Unit = executor.execute(listener)
 	override fun cancel(mayInterruptIfRunning: Boolean): Boolean = false
-
 	override fun isCancelled(): Boolean = false
-
 	override fun isDone(): Boolean = true
+	override fun get(timeout: Long, unit: TimeUnit): V = get()
 
 	override fun get(): V {
 		if (throwable != null) {
@@ -48,10 +44,6 @@ public class ImmediateFuture<V> private constructor(
 		}
 		@Suppress("UNCHECKED_CAST")
 		return value as V
-	}
-
-	override fun get(timeout: Long, unit: TimeUnit): V {
-		return get()
 	}
 
 	public companion object {
