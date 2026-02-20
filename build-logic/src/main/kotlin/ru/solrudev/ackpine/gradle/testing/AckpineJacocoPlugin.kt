@@ -17,12 +17,21 @@
 package ru.solrudev.ackpine.gradle.testing
 
 import com.android.build.api.artifact.ScopedArtifact
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.CommonExtension
 import com.android.build.api.dsl.LibraryExtension
+import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.variant.ApplicationAndroidComponentsExtension
+import com.android.build.api.variant.ApplicationVariant
+import com.android.build.api.variant.Component
 import com.android.build.api.variant.DeviceTestBuilder
+import com.android.build.api.variant.HasDeviceTests
+import com.android.build.api.variant.HasHostTests
 import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
 import com.android.build.api.variant.LibraryVariant
 import com.android.build.api.variant.ScopedArtifacts
+import com.android.build.api.variant.Variant
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -47,7 +56,7 @@ import ru.solrudev.ackpine.gradle.tasks.AckpineJacocoReportTask
 import kotlin.jvm.optionals.getOrNull
 
 /**
- * Configures JaCoCo report generation for Ackpine Android library modules.
+ * Configures JaCoCo report generation for Ackpine Android modules.
  */
 public class AckpineJacocoPlugin : Plugin<Project> {
 
@@ -56,8 +65,12 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		configureJacoco()
 		configureTestTask()
 		pluginManager.withPlugin("com.android.library") {
-			configureAndroid()
-			configureAndroidComponents()
+			configureAndroid<LibraryExtension>()
+			configureAndroidComponents<LibraryAndroidComponentsExtension, LibraryVariant>()
+		}
+		pluginManager.withPlugin("com.android.application") {
+			configureAndroid<ApplicationExtension>()
+			configureAndroidComponents<ApplicationAndroidComponentsExtension, ApplicationVariant>()
 		}
 	}
 
@@ -74,10 +87,12 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		reportsDirectory = layout.buildDirectory.dir("jacocoReports")
 	}
 
-	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
-		buildTypes.named("debug") {
-			enableUnitTestCoverage = true
-			enableAndroidTestCoverage = true
+	private inline fun <reified E : CommonExtension<*, *, *, *, *, *>> Project.configureAndroid() {
+		extensions.configure<E> {
+			buildTypes.named("debug") {
+				enableUnitTestCoverage = true
+				enableAndroidTestCoverage = true
+			}
 		}
 	}
 
@@ -88,63 +103,71 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureAndroidComponents() = extensions.configure<LibraryAndroidComponentsExtension> {
-		onVariants(withDebugBuildType()) { variant ->
-			val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
-			if (jacocoConfig.hasAndroidTests) {
-				configureConnectedAndroidTest(variant, jacocoConfig)
-				configureManagedDevices(variant, jacocoConfig)
+	private inline fun <reified E : AndroidComponentsExtension<*, *, V>, V> Project.configureAndroidComponents()
+			where V : Variant,
+				  V : HasHostTests,
+				  V : HasDeviceTests {
+		extensions.configure<E> {
+			onVariants(withDebugBuildType()) { variant ->
+				val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
+				if (jacocoConfig.hasAndroidTests) {
+					configureConnectedAndroidTest(variant, jacocoConfig)
+					configureManagedDevices(variant, jacocoConfig)
+				}
 			}
 		}
 	}
 
 	private fun Project.configureManagedDevices(
-		variant: LibraryVariant,
+		component: Component,
 		jacocoConfig: JacocoConfig
 	) = extensions.configure<LibraryExtension> {
 		testOptions.managedDevices.allDevices.configureEach {
-			configureManagedDeviceReport(variant, jacocoConfig.sources, testTaskAction = name)
+			configureManagedDeviceReport(component, jacocoConfig.sources, testTaskAction = name)
 		}
 		testOptions.managedDevices.groups.configureEach {
-			configureManagedDeviceReport(variant, jacocoConfig.sources, testTaskAction = "${name}Group")
+			configureManagedDeviceReport(component, jacocoConfig.sources, testTaskAction = "${name}Group")
 		}
 	}
 
 	private fun Project.configureManagedDeviceReport(
-		variant: LibraryVariant,
+		component: Component,
 		sources: FileCollection,
 		testTaskAction: String
 	) {
 		val reportTaskAction = "${testTaskAction}Jacoco"
-		val testTaskName = variant.computeTaskName(action = testTaskAction, subject = "androidTest")
-		val reportTask = registerAndroidTestReportTask(variant, sources, testTaskName, reportTaskAction)
+		val testTaskName = component.computeTaskName(action = testTaskAction, subject = "androidTest")
+		val reportTask = registerAndroidTestReportTask(component, sources, testTaskName, reportTaskAction)
 		tasks.matching { it.name == testTaskName }.configureEach {
 			finalizedBy(reportTask)
 		}
 	}
 
 	private fun Project.configureConnectedAndroidTest(
-		variant: LibraryVariant,
+		component: Component,
 		jacocoConfig: JacocoConfig
 	) {
 		val providerFactory = providers
-		val connectedTaskName = variant.computeTaskName(action = "connected", subject = "androidTest")
+		val connectedTaskName = component.computeTaskName(action = "connected", subject = "androidTest")
 		tasks.matching { it.name == connectedTaskName }.configureEach {
 			jacocoConfig.androidTestExecutionData.fromCoverageTask(this, providerFactory)
 			finalizedBy(jacocoConfig.task)
 		}
 	}
 
-	private fun Project.registerJacocoReportTask(variant: LibraryVariant): JacocoConfig? {
-		val hostTest = variant.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
-		val androidTest = variant.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE]
+	private fun <C> Project.registerJacocoReportTask(component: C): JacocoConfig?
+			where C : Component,
+				  C : HasHostTests,
+				  C : HasDeviceTests {
+		val hostTest = component.hostTests[HostTestBuilder.UNIT_TEST_TYPE]
+		val androidTest = component.deviceTests[DeviceTestBuilder.ANDROID_TEST_TYPE]
 		if (hostTest == null && androidTest == null) {
 			return null
 		}
-		val sources = files(variant.sources.java?.all, variant.sources.kotlin?.all)
+		val sources = files(component.sources.java?.all, component.sources.kotlin?.all)
 		val hostTestExecutionData = objects.fileCollection()
 		val androidTestExecutionData = objects.fileCollection()
-		val reportTaskName = variant.computeTaskName(action = "jacoco", subject = "testReport")
+		val reportTaskName = component.computeTaskName(action = "jacoco", subject = "testReport")
 		val reportTask = tasks.registerJacocoReportTask(
 			reportTaskName,
 			sources,
@@ -155,7 +178,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 			hostTestExecutionData.from(testTask.extensions.getByType<JacocoTaskExtension>().destinationFile)
 			testTask.finalizedBy(reportTask)
 		}
-		reportTask.wireProjectClasses(variant)
+		reportTask.wireProjectClasses(component)
 		return JacocoConfig(
 			hasAndroidTests = androidTest != null,
 			reportTask,
@@ -165,7 +188,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerAndroidTestReportTask(
-		variant: LibraryVariant,
+		component: Component,
 		sources: FileCollection,
 		testTaskName: String,
 		reportNameAction: String
@@ -179,9 +202,9 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 				}
 			}
 		executionData.from(executionDataFiles)
-		val reportTaskName = variant.computeTaskName(action = reportNameAction, subject = "androidTestReport")
+		val reportTaskName = component.computeTaskName(action = reportNameAction, subject = "androidTestReport")
 		val reportTask = tasks.registerJacocoReportTask(reportTaskName, sources, executionData)
-		reportTask.wireProjectClasses(variant)
+		reportTask.wireProjectClasses(component)
 		return reportTask
 	}
 
@@ -220,8 +243,8 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun TaskProvider<AckpineJacocoReportTask>.wireProjectClasses(variant: LibraryVariant) {
-		variant.artifacts
+	private fun TaskProvider<AckpineJacocoReportTask>.wireProjectClasses(component: Component) {
+		component.artifacts
 			.forScope(ScopedArtifacts.Scope.PROJECT)
 			.use(this)
 			.toGet(
