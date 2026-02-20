@@ -18,9 +18,8 @@ package ru.solrudev.ackpine.gradle
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.LibraryExtension
-import com.android.build.api.variant.DeviceTestBuilder
-import com.android.build.api.variant.HostTestBuilder
 import com.android.build.api.variant.LibraryAndroidComponentsExtension
+import com.android.build.api.variant.LibraryVariantBuilder
 import com.android.build.gradle.LibraryPlugin
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
@@ -40,7 +39,7 @@ import ru.solrudev.ackpine.gradle.helpers.abiValidation
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
-import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
+import ru.solrudev.ackpine.gradle.testing.configureTests
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
@@ -63,7 +62,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		extension.testing.enableHostTests.convention(false)
 		extension.testing.enableDeviceTests.convention(false)
 		configureAndroid()
-		configureTests(extension.testing)
+		configureTests<LibraryAndroidComponentsExtension, LibraryVariantBuilder>(extension.testing)
 		registerConsumableLibraryConfiguration()
 		registerAbiValidationConfigurations()
 	}
@@ -90,21 +89,6 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 		testOptions {
 			targetSdk = Constants.TARGET_SDK
-		}
-	}
-
-	private fun Project.configureTests(
-		testing: AckpineTestingOptions
-	) = extensions.configure<LibraryAndroidComponentsExtension> {
-		beforeVariants { variantBuilder ->
-			variantBuilder
-				.hostTests
-				.getValue(HostTestBuilder.UNIT_TEST_TYPE)
-				.enable = testing.enableHostTests.get() && variantBuilder.buildType == "debug"
-			variantBuilder
-				.deviceTests
-				.getValue(DeviceTestBuilder.ANDROID_TEST_TYPE)
-				.enable = testing.enableDeviceTests.get() && variantBuilder.buildType == "debug"
 		}
 	}
 
