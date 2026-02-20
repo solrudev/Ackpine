@@ -1,6 +1,14 @@
 Change Log
 ==========
 
+Version 0.20.1 (2026-02-20)
+---------------------------
+
+### Bug fixes and improvements
+
+- Align test sessions' behavior with real implementations better: don't notify with the same progress events next to each other, return `false` on `TestSession`'s `launch()` and `commit()` subsequent calls.
+- Implement `equals()` and `hashCode()` in `TestSessionScript`.
+
 Version 0.20.0 (2026-02-12)
 ---------------------------
 
