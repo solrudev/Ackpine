@@ -34,7 +34,6 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class SessionBasedInstallConfirmationActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
@@ -72,7 +71,7 @@ class SessionBasedInstallConfirmationActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
+	@Config(sdk = [Build.VERSION_CODES.S])
 	fun preapprovalFlagIsIgnoredOnOlderApi() {
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)

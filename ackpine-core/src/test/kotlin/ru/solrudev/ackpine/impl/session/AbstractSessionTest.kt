@@ -27,6 +27,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
+import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
@@ -37,12 +38,14 @@ import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.idleMainThread
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
@@ -60,40 +63,22 @@ class AbstractSessionTest {
 	}
 
 	@Test
-	fun isActiveReturnsFalseForPendingSession() {
-		val session = TestSession(initialState = Session.State.Pending)
-		assertFalse(session.isActive)
-	}
-
-	@Test
-	fun isActiveReturnsTrueForActiveSession() {
-		val session = TestSession(initialState = Session.State.Active)
-		assertTrue(session.isActive)
-	}
-
-	@Test
-	fun isCompletedReturnsTrueForSucceededAndFailedSession() {
-		for (state in listOf(
-			Session.State.Succeeded,
-			Session.State.Failed(TestFailure.Aborted(""))
-		)) {
-			val session = TestSession(initialState = state)
-			assertTrue(session.isCompleted)
-		}
-	}
-
-	@Test
-	fun isCancelledReturnsFalseForNonCancelledSession() {
-		for (state in listOf(
-			Session.State.Pending,
-			Session.State.Active,
-			Session.State.Awaiting,
-			Session.State.Committed,
-			Session.State.Succeeded,
-			Session.State.Failed(TestFailure.Aborted(""))
-		)) {
-			val session = TestSession(initialState = state)
-			assertFalse(session.isCancelled)
+	fun stateFlagsReflectCurrentState() {
+		val failedState = Session.State.Failed(TestFailure.Aborted(""))
+		val stateFlags = listOf(
+			SessionStateFlags(Session.State.Pending, isActive = false, isCancelled = false, isCompleted = false),
+			SessionStateFlags(Session.State.Active, isActive = true, isCancelled = false, isCompleted = false),
+			SessionStateFlags(Session.State.Awaiting, isActive = true, isCancelled = false, isCompleted = false),
+			SessionStateFlags(Session.State.Committed, isActive = true, isCancelled = false, isCompleted = false),
+			SessionStateFlags(Session.State.Succeeded, isActive = false, isCancelled = false, isCompleted = true),
+			SessionStateFlags(Session.State.Cancelled, isActive = false, isCancelled = true, isCompleted = false),
+			SessionStateFlags(failedState, isActive = false, isCancelled = false, isCompleted = true),
+		)
+		for (flags in stateFlags) {
+			val session = TestSession(initialState = flags.state)
+			assertEquals(flags.isActive, session.isActive, "isActive mismatch for ${flags.state}")
+			assertEquals(flags.isCancelled, session.isCancelled, "isCancelled mismatch for ${flags.state}")
+			assertEquals(flags.isCompleted, session.isCompleted, "isCompleted mismatch for ${flags.state}")
 		}
 	}
 
@@ -113,8 +98,8 @@ class AbstractSessionTest {
 		val first = session.addStateListener(container, listener)
 		val dummy = session.addStateListener(container, listener)
 
-		assertFalse(first.isDisposed)
-		assertTrue(dummy.isDisposed)
+		assertNotEquals(DummyDisposableSubscription, first)
+		assertEquals(DummyDisposableSubscription, dummy)
 	}
 
 	@Test
@@ -147,7 +132,7 @@ class AbstractSessionTest {
 		idleMainThread()
 
 		assertEquals(states1, states2)
-		val expectedStates = listOf<Session.State<TestFailure>>(
+		val expectedStates = listOf(
 			Session.State.Pending,
 			Session.State.Active,
 			Session.State.Awaiting
@@ -156,37 +141,48 @@ class AbstractSessionTest {
 	}
 
 	@Test
-	fun launchTransitionsFromPendingToActive() {
-		val session = TestSession(initialState = Session.State.Pending)
-		val states = session.captureStates()
-
-		session.launch()
-		idleMainThread()
-
-		assertEquals(Session.State.Active, states[1])
-	}
+	fun launchStateTransitions() = testLaunch(
+		initialState = Session.State.Pending,
+		expectedStates = listOf(
+			Session.State.Pending,
+			Session.State.Active,
+			Session.State.Awaiting
+		),
+		expectedPersistedStates = listOf(
+			SessionEntity.State.ACTIVE,
+			SessionEntity.State.AWAITING
+		)
+	)
 
 	@Test
-	fun launchTransitionsToAwaitingAndNotifiesListener() {
+	fun launchFromActiveIsPermitted() = testLaunch(
+		initialState = Session.State.Active,
+		expectedStates = listOf(
+			Session.State.Active,
+			Session.State.Awaiting
+		),
+		expectedPersistedStates = listOf(SessionEntity.State.AWAITING)
+	)
+
+	private fun testLaunch(
+		initialState: Session.State<TestFailure>,
+		expectedStates: List<Session.State<TestFailure>>,
+		expectedPersistedStates: List<SessionEntity.State>
+	) {
 		val sessionDao = RecordingSessionDao()
 		val session = TestSession(
 			sessionDao = sessionDao,
-			initialState = Session.State.Pending
+			initialState = initialState
 		)
 		val states = session.captureStates()
 
 		assertTrue(session.launch())
+		assertFalse(session.launch())
 		idleMainThread()
 
-		val expectedStates = listOf(
-			Session.State.Pending,
-			Session.State.Active,
-			Session.State.Awaiting
-		)
-		val expectedStateUpdates = listOf(
-			SessionStateUpdate(session.id.toString(), SessionEntity.State.ACTIVE),
-			SessionStateUpdate(session.id.toString(), SessionEntity.State.AWAITING)
-		)
+		val expectedStateUpdates = expectedPersistedStates.map { state ->
+			SessionStateUpdate(session.id.toString(), state)
+		}
 		assertEquals(expectedStates, states)
 		assertEquals(expectedStateUpdates, sessionDao.stateUpdates)
 		assertFalse(sessionDao.lastLaunchUpdates.isEmpty())
@@ -209,25 +205,48 @@ class AbstractSessionTest {
 	}
 
 	@Test
-	fun commitFromAwaitingMarksCommittedOnce() {
+	fun commitStateTransitions() = testCommit(
+		initialState = Session.State.Awaiting,
+		expectedStates = listOf(
+			Session.State.Awaiting,
+			Session.State.Committed
+		),
+		expectedPersistedStates = listOf(SessionEntity.State.COMMITTED),
+		committedCalls = 1
+	)
+
+	@Test
+	fun commitFromCommittedIsPermitted() = testCommit(
+		initialState = Session.State.Committed,
+		expectedStates = listOf(Session.State.Committed),
+		expectedPersistedStates = emptyList(),
+		committedCalls = 0
+	)
+
+	private fun testCommit(
+		initialState: Session.State<TestFailure>,
+		expectedStates: List<Session.State<TestFailure>>,
+		expectedPersistedStates: List<SessionEntity.State>,
+		committedCalls: Int
+	) {
 		val sessionDao = RecordingSessionDao()
 		val session = TestSession(
 			sessionDao = sessionDao,
-			initialState = Session.State.Awaiting
+			initialState = initialState
 		)
 		val states = session.captureStates()
 
 		assertTrue(session.commit())
+		assertFalse(session.commit())
 		idleMainThread()
 
-		val expectedStates = listOf(
-			Session.State.Awaiting,
-			Session.State.Committed
-		)
-		assertEquals(1, session.confirmationCalls)
-		assertEquals(1, session.committedCalls)
+		val expectedStateUpdates = expectedPersistedStates.map { state ->
+			SessionStateUpdate(session.id.toString(), state)
+		}
 		assertEquals(expectedStates, states)
-		assertFalse(session.commit())
+		assertEquals(expectedStateUpdates, sessionDao.stateUpdates)
+		assertEquals(1, session.confirmationCalls)
+		assertEquals(committedCalls, session.committedCalls)
 		assertFalse(sessionDao.lastCommitUpdates.isEmpty())
 	}
 
@@ -260,13 +279,11 @@ class AbstractSessionTest {
 			idleMainThread()
 
 			assertEquals(Session.State.Cancelled, states.last())
-			assertTrue(session.isCancelled)
-			assertFalse(session.isCompleted)
 		}
 	}
 
 	@Test
-	fun cancelMarksCancelledAndClearsNotification() {
+	fun cancelClearsNotification() {
 		val sessionId = UUID.randomUUID()
 		val session = TestSession(
 			id = sessionId,
@@ -282,32 +299,30 @@ class AbstractSessionTest {
 			.build()
 		notificationManager.notify(sessionId.toString(), 42, notification)
 
-		val states = session.captureStates()
 		session.cancel()
 		idleMainThread()
 
-		assertTrue(session.isCancelled)
-		assertEquals(Session.State.Cancelled, states.last())
 		val shadowManager = shadowOf(notificationManager)
 		assertEquals(0, shadowManager.allNotifications.size)
 	}
 
 	@Test
-	fun cancelledStateIgnoresSubsequentTransitions() {
-		val session = TestSession(initialState = Session.State.Pending)
-		val states = session.captureStates()
+	fun terminalStateIgnoresSubsequentTransitions() {
+		for (state in listOf(
+			Session.State.Cancelled,
+			Session.State.Succeeded,
+			Session.State.Failed(TestFailure.Aborted(""))
+		)) {
+			val session = TestSession(initialState = state)
+			val states = session.captureStates()
+			idleMainThread()
 
-		session.cancel()
-		idleMainThread()
+			session.cancel()
+			session.complete(Session.State.Succeeded)
+			session.complete(Session.State.Failed(TestFailure.Aborted("aborted")))
 
-		val statesAfterCancel = states.toList()
-		session.complete(Session.State.Succeeded)
-		idleMainThread()
-
-		assertEquals(statesAfterCancel, states)
-		assertEquals(Session.State.Cancelled, states.last())
-		assertTrue(session.isCancelled)
-		assertFalse(session.isCompleted)
+			assertEquals(listOf(state), states)
+		}
 	}
 
 	@Test
@@ -319,7 +334,6 @@ class AbstractSessionTest {
 		idleMainThread()
 
 		assertEquals(Session.State.Succeeded, states.last())
-		assertTrue(session.isCompleted)
 	}
 
 	@Test
@@ -360,24 +374,6 @@ class AbstractSessionTest {
 		assertEquals(failure.exception, exception)
 	}
 
-	@Test
-	fun completedStateDoesNotAllowCancel() {
-		val session = TestSession(initialState = Session.State.Pending)
-		val states = session.captureStates()
-
-		session.complete(Session.State.Succeeded)
-		idleMainThread()
-
-		val statesAfterCompletion = states.toList()
-		session.cancel()
-		idleMainThread()
-
-		assertEquals(statesAfterCompletion, states)
-		assertEquals(Session.State.Succeeded, states.last())
-		assertTrue(session.isCompleted)
-		assertFalse(session.isCancelled)
-	}
-
 	private inner class TestSession(
 		id: UUID = UUID.randomUUID(),
 		sessionDao: RecordingSessionDao = RecordingSessionDao(),
@@ -415,4 +411,11 @@ class AbstractSessionTest {
 			committedCalls++
 		}
 	}
+
+	private class SessionStateFlags<F : Failure>(
+		val state: Session.State<F>,
+		val isActive: Boolean,
+		val isCancelled: Boolean,
+		val isCompleted: Boolean
+	)
 }

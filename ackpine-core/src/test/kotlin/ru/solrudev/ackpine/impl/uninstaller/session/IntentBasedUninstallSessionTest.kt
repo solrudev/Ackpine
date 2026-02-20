@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.impl.uninstaller.session
 
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.core.content.getSystemService
@@ -26,7 +25,6 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import org.robolectric.shadow.api.Shadow
 import org.robolectric.shadows.ShadowContextWrapper
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
@@ -50,7 +48,6 @@ import kotlin.test.assertTrue
 private const val NOTIFICATION_ID = 42
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class IntentBasedUninstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

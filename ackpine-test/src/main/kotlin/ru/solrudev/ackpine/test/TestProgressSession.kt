@@ -101,6 +101,9 @@ public class TestProgressSession<F : Failure> @JvmOverloads public constructor(
 
 	@JvmSynthetic
 	internal fun updateProgress(progress: Progress) {
+		if (this.progress == progress) {
+			return
+		}
 		this.progress = progress
 		progressHistoryValues.add(progress)
 		notifyProgressListeners(progress)

@@ -19,12 +19,10 @@ package ru.solrudev.ackpine.impl.activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
@@ -40,7 +38,6 @@ import kotlin.test.assertNull
  * Uses [IntentBasedInstallActivity] as the concrete implementation since SessionCommitActivity is abstract.
  */
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class SessionCommitActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

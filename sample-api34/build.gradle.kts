@@ -24,6 +24,9 @@ plugins {
 ackpine {
 	id = "updater"
 	minSdk = 24
+	testing {
+		enableHostTests = true
+	}
 }
 
 dependencies {
@@ -40,4 +43,10 @@ dependencies {
 	implementation(libs.okHttp)
 	implementation(libs.vbpd)
 	implementation(libs.insetter)
+	testImplementation(projects.ackpineTest)
+	testImplementation(libs.kotlin.test)
+	testImplementation(kotlinx.coroutines.test)
+	testImplementation(libs.turbine)
+	testImplementation(libs.robolectric)
+	testImplementation(androidx.test.core)
 }

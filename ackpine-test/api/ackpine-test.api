@@ -129,6 +129,8 @@ public final class ru/solrudev/ackpine/test/TestSessionScript {
 	public final fun clearCommit ()Lru/solrudev/ackpine/test/TestSessionScript;
 	public final fun clearLaunch ()Lru/solrudev/ackpine/test/TestSessionScript;
 	public static final fun empty ()Lru/solrudev/ackpine/test/TestSessionScript;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun hashCode ()I
 	public final fun onCancel (Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionScript;
 	public final fun onCommit ([Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionScript;
 	public final fun onLaunch ([Lru/solrudev/ackpine/session/Session$State;)Lru/solrudev/ackpine/test/TestSessionScript;

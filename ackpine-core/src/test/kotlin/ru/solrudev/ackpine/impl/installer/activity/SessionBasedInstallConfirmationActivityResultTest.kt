@@ -45,7 +45,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class SessionBasedInstallConfirmationActivityResultTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

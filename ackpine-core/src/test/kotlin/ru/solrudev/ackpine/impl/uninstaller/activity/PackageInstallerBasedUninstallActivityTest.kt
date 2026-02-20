@@ -20,13 +20,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
-import android.os.Build
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.testutil.TestCompletableSession
 import ru.solrudev.ackpine.impl.testutil.runScheduledMainThreadTasks
@@ -44,7 +42,6 @@ class PackageInstallerBasedUninstallActivityTest {
 	private val context: Context = ApplicationProvider.getApplicationContext()
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun noStatusFromReceiverAbortsWhenPackageIsStillInstalled() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
@@ -65,7 +62,6 @@ class PackageInstallerBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun doesNotAbortWhenPackageIsRemoved() {
 		// no package installed
 		val sessionId = UUID.randomUUID()

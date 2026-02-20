@@ -16,20 +16,17 @@
 
 package ru.solrudev.ackpine.impl.database
 
-import android.os.Build
 import androidx.room.testing.MigrationTestHelper
 import androidx.test.platform.app.InstrumentationRegistry
 import org.junit.Rule
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 private const val TEST_DB_NAME = "migration_tests.db"
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class AckpineDatabaseMigrationsTest {
 
 	@get:Rule

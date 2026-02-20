@@ -18,12 +18,10 @@ package ru.solrudev.ackpine
 
 import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import androidx.core.app.NotificationManagerCompat
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
 import kotlin.test.AfterTest
@@ -34,7 +32,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class AckpineTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

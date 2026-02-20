@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="install">Installeer</string>
-	<string name="button_install">Installeer</string>
 	<string name="cancel">Kanselleer</string>
 	<string name="error">Fout</string>
 	<string name="error_with_reason">Fout: %s</string>

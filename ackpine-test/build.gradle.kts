@@ -20,10 +20,14 @@ plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
+	id("ru.solrudev.ackpine.jacoco")
 }
 
 ackpine {
 	id = "test"
+	testing {
+		enableHostTests = true
+	}
 	artifact {
 		name = "Ackpine Test"
 		inceptionYear = "2026"
@@ -32,4 +36,7 @@ ackpine {
 
 dependencies {
 	api(projects.ackpineApi.apiMain)
+	testImplementation(libs.kotlin.test)
+	testImplementation(projects.ackpineKtx)
+	testImplementation(kotlinx.coroutines.test)
 }

@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.test
 
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
-import java.util.ArrayDeque
 
 /**
  * Scripted transitions used to drive session state updates in tests.
@@ -107,13 +106,30 @@ public class TestSessionScript<F : Failure> private constructor() {
 	}
 
 	@JvmSynthetic
-	internal fun nextLaunchStates(): List<Session.State<F>>? {
-		return if (launchQueue.isEmpty()) null else launchQueue.removeFirst()
+	internal fun nextLaunchStates(): List<Session.State<F>> {
+		return if (launchQueue.isEmpty()) emptyList() else launchQueue.removeFirst()
 	}
 
 	@JvmSynthetic
-	internal fun nextCommitStates(): List<Session.State<F>>? {
-		return if (commitQueue.isEmpty()) null else commitQueue.removeFirst()
+	internal fun nextCommitStates(): List<Session.State<F>> {
+		return if (commitQueue.isEmpty()) emptyList() else commitQueue.removeFirst()
+	}
+
+	override fun equals(other: Any?): Boolean {
+		if (this === other) return true
+		if (javaClass != other?.javaClass) return false
+		other as TestSessionScript<*>
+		if (launchQueue != other.launchQueue) return false
+		if (commitQueue != other.commitQueue) return false
+		if (cancelState != other.cancelState) return false
+		return true
+	}
+
+	override fun hashCode(): Int {
+		var result = launchQueue.hashCode()
+		result = 31 * result + commitQueue.hashCode()
+		result = 31 * result + (cancelState?.hashCode() ?: 0)
+		return result
 	}
 
 	/**

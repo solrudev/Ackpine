@@ -23,6 +23,7 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
+import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
@@ -37,7 +38,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
@@ -48,10 +49,11 @@ class AbstractProgressSessionTest {
 	private val dbWriteSemaphore = BinarySemaphore()
 
 	@Test
-	fun addProgressListenerNotifiedImmediately() {
+	fun progressListenerReceivesCurrentProgress() {
 		val session = TestProgressSession(initialProgress = Progress(7, 100))
+		session.updateProgress(42)
 		val progressEvents = session.captureProgress()
-		assertEquals(listOf(Progress(7, 100)), progressEvents)
+		assertEquals(listOf(Progress(42, 100)), progressEvents)
 	}
 
 	@Test
@@ -94,10 +96,10 @@ class AbstractProgressSessionTest {
 		val listener = ProgressSession.ProgressListener { _, _ -> }
 
 		val first = session.addProgressListener(container, listener)
-		val second = session.addProgressListener(container, listener)
+		val dummy = session.addProgressListener(container, listener)
 
-		assertFalse(first.isDisposed)
-		assertTrue(second.isDisposed)
+		assertNotEquals(DummyDisposableSubscription, first)
+		assertEquals(DummyDisposableSubscription, dummy)
 	}
 
 	@Test
@@ -159,7 +161,7 @@ class AbstractProgressSessionTest {
 		sessionProgressDao = progressDao,
 		executor = ImmediateExecutor,
 		handler = handler,
-		exceptionalFailureFactory = { TestFailure.Exceptional(it) },
+		exceptionalFailureFactory = TestFailure::Exceptional,
 		notificationId = 1,
 		dbWriteSemaphore = dbWriteSemaphore
 	) {

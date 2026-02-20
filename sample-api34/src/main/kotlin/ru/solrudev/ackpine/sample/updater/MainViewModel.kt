@@ -161,7 +161,7 @@ class MainViewModel(
 	}
 
 	private fun buttonText(state: Session.State<InstallFailure>) = if (state.isTerminal) {
-		ResolvableString.transientResource(R.string.button_install)
+		ResolvableString.transientResource(R.string.install)
 	} else {
 		ResolvableString.transientResource(R.string.cancel)
 	}

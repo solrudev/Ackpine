@@ -34,6 +34,7 @@ import androidx.transition.Fade;
 import androidx.transition.TransitionManager;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -163,20 +164,40 @@ public final class InstallSessionsAdapter extends ListAdapter<SessionData, Insta
 	}
 
 	public void submitProgress(@NonNull List<SessionProgress> progress) {
+		final var oldProgress = currentProgress;
 		currentProgress = progress;
 		if (isReattaching) {
 			handler.post(() -> {
-				notifyProgressChanged(progress);
+				notifyProgressChanged(oldProgress, progress);
 				isReattaching = false;
 			});
 			return;
 		}
-		notifyProgressChanged(progress);
+		notifyProgressChanged(oldProgress, progress);
 	}
 
-	private void notifyProgressChanged(@NonNull List<SessionProgress> progress) {
+	private void notifyProgressChanged(@NonNull List<SessionProgress> oldProgress,
+									   @NonNull List<SessionProgress> progress) {
+		if (oldProgress.size() == progress.size()) {
+			for (int i = 0; i < progress.size(); i++) {
+				final var newProgress = progress.get(i).toProgress();
+				if (!newProgress.equals(oldProgress.get(i).toProgress())) {
+					notifyItemChanged(i, new ProgressUpdate(newProgress, !isReattaching));
+				}
+			}
+			return;
+		}
+		final var oldProgressById = new HashMap<UUID, Progress>(oldProgress.size());
+		for (final var sessionProgress : oldProgress) {
+			oldProgressById.put(sessionProgress.id(), sessionProgress.toProgress());
+		}
 		for (int i = 0; i < progress.size(); i++) {
-			notifyItemChanged(i, new ProgressUpdate(progress.get(i).toProgress(), !isReattaching));
+			final var sessionProgress = progress.get(i);
+			final var newProgress = sessionProgress.toProgress();
+			final var oldSessionProgress = oldProgressById.get(sessionProgress.id());
+			if (!newProgress.equals(oldSessionProgress)) {
+				notifyItemChanged(i, new ProgressUpdate(newProgress, !isReattaching));
+			}
 		}
 	}
 

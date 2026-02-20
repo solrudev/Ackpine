@@ -67,7 +67,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	private val context: Context = ApplicationProvider.getApplicationContext()
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun pendingUserActionWithoutConfirmationIntentCompletesExceptionally() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(
@@ -91,7 +90,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun immediateConfirmationLaunchesWrapperActivity() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
@@ -114,7 +112,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun deferredConfirmationPostsNotification() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
@@ -139,7 +136,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun statusSuccessCompletesSessionSucceeded() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
@@ -159,7 +155,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun statusFailureCompletesSessionFailed() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
@@ -181,7 +176,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 	fun wrongIntentActionIsIgnored() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
@@ -208,7 +202,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 	fun preapprovalSuccessNotifiesListener() {
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)
@@ -229,7 +222,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 	fun preapprovalFailureNotifiesListener() {
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)
@@ -251,7 +243,6 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 	fun pendingUserActionPassesPreapprovalFlagToWrapperActivity() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
