@@ -29,6 +29,7 @@ import ru.solrudev.ackpine.session.Session.State.Pending
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A controllable [Session] test double.
@@ -46,6 +47,9 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	private val stateListeners = CopyOnWriteArraySet<Session.StateListener<F>>()
 	private val stateLock = Any()
 	private val stateHistoryValues = CopyOnWriteArrayList<Session.State<F>>().apply { add(initialState) }
+	private val isLaunchCalled = AtomicBoolean(false)
+	private val isCommitCalled = AtomicBoolean(false)
+	private val isCancelCalled = AtomicBoolean(false)
 
 	/**
 	 * Returns the current state of this session.
@@ -75,6 +79,9 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 		get() = state is Cancelled
 
 	override fun launch(): Boolean {
+		if (!isLaunchCalled.compareAndSet(false, true)) {
+			return false
+		}
 		val currentState = state
 		if (currentState.isTerminal) {
 			return false
@@ -90,6 +97,9 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	}
 
 	override fun commit(): Boolean {
+		if (!isCommitCalled.compareAndSet(false, true)) {
+			return false
+		}
 		val currentState = state
 		if (currentState.isTerminal) {
 			return false
@@ -105,7 +115,7 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	}
 
 	override fun cancel() {
-		if (state.isTerminal) {
+		if (state.isTerminal || !isCancelCalled.compareAndSet(false, true)) {
 			return
 		}
 		controller.handleCancel()
@@ -140,6 +150,9 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 		synchronized(stateLock) {
 			this.state = state
 		}
+		isLaunchCalled.set(false)
+		isCommitCalled.set(false)
+		isCancelCalled.set(false)
 		stateHistoryValues.clear()
 		stateHistoryValues.add(state)
 		if (notifyListeners) {
