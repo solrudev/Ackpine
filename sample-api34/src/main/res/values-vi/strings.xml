@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="install">Cài đặt</string>
-	<string name="button_install">Cài đặt</string>
 	<string name="cancel">Huỷ</string>
 	<string name="error">Có lỗi</string>
 	<string name="error_with_reason">Lỗi: %s</string>

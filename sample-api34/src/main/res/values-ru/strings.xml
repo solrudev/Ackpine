@@ -16,8 +16,7 @@
   -->
 
 <resources>
-	<string name="install">Установка</string>
-	<string name="button_install">Установить</string>
+	<string name="install">Установить</string>
 	<string name="cancel">Отмена</string>
 	<string name="error">Ошибка</string>
 	<string name="error_with_reason">Ошибка: %s</string>
