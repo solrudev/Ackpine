@@ -1,0 +1,50 @@
+name: avd-cache-warmup
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  warmup:
+    runs-on: ubuntu-latest
+    name: Warm up AVD cache (API ${{ matrix.api-level }})
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [ 30, 31, 34 ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          persist-credentials: false
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Copy debug.keystore
+        run: |
+          mkdir -p /home/runner/.config/.android/
+          cp .github/debug.keystore /home/runner/.config/.android/debug.keystore
+
+      - name: Accept Android licenses
+        run: |
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
+
+      - name: Cache AVD
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # 4.3.0
+        with:
+          path: /home/runner/.config/.android/avd
+          key: avd-api${{ matrix.api-level }}-aosp-x86_64
+
+      - name: Set up AVD
+        run: |
+          ./gradlew api${{ matrix.api-level }}Setup --stacktrace
