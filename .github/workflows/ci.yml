@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Unit tests
     needs: [ build ]
-    if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
+    if: github.event.pull_request.merged != true && join(github.event.pull_request.labels.*.name, ',') != 'documentation' && join(github.event.pull_request.labels.*.name, ',') != 'ci'
 
     permissions:
       checks: write
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Device tests (API ${{ matrix.api-level }})
     needs: [ build ]
-    if: github.event.pull_request.merged != true && toJSON(github.event.pull_request.labels.*.name) != '["documentation"]'
+    if: github.event.pull_request.merged != true && join(github.event.pull_request.labels.*.name, ',') != 'documentation' && join(github.event.pull_request.labels.*.name, ',') != 'ci'
     timeout-minutes: 60
 
     strategy:
