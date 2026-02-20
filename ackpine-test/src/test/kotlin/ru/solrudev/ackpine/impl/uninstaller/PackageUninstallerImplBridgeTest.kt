@@ -14,29 +14,22 @@
  * limitations under the License.
  */
 
-description = "Testing utilities for Ackpine"
+package ru.solrudev.ackpine.impl.uninstaller
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-	id("ru.solrudev.ackpine.dokka")
-	id("ru.solrudev.ackpine.jacoco")
-}
+import android.content.Context
+import ru.solrudev.ackpine.test.TestPackageUninstaller
+import ru.solrudev.ackpine.uninstaller.PackageUninstaller
+import kotlin.test.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
-ackpine {
-	id = "test"
-	testing {
-		enableHostTests = true
+class PackageUninstallerImplBridgeTest {
+
+	@Test
+	fun getInstanceReturnsSingletonBridgeImplementation() {
+		val first = PackageUninstaller.getInstance(Context)
+		val second = PackageUninstaller.getInstance(Context)
+		assertSame(first, second)
+		assertIs<TestPackageUninstaller>(first)
 	}
-	artifact {
-		name = "Ackpine Test"
-		inceptionYear = "2026"
-	}
-}
-
-dependencies {
-	api(projects.ackpineApi.apiMain)
-	testImplementation(libs.kotlin.test)
-	testImplementation(projects.ackpineKtx)
-	testImplementation(kotlinx.coroutines.test)
 }

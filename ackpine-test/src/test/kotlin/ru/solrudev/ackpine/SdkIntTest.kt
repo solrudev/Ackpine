@@ -14,29 +14,23 @@
  * limitations under the License.
  */
 
-description = "Testing utilities for Ackpine"
+package ru.solrudev.ackpine
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-	id("ru.solrudev.ackpine.dokka")
-	id("ru.solrudev.ackpine.jacoco")
-}
+import ru.solrudev.ackpine.test.TestSdkInt
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-ackpine {
-	id = "test"
-	testing {
-		enableHostTests = true
+class SdkIntTest {
+
+	@AfterTest
+	fun tearDown() {
+		TestSdkInt.reset()
 	}
-	artifact {
-		name = "Ackpine Test"
-		inceptionYear = "2026"
-	}
-}
 
-dependencies {
-	api(projects.ackpineApi.apiMain)
-	testImplementation(libs.kotlin.test)
-	testImplementation(projects.ackpineKtx)
-	testImplementation(kotlinx.coroutines.test)
+	@Test
+	fun delegatesToTestSdkInt() {
+		TestSdkInt.set(28)
+		assertEquals(28, SdkInt.get())
+	}
 }

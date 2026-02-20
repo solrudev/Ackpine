@@ -14,29 +14,11 @@
  * limitations under the License.
  */
 
-description = "Testing utilities for Ackpine"
+package android.net
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-	id("ru.solrudev.ackpine.dokka")
-	id("ru.solrudev.ackpine.jacoco")
-}
-
-ackpine {
-	id = "test"
-	testing {
-		enableHostTests = true
+class Uri private constructor() {
+	companion object {
+		@JvmField
+		val EMPTY: Uri = Uri()
 	}
-	artifact {
-		name = "Ackpine Test"
-		inceptionYear = "2026"
-	}
-}
-
-dependencies {
-	api(projects.ackpineApi.apiMain)
-	testImplementation(libs.kotlin.test)
-	testImplementation(projects.ackpineKtx)
-	testImplementation(kotlinx.coroutines.test)
 }

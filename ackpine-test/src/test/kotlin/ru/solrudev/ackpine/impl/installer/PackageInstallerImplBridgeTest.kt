@@ -14,29 +14,22 @@
  * limitations under the License.
  */
 
-description = "Testing utilities for Ackpine"
+package ru.solrudev.ackpine.impl.installer
 
-plugins {
-	id("ru.solrudev.ackpine.library")
-	id("ru.solrudev.ackpine.library-publish")
-	id("ru.solrudev.ackpine.dokka")
-	id("ru.solrudev.ackpine.jacoco")
-}
+import android.content.Context
+import ru.solrudev.ackpine.installer.PackageInstaller
+import ru.solrudev.ackpine.test.TestPackageInstaller
+import kotlin.test.Test
+import kotlin.test.assertIs
+import kotlin.test.assertSame
 
-ackpine {
-	id = "test"
-	testing {
-		enableHostTests = true
+class PackageInstallerImplBridgeTest {
+
+	@Test
+	fun getInstanceReturnsSingletonBridgeImplementation() {
+		val first = PackageInstaller.getInstance(Context)
+		val second = PackageInstaller.getInstance(Context)
+		assertSame(first, second)
+		assertIs<TestPackageInstaller>(first)
 	}
-	artifact {
-		name = "Ackpine Test"
-		inceptionYear = "2026"
-	}
-}
-
-dependencies {
-	api(projects.ackpineApi.apiMain)
-	testImplementation(libs.kotlin.test)
-	testImplementation(projects.ackpineKtx)
-	testImplementation(kotlinx.coroutines.test)
 }
