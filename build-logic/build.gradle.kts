@@ -21,7 +21,6 @@ plugins {
 kotlin {
 	jvmToolchain(21)
 	explicitApi()
-	compilerOptions.freeCompilerArgs.add("-Xcontext-parameters")
 }
 
 gradlePlugin {

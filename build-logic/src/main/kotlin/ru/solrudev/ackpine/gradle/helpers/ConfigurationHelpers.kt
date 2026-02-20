@@ -18,7 +18,6 @@ package ru.solrudev.ackpine.gradle.helpers
 
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectProvider
-import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.artifacts.ResolvableConfiguration
@@ -40,26 +39,24 @@ internal fun NamedDomainObjectProvider<out Configuration>.addOutgoingArtifact(ar
 /**
  * Sets a [LIBRARY_ELEMENTS_ATTRIBUTE] attribute value.
  */
-internal fun Configuration.libraryElements(value: LibraryElements) {
+internal fun Configuration.libraryElements(value: String) {
 	attributes {
-		attribute(LIBRARY_ELEMENTS_ATTRIBUTE, value)
+		attribute(LIBRARY_ELEMENTS_ATTRIBUTE, named<LibraryElements>(value))
 	}
 }
 
-context(project: Project)
 internal fun ConfigurationContainer.resolvableLibraryArtifacts(
 	name: String,
 	action: Action<ResolvableConfiguration>
 ): NamedDomainObjectProvider<ResolvableConfiguration> = resolvable(name) {
 	action.execute(this)
-	libraryElements(project.objects.named(AckpineLibraryBasePlugin.LIBRARY_ELEMENTS))
+	libraryElements(AckpineLibraryBasePlugin.LIBRARY_ELEMENTS)
 }
 
-context(project: Project)
 internal fun ConfigurationContainer.resolvableAppArtifacts(
 	name: String,
 	action: Action<ResolvableConfiguration>
 ): NamedDomainObjectProvider<ResolvableConfiguration> = resolvable(name) {
 	action.execute(this)
-	libraryElements(project.objects.named(AppReleasePlugin.LIBRARY_ELEMENTS))
+	libraryElements(AppReleasePlugin.LIBRARY_ELEMENTS)
 }

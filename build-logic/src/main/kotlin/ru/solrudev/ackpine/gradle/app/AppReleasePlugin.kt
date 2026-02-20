@@ -70,7 +70,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	private fun Project.registerProduceReleaseArtifactsTasks() {
 		extensions.configure<ApplicationAndroidComponentsExtension> {
 			val appElements = configurations.consumable("ackpineAppElements") {
-				libraryElements(objects.named(LIBRARY_ELEMENTS))
+				libraryElements(LIBRARY_ELEMENTS)
 			}
 			val apkElements = configurations.consumable(APK_CONFIGURATION_NAME)
 			onVariants(withReleaseBuildType()) { variant ->

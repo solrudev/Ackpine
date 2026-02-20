@@ -110,7 +110,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 	private fun Project.registerConsumableLibraryConfiguration() {
 		val libraryElements = configurations.consumable("ackpineLibraryElements") {
-			libraryElements(objects.named(LIBRARY_ELEMENTS))
+			libraryElements(LIBRARY_ELEMENTS)
 		}
 		extensions.configure<LibraryAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
