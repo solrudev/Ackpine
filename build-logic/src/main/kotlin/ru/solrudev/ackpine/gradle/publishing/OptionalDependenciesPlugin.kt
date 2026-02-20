@@ -20,8 +20,7 @@ import groovy.util.Node
 import groovy.util.NodeList
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.component.ModuleComponentSelector
-import org.gradle.api.artifacts.result.ResolvedComponentResult
+import org.gradle.api.artifacts.ExternalDependency
 import org.gradle.api.provider.Provider
 import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.publish.maven.MavenPublication
@@ -31,39 +30,45 @@ import org.gradle.kotlin.dsl.withType
 public class OptionalDependenciesPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		val optionalDependencies = getResolvedOptionalDependencies()
+		val optionalDependencies = getOptionalDependencies()
 		pluginManager.withPlugin("maven-publish") {
 			configurePom(optionalDependencies)
 		}
 	}
 
-	private fun Project.getResolvedOptionalDependencies(): Provider<ResolvedComponentResult> {
+	private fun Project.getOptionalDependencies(): Provider<List<DependencyDescriptor>> {
 		val optional = configurations.dependencyScope("optional") {
 			description = "Acts as compileOnly configuration, but also adds artifacts from this configuration " +
 					"to published POM as optional dependencies."
+			dependencies.configureEach {
+				check(this is ExternalDependency) {
+					"Optional dependency ($this) is not an external module dependency. " +
+							"Only external module dependencies are supported."
+				}
+			}
 		}
 		configurations
 			.named { it == "compileOnly" }
 			.configureEach {
 				extendsFrom(optional.get())
 			}
-		return configurations
-			.resolvable("optionalElements") {
-				description = "Resolved configuration for optional dependencies"
-				extendsFrom(optional.get())
+		return optional.map { optionalConfiguration ->
+			optionalConfiguration.dependencies.map { dependency ->
+				DependencyDescriptor(
+					checkNotNull(dependency.group),
+					dependency.name,
+					checkNotNull(dependency.version)
+				)
 			}
-			.get()
-			.incoming
-			.resolutionResult
-			.rootComponent
+		}
 	}
 
 	private fun Project.configurePom(
-		resolvedOptionalDependencies: Provider<ResolvedComponentResult>
+		optionalDependenciesProvider: Provider<List<DependencyDescriptor>>
 	) = extensions.configure<PublishingExtension> {
 		publications.withType<MavenPublication>().configureEach {
 			pom.withXml {
-				val optionalDependencies = resolvedOptionalDependencies.get().dependencies
+				val optionalDependencies = optionalDependenciesProvider.get()
 				if (optionalDependencies.isEmpty()) {
 					return@withXml
 				}
@@ -71,19 +76,16 @@ public class OptionalDependenciesPlugin : Plugin<Project> {
 				val dependencies = (root.get("dependencies") as NodeList).firstOrNull() as Node?
 					?: root.appendNode("dependencies")
 				for (optionalDependency in optionalDependencies) {
-					val componentSelector = optionalDependency.requested
-					check(componentSelector is ModuleComponentSelector) {
-						"Optional dependency '${componentSelector.displayName}' is not a module dependency. " +
-								"Only external module dependencies are supported."
-					}
 					dependencies.appendNode("dependency").run {
-						appendNode("groupId", componentSelector.group)
-						appendNode("artifactId", componentSelector.module)
-						appendNode("version", componentSelector.version)
+						appendNode("groupId", optionalDependency.group)
+						appendNode("artifactId", optionalDependency.name)
+						appendNode("version", optionalDependency.version)
 						appendNode("optional", true)
 					}
 				}
 			}
 		}
 	}
+
+	private class DependencyDescriptor(val group: String, val name: String, val version: String)
 }
