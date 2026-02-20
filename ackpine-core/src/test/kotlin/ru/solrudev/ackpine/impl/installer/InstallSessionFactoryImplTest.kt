@@ -52,7 +52,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 
 	@Test

@@ -76,7 +76,6 @@ import kotlin.test.assertTrue
 private const val NOTIFICATION_ID = 7
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class IntentBasedInstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

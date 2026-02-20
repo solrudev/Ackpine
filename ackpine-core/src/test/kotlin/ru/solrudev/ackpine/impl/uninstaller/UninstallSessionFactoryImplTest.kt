@@ -18,13 +18,11 @@ package ru.solrudev.ackpine.impl.uninstaller
 
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.impl.HasAckpineDatabaseTest
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
@@ -47,7 +45,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class UninstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 
 	@Test

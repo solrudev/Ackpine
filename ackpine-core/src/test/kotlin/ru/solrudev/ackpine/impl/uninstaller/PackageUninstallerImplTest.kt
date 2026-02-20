@@ -16,11 +16,9 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
-import android.os.Build
 import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.HasAckpineDatabaseTest
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
@@ -47,7 +45,6 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class PackageUninstallerImplTest : HasAckpineDatabaseTest() {
 
 	@Test

@@ -18,11 +18,9 @@ package ru.solrudev.ackpine.impl.uninstaller
 
 import android.content.Context
 import android.content.pm.PackageInstaller
-import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -30,7 +28,6 @@ import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class UninstallStatusReceiverTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

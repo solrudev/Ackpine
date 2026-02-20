@@ -17,12 +17,10 @@
 package ru.solrudev.ackpine.impl.database
 
 import android.content.Context
-import android.os.Build
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.testutil.TestDrawableId
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -39,7 +37,6 @@ import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class PurgeCallbackTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

@@ -43,7 +43,7 @@ class IntentBasedUninstallActivityTest {
 	private val context: Context = ApplicationProvider.getApplicationContext()
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.P])
+	@Config(sdk = [Build.VERSION_CODES.N])
 	fun resultCanceledCompletesWithAbortedFailureOnPreQ() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
@@ -60,7 +60,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.P])
+	@Config(sdk = [Build.VERSION_CODES.N])
 	fun resultOkCompletesSucceededOnPreQ() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
@@ -75,7 +75,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.P])
+	@Config(sdk = [Build.VERSION_CODES.N])
 	fun resultFirstUserCompletesGenericFailureOnPreQ() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
@@ -92,8 +92,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.Q])
-	fun packageRemovalCompletesSuccessfullyOnQ() {
+	fun packageRemovalCompletesSuccessfully() {
 		// no package installed
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
@@ -108,8 +107,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.Q])
-	fun packageStillInstalledCompletesWithFailureOnQ() {
+	fun packageStillInstalledCompletesWithFailure() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
 		val packageManager = shadowOf(context.packageManager)

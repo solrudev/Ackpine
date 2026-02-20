@@ -18,14 +18,12 @@ package ru.solrudev.ackpine.impl.installer.session
 
 import android.content.Context
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.CommitAttemptsUpdate
@@ -65,7 +63,6 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.UPSIDE_DOWN_CAKE])
 class SessionBasedInstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

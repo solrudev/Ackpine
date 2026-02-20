@@ -17,13 +17,11 @@
 package ru.solrudev.ackpine.impl.uninstaller.session
 
 import android.content.Context
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
@@ -40,7 +38,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class PackageInstallerBasedUninstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()

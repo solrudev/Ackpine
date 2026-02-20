@@ -16,11 +16,9 @@
 
 package ru.solrudev.ackpine.impl.installer
 
-import android.os.Build
 import androidx.core.net.toUri
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
@@ -38,7 +36,6 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [Build.VERSION_CODES.TIRAMISU])
 class InstallSessionMappersTest {
 
 	@Test
