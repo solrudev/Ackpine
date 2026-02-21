@@ -1,5 +1,12 @@
+---
+hide:
+  - navigation
+---
+
 Building
 ========
+
+## Gradle setup
 
 Root `Ackpine` project has the following Gradle tasks:
 
@@ -23,10 +30,14 @@ Projects are added to `:buildAckpine`, `:buildSamples`, `:checkAckpineAbi` and `
 
 Projects are added to `:api-documentation:dokkaGenerate` task through `dependencies` block in `build.gradle.kts` of `api-documentation` project. Documented project should have `ru.solrudev.ackpine.dokka` Gradle plugin applied.
 
+## Documentation website
+
 To serve documentation website on localhost, execute this command (requires Python 3 and Material for MkDocs to be installed):
 ```
 mkdocs serve
 ```
+
+## Sample apps
 
 To build release versions of sample apps you'll need to provide a keystore. For this, create a `keystore.properties` file in the root directory with the following contents:
 ```properties

@@ -29,7 +29,7 @@ Add it to your dependencies:
 Reading zipped splits
 ---------------------
 
-`ZippedApkSplits` class contains factory methods for lazy sequences of APK splits which are contained inside of a zipped file such as ZIP, APKS, APKM and XAPK.
+[`ZippedApkSplits`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-zipped-apk-splits/index.html) class contains factory methods for lazy sequences of APK splits which are contained inside of a zipped file such as ZIP, APKS, APKM and XAPK.
 
 === "Kotlin"
 
@@ -52,9 +52,9 @@ Reading zipped splits
 !!! warning "Attention"
     Iteration of these sequences is blocking due to I/O operations. Don't iterate them on UI thread!
 
-As you can see, these sequences have a type of `CloseableSequence` which implements `AutoCloseable`. That means they can close all held resources, and effectively be cancelled externally at any moment with a `close()` call.
+As you can see, these sequences have a type of [`CloseableSequence`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-closeable-sequence/index.html) which implements `AutoCloseable`. That means they can close all held resources, and effectively be cancelled externally at any moment with a `close()` call.
 
-`Apk` has the following properties:
+[`Apk`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/index.html) has the following properties:
 
 ```kotlin
 val uri: Uri
@@ -65,18 +65,18 @@ val versionCode: Long
 val description: String
 ```
 
-`Apk` has the following types: `Base` for base APK, `Feature` for a feature split, `Libs` for an APK split containing native libraries, `ScreenDensity` for an APK split containing graphic resources tailored to specific screen density, `Localization` for an APK split containing localized resources and `Other` for an unknown APK split. They also have their specific properties. Refer to [API documentation](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/index.html) for details.
+`Apk` has the following types: [`Base`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-base/index.html) for base APK, [`Feature`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-feature/index.html) for a feature split, [`Libs`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-libs/index.html) for an APK split containing native libraries, [`ScreenDensity`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-screen-density/index.html) for an APK split containing graphic resources tailored to specific screen density, [`Localization`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-localization/index.html) for an APK split containing localized resources and [`Other`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/-other/index.html) for an unknown APK split. They also have their specific properties. Refer to [API documentation](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/index.html) for details.
 
 Working with splits
 -------------------
 
 ### Sequences transformations
 
-`ApkSplits` class contains utilities for transforming `Apk` sequences. In Kotlin they appear as extensions of `Sequence<Apk>`.
+[`ApkSplits`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk-splits/index.html) class contains utilities for transforming `Apk` sequences. In Kotlin they appear as extensions of `Sequence<Apk>`.
 
 For sequences of APKs, the following operations are available:
 
-- `validate()` operation validates a split package and throws `SplitPackageException` if it's not valid when the sequence is iterated, while also closing all opened I/O resources. This operation cooperates with cancellation if upstream sequence supports it.
+- `validate()` operation validates a split package and throws [`SplitPackageException`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.exceptions/-split-package-exception/index.html) if it's not valid when the sequence is iterated, while also closing all opened I/O resources. This operation cooperates with cancellation if upstream sequence supports it.
 
 Example:
 
@@ -113,11 +113,11 @@ Example:
 
 ### `SplitPackage` API
 
-For manipulating split packages, you can use `SplitPackage` API.
+For manipulating split packages, you can use [`SplitPackage`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/index.html) API.
 
 `ackpine-splits-ktx` module contains Kotlin-idiomatic extensions which are used in the examples below.
 
-First, you create a `SplitPackage.Provider` from a sequence of APKs, e.g. obtained from `ZippedApkSplits`:
+First, you create a [`SplitPackage.Provider`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-provider/index.html) from a sequence of APKs, e.g. obtained from `ZippedApkSplits`:
 
 === "Kotlin"
 
@@ -131,7 +131,7 @@ First, you create a `SplitPackage.Provider` from a sequence of APKs, e.g. obtain
     var splits = SplitPackage.from(sequence);
     ```
 
-Then you can apply different operations to it, and when you're done, materialize it into a `SplitPackage` object:
+Then you can apply different operations to it, and when you're done, materialize it into a [`SplitPackage`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/index.html) object:
 
 === "Kotlin"
 
@@ -165,7 +165,7 @@ The `get()` is cancellable if split package source supports cancellation (such a
 
 `libs` in the previous example is a `List<SplitPackage.Entry<Apk.Libs>>`.
 
-Each entry in APK lists inside of `SplitPackage` (such as `libs`, `localization` etc.) has `isPreferred` and `apk` properties:
+Each [entry](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-entry/index.html) in APK lists inside of `SplitPackage` (such as `libs`, `localization` etc.) has `isPreferred` and `apk` properties:
 
 - `isPreferred` — indicates whether the APK is the most preferred for the device among all splits of the same type. By default it is `true`. When an operation which checks compatibility is applied, this flag is updated accordingly;
 - `apk` — `Apk` object.
@@ -186,7 +186,7 @@ Each entry in APK lists inside of `SplitPackage` (such as `libs`, `localization`
     var compatibleSplits = splitPackage.filterPreferred();
     ```
 
-List of available `SplitPackage.Provider` operations:
+List of available [`SplitPackage.Provider`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-provider/index.html) operations:
 
 - `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one.
 
@@ -252,7 +252,7 @@ Full example of a pipeline:
 Creating APK splits from separate files
 ---------------------------------------
 
-You can parse an APK file from a `File` or `Uri` using static `Apk` factories:
+You can parse an APK file from a `File` or `Uri` using static [`Apk`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-apk/index.html) factories:
 
 === "Kotlin"
 

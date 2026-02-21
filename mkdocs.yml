@@ -46,22 +46,28 @@ extra_css:
   - 'css/docs.css'
 
 nav:
-  - 'Overview': index.md
-  - 'Getting Started': getting_started.md
-  - 'Configuration': configuration.md
-  - 'Split APKs': split_apks.md
-  - 'Testing': testing.md
-  - 'Shizuku': shizuku.md
-  - 'Samples': samples.md
-  - 'Permissions': permissions.md
-  - 'Architecture': architecture.md
-  - 'Building': building.md
+  - Overview: index.md
+  - Guide:
+    - Getting Started: guide/getting_started.md
+    - Configuration: guide/configuration.md
+    - Split APKs: guide/split_apks.md
+    - Shizuku: guide/shizuku.md
+    - Testing: guide/testing.md
+    - Samples: guide/samples.md
+  - Permissions: permissions.md
+  - Architecture: architecture.md
+  - Building: building.md
+  - FAQ: faq.md
   - 'API reference ⏏': api/index.html
-  - 'Change Log': changelog.md
+  - Change Log: changelog.md
 
 markdown_extensions:
   - pymdownx.inlinehilite
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
   - admonition
@@ -73,3 +79,11 @@ plugins:
   - search
   - minify:
       minify_html: true
+  - redirects:
+      redirect_maps:
+        getting_started.md: guide/getting_started.md
+        configuration.md: guide/configuration.md
+        split_apks.md: guide/split_apks.md
+        shizuku.md: guide/shizuku.md
+        testing.md: guide/testing.md
+        samples.md: guide/samples.md

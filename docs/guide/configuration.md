@@ -1,7 +1,7 @@
 Configuration
 =============
 
-Sessions can be configured via `InstallParameters` and `UninstallParameters`.
+Sessions can be configured via [`InstallParameters`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-parameters/index.html) and [`UninstallParameters`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-uninstall-parameters/index.html). For an overview of how [sessions](../architecture.md#session-state-machine) work, see [Architecture](../architecture.md).
 
 Session parameters
 ------------------
@@ -154,16 +154,34 @@ An example of creating a session with custom parameters:
     }
     ```
 
+API level compatibility
+-----------------------
+
+Most configuration options are applied on a best-effort basis — options unavailable on the device's API level are silently ignored. The table below summarizes minimum API levels for each feature.
+
+| Feature                                   | Min API | Fallback on lower API                                      |
+|-------------------------------------------|---------|------------------------------------------------------------|
+| `SESSION_BASED` installer                 | 21      | `INTENT_BASED` is used                                     |
+| Split APK installation                    | 21      | Not supported, throws `SplitPackagesNotSupportedException` |
+| `PACKAGE_INSTALLER_BASED` uninstaller     | 21      | `INTENT_BASED` is used                                     |
+| `requireUserAction`                       | 31      | Ignored                                                    |
+| `PackageSource`                           | 33      | Ignored                                                    |
+| `InstallMode.InheritExisting.dontKillApp` | 34      | Ignored                                                    |
+| `requestUpdateOwnership`                  | 34      | Ignored                                                    |
+| Install preapproval                       | 34      | Ignored                                                    |
+| Install constraints                       | 34      | Ignored                                                    |
+| Shizuku plugin                            | 24      | N/A (requires `ackpine-shizuku` dependency)                |
+
 User's confirmation
 -------------------
 
-A strategy for handling user's confirmation of installation or uninstallation. Can be `DEFERRED` (used by default) or `IMMEDIATE`.
+A strategy for handling user's confirmation of installation or uninstallation. [`Confirmation`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-confirmation/index.html) can be `DEFERRED` (used by default) or `IMMEDIATE`.
 
 - `DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
 
 - `IMMEDIATE` — user will be prompted to confirm installation or uninstallation right away. Suitable for launching session directly from the UI when app is in foreground.
 
-It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level >= 31. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
+It's also possible to configure `requireUserAction` option for install sessions. It will have effect only on API level 31+. If set to `false`, user's confirmation from system won't be triggered if some conditions are met. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.SessionParams#setRequireUserAction(int)).
 
 `requireUserAction` is a **delicate** API. This option is unstable for use on different Android versions from different vendors. It's recommended to avoid using it on API level < 33 and on devices with modified OS package installer, most notably from Chinese vendors, unless your app is privileged for silent installs.
 
@@ -189,9 +207,36 @@ It is possible to provide notification title, text and icon.
 !!! Note
     Any configuration for notification will be ignored if `Confirmation` is set to `IMMEDIATE`, because the notification will not be shown.
 
-`ResolvableString` is a type used for `NotificationData` text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
+[`ResolvableString`](/api/ackpine-resources/ru.solrudev.ackpine.resources/-resolvable-string/index.html) is a type used for [`NotificationData`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-notification-data/index.html) text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
+
+[`DrawableId`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-drawable-id/index.html) holds the drawable ID which is used for notification icon.
 
 `android.R.drawable.ic_dialog_alert` is used as a default icon.
+
+!!! info "Why custom classes?"
+    `ResolvableString` and `DrawableId` are persisted to a database, and Android resource IDs can change across builds. Custom subclasses resolve the resource ID at call time, keeping it up-to-date after app updates. See [this section](../architecture.md#resolvablestring-and-drawableid-persistence) for the full explanation.
+
+`ResolvableString` can also be useful outside of session parameters — for example, for displaying localized error messages or status text in your own UI. For such general-purpose strings that are not persisted in storage, use the simpler `ResolvableString.transientResource()` factory instead of defining custom subclasses:
+
+=== "Kotlin"
+
+    ```kotlin
+    // In a ViewModel, use transientResource() for UI-only strings
+    val error = ResolvableString.transientResource(R.string.session_error_with_reason, message)
+
+    // For hardcoded strings
+    val errorMessage = ResolvableString.raw(exception.message.orEmpty())
+    ```
+
+=== "Java"
+
+    ```java
+    // In a ViewModel, use transientResource() for UI-only strings
+    var error = ResolvableString.transientResource(R.string.session_error_with_reason, message);
+
+    // For hardcoded strings
+    var errorMessage = ResolvableString.raw(exception.getMessage());
+    ```
 
 Session name
 ------------
@@ -201,26 +246,26 @@ Available for install sessions. You can provide an optional session `name` param
 Installer type
 --------------
 
-Available for install sessions. Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with `InstallerType` enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
+Available for install sessions. Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with [`InstallerType`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-installer-type/index.html) enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
 
 `InstallParameters` builder will maintain the following invariants when configuring the installer type:
 
 - When on API level < 21, `INTENT_BASED` is always set regardless of the provided value;
-- When on API level >= 21 and `InstallParameters.Builder.apks` contains more than one entry, `SESSION_BASED` is always set regardless of the provided value.
+- When on API level 21+ and `InstallParameters.Builder.apks` contains more than one entry, `SESSION_BASED` is always set regardless of the provided value.
 
-By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level >= 21 it is `SESSION_BASED`.
+By default, the value of installer type on API level < 21 is `INTENT_BASED`, and on API level 21+ it is `SESSION_BASED`.
 
 Uninstaller type
 --------------
 
 Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` or `ACTION_DELETE` action. They're configured with `UninstallerType` enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
 
-By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level >= 21 it is `PACKAGE_INSTALLER_BASED`.
+By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level 21+ it is `PACKAGE_INSTALLER_BASED`.
 
 Install mode
 ------------
 
-Available for install sessions. Takes effect only when using `SESSION_BASED` installer.
+Available for install sessions. Takes effect only when using `SESSION_BASED` installer. See [`InstallMode`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-mode/index.html) API reference.
 
 - `Full` (default) — mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
 
@@ -230,12 +275,12 @@ Available for install sessions. Takes effect only when using `SESSION_BASED` ins
 
     Requires package name of the app being installed. If the APKs staged in the session aren't consistent with the set package name, the install will fail.
 
-    Optionally, it's possible to request the system to not kill any of the package's running processes as part of a session in which splits are being added by setting `dontKillApp` to `true`. This option takes effect only on API level >= 34.
+    Optionally, it's possible to request the system to not kill any of the package's running processes as part of a session in which splits are being added by setting `dontKillApp` to `true`. This option takes effect only on API level 34+.
 
 Preapproval
 -----------
 
-Available for install sessions on API level >= 34. Attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
+Available for install sessions on API level 34+. [`InstallPreapproval`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-preapproval/index.html) attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
 
 Preapproval requires package name of the app being installed, label representing it and locale used to get the label to be provided. Optionally, it's possible to also provide the app's icon via `Uri`.
 
@@ -244,7 +289,7 @@ If preapproval is not available on the device, session will fail. If you want to
 Constraints
 -----------
 
-Available for install sessions on API level >= 34. Constraints specify the conditions to check against for the installed packages. This can be used by app stores to deliver auto updates without disrupting the user experience (referred as gentle update) - for example, an app store might hold off updates when it find out the app to update is interacting with the user. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.InstallConstraints).
+Available for install sessions on API level 34+. [`InstallConstraints`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-constraints/index.html) specify the conditions to check against for the installed packages. This can be used by app stores to deliver auto updates without disrupting the user experience (referred as gentle update) - for example, an app store might hold off updates when it find out the app to update is interacting with the user. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.InstallConstraints).
 
 Installer waits for constraints to be satisfied, so to configure them, timeout duration is required to be provided after which installer will act based on set `TimeoutStrategy`.
 
@@ -280,7 +325,7 @@ There's a preset for gentle updates which can be used like this:
 Update ownership
 ----------------
 
-Available for install sessions on API level >= 34.
+Available for install sessions on API level 34+.
 
 Optionally indicate whether the package being installed needs the update ownership enforcement. Once the update ownership enforcement is enabled, the other installers will need the user action to update the package even if the installers have been granted the `INSTALL_PACKAGES` permission. Default to `false`. The update ownership enforcement can only be enabled on initial installation. Setting this to `true` on package update is a no-op.
 
@@ -289,13 +334,13 @@ Package source
 
 Available for install sessions.
 
-Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is `PackageSource.Unspecified`.
+Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is [`PackageSource.Unspecified`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-package-source/index.html).
 
-Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level >= 33.
+Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level 33+.
 
 Plugins
 -------
 
-Ackpine supports plugins. They are available for sessions that use Android's `PackageInstaller` API.
+Ackpine supports [plugins](../architecture.md#plugin-system). They are available for sessions that use Android's `PackageInstaller` API.
 
-At the moment, there are two Ackpine plugins: [ShizukuPlugin and ShizukuUninstallPlugin](shizuku.md).
+At the moment, there are two Ackpine plugins: [`ShizukuPlugin` and `ShizukuUninstallPlugin`](shizuku.md). See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
