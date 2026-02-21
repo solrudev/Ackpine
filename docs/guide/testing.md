@@ -26,8 +26,8 @@ Usage
 
 `ackpine-test` exposes in-memory repositories and controllable sessions:
 
-- `TestPackageInstaller` and `TestPackageUninstaller` keep sessions in memory and return `ImmediateFuture` from async accessors;
-- `TestSession` and `TestProgressSession` expose a `TestSessionController` for state and progress control, and support scripted transitions via `TestSessionScript`.
+- [`TestPackageInstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-installer/index.html) and [`TestPackageUninstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-uninstaller/index.html) keep sessions in memory and return `ImmediateFuture` from async accessors;
+- [`TestSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session/index.html) and [`TestProgressSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-progress-session/index.html) expose a [`TestSessionController`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-controller/index.html) for [state](../architecture.md#session-state-machine) and progress control, and support scripted transitions via [`TestSessionScript`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-script/index.html).
 
 State and progress listeners are invoked on the calling thread, and the current state/progress is delivered immediately when a listener is added.
 
@@ -196,7 +196,8 @@ You can also provide a session factory to the repository to intercept created se
         TestInstallSession(script, id)
     }
     val uri = Uri.EMPTY // shim
-    val session = installer.createSession(uri) as TestInstallSession
+    installer.createSession(uri)
+    val session = installer.sessions.last()
     val progress = Progress(progress = 80, max = 100)
     session.controller.setProgress(progress)
     val result = session.await()
@@ -215,7 +216,8 @@ You can also provide a session factory to the repository to intercept created se
     var installerWithFactory = new TestPackageInstaller((id, params) ->
             new TestProgressSession<>(script, id));
     var uri = Uri.EMPTY; // shim
-    var session = installer.createSession(new InstallParameters.Builder(uri).build());
+    installer.createSession(new InstallParameters.Builder(uri).build());
+    var session = installer.getSessions().getLast();
     var progress = new Progress(80, 100);
     session.getController().setProgress(progress);
     // using SettableFuture from Guava
@@ -268,4 +270,4 @@ If you need deterministic session IDs or want to seed sessions into the reposito
     uninstaller.seedSession(session);
     ```
 
-For real and more thorough examples, see sample projects (`sample-java`, `sample-ktx`).
+For real and more thorough examples, see [Samples](samples.md#testing-patterns).

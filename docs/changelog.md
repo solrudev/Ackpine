@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+---
+
 Change Log
 ==========
 
@@ -155,10 +160,10 @@ Version 0.18.0 (2025-12-03)
 ### Bug fixes and improvements
 
 - Add support for Android's `PackageInstaller`-backed uninstallation. Make it the default implementation on API level >= 21.
-- Allow to configure uninstall implementation via `UninstallerType` enum. See [documentation](configuration.md#uninstaller-type) for details.
+- Allow to configure uninstall implementation via `UninstallerType` enum. See [documentation](guide/configuration.md#uninstaller-type) for details.
 - Introduce new `UninstallFailure` types which map to system's `PackageInstaller` uninstall status.
 - Add plugins support for uninstall sessions.
-- Implement Shizuku support for uninstall sessions via `ShizukuUninstallPlugin`. See [documentation](shizuku.md) for details.
+- Implement Shizuku support for uninstall sessions via `ShizukuUninstallPlugin`. See [documentation](guide/shizuku.md) for details.
 
 ### Public API changes
 
@@ -250,7 +255,7 @@ Version 0.15.0 (2025-08-07)
 
 ### Bug fixes and improvements
 
-- Add `fallbackToOnDemandApproval` parameter for pre-approvals. See [documentation](configuration.md#preapproval) for details.
+- Add `fallbackToOnDemandApproval` parameter for pre-approvals. See [documentation](guide/configuration.md#preapproval) for details.
 - Raise `InstallParameters.plugins` deprecation level to error.
 - Improvements for file picking in sample apps.
 

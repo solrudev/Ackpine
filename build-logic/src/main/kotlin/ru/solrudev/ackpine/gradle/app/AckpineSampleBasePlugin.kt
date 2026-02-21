@@ -18,8 +18,7 @@ package ru.solrudev.ackpine.gradle.app
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
-import com.android.build.api.variant.DeviceTestBuilder
-import com.android.build.api.variant.HostTestBuilder
+import com.android.build.api.variant.ApplicationVariantBuilder
 import com.android.build.gradle.AppPlugin
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -34,6 +33,7 @@ import org.gradle.kotlin.dsl.newInstance
 import ru.solrudev.ackpine.gradle.Constants
 import ru.solrudev.ackpine.gradle.SampleConstants
 import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
+import ru.solrudev.ackpine.gradle.testing.configureTests
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineSampleBasePlugin : Plugin<Project> {
@@ -50,7 +50,7 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 		extension.testing.enableDeviceTests.convention(false)
 		configureJava()
 		configureAndroid()
-		configureTests(extension.testing)
+		configureTests<ApplicationAndroidComponentsExtension, ApplicationVariantBuilder>(extension.testing)
 	}
 
 	private fun Project.configureJava() = extensions.configure<JavaPluginExtension> {
@@ -86,21 +86,6 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 
 		lint {
 			checkReleaseBuilds = false
-		}
-	}
-
-	private fun Project.configureTests(
-		testing: AckpineTestingOptions
-	) = extensions.configure<ApplicationAndroidComponentsExtension> {
-		beforeVariants { variantBuilder ->
-			variantBuilder
-				.hostTests
-				.getValue(HostTestBuilder.UNIT_TEST_TYPE)
-				.enable = testing.enableHostTests.get() && variantBuilder.buildType == "debug"
-			variantBuilder
-				.deviceTests
-				.getValue(DeviceTestBuilder.ANDROID_TEST_TYPE)
-				.enable = testing.enableDeviceTests.get() && variantBuilder.buildType == "debug"
 		}
 	}
 }

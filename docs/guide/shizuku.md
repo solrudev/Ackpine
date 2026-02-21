@@ -3,7 +3,7 @@ Shizuku
 
 `ackpine-shizuku` artifact provides plugins for Ackpine which, when applied, use Shizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of root user or ADB shell even if your app doesn't have such privileges. This enables possibility of using such flags as bypassing low target SDK of the installed app on Android 14+, requesting version downgrade, keeping app data when uninstalling and others. Also it can bypass requirement for user's confirmation for uninstalls and fresh installs.
 
-Kotlin examples below use APIs from `ackpine-shizuku-ktx` artifact.
+Kotlin examples below use APIs from `ackpine-shizuku-ktx` artifact. For general plugin usage in session parameters, see [Configuration](configuration.md#plugins).
 
 Setting up Shizuku
 ------------------
