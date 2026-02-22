@@ -1,0 +1,66 @@
+[project]
+site_name = "Ackpine"
+site_description = "A library providing consistent APIs for installing and uninstalling apps on an Android device"
+site_author = "2023-2026 Ilya Fomichev"
+site_url = "https://ackpine.solrudev.ru"
+edit_uri = ""
+repo_name = "Ackpine"
+repo_url = "https://github.com/solrudev/Ackpine"
+copyright = "Copyright &copy; 2023-2026 Ilya Fomichev"
+extra_css = ["css/docs.css"]
+nav = [
+    { "Overview" = "index.md" },
+    { "Guide" = [
+        { "Getting Started" = "guide/getting_started.md" },
+        { "Configuration" = "guide/configuration.md" },
+        { "Split APKs" = "guide/split_apks.md" },
+        { "Shizuku" = "guide/shizuku.md" },
+        { "Testing" = "guide/testing.md" },
+        { "Samples" = "guide/samples.md" }
+    ]},
+    { "Permissions" = "permissions.md" },
+    { "Architecture" = "architecture.md" },
+    { "Building" = "building.md" },
+    { "FAQ" = "faq.md" },
+    { "API reference ⏏" = "api/index.html" },
+    { "Change Log" = "changelog.md" }
+]
+
+[project.theme]
+favicon = "images/logo-icon.svg"
+logo = "images/logo-icon.svg"
+icon.repo = "fontawesome/brands/github"
+features = [
+    "content.code.copy",
+    "content.tabs.link",
+    "navigation.footer",
+    "navigation.tabs",
+    "navigation.tracking",
+    "navigation.top"
+]
+
+[[project.theme.palette]]
+scheme = "default"
+media = "(prefers-color-scheme: light)"
+primary = "custom"
+accent = "custom"
+toggle.icon = "material/brightness-7"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+scheme = "slate"
+media = "(prefers-color-scheme: dark)"
+primary = "custom"
+accent = "custom"
+toggle.icon = "material/brightness-4"
+toggle.name = "Switch to light mode"
+
+[project.markdown_extensions.pymdownx.superfences]
+custom_fences = [
+    { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" }
+]
+[project.markdown_extensions.pymdownx.tabbed]
+alternate_style = true
+[project.markdown_extensions.admonition]
+[project.markdown_extensions.toc]
+permalink = true
