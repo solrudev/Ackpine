@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.20.2 (2026-02-22)
+---------------------------
+
+### Bug fixes and improvements
+
+- Make state transitions in sessions atomic, improving thread-safety.
+
 Version 0.20.1 (2026-02-20)
 ---------------------------
 
