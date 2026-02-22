@@ -94,7 +94,7 @@ public abstract class AbstractAckpineServiceProvider(
 	override fun getPluginParametersStores(): List<PluginParametersStore> {
 		return pluginIdentifiers.mapNotNull { pluginId ->
 			pluginParameters.computeIfAbsentCompat(pluginId, locks) {
-				pluginParametersStoreFactories[pluginId]?.invoke(context)
+				pluginParametersStoreFactories.getValue(pluginId).invoke(context)
 			}
 		}
 	}
