@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
@@ -30,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.dao.UninstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.database.toEntityList
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.Locks
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
@@ -58,6 +60,7 @@ internal class PackageUninstallerImpl internal constructor(
 ) : PackageUninstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, CompletableSession<UninstallFailure>>()
+	private val sessionLocks = Locks(32)
 
 	@Volatile
 	private var isSessionsMapInitialized = false
@@ -106,7 +109,7 @@ internal class PackageUninstallerImpl internal constructor(
 	}
 
 	private fun getSession(sessionId: UUID, completer: Completer<CompletableSession<UninstallFailure>?>) {
-		val session = sessions.computeIfAbsentCompat(sessionId) {
+		val session = sessions.computeIfAbsentCompat(sessionId, sessionLocks) {
 			uninstallSessionDao
 				.getUninstallSession(sessionId.toString())
 				?.let(uninstallSessionFactory::create)
@@ -144,7 +147,7 @@ internal class PackageUninstallerImpl internal constructor(
 			}
 			.forEach { session ->
 				val id = UUID.fromString(session.session.id)
-				sessions.computeIfAbsentCompat(id) { uninstallSessionFactory.create(session) }
+				sessions.computeIfAbsentCompat(id, sessionLocks) { uninstallSessionFactory.create(session) }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values
@@ -220,6 +223,7 @@ internal class PackageUninstallerImpl internal constructor(
 				ackpineServiceProviders,
 				UninstallSessionFactoryImpl(
 					context.applicationContext,
+					@SuppressLint("NewApi")
 					PackageInstallerWrapper.default(applicationContext),
 					ackpineServiceProviders,
 					database.sessionDao(),

@@ -32,6 +32,7 @@ import ru.solrudev.ackpine.impl.database.dao.InstallSessionDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.database.toEntityList
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.Locks
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
@@ -64,6 +65,7 @@ internal class PackageInstallerImpl internal constructor(
 
 	private val sessions = ConcurrentHashMap<UUID, CompletableProgressSession<InstallFailure>>()
 	private val committedSessionsInitSemaphore = BinarySemaphore()
+	private val sessionLocks = Locks(32)
 
 	@Volatile
 	private var isSessionsMapInitialized = false
@@ -147,7 +149,7 @@ internal class PackageInstallerImpl internal constructor(
 	}
 
 	private fun getSession(sessionId: UUID, completer: Completer<CompletableProgressSession<InstallFailure>?>) {
-		val session = sessions.computeIfAbsentCompat(sessionId) {
+		val session = sessions.computeIfAbsentCompat(sessionId, sessionLocks) {
 			installSessionDao
 				.getInstallSession(sessionId.toString())
 				?.let(installSessionFactory::create)
@@ -187,7 +189,7 @@ internal class PackageInstallerImpl internal constructor(
 			}
 			.forEach { session ->
 				val id = UUID.fromString(session.session.id)
-				sessions.computeIfAbsentCompat(id) { installSessionFactory.create(session) }
+				sessions.computeIfAbsentCompat(id, sessionLocks) { installSessionFactory.create(session) }
 			}
 		isSessionsMapInitialized = true
 		return sessions.values
