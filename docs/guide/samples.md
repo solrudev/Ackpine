@@ -44,7 +44,7 @@ The ViewModel files show how to create sessions, handle state transitions, and m
 
 ### Zipped split APKs
 
-Fragments show how to read zipped split APKs:
+The Fragment files show how to read zipped split APKs:
 
 - `sample-java` — [`InstallFragment.java`](https://github.com/solrudev/Ackpine/blob/master/sample-java/src/main/java/ru/solrudev/ackpine/sample/install/InstallFragment.java)
 - `sample-ktx` — [`InstallFragment.kt`](https://github.com/solrudev/Ackpine/blob/master/sample-ktx/src/main/kotlin/ru/solrudev/ackpine/sample/install/InstallFragment.kt)

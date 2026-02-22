@@ -26,16 +26,16 @@ Usage
 
 `ackpine-test` exposes in-memory repositories and controllable sessions:
 
-- [`TestPackageInstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-installer/index.html) and [`TestPackageUninstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-uninstaller/index.html) keep sessions in memory and return `ImmediateFuture` from async accessors;
+- [`TestPackageInstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-installer/index.html) and [`TestPackageUninstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-uninstaller/index.html) keep sessions in memory and return [`ImmediateFuture`](/api/ackpine-test/ru.solrudev.ackpine.test.futures/-immediate-future/index.html) from async accessors;
 - [`TestSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session/index.html) and [`TestProgressSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-progress-session/index.html) expose a [`TestSessionController`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-controller/index.html) for [state](../architecture.md#session-state-machine) and progress control, and support scripted transitions via [`TestSessionScript`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-script/index.html).
 
 State and progress listeners are invoked on the calling thread, and the current state/progress is delivered immediately when a listener is added.
 
-In Kotlin, `TestInstallSession` is a typealias for `TestProgressSession<InstallFailure>`, and `TestUninstallSession` is a typealias for `TestSession<UninstallFailure>`.
+In Kotlin, [`TestInstallSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-install-session/index.html) is a typealias for `TestProgressSession<InstallFailure>`, and [`TestUninstallSession`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-uninstall-session/index.html) is a typealias for `TestSession<UninstallFailure>`.
 
 ### `TestSdkInt`
 
-If your tests depend on SDK-dependent behavior, configure `TestSdkInt` from the test artifact:
+If your tests depend on SDK-dependent behavior, configure [`TestSdkInt`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-sdk-int/index.html) from the test artifact:
 
 === "Kotlin"
 
@@ -91,20 +91,20 @@ You can add any `Uri` methods you use in your code.
 
 ### Static `getInstance()` methods
 
-To accommodate testing, it's recommended not to use static `getInstance()` methods to get `PackageInstaller` and `PackageUninstaller` instances inside of your logic. Instead, inject them into constructors.
+To accommodate testing, it's recommended not to use static `getInstance()` methods to get [`PackageInstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html) and [`PackageUninstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html) instances inside of your logic. Instead, inject them into constructors.
 
 Even if you don't inject `PackageInstaller` and `PackageUninstaller` interfaces into your SUT (system under test) properly, their static `getInstance()` methods will return singleton test doubles when used in tests.
 
-To get these singletons, call `PackageInstaller.getInstance()` or `PackageUninstaller.getInstance()` and cast them to `TestPackageInstaller` / `TestPackageUninstaller`, however, these methods require you to provide `Context`. You can create a shim for `Context` like for `Uri` if you run pure JVM tests.
+To get these singletons, call `PackageInstaller.getInstance()` or `PackageUninstaller.getInstance()` and cast them to [`TestPackageInstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-installer/index.html) / [`TestPackageUninstaller`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-package-uninstaller/index.html), however, these methods require you to provide `Context`. You can create a shim for `Context` like for `Uri` if you run pure JVM tests.
 
 !!! Note
     If in your tests you rely on `getInstance()` returning a test double, make sure to clear its sessions before every test by calling `TestPackageInstaller.clearSessions()` / `TestPackageUninstaller.clearSessions()`. However, it's highly recommended just to inject a dependency into SUT to immensely simplify test setup.
 
 ### Session scripting and factories
 
-`ackpine-test` provides `TestSessionScript` to drive scripted transitions on session's `launch`, `commit`, and `cancel` calls.
+`ackpine-test` provides [`TestSessionScript`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-script/index.html) to drive scripted transitions on session's `launch`, `commit`, and `cancel` calls.
 
-Use `TestSessionScript.auto(terminalState)` to auto-advance through the standard states until the provided terminal state is reached, or `TestSessionScript.empty()` when you want to script state transitions manually or drive transitions directly via `TestSessionController`.
+Use [`TestSessionScript.auto(terminalState)`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-script/-companion/auto.html) to auto-advance through the standard states until the provided terminal state is reached, or [`TestSessionScript.empty()`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-script/-companion/empty.html) when you want to script state transitions manually or drive transitions directly via [`TestSessionController`](/api/ackpine-test/ru.solrudev.ackpine.test/-test-session-controller/index.html).
 
 Then create a `TestPackageInstaller` or `TestPackageUninstaller` with the script which will be applied to all created sessions:
 
@@ -231,7 +231,7 @@ You can also provide a session factory to the repository to intercept created se
     assertEquals(progress, session.getProgress());
     ```
 
-Use `ImmediateFuture` when you need a completed `ListenableFuture` for tests. For example, when using `SplitPackage` API from `ackpine-splits`:
+Use [`ImmediateFuture`](/api/ackpine-test/ru.solrudev.ackpine.test.futures/-immediate-future/index.html) when you need a completed `ListenableFuture` for tests. For example, when using [`SplitPackage`](/api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/index.html) API from `ackpine-splits`:
 
 === "Kotlin"
 
