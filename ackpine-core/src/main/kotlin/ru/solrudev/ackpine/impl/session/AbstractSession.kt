@@ -89,7 +89,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			val shouldNotify = updateState { current ->
 				val updatedState = if (current.state.isTerminal) current.state else value
 				StateUpdate(
-					newState = current.copy(state = updatedState, isPreparing = false, isCommitCalled = false),
+					newState = StateSnapshot(
+						state = updatedState,
+						isPreparing = false,
+						isCommitCalled = false
+					),
 					result = current.state != updatedState
 				)
 			}
