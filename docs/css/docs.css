@@ -11,7 +11,7 @@
   --md-hue:                          148deg;
   --md-accent-fg-color:              hsla(var(--md-hue), 80%, 42%, 1);
   --md-accent-fg-color--transparent: hsla(var(--md-hue), 80%, 42%, 0.1);
-  --md-default-bg-color:             hsla(var(--md-hue), 15%, 12%, 1);
+  --md-default-bg-color:             hsla(var(--md-hue), 15%, 7%, 1);
   --md-typeset-a-color:              var(--md-primary-fg-color--light);
   --md-footer-bg-color:              hsla(var(--md-hue), 15%, 15%, 0.87);
   --md-footer-bg-color--dark:        hsla(var(--md-hue), 15%, 8%, 1);
