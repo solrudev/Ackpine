@@ -1,14 +1,14 @@
 site_name: Ackpine
 site_description: A library providing consistent APIs for installing and uninstalling apps on an Android device
 site_author: 2023-2026 Ilya Fomichev
-site_url: 'https://ackpine.solrudev.ru'
+site_url: https://ackpine.solrudev.ru
 remote_branch: gh-pages
 edit_uri: ""
 
 repo_name: Ackpine
-repo_url: 'https://github.com/solrudev/Ackpine'
+repo_url: https://github.com/solrudev/Ackpine
 
-copyright: 'Copyright &copy; 2023-2026 Ilya Fomichev'
+copyright: Copyright &copy; 2023-2026 Ilya Fomichev
 
 theme:
   name: material
@@ -43,7 +43,7 @@ theme:
         name: Switch to light mode
 
 extra_css:
-  - 'css/docs.css'
+  - css/docs.css
 
 nav:
   - Overview: index.md
@@ -62,7 +62,6 @@ nav:
   - Change Log: changelog.md
 
 markdown_extensions:
-  - pymdownx.inlinehilite
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -75,7 +74,6 @@ markdown_extensions:
       permalink: true
 
 plugins:
-  - meta
   - search
   - minify:
       minify_html: true
