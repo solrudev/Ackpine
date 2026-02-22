@@ -79,6 +79,7 @@ Module dependency graph
 
 ```mermaid
 graph TD
+    ackpine-api --> ackpine-resources
     ackpine-core --> ackpine-api
     ackpine-ktx --> ackpine-api
     ackpine-test --> ackpine-api
@@ -86,11 +87,12 @@ graph TD
     ackpine-shizuku-ktx --> ackpine-shizuku
     ackpine-shizuku-ktx --> ackpine-ktx
     ackpine-splits-ktx --> ackpine-splits
+    ackpine-assets
 ```
 
 | Artifact              | Provides                                                                                               | Depends on                       |
 |-----------------------|--------------------------------------------------------------------------------------------------------|----------------------------------|
-| `ackpine-api`         | Core API contracts: `Session`, `PackageInstaller`, `PackageUninstaller`, parameters, plugin interfaces | —                                |
+| `ackpine-api`         | Core API contracts: `Session`, `PackageInstaller`, `PackageUninstaller`, parameters, plugin interfaces | `ackpine-resources`              |
 | `ackpine-core`        | Runtime implementation of all API contracts; database persistence                                      | `ackpine-api`                    |
 | `ackpine-ktx`         | Kotlin DSL for session parameters; `Session.await()` coroutine extension                               | `ackpine-api`                    |
 | `ackpine-splits`      | [Split APK](guide/split_apks.md) utilities: `ZippedApkSplits`, `Apk`, `SplitPackage`                   | Standalone                       |
@@ -99,6 +101,7 @@ graph TD
 | `ackpine-shizuku`     | [Shizuku](guide/shizuku.md)-backed `PackageInstallerService` plugin                                    | `ackpine-core`                   |
 | `ackpine-shizuku-ktx` | Kotlin DSL for Shizuku plugin configuration                                                            | `ackpine-shizuku`, `ackpine-ktx` |
 | `ackpine-test`        | [Test doubles](guide/testing.md): `TestPackageInstaller`, `TestPackageUninstaller`, scripted sessions  | `ackpine-api`                    |
+| `ackpine-resources`   | Abstractions for persistable Android resources: `ResolvableString`                                     | —                                |
 
 !!! Note
     `ackpine-ktx` and `ackpine-test` depend only on `ackpine-api`, not on `ackpine-core`. This means coroutine extensions and test doubles work without pulling in the full runtime.
@@ -121,12 +124,12 @@ Plugins can have their own parameters for a session. Plugins implement parameter
 
 ### Runtime discovery
 
-Plugin service implementations are discovered at runtime via Java `ServiceLoader` (SPI). Each plugin module declares an `AckpineServiceProvider` in its `META-INF/services/` manifest. When Ackpine initializes, it discovers all providers on the classpath and loads their services lazily.
+Plugin service implementations are discovered at runtime via Java `ServiceLoader` (SPI). Each plugin module declares an `AckpineServiceProvider` in `META-INF/services/`. When the first session initializes, it discovers all providers on the classpath and loads their services lazily.
 
 This design means:
 
 - `ackpine-core` never depends on concrete plugin modules — plugins are loaded dynamically.
-- Plugin parameters are serialized and persisted alongside session data, so sessions with plugins survive process death.
+- Plugin parameters are persisted alongside session data, so sessions with plugins survive process death.
 - Adding a plugin to your app is as simple as adding the dependency and calling `usePlugin()` in your parameters.
 
 See the [Shizuku](guide/shizuku.md) page for the currently available plugin and [Configuration](guide/configuration.md#plugins) for usage in parameters.
@@ -136,7 +139,7 @@ Design decisions
 
 ### `Uri` as sole APK input type
 
-`Uri` is chosen as the sole input type of APKs. It makes them persistable and allows to plug in any APK source via `ContentProvider`. The library leverages this in `ackpine-splits` and `ackpine-assets` modules to read APKs from zipped files and app's asset files respectively. See [Split APKs](guide/split_apks.md) for how `ContentProvider`-based sources work.
+`Uri` is chosen as the sole input type of APKs. It makes them persistable and allows to plug in any APK source via `ContentProvider`. The library leverages this in `ackpine-splits` and `ackpine-assets` modules to read APKs from zipped files and app's asset files respectively.
 
 ### Session passivity
 

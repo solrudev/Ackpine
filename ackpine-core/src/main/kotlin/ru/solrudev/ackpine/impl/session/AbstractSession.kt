@@ -48,6 +48,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * A base implementation for Ackpine [sessions][Session].
@@ -72,24 +73,33 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
 	)
 
-	private val stateLock = Any()
 	private val isCancelling = AtomicBoolean(false)
-	private val isCommitCalled = AtomicBoolean(false)
 
-	@Volatile
-	private var isPreparing = false
+	private val stateSnapshot = AtomicReference(
+		StateSnapshot(
+			state = initialState,
+			isPreparing = false,
+			isCommitCalled = false
+		)
+	)
 
-	@Volatile
-	private var state = initialState
+	private var state: Session.State<F>
+		get() = stateSnapshot.get().state
 		set(value) {
-			synchronized(stateLock) {
-				val currentValue = field
-				if (currentValue == value || currentValue.isTerminal) {
-					return
-				}
-				field = value
+			val shouldNotify = updateState { current ->
+				val updatedState = if (current.state.isTerminal) current.state else value
+				StateUpdate(
+					newState = StateSnapshot(
+						state = updatedState,
+						isPreparing = false,
+						isCommitCalled = false
+					),
+					result = current.state != updatedState
+				)
 			}
-			notifyStateListeners(value)
+			if (shouldNotify) {
+				notifyStateListeners(value)
+			}
 		}
 
 	final override val isActive: Boolean
@@ -124,9 +134,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
 	 */
 	protected fun notifyAwaiting() {
-		isCommitCalled.set(false)
 		state = Awaiting
-		isPreparing = false
 	}
 
 	/**
@@ -143,16 +151,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected open fun onCompleted(state: Completed<F>): Boolean = true
 
 	final override fun launch(): Boolean {
-		if (isPreparing || isCancelling.get()) {
+		if (!tryEnterLaunch()) {
 			return false
 		}
-		val currentState = state
-		if (currentState !is Pending && currentState !is Active) {
-			return false
-		}
-		isPreparing = true
-		state = Active
 		executor.execute {
+			if (!canPrepare()) {
+				return@execute
+			}
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare()
@@ -166,17 +171,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun commit(): Boolean {
-		if (isCancelling.get()) {
-			return false
-		}
-		val currentState = state
-		if (currentState !is Awaiting && currentState !is Committed) {
-			return false
-		}
-		if (!isCommitCalled.compareAndSet(false, true)) {
+		if (!tryEnterCommit()) {
 			return false
 		}
 		executor.execute {
+			if (!canCommit()) {
+				return@execute
+			}
 			try {
 				launchConfirmation()
 			} catch (_: OperationCanceledException) {
@@ -226,10 +227,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	}
 
 	final override fun notifyCommitted() {
-		isCommitCalled.set(true)
-		if (state !is Committed) {
+		val shouldNotifyCommitted = setCommitted()
+		if (shouldNotifyCommitted) {
 			onCommitted()
-			state = Committed
+			notifyStateListeners(Committed)
 		}
 		executor.execute {
 			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
@@ -268,6 +269,82 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		cleanup()
 	}
 
+	private fun tryEnterLaunch(): Boolean {
+		val shouldNotify = updateState { current ->
+			if (isCancelling.get() || current.isPreparing) {
+				return false
+			}
+			if (current.state !is Pending && current.state !is Active) {
+				return false
+			}
+			StateUpdate(
+				newState = current.copy(state = Active, isPreparing = true),
+				result = current.state !is Active
+			)
+		}
+		if (shouldNotify) {
+			notifyStateListeners(Active)
+		}
+		return true
+	}
+
+	private fun canPrepare() = updateState { current ->
+		if (!current.isPreparing) {
+			return false
+		}
+		if (!isCancelling.get() && (current.state is Pending || current.state is Active)) {
+			return true
+		}
+		StateUpdate(
+			newState = current.copy(isPreparing = false),
+			result = false
+		)
+	}
+
+	private fun tryEnterCommit() = updateState { current ->
+		if (isCancelling.get() || current.isCommitCalled) {
+			return false
+		}
+		if (current.state !is Awaiting && current.state !is Committed) {
+			return false
+		}
+		StateUpdate(
+			newState = current.copy(isCommitCalled = true),
+			result = true
+		)
+	}
+
+	private fun canCommit() = updateState { current ->
+		if (!current.isCommitCalled) {
+			return false
+		}
+		if (!isCancelling.get() && (current.state is Awaiting || current.state is Committed)) {
+			return true
+		}
+		StateUpdate(
+			newState = current.copy(isCommitCalled = false),
+			result = false
+		)
+	}
+
+	private fun setCommitted() = updateState { current ->
+		val updatedState = if (current.state.isTerminal) current.state else Committed
+		StateUpdate(
+			newState = current.copy(state = updatedState, isCommitCalled = true),
+			result = current.state !is Committed && !current.state.isTerminal
+		)
+	}
+
+	private inline fun <R> updateState(block: (current: StateSnapshot<F>) -> StateUpdate<R, F>): R {
+		while (true) {
+			val current = stateSnapshot.get()
+			val update = block(current)
+			if (update.newState == current || stateSnapshot.compareAndSet(current, update.newState)) {
+				return update.result
+			}
+		}
+	}
+
 	private fun persistSessionState(value: Session.State<F>) = executor.execute {
 		dbWriteSemaphore.withPermit {
 			when (value) {
@@ -287,6 +364,17 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		is Failed -> SessionEntity.State.FAILED
 	}
 }
+
+private data class StateSnapshot<F : Failure>(
+	val state: Session.State<F>,
+	val isPreparing: Boolean,
+	val isCommitCalled: Boolean
+)
+
+private class StateUpdate<out R, F : Failure>(
+	val newState: StateSnapshot<F>,
+	val result: R
+)
 
 private class StateDisposableSubscription<F : Failure>(
 	session: Session<F>,

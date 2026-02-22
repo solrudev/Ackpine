@@ -13,7 +13,7 @@ FAQ
 - A session in **Pending** means the session was never launched.
 - A session in **Active** means preparation is still in progress, or was interrupted and needs to be launched again.
 - A session in **Awaiting** means preparation is complete but the session was never committed.
-- A session in **Committed** means that a request for confirmation from user was ignored.
+- A session in **Committed** means that the session waits for confirmation from user.
 
 Use [`Session.TerminalStateListener.bind()`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/-terminal-state-listener/-companion/bind.html) (Java) or [`Session.await()`](/api/ackpine-ktx/ru.solrudev.ackpine.session/await.html) (Kotlin), which handle the session lifecycle. See [Getting Started](guide/getting_started.md#simple-session-launch).
 
@@ -48,7 +48,7 @@ In all other cases, Android requires user confirmation for package installation.
 
 `INTENT_BASED` uses `ACTION_INSTALL_PACKAGE` intent. It is more limited — no splits, no advanced features. It is the only option on API level < 21. This option may be more stable on certain Android distributions, especially from Chinese vendors.
 
-If your `minSdk` is 21 or higher and you don't have a specific reason to use intents, stick with `SESSION_BASED`. See [Installer type](guide/configuration.md#installer-type) for invariants enforced by the install parameters builder.
+If your `minSdk` is 21 or higher, and you don't have a specific reason to use intents, stick with `SESSION_BASED`. See [Installer type](guide/configuration.md#installer-type) for invariants enforced by the install parameters builder.
 
 ### How do I uninstall an app?
 
