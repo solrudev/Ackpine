@@ -359,6 +359,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
+		clearPackageInstallerSessionCallback()
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
 		return sessionId
 	}
