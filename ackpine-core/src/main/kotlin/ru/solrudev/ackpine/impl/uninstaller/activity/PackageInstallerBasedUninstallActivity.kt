@@ -35,7 +35,11 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 
 	private val abortedSessionRunnable = Runnable {
 		val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
-			?: error("$TAG: packageName was null")
+		if (packageName == null) {
+			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
+			finish()
+			return@Runnable
+		}
 		if (isPackageInstalled(packageName)) {
 			abortSession("Aborted by user")
 		}
