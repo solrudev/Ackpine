@@ -415,7 +415,8 @@ internal class SessionBasedInstallSession internal constructor(
 				} else {
 					completeExceptionally(exception)
 				}
-			})
+			}
+		)
 	}
 
 	private fun PackageInstallerService.Session.writeApksAsync() = CallbackToFutureAdapter.getFuture { completer ->
