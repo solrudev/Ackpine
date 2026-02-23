@@ -141,7 +141,7 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile
 	private var ignorePreapproval = false
 
-	private val attempts = AtomicInteger(commitAttemptsCount)
+	private val commitAttempts = AtomicInteger(commitAttemptsCount)
 
 	override fun prepare() {
 		if (isPreapprovalActive) {
@@ -168,7 +168,7 @@ internal class SessionBasedInstallSession internal constructor(
 			Log.w(TAG, "$id: ${exception.message}")
 			commitPackageInstallerSession()
 		}
-		val currentAttempt = attempts.incrementAndGet()
+		val currentAttempt = commitAttempts.incrementAndGet()
 		notifyCommitted()
 		dbWriteSemaphore.withPermit {
 			installConstraintsDao.setCommitAttemptsCount(id.toString(), currentAttempt)
@@ -225,7 +225,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 		val timeoutStrategy = constraints.timeoutStrategy
 		if (timeoutStrategy is TimeoutStrategy.Retry) {
-			val currentAttempt = attempts.get()
+			val currentAttempt = commitAttempts.get()
 			val shouldRetry = currentAttempt <= timeoutStrategy.retries
 			if (shouldRetry) {
 				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
@@ -286,7 +286,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
 		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly
-				&& attempts.get() == 1
+				&& commitAttempts.get() == 1
 	}
 
 	private fun commitPackageInstallerSession() {
