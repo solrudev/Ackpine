@@ -83,9 +83,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		)
 	)
 
-	private var state: Session.State<F>
+	protected var state: Session.State<F>
 		get() = stateSnapshot.get().state
-		set(value) {
+		private set(value) {
 			val shouldNotify = updateState { current ->
 				val updatedState = if (current.state.isTerminal) current.state else value
 				StateUpdate(
