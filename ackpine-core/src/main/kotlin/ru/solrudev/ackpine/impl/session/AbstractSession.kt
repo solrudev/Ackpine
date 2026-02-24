@@ -161,8 +161,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare()
-			} catch (_: OperationCanceledException) {
-				handleCancellation()
+			} catch (_: OperationCanceledException) { // no-op
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -180,8 +179,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			}
 			try {
 				launchConfirmation()
-			} catch (_: OperationCanceledException) {
-				handleCancellation()
+			} catch (_: OperationCanceledException) { // no-op
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -195,7 +193,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		try {
 			cancellationSignal.cancel()
-			handleCancellation()
+			state = Cancelled
+			cleanup()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
 		} finally {
@@ -262,11 +261,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		cancellationSignal.setOnCancelListener(null)
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
-	}
-
-	private fun handleCancellation() {
-		state = Cancelled
-		cleanup()
 	}
 
 	private fun tryEnterLaunch(): Boolean {
