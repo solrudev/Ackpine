@@ -86,27 +86,73 @@ internal class RecordingNativeSessionIdDao : NativeSessionIdDao {
 	private val _nativeSessionIds = mutableMapOf<String, Int>()
 	val nativeSessionIds: Map<String, Int> = _nativeSessionIds
 
-	private val _removed = mutableListOf<String>()
-	val removed: List<String> = _removed
-
 	override fun setNativeSessionId(sessionId: String, nativeSessionId: Int) {
 		_nativeSessionIds[sessionId] = nativeSessionId
 	}
-
-	override fun removeNativeSessionId(sessionId: String) {
-		_removed += sessionId
-	}
 }
 
-internal class RecordingInstallPreapprovalDao : InstallPreapprovalDao {
+internal class RecordingInstallPreapprovalDao(
+	private val onPreapprovalConsumed: () -> Unit = {}
+) : InstallPreapprovalDao {
+
+	private val _activatingSessions = mutableSetOf<String>()
+	val activatingSessions: Set<String> = _activatingSessions
+
+	private val _activeSessions = mutableSetOf<String>()
+	val activeSessions: Set<String> = _activeSessions
 
 	private val _preapprovedSessions = mutableListOf<String>()
 	val preapprovedSessions: List<String> = _preapprovedSessions
 
-	override fun setPreapproved(sessionId: String) {
-		_preapprovedSessions += sessionId
+	private val _consumeCalls = mutableListOf<ConsumeActiveCall>()
+	val consumeCalls: List<ConsumeActiveCall> = _consumeCalls
+
+	override fun setActivating(sessionId: String): Int {
+		if (sessionId in _preapprovedSessions) {
+			return 0
+		}
+		_activatingSessions += sessionId
+		_activeSessions -= sessionId
+		return 1
+	}
+
+	override fun setActive(sessionId: String): Int {
+		if (!_activatingSessions.remove(sessionId)) {
+			return 0
+		}
+		_activeSessions += sessionId
+		return 1
+	}
+
+	override fun consumeActive(sessionId: String, isPreapproved: Boolean): Int {
+		val consumed = _activeSessions.remove(sessionId) || _activatingSessions.remove(sessionId)
+		val result = if (consumed) 1 else 0
+		_consumeCalls += ConsumeActiveCall(sessionId, isPreapproved, result)
+		if (result == 1 && isPreapproved) {
+			_preapprovedSessions += sessionId
+		}
+		if (result == 1) {
+			onPreapprovalConsumed()
+		}
+		return result
+	}
+
+	override fun reset(sessionId: String): Int {
+		val wasPresent = sessionId in _activatingSessions
+				|| sessionId in _activeSessions
+				|| sessionId in _preapprovedSessions
+		_activatingSessions -= sessionId
+		_activeSessions -= sessionId
+		_preapprovedSessions.removeAll { it == sessionId }
+		return if (wasPresent) 1 else 0
 	}
 }
+
+internal data class ConsumeActiveCall(
+	val sessionId: String,
+	val isPreapproved: Boolean,
+	val result: Int
+)
 
 internal class RecordingInstallConstraintsDao : InstallConstraintsDao {
 
@@ -161,6 +207,10 @@ internal class RecordingPackageInstallerService : PackageInstallerService {
 			return null
 		}
 		return ReflectionHelpers.callConstructor(PackageInstaller.SessionInfo::class.java)
+	}
+
+	fun removeCreatedSessionId(sessionId: Int) {
+		createdSessionIds -= sessionId
 	}
 
 	override fun commitSessionAfterInstallConstraintsAreMet(

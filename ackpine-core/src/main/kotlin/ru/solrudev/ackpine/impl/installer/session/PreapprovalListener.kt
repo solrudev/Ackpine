@@ -27,9 +27,9 @@ import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 internal interface PreapprovalListener {
 
 	/**
-	 * Called when preapproval is requested.
+	 * Returns whether preapproval request is currently active.
 	 */
-	fun onPreapprovalStarted()
+	fun isPreapprovalActive(): Boolean
 
 	/**
 	 * Called when session preapproval has been completed successfully.

@@ -81,17 +81,18 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		if (isPreapproval) {
-			withCompletableSession { session ->
-				(session as PreapprovalListener).onPreapprovalStarted()
-			}
-		}
-		if (savedInstanceState == null) {
-			launchInstallActivity()
-		} else {
+		val isFirstCreate = savedInstanceState == null
+		if (!isFirstCreate) {
 			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
 			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
 			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
+		}
+		if (isPreapproval) {
+			handlePreapproval(launchConfirmation = isFirstCreate)
+			return
+		}
+		if (isFirstCreate) {
+			launchInstallActivity()
 		}
 	}
 
@@ -177,6 +178,14 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				setLoading(isLoading = true, delayMillis = 100)
 				handler.postDelayed(deadSessionCompletionRunnable, 1000)
 			}
+		}
+	}
+
+	private fun handlePreapproval(launchConfirmation: Boolean) = withCompletableSession { session ->
+		val canRequestPreapproval = (session as PreapprovalListener).isPreapprovalActive()
+		when {
+			!canRequestPreapproval -> finish()
+			launchConfirmation -> launchInstallActivity()
 		}
 	}
 

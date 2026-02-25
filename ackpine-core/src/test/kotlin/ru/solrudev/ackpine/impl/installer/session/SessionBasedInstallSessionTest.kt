@@ -52,6 +52,7 @@ import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.io.File
 import java.util.UUID
+import java.util.concurrent.Executor
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -66,8 +67,6 @@ import kotlin.time.Duration.Companion.seconds
 class SessionBasedInstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
-	private val handler = Handler(Looper.getMainLooper())
-	private val dbWriteSemaphore = BinarySemaphore()
 
 	@AfterTest
 	fun tearDown() {
@@ -79,7 +78,7 @@ class SessionBasedInstallSessionTest {
 		val sessionId = UUID.randomUUID()
 		val apkFile = context.createAckpineFile("test/$sessionId.apk") { writeText("test apk") }
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			apks = listOf(apkFile.toUri()),
 			id = sessionId,
@@ -105,7 +104,7 @@ class SessionBasedInstallSessionTest {
 			context.createAckpineFile("test/split-$sessionId-3.apk") { writeText("apk 3") }
 		)
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			apks = apkFiles.map(File::toUri),
 			id = sessionId,
@@ -130,30 +129,12 @@ class SessionBasedInstallSessionTest {
 	}
 
 	@Test
-	fun launchWithPreapprovalRequestsUserPreapproval() {
-		val sessionId = UUID.randomUUID()
-		val icon = context.createAckpineFile("icon.png").toUri()
-		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
-			packageInstaller = packageInstaller,
-			id = sessionId,
-			preapproval = InstallPreapproval("pkg", "label", "en", icon),
-			initialState = Session.State.Pending
-		)
-
-		session.launch()
-		idleMainThread()
-
-		assertEquals(1, packageInstaller.session.preapprovalRequests.size)
-	}
-
-	@Test
 	fun commitCommitsPackageInstallerSessionAndPersistsCommitAttempt() {
 		val constraintsDao = RecordingInstallConstraintsDao()
 		val sessionId = UUID.randomUUID()
 		val apkFile = context.createAckpineFile("test/commit-$sessionId.apk") { writeText("apk") }
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			apks = listOf(apkFile.toUri()),
 			id = sessionId,
@@ -177,7 +158,7 @@ class SessionBasedInstallSessionTest {
 		val sessionId = UUID.randomUUID()
 		val apkFile = context.createAckpineFile("test/constraints-$sessionId.apk")
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			apks = listOf(apkFile.toUri()),
 			id = sessionId,
@@ -194,96 +175,11 @@ class SessionBasedInstallSessionTest {
 	}
 
 	@Test
-	fun preapprovalSucceededSetsIsPreapproved() {
-		val preapprovalDao = RecordingInstallPreapprovalDao()
-		val session = createSession(
-			preapprovalDao = preapprovalDao,
-			preapproval = InstallPreapproval("pkg", "label", "en"),
-			initialState = Session.State.Pending
-		)
-
-		session.onPreapprovalSucceeded()
-		idleMainThread()
-
-		assertContains(preapprovalDao.preapprovedSessions, session.id.toString())
-	}
-
-	@Test
-	fun preapprovalFailureCompletesFailedWithoutFallback() {
-		val session = createSession(
-			preapproval = InstallPreapproval("pkg", "label", "en"),
-			initialState = Session.State.Pending
-		)
-		val states = session.captureStates()
-
-		val expectedFailure = InstallFailure.Generic("fail")
-		session.onPreapprovalFailed(
-			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE,
-			expectedFailure
-		)
-		idleMainThread()
-
-		val state = states.last()
-		assertIs<Session.State.Failed<InstallFailure>>(state)
-		assertEquals(expectedFailure, state.failure)
-	}
-
-	@Test
-	fun preapprovalFailedWithFallbackRecreatesNativeSessionAndLaunchesSession() {
-		val nativeSessionIdDao = RecordingNativeSessionIdDao()
-		val packageInstaller = RecordingPackageInstallerService()
-		val sessionId = UUID.randomUUID()
-		val apkFile = context.createAckpineFile("test/fake.apk")
-		val session = createSession(
-			id = sessionId,
-			apks = listOf(apkFile.toUri()),
-			packageInstaller = packageInstaller,
-			nativeSessionIdDao = nativeSessionIdDao,
-			preapproval = InstallPreapproval("pkg", "label", "en") {
-				fallbackToOnDemandApproval = true
-			},
-			initialState = Session.State.Pending
-		)
-		val states = session.captureStates()
-
-		assertTrue(packageInstaller.session.writes.isEmpty())
-
-		session.onPreapprovalFailed(
-			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE,
-			InstallFailure.Generic("preapproval not available")
-		)
-		idleMainThread()
-
-		assertContains(nativeSessionIdDao.removed, sessionId.toString())
-		assertFalse(packageInstaller.session.writes.isEmpty())
-		assertEquals(Session.State.Awaiting, states.last())
-	}
-
-	@Test
-	fun preapprovalFailedWithNullStatusCompletesWithFailure() {
-		val session = createSession(
-			preapproval = InstallPreapproval("pkg", "label", "en") {
-				fallbackToOnDemandApproval = true
-			},
-			initialState = Session.State.Pending
-		)
-		val states = session.captureStates()
-
-		val expectedFailure = InstallFailure.Generic("unknown error")
-		session.onPreapprovalFailed(status = null, expectedFailure)
-		idleMainThread()
-
-		val state = states.last()
-		assertIs<Session.State.Failed<InstallFailure>>(state)
-		assertEquals(expectedFailure, state.failure)
-	}
-
-	@Test
 	fun timeoutRetryMovesSessionBackToAwaiting() {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.Retry(2)
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 1
@@ -301,7 +197,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.Retry(2)
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 3 // Exceeded retries
@@ -322,7 +218,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.CommitEagerly
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 1
@@ -340,7 +236,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.CommitEagerly
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 2 // Second attempt
@@ -361,7 +257,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.Fail
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 1
@@ -382,7 +278,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.Retry(5)
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 1
@@ -403,7 +299,7 @@ class SessionBasedInstallSessionTest {
 		val constraints = InstallConstraints(1.seconds) {
 			timeoutStrategy = TimeoutStrategy.Retry(5)
 		}
-		val session = createSession(
+		val session = createSessionBasedSession(
 			constraints = constraints,
 			initialState = Session.State.Committed,
 			commitAttemptsCount = 1
@@ -419,7 +315,7 @@ class SessionBasedInstallSessionTest {
 	@Test
 	fun sessionWithNativeSessionIdRegistersCallback() {
 		val packageInstaller = RecordingPackageInstallerService()
-		createSession(
+		createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			initialState = Session.State.Active,
 			nativeSessionId = 123
@@ -432,7 +328,7 @@ class SessionBasedInstallSessionTest {
 	@Test
 	fun sessionCallbackProgressUpdatesSessionProgress() {
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			initialState = Session.State.Active,
 			nativeSessionId = 123
@@ -451,7 +347,7 @@ class SessionBasedInstallSessionTest {
 	@Test
 	fun cancelAbandonsSessionAndUnregistersCallback() {
 		val packageInstaller = RecordingPackageInstallerService()
-		val session = createSession(
+		val session = createSessionBasedSession(
 			packageInstaller = packageInstaller,
 			initialState = Session.State.Active,
 			nativeSessionId = 123
@@ -464,51 +360,52 @@ class SessionBasedInstallSessionTest {
 		assertContains(packageInstaller.abandonedSessions, 123)
 		assertEquals(1, packageInstaller.unregisteredCallbacks.size)
 	}
-
-	private fun createSession(
-		packageInstaller: PackageInstallerService = RecordingPackageInstallerService(),
-		apks: List<Uri> = listOf(Uri.EMPTY),
-		id: UUID = UUID.randomUUID(),
-		preapproval: InstallPreapproval = InstallPreapproval.NONE,
-		constraints: InstallConstraints = InstallConstraints.NONE,
-		initialState: Session.State<InstallFailure> = Session.State.Pending,
-		commitAttemptsCount: Int = 0,
-		installMode: InstallMode = InstallMode.Full,
-		packageSource: PackageSource = PackageSource.Unspecified,
-		nativeSessionId: Int = -1,
-		isPreapproved: Boolean = false,
-		initialProgress: Progress = Progress(),
-		nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
-		preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),
-		constraintsDao: RecordingInstallConstraintsDao = RecordingInstallConstraintsDao()
-	) = SessionBasedInstallSession(
-		context = context,
-		packageInstaller = packageInstaller,
-		apks = apks,
-		id = id,
-		initialState = initialState,
-		initialProgress = initialProgress,
-		confirmation = Confirmation.DEFERRED,
-		notificationData = NotificationData.DEFAULT,
-		requireUserAction = true,
-		installMode = installMode,
-		preapproval = preapproval,
-		constraints = constraints,
-		requestUpdateOwnership = false,
-		packageSource = packageSource,
-		sessionDao = RecordingSessionDao(),
-		sessionFailureDao = TestSessionFailureDao(),
-		sessionProgressDao = RecordingSessionProgressDao(),
-		nativeSessionIdDao = nativeSessionIdDao,
-		installPreapprovalDao = preapprovalDao,
-		installConstraintsDao = constraintsDao,
-		executor = ImmediateExecutor,
-		handler = handler,
-		sessionCallbackHandler = handler,
-		nativeSessionId = nativeSessionId,
-		notificationId = 1,
-		commitAttemptsCount = commitAttemptsCount,
-		isPreapproved = isPreapproved,
-		dbWriteSemaphore = dbWriteSemaphore
-	)
 }
+
+internal fun createSessionBasedSession(
+	packageInstaller: PackageInstallerService = RecordingPackageInstallerService(),
+	apks: List<Uri> = listOf(Uri.EMPTY),
+	id: UUID = UUID.randomUUID(),
+	preapproval: InstallPreapproval = InstallPreapproval.NONE,
+	constraints: InstallConstraints = InstallConstraints.NONE,
+	initialState: Session.State<InstallFailure> = Session.State.Pending,
+	commitAttemptsCount: Int = 0,
+	installMode: InstallMode = InstallMode.Full,
+	packageSource: PackageSource = PackageSource.Unspecified,
+	nativeSessionId: Int = -1,
+	preapprovalState: PreapprovalLifecycle.State = PreapprovalLifecycle.State.IDLE,
+	initialProgress: Progress = Progress(),
+	nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
+	preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),
+	constraintsDao: RecordingInstallConstraintsDao = RecordingInstallConstraintsDao(),
+	executor: Executor = ImmediateExecutor
+) = SessionBasedInstallSession(
+	context = ApplicationProvider.getApplicationContext(),
+	packageInstaller = packageInstaller,
+	apks = apks,
+	id = id,
+	initialState = initialState,
+	initialProgress = initialProgress,
+	confirmation = Confirmation.DEFERRED,
+	notificationData = NotificationData.DEFAULT,
+	requireUserAction = true,
+	installMode = installMode,
+	preapproval = preapproval,
+	constraints = constraints,
+	requestUpdateOwnership = false,
+	packageSource = packageSource,
+	sessionDao = RecordingSessionDao(),
+	sessionFailureDao = TestSessionFailureDao(),
+	sessionProgressDao = RecordingSessionProgressDao(),
+	nativeSessionIdDao = nativeSessionIdDao,
+	installPreapprovalDao = preapprovalDao,
+	installConstraintsDao = constraintsDao,
+	executor = executor,
+	handler = Handler(Looper.getMainLooper()),
+	sessionCallbackHandler = Handler(Looper.getMainLooper()),
+	nativeSessionId = nativeSessionId,
+	notificationId = 1,
+	commitAttemptsCount = commitAttemptsCount,
+	initialPreapprovalState = preapprovalState,
+	dbWriteSemaphore = BinarySemaphore()
+)

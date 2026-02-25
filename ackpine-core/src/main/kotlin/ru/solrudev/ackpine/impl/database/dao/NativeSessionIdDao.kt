@@ -27,7 +27,4 @@ internal interface NativeSessionIdDao {
 	@Query("INSERT OR REPLACE INTO sessions_native_session_ids(session_id, native_session_id) " +
 			"VALUES (:sessionId, :nativeSessionId)")
 	fun setNativeSessionId(sessionId: String, nativeSessionId: Int)
-
-	@Query("DELETE FROM sessions_native_session_ids WHERE session_id = :sessionId")
-	fun removeNativeSessionId(sessionId: String)
 }

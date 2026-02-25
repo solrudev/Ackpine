@@ -20,6 +20,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
@@ -30,6 +31,7 @@ import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -50,14 +52,14 @@ class SessionBasedInstallConfirmationActivityTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use {
 			assertTrue(session.committedNotified)
-			assertFalse(session.preapprovalStarted)
+			assertFalse(session.preapprovalChecked)
 		}
 	}
 
 	@Test
 	fun preapprovalDoesNotNotifyCommitted() {
 		val sessionId = UUID.randomUUID()
-		val session = TestPreapprovalSession(sessionId)
+		val session = TestPreapprovalSession(sessionId, isPreapprovalActive = true)
 		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
 		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
 			.putExtra(Intent.EXTRA_INTENT, Intent())
@@ -66,7 +68,24 @@ class SessionBasedInstallConfirmationActivityTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use {
 			assertFalse(session.committedNotified)
-			assertTrue(session.preapprovalStarted)
+			assertTrue(session.preapprovalChecked)
+		}
+	}
+
+	@Test
+	fun stalePreapprovalFinishesActivity() {
+		val sessionId = UUID.randomUUID()
+		val session = TestPreapprovalSession(sessionId, isPreapprovalActive = false)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent())
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, 1)
+			.putExtra(PackageInstaller.EXTRA_PRE_APPROVAL, true)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
+			assertEquals(Lifecycle.State.DESTROYED, scenario?.state)
+			assertFalse(session.committedNotified)
+			assertTrue(session.preapprovalChecked)
 		}
 	}
 
@@ -83,7 +102,7 @@ class SessionBasedInstallConfirmationActivityTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use {
 			assertTrue(session.committedNotified)
-			assertFalse(session.preapprovalStarted)
+			assertFalse(session.preapprovalChecked)
 		}
 	}
 }
