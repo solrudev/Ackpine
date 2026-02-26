@@ -16,10 +16,13 @@
 
 package ru.solrudev.ackpine.impl.uninstaller
 
+import android.app.NotificationManager
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.os.Handler
 import android.os.Looper
+import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -37,12 +40,14 @@ import ru.solrudev.ackpine.impl.uninstaller.session.PackageInstallerBasedUninsta
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.NotificationData
+import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 @RunWith(RobolectricTestRunner::class)
 class UninstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
@@ -180,6 +185,49 @@ class UninstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 			assertEquals(expectedSessionState, states.first())
 		}
 	}
+
+	@Test
+	fun createFromEntityNotificationCancelBehavior() {
+		for (state in SessionEntity.State.entries) {
+			for (uninstallerType in UninstallerType.entries) {
+				context.getSystemService<NotificationManager>()?.cancelAll()
+				val sessionId = UUID.randomUUID().toString()
+				val notificationId = (state.ordinal + 1) * (uninstallerType.ordinal + 1)
+				val entity = createUninstallSessionEntity(
+					id = sessionId,
+					state = state,
+					uninstallerType = uninstallerType,
+					packageName = "com.example.app",
+					notificationId = notificationId
+				)
+				database.uninstallSessionDao().insertUninstallSession(entity)
+				if (state == SessionEntity.State.FAILED) {
+					database.uninstallSessionDao().setFailure(sessionId, UninstallFailure.Generic("failed"))
+				}
+				showSessionNotification(sessionId, notificationId)
+
+				createFactory().create(entity)
+
+				val expectedNotifications = if (state.isTerminal) 0 else 1
+				assertEquals(expectedNotifications, shadowNotificationManager().allNotifications.size)
+			}
+		}
+	}
+
+	private fun showSessionNotification(sessionId: String, notificationId: Int) {
+		val manager = context.getSystemService<NotificationManager>()
+		assertNotNull(manager)
+		val notification = NotificationCompat.Builder(context, "ackpine")
+			.setContentTitle("title")
+			.setContentText("text")
+			.setSmallIcon(android.R.drawable.ic_dialog_alert)
+			.build()
+		manager.notify(sessionId, notificationId, notification)
+	}
+
+	private fun shadowNotificationManager() = shadowOf(
+		assertNotNull(context.getSystemService<NotificationManager>())
+	)
 
 	private fun createFactory() = UninstallSessionFactoryImpl(
 		applicationContext = context,

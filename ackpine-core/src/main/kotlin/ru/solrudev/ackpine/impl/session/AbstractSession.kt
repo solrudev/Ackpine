@@ -65,7 +65,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val exceptionalFailureFactory: (Exception) -> F,
 	protected val notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
-) : CompletableSession<F> {
+) : CompletableSession<F>, Cleanable {
 
 	protected val cancellationSignal = CancellationSignal()
 
@@ -125,9 +125,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected abstract fun launchConfirmation()
 
 	/**
-	 * Release any held resources after session's completion or cancellation. Processing in this method should be
-	 * lightweight.
+	 * Release any held resources after session's completion or cancellation.
 	 */
+	@WorkerThread
 	protected open fun doCleanup() { /* optional */ }
 
 	/**
@@ -194,7 +194,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		try {
 			cancellationSignal.cancel()
 			state = Cancelled
-			cleanup()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
 		} finally {
@@ -239,13 +238,17 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	final override fun complete(state: Completed<F>) {
 		if (onCompleted(state)) {
 			this.state = state
-			cleanup()
 		}
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
 		state = Failed(exceptionalFailureFactory(exception))
-		cleanup()
+	}
+
+	final override fun cleanup() {
+		cancellationSignal.setOnCancelListener(null)
+		doCleanup()
+		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 	}
 
 	private fun notifyStateListeners(value: Session.State<F>) {
@@ -255,12 +258,6 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				listener.onStateChanged(id, value)
 			}
 		}
-	}
-
-	private fun cleanup() {
-		cancellationSignal.setOnCancelListener(null)
-		doCleanup()
-		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 	}
 
 	private fun tryEnterLaunch(): Boolean {
@@ -339,12 +336,15 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
-	private fun persistSessionState(value: Session.State<F>) = executor.execute {
+	private fun persistSessionState(state: Session.State<F>) = executor.execute {
 		dbWriteSemaphore.withPermit {
-			when (value) {
-				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
-				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+			when (state) {
+				is Failed -> sessionFailureDao.setFailure(id.toString(), state.failure)
+				else -> sessionDao.updateSessionState(id.toString(), state.toSessionEntityState())
 			}
+		}
+		if (state.isTerminal) {
+			cleanup()
 		}
 	}
 

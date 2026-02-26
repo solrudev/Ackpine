@@ -41,6 +41,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import java.util.concurrent.Executor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -374,19 +375,40 @@ class AbstractSessionTest {
 		assertEquals(failure.exception, exception)
 	}
 
+	@Test
+	fun terminalTransitionsDoNotCallCleanupInline() {
+		val transitions = listOf<(TestSession) -> Unit>(
+			{ session -> session.cancel() },
+			{ session -> session.complete(Session.State.Succeeded) },
+			{ session -> session.complete(Session.State.Failed(TestFailure.Aborted(""))) },
+			{ session -> session.completeExceptionally(Exception()) }
+		)
+		for (transition in transitions) {
+			val executor = QueuedExecutor()
+			val session = TestSession(initialState = Session.State.Active, executor = executor)
+
+			transition(session)
+			assertEquals(0, session.cleanupCalls)
+
+			executor.runAll()
+			assertEquals(1, session.cleanupCalls)
+		}
+	}
+
 	private inner class TestSession(
 		id: UUID = UUID.randomUUID(),
 		sessionDao: RecordingSessionDao = RecordingSessionDao(),
 		failureDao: TestSessionFailureDao<TestFailure> = TestSessionFailureDao(),
 		initialState: Session.State<TestFailure>,
-		notificationId: Int = 1
+		notificationId: Int = 1,
+		executor: Executor = ImmediateExecutor
 	) : AbstractSession<TestFailure>(
 		context = context,
 		id = id,
 		initialState = initialState,
 		sessionDao = sessionDao,
 		sessionFailureDao = failureDao,
-		executor = ImmediateExecutor,
+		executor = executor,
 		handler = handler,
 		exceptionalFailureFactory = TestFailure::Exceptional,
 		notificationId = notificationId,
@@ -396,6 +418,7 @@ class AbstractSessionTest {
 		var prepareCalls = 0
 		var confirmationCalls = 0
 		var committedCalls = 0
+		var cleanupCalls = 0
 
 		override fun prepare() {
 			prepareCalls++
@@ -410,6 +433,10 @@ class AbstractSessionTest {
 		override fun onCommitted() {
 			committedCalls++
 		}
+
+		override fun doCleanup() {
+			cleanupCalls++
+		}
 	}
 
 	private class SessionStateFlags<F : Failure>(
@@ -418,4 +445,20 @@ class AbstractSessionTest {
 		val isCancelled: Boolean,
 		val isCompleted: Boolean
 	)
+
+	private class QueuedExecutor : Executor {
+
+		private val tasks = ArrayDeque<Runnable>()
+
+		override fun execute(command: Runnable) {
+			tasks += command
+		}
+
+		fun runAll() {
+			while (tasks.isNotEmpty()) {
+				val task = tasks.removeFirst()
+				task.run()
+			}
+		}
+	}
 }

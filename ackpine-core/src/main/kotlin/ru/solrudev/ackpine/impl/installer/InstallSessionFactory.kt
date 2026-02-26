@@ -194,7 +194,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, installSession.notificationId!!,
 			BinarySemaphore()
 		)
-		if (!completeIfSucceeded || initialState.isTerminal) {
+		if (initialState.isTerminal) {
+			session.cleanup()
+			return session
+		}
+		if (!completeIfSucceeded) {
 			return session
 		}
 		// Though it somewhat helps with self-update sessions, it's still faulty:
@@ -251,10 +255,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 				dbWriteSemaphore = BinarySemaphore()
 			)
 		}
-		if (session.isCompleted) {
+		if (initialState.isTerminal) {
+			session.cleanup()
 			return session
 		}
-		if (!completeIfSucceeded || initialState.isTerminal) {
+		if (session.isCompleted || !completeIfSucceeded) {
 			return session
 		}
 		val commitProgressValue = CommitProgressValueHolder.get(applicationContext)

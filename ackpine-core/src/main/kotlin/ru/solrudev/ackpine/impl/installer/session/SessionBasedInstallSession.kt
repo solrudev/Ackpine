@@ -236,7 +236,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun doCleanup() {
 		clearPackageInstallerSessionCallback()
-		executor.execute(::abandonSession) // may be long if storage is under load
+		abandonSession()
 	}
 
 	@ChecksSdkIntAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
