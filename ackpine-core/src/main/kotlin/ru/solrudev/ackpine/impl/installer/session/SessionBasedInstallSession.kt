@@ -421,7 +421,12 @@ internal class SessionBasedInstallSession internal constructor(
 			},
 			onException = { exception ->
 				session.closeWithException(exception)
-				if (exception !is CancellationException) {
+				if (exception is CancellationException) {
+					try {
+						session.abandon()
+					} catch (_: Throwable) { // no-op
+					}
+				} else {
 					completeExceptionally(exception)
 				}
 			}

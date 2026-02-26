@@ -285,6 +285,9 @@ internal class RecordingPackageInstallerService : PackageInstallerService {
 			_commits += statusReceiver
 		}
 
+		override fun abandon() { // no-op
+		}
+
 		override fun requestUserPreapproval(
 			details: PackageInstaller.PreapprovalDetails,
 			statusReceiver: IntentSender
