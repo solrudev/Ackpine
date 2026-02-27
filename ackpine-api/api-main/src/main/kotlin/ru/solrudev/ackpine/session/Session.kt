@@ -30,6 +30,7 @@ import ru.solrudev.ackpine.session.Session.State.Succeeded
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicReference
 
 /**
  * An installation or uninstallation that's being actively staged.
@@ -274,39 +275,20 @@ public interface Session<out F : Failure> {
 		public class Binder<F : Failure> private constructor(session: Session<F>) {
 
 			private val sessionId = session.id
-
-			@Volatile
-			private var onSuccessListener: OnSuccessListener? = null
-
-			@Volatile
-			private var onFailureListener: OnFailureListener<F>? = null
-
-			@Volatile
-			private var onCancelListener: OnCancelListener? = null
-
-			@Volatile
-			private var cachedTerminalState: State.Terminal? = null
+			private val binderState = AtomicReference(BinderState<F>())
 
 			@get:JvmSynthetic
 			internal val terminalStateListener = object : StateListener<F> {
 				override fun onStateChanged(sessionId: UUID, state: State<F>) {
-					if (state is State.Terminal) {
+					if (state.isTerminal) {
 						session.removeStateListener(this)
-						cachedTerminalState = state
 					}
 					when (state) {
 						Pending -> session.launch()
 						Active -> session.launch() // re-launch if preparations were interrupted
 						Awaiting -> session.commit()
 						Committed -> session.commit() // re-commit if confirmation was interrupted
-						Cancelled -> onCancelListener?.onCancelled(sessionId)
-						Succeeded -> onSuccessListener?.onSuccess(sessionId)
-						is Failed -> onFailureListener?.onFailure(sessionId, state.failure)
-					}
-					if (state.isTerminal) {
-						onSuccessListener = null
-						onFailureListener = null
-						onCancelListener = null
+						is State.Terminal -> notifyTerminalState(state)
 					}
 				}
 			}
@@ -321,18 +303,14 @@ public interface Session<out F : Failure> {
 			 *
 			 * @return this [Binder] to allow chaining.
 			 */
-			public fun addOnSuccessListener(listener: OnSuccessListener): Binder<F> {
-				val cachedState = cachedTerminalState
-				if (cachedState == null) {
-					onSuccessListener = listener
-					return this
-				}
-				if (cachedState == Succeeded) {
-					listener.onSuccess(sessionId)
-				}
-				onSuccessListener = null
-				return this
-			}
+			public fun addOnSuccessListener(listener: OnSuccessListener): Binder<F> = addListener(
+				onCachedTerminalState = { terminalState ->
+					if (terminalState == Succeeded) {
+						listener.onSuccess(sessionId)
+					}
+				},
+				updateBinderState = { it.copy(onSuccessListener = listener) }
+			)
 
 			/**
 			 * Adds a [listener] which will be invoked when a [Session] fails.
@@ -345,18 +323,14 @@ public interface Session<out F : Failure> {
 			 * @return this [Binder] to allow chaining.
 			 */
 			@Suppress("UNCHECKED_CAST")
-			public fun addOnFailureListener(listener: OnFailureListener<F>): Binder<F> {
-				val cachedState = cachedTerminalState
-				if (cachedState == null) {
-					onFailureListener = listener
-					return this
-				}
-				if (cachedState is Failed<*>) {
-					listener.onFailure(sessionId, cachedState.failure as F)
-				}
-				onFailureListener = null
-				return this
-			}
+			public fun addOnFailureListener(listener: OnFailureListener<F>): Binder<F> = addListener(
+				onCachedTerminalState = { terminalState ->
+					if (terminalState is Failed<*>) {
+						listener.onFailure(sessionId, terminalState.failure as F)
+					}
+				},
+				updateBinderState = { it.copy(onFailureListener = listener) }
+			)
 
 			/**
 			 * Adds a [listener] which will be invoked when a [Session] is cancelled.
@@ -368,23 +342,68 @@ public interface Session<out F : Failure> {
 			 *
 			 * @return this [Binder] to allow chaining.
 			 */
-			public fun addOnCancelListener(listener: OnCancelListener): Binder<F> {
-				val cachedState = cachedTerminalState
-				if (cachedState == null) {
-					onCancelListener = listener
-					return this
+			public fun addOnCancelListener(listener: OnCancelListener): Binder<F> = addListener(
+				onCachedTerminalState = { terminalState ->
+					if (terminalState == Cancelled) {
+						listener.onCancelled(sessionId)
+					}
+				},
+				updateBinderState = { it.copy(onCancelListener = listener) }
+			)
+
+			private inline fun addListener(
+				crossinline onCachedTerminalState: (State.Terminal) -> Unit,
+				crossinline updateBinderState: (BinderState<F>) -> BinderState<F>
+			): Binder<F> {
+				while (true) {
+					val state = binderState.get()
+					val terminalState = state.terminalState
+					if (terminalState != null) {
+						onCachedTerminalState(terminalState)
+						return this
+					}
+					if (binderState.compareAndSet(state, updateBinderState(state))) {
+						return this
+					}
 				}
-				if (cachedState == Cancelled) {
-					listener.onCancelled(sessionId)
+			}
+
+			@Suppress("UNCHECKED_CAST")
+			private fun notifyTerminalState(terminalState: State.Terminal) {
+				while (true) {
+					val state = binderState.get()
+					if (state.terminalState != null) {
+						return
+					}
+					val newState = BinderState<F>(
+						terminalState,
+						onSuccessListener = null,
+						onFailureListener = null,
+						onCancelListener = null
+					)
+					if (!binderState.compareAndSet(state, newState)) {
+						continue
+					}
+					when (terminalState) {
+						Cancelled -> state.onCancelListener?.onCancelled(sessionId)
+						Succeeded -> state.onSuccessListener?.onSuccess(sessionId)
+						is Failed<*> -> state.onFailureListener?.onFailure(sessionId, terminalState.failure as F)
+					}
+					return
 				}
-				onCancelListener = null
-				return this
 			}
 
 			internal companion object {
 				@JvmSynthetic
 				internal fun <F : Failure> create(session: Session<F>) = Binder(session)
 			}
+
+			private data class BinderState<F : Failure>(
+				val terminalState: State.Terminal? = null,
+				val onSuccessListener: OnSuccessListener? = null,
+				val onFailureListener: OnFailureListener<F>? = null,
+				val onCancelListener: OnCancelListener? = null
+			)
 		}
 
 		/**
