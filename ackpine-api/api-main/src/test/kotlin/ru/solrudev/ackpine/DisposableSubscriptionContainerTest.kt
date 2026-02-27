@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine
 
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -26,7 +27,7 @@ class DisposableSubscriptionContainerTest {
 	fun addOnDisposedContainerDisposesIncomingSubscription() {
 		val container = DisposableSubscriptionContainer()
 		container.dispose()
-		val subscription = Subscription()
+		val subscription = TestSubscription()
 
 		container.add(subscription)
 
@@ -36,7 +37,7 @@ class DisposableSubscriptionContainerTest {
 	@Test
 	fun addOnActiveContainerRetainsSubscriptionUntilDispose() {
 		val container = DisposableSubscriptionContainer()
-		val subscription = Subscription()
+		val subscription = TestSubscription()
 
 		container.add(subscription)
 		assertFalse(subscription.isDisposed)
@@ -46,13 +47,44 @@ class DisposableSubscriptionContainerTest {
 		assertTrue(subscription.isDisposed)
 	}
 
-	private class Subscription : DisposableSubscription {
+	@Test
+	fun clearDisposesSubscriptionsButContainerRemainsActive() {
+		val container = DisposableSubscriptionContainer()
+		val subscription = TestSubscription()
+		container.add(subscription)
 
-		override var isDisposed = false
+		container.clear()
+
+		assertTrue(subscription.isDisposed)
+		assertFalse(container.isDisposed)
+
+		val newSubscription = TestSubscription()
+		container.add(newSubscription)
+		assertFalse(newSubscription.isDisposed)
+	}
+
+	@Test
+	fun disposeIsIdempotent() {
+		val container = DisposableSubscriptionContainer()
+		val subscription = TestSubscription()
+		container.add(subscription)
+
+		container.dispose()
+		container.dispose()
+
+		assertEquals(1, subscription.disposeCount)
+	}
+
+	private class TestSubscription : DisposableSubscription {
+
+		var disposeCount = 0
 			private set
 
+		override val isDisposed: Boolean
+			get() = disposeCount > 0
+
 		override fun dispose() {
-			isDisposed = true
+			disposeCount++
 		}
 	}
 }

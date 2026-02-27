@@ -28,6 +28,50 @@ import kotlin.test.assertNull
 class SessionTerminalStateListenerBinderTest {
 
 	@Test
+	fun bindLaunchesSessionWhenStateIsPending() {
+		val session = TestSession(
+			TestSessionScript.empty(),
+			id = UUID.randomUUID(),
+			initialState = Session.State.Pending
+		)
+		Session.TerminalStateListener.bind(session, DisposableSubscriptionContainer())
+		assertEquals(1, session.controller.launchCalls)
+	}
+
+	@Test
+	fun bindRelaunchesSessionWhenStateIsActive() {
+		val session = TestSession(
+			TestSessionScript.empty(),
+			id = UUID.randomUUID(),
+			initialState = Session.State.Active
+		)
+		Session.TerminalStateListener.bind(session, DisposableSubscriptionContainer())
+		assertEquals(1, session.controller.launchCalls)
+	}
+
+	@Test
+	fun bindCommitsSessionWhenStateIsAwaiting() {
+		val session = TestSession(
+			TestSessionScript.empty(),
+			id = UUID.randomUUID(),
+			initialState = Session.State.Awaiting
+		)
+		Session.TerminalStateListener.bind(session, DisposableSubscriptionContainer())
+		assertEquals(1, session.controller.commitCalls)
+	}
+
+	@Test
+	fun bindRecommitsSessionWhenStateIsCommitted() {
+		val session = TestSession(
+			TestSessionScript.empty(),
+			id = UUID.randomUUID(),
+			initialState = Session.State.Committed
+		)
+		Session.TerminalStateListener.bind(session, DisposableSubscriptionContainer())
+		assertEquals(1, session.controller.commitCalls)
+	}
+
+	@Test
 	fun binderInvokesSuccessListenerWhenRegisteredBeforeTerminalState() {
 		val session = TestSession<Nothing>(TestSessionScript.empty(), id = UUID.randomUUID())
 		val binder = Session.TerminalStateListener.bind(session, DisposableSubscriptionContainer())
