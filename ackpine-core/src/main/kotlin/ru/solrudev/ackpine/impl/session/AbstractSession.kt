@@ -42,10 +42,7 @@ import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Pending
 import ru.solrudev.ackpine.session.Session.State.Succeeded
-import java.lang.ref.WeakReference
-import java.util.Collections
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -68,11 +65,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 ) : CompletableSession<F>, Cleanable {
 
 	protected val cancellationSignal = CancellationSignal()
-
-	private val stateListeners = Collections.newSetFromMap(
-		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
-	)
-
+	private val stateListeners = ListenerStore<Session.StateListener<F>>()
 	private val isCancelling = AtomicBoolean(false)
 
 	private val stateSnapshot = AtomicReference(
@@ -205,23 +198,22 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		subscriptionContainer: DisposableSubscriptionContainer,
 		listener: Session.StateListener<F>
 	): DisposableSubscription {
-		val added = stateListeners.add(listener)
-		if (!added) {
-			return DummyDisposableSubscription
-		}
+		val registration = stateListeners.add(listener) ?: return DummyDisposableSubscription
 		// postAtFrontOfQueue - notify with current state snapshot immediately to avoid duplicate notifications,
 		// as using plain Handler#post() can lead to the listener being notified after state has already changed
 		// and delivered to the same listener
 		handler.postAtFrontOfQueue {
-			listener.onStateChanged(id, state)
+			if (stateListeners.isValid(registration)) {
+				listener.onStateChanged(id, state)
+			}
 		}
-		val subscription = StateDisposableSubscription(this, listener)
+		val subscription = stateListeners.subscriptionOf(registration)
 		subscriptionContainer.add(subscription)
 		return subscription
 	}
 
 	final override fun removeStateListener(listener: Session.StateListener<F>) {
-		stateListeners -= listener
+		stateListeners.remove(listener)
 	}
 
 	final override fun notifyCommitted() {
@@ -253,9 +245,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	private fun notifyStateListeners(value: Session.State<F>) {
 		persistSessionState(value)
-		for (listener in stateListeners) {
+		stateListeners.forEach { registration ->
 			handler.post {
-				listener.onStateChanged(id, value)
+				if (stateListeners.isValid(registration)) {
+					registration.listener.onStateChanged(id, value)
+				}
 			}
 		}
 	}
@@ -369,28 +363,3 @@ private class StateUpdate<out R, F : Failure>(
 	val newState: StateSnapshot<F>,
 	val result: R
 )
-
-private class StateDisposableSubscription<F : Failure>(
-	session: Session<F>,
-	listener: Session.StateListener<F>
-) : DisposableSubscription {
-
-	private val session = WeakReference(session)
-	private val listener = WeakReference(listener)
-
-	override var isDisposed: Boolean = false
-		private set
-
-	override fun dispose() {
-		if (isDisposed) {
-			return
-		}
-		val listener = this.listener.get()
-		if (listener != null) {
-			session.get()?.removeStateListener(listener)
-		}
-		this.listener.clear()
-		session.clear()
-		isDisposed = true
-	}
-}

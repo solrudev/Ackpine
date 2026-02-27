@@ -123,6 +123,72 @@ class AbstractSessionTest {
 	}
 
 	@Test
+	fun stateListenerRemovedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		session.removeStateListener(listener)
+		idleMainThread()
+
+		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
+	}
+
+	@Test
+	fun stateSubscriptionDisposedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		val subscription = session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		subscription.dispose()
+		idleMainThread()
+
+		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
+	}
+
+	@Test
+	fun stateListenerReaddedBeforeMainThreadDrainSuppressesStaleCallbacksFromPreviousRegistration() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		session.removeStateListener(listener)
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		val expectedStates = listOf<Session.State<*>>(
+			Session.State.Pending,
+			Session.State.Awaiting
+		)
+		assertEquals(expectedStates, states)
+	}
+
+	@Test
+	fun addStateListenerWithDisposedContainerDoesNotReceiveState() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val container = DisposableSubscriptionContainer()
+		container.dispose()
+		val listener = Session.StateListener { _, state -> states += state }
+
+		val subscription = session.addStateListener(container, listener)
+		session.launch()
+		idleMainThread()
+
+		assertTrue(subscription.isDisposed)
+		assertTrue(states.isEmpty())
+	}
+
+	@Test
 	fun multipleListenersAllNotified() {
 		val session = TestSession(initialState = Session.State.Pending)
 		val states1 = session.captureStates()

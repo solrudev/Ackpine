@@ -123,6 +123,68 @@ class AbstractProgressSessionTest {
 	}
 
 	@Test
+	fun progressListenerRemovedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestProgressSession(initialProgress = Progress(0, 100))
+		val progressEvents = mutableListOf<Progress>()
+		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
+		session.addProgressListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.updateProgress(10)
+		session.removeProgressListener(listener)
+		idleMainThread()
+
+		assertEquals(listOf(Progress(0, 100)), progressEvents)
+	}
+
+	@Test
+	fun progressSubscriptionDisposedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestProgressSession(initialProgress = Progress(0, 100))
+		val progressEvents = mutableListOf<Progress>()
+		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
+		val subscription = session.addProgressListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.updateProgress(10)
+		subscription.dispose()
+		idleMainThread()
+
+		assertEquals(listOf(Progress(0, 100)), progressEvents)
+	}
+
+	@Test
+	fun progressListenerReaddedBeforeMainThreadDrainSuppressesStaleCallbacksFromPreviousRegistration() {
+		val session = TestProgressSession(initialProgress = Progress(0, 100))
+		val progressEvents = mutableListOf<Progress>()
+		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
+		session.addProgressListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.updateProgress(10)
+		session.removeProgressListener(listener)
+		session.addProgressListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		assertEquals(listOf(Progress(0, 100), Progress(10, 100)), progressEvents)
+	}
+
+	@Test
+	fun addProgressListenerWithDisposedContainerDoesNotReceiveProgress() {
+		val session = TestProgressSession(initialProgress = Progress(0, 100))
+		val progressEvents = mutableListOf<Progress>()
+		val container = DisposableSubscriptionContainer()
+		container.dispose()
+		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
+
+		val subscription = session.addProgressListener(container, listener)
+		session.updateProgress(10)
+		idleMainThread()
+
+		assertTrue(subscription.isDisposed)
+		assertTrue(progressEvents.isEmpty())
+	}
+
+	@Test
 	fun multipleProgressListenersAllNotified() {
 		val session = TestProgressSession(initialProgress = Progress(0, 100))
 		val progress1 = session.captureProgress()

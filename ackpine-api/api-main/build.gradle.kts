@@ -20,10 +20,14 @@ plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
+	id("ru.solrudev.ackpine.jacoco")
 }
 
 ackpine {
 	id = "api"
+	testing {
+		enableHostTests = true
+	}
 	artifact {
 		name = "Ackpine API"
 		inceptionYear = "2025"
@@ -35,4 +39,6 @@ dependencies {
 	api(androidx.annotation)
 	api(projects.ackpineResources)
 	compileOnly(projects.ackpineApi.apiStubs)
+	testImplementation(libs.kotlin.test)
+	testImplementation(projects.ackpineTest)
 }
