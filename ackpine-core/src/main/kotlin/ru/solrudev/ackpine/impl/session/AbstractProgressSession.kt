@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
@@ -46,7 +47,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
-	private val executor: Executor,
+	executor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
 	notificationId: Int,
@@ -57,6 +58,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
 ), CompletableProgressSession<F> {
 
+	private val serialExecutor = SerialExecutor(executor)
 	private val progressListeners = ListenerStore<ProgressSession.ProgressListener>()
 
 	@Volatile
@@ -99,7 +101,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 		progress = Progress(value, PROGRESS_MAX)
 	}
 
-	private fun persistSessionProgress(value: Progress) = executor.execute {
+	private fun persistSessionProgress(value: Progress) = serialExecutor.execute {
 		sessionProgressDao.updateProgress(id.toString(), value.progress, value.max)
 	}
 }

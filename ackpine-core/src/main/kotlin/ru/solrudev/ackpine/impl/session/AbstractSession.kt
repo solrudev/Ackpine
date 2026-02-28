@@ -31,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
@@ -65,6 +66,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 ) : CompletableSession<F>, Cleanable {
 
 	protected val cancellationSignal = CancellationSignal()
+	private val serialExecutor = SerialExecutor(executor)
 	private val stateListeners = ListenerStore<Session.StateListener<F>>()
 	private val isCancelling = AtomicBoolean(false)
 
@@ -222,7 +224,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			onCommitted()
 			notifyStateListeners(Committed)
 		}
-		executor.execute {
+		serialExecutor.execute {
 			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
 		}
 	}
@@ -330,7 +332,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
-	private fun persistSessionState(state: Session.State<F>) = executor.execute {
+	private fun persistSessionState(state: Session.State<F>) = serialExecutor.execute {
 		dbWriteSemaphore.withPermit {
 			when (state) {
 				is Failed -> sessionFailureDao.setFailure(id.toString(), state.failure)
