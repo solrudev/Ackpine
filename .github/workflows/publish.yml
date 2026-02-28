@@ -66,10 +66,10 @@ jobs:
         run: |
           ./gradlew :api-documentation:dokkaGenerate
 
-      - name: Build MkDocs
+      - name: Build Zensical
         run: |
-          pip3 install --upgrade pip && pip3 install mkdocs-material mkdocs-minify-plugin mkdocs-redirects
-          mkdocs build
+          pip3 install --upgrade pip && pip3 install zensical
+          zensical build
 
       - name: Deploy docs
         if: success()
