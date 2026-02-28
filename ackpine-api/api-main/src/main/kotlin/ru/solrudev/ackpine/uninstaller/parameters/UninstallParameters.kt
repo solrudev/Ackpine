@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
@@ -111,9 +112,18 @@ public class UninstallParameters private constructor(
 		 * Type of the package uninstaller implementation.
 		 *
 		 * Default value is [UninstallerType.DEFAULT].
+		 *
+		 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
+		 * returned/set regardless of the current/provided value.
 		 */
 		public var uninstallerType: UninstallerType = UninstallerType.DEFAULT
-			private set
+			get() {
+				field = applyUninstallerTypeInvariants(field)
+				return field
+			}
+			private set(value) {
+				field = applyUninstallerTypeInvariants(value)
+			}
 
 		/**
 		 * A strategy for handling user's confirmation of installation or uninstallation.
@@ -185,6 +195,11 @@ public class UninstallParameters private constructor(
 				plugin.apply(this)
 			}
 			return UninstallParameters(packageName, uninstallerType, confirmation, notificationData, pluginContainer)
+		}
+
+		private fun applyUninstallerTypeInvariants(value: UninstallerType) = when {
+			isPackageInstallerApiAvailable() -> value
+			else -> UninstallerType.INTENT_BASED
 		}
 	}
 }
