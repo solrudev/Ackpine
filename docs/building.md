@@ -32,9 +32,9 @@ Projects are added to `:api-documentation:dokkaGenerate` task through `dependenc
 
 ## Documentation website
 
-To serve documentation website on localhost, execute this command (requires Python 3 and Material for MkDocs to be installed):
+To serve documentation website on localhost, execute this command (requires Python 3 and Zensical to be installed):
 ```
-mkdocs serve
+zensical serve
 ```
 
 ## Sample apps
