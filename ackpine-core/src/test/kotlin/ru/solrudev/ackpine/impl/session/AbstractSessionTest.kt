@@ -41,6 +41,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import java.util.concurrent.Executor
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -119,6 +120,72 @@ class AbstractSessionTest {
 		// Only initial notification, no Active/Awaiting notifications
 		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
 		assertTrue(subscription.isDisposed)
+	}
+
+	@Test
+	fun stateListenerRemovedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		session.removeStateListener(listener)
+		idleMainThread()
+
+		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
+	}
+
+	@Test
+	fun stateSubscriptionDisposedBeforeMainThreadDrainDoesNotReceiveQueuedCallback() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		val subscription = session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		subscription.dispose()
+		idleMainThread()
+
+		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
+	}
+
+	@Test
+	fun stateListenerReaddedBeforeMainThreadDrainSuppressesStaleCallbacksFromPreviousRegistration() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val listener = Session.StateListener { _, state -> states += state }
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		session.launch()
+		session.removeStateListener(listener)
+		session.addStateListener(DisposableSubscriptionContainer(), listener)
+		idleMainThread()
+
+		val expectedStates = listOf<Session.State<*>>(
+			Session.State.Pending,
+			Session.State.Awaiting
+		)
+		assertEquals(expectedStates, states)
+	}
+
+	@Test
+	fun addStateListenerWithDisposedContainerDoesNotReceiveState() {
+		val session = TestSession(initialState = Session.State.Pending)
+		val states = mutableListOf<Session.State<TestFailure>>()
+		val container = DisposableSubscriptionContainer()
+		container.dispose()
+		val listener = Session.StateListener { _, state -> states += state }
+
+		val subscription = session.addStateListener(container, listener)
+		session.launch()
+		idleMainThread()
+
+		assertTrue(subscription.isDisposed)
+		assertTrue(states.isEmpty())
 	}
 
 	@Test
@@ -374,19 +441,40 @@ class AbstractSessionTest {
 		assertEquals(failure.exception, exception)
 	}
 
+	@Test
+	fun terminalTransitionsDoNotCallCleanupInline() {
+		val transitions = listOf<(TestSession) -> Unit>(
+			{ session -> session.cancel() },
+			{ session -> session.complete(Session.State.Succeeded) },
+			{ session -> session.complete(Session.State.Failed(TestFailure.Aborted(""))) },
+			{ session -> session.completeExceptionally(Exception()) }
+		)
+		for (transition in transitions) {
+			val executor = QueuedExecutor()
+			val session = TestSession(initialState = Session.State.Active, executor = executor)
+
+			transition(session)
+			assertEquals(0, session.cleanupCalls)
+
+			executor.runAll()
+			assertEquals(1, session.cleanupCalls)
+		}
+	}
+
 	private inner class TestSession(
 		id: UUID = UUID.randomUUID(),
 		sessionDao: RecordingSessionDao = RecordingSessionDao(),
 		failureDao: TestSessionFailureDao<TestFailure> = TestSessionFailureDao(),
 		initialState: Session.State<TestFailure>,
-		notificationId: Int = 1
+		notificationId: Int = 1,
+		executor: Executor = ImmediateExecutor
 	) : AbstractSession<TestFailure>(
 		context = context,
 		id = id,
 		initialState = initialState,
 		sessionDao = sessionDao,
 		sessionFailureDao = failureDao,
-		executor = ImmediateExecutor,
+		executor = executor,
 		handler = handler,
 		exceptionalFailureFactory = TestFailure::Exceptional,
 		notificationId = notificationId,
@@ -396,6 +484,7 @@ class AbstractSessionTest {
 		var prepareCalls = 0
 		var confirmationCalls = 0
 		var committedCalls = 0
+		var cleanupCalls = 0
 
 		override fun prepare() {
 			prepareCalls++
@@ -410,6 +499,10 @@ class AbstractSessionTest {
 		override fun onCommitted() {
 			committedCalls++
 		}
+
+		override fun doCleanup() {
+			cleanupCalls++
+		}
 	}
 
 	private class SessionStateFlags<F : Failure>(
@@ -418,4 +511,20 @@ class AbstractSessionTest {
 		val isCancelled: Boolean,
 		val isCompleted: Boolean
 	)
+
+	private class QueuedExecutor : Executor {
+
+		private val tasks = ArrayDeque<Runnable>()
+
+		override fun execute(command: Runnable) {
+			tasks += command
+		}
+
+		fun runAll() {
+			while (tasks.isNotEmpty()) {
+				val task = tasks.removeFirst()
+				task.run()
+			}
+		}
+	}
 }

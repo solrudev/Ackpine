@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.impl.helpers.concurrent
 
 import android.annotation.SuppressLint
+import androidx.annotation.RestrictTo
 import java.util.concurrent.ConcurrentMap
 
 // To avoid referencing Build.VERSION.SDK_INT
@@ -34,13 +35,32 @@ private val isComputeIfAbsentAvailable = try {
 }
 
 /**
- * Calls [computeIfAbsent][ConcurrentMap.computeIfAbsent] if available, otherwise falls back to [getOrPut].
+ * Calls [computeIfAbsent][ConcurrentMap.computeIfAbsent] if available, otherwise falls back to [getOrPut] guarded by
+ * a lock for the [key] retrieved from [locks].
  */
 @SuppressLint("NewApi")
 @JvmSynthetic
-internal fun <K, V> ConcurrentMap<K, V>.computeIfAbsentCompat(key: K, defaultValue: () -> V): V {
+internal fun <K : Any, V : Any> ConcurrentMap<K, V>.computeIfAbsentCompat(
+	key: K,
+	locks: Locks,
+	defaultValue: () -> V?
+): V? {
 	if (isComputeIfAbsentAvailable) {
 		return computeIfAbsent(key) { defaultValue() }
 	}
-	return getOrPut(key, defaultValue)
+	get(key)?.let { return it }
+	return synchronized(locks.lockFor(key)) {
+		val value = get(key) ?: defaultValue() ?: return null
+		putIfAbsent(key, value) ?: value
+	}
+}
+
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+@JvmInline
+internal value class Locks private constructor(private val locks: Array<Any>) {
+
+	internal constructor(size: Int) : this(Array(size) { Any() })
+
+	@JvmSynthetic
+	internal fun lockFor(key: Any) = locks[(key.hashCode() and Int.MAX_VALUE) % locks.size]
 }

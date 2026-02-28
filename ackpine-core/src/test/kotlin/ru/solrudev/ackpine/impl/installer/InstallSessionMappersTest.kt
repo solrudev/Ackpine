@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.installer.session.PreapprovalLifecycle
 import ru.solrudev.ackpine.impl.testutil.createInstallSessionEntity
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
@@ -109,6 +110,36 @@ class InstallSessionMappersTest {
 	}
 
 	@Test
+	fun installPreapprovalEntityActiveMapsToActiveState() {
+		val entity = InstallPreapprovalEntity(
+			sessionId = "session-id",
+			packageName = "com.example.app",
+			label = "Example App",
+			locale = "en-US",
+			icon = "content://example/icon.png",
+			fallbackToOnDemandApproval = true,
+			isActive = true
+		)
+
+		assertEquals(PreapprovalLifecycle.State.ACTIVE, entity.getState())
+	}
+
+	@Test
+	fun installPreapprovalEntityActivatingMapsToActivatingState() {
+		val entity = InstallPreapprovalEntity(
+			sessionId = "session-id",
+			packageName = "com.example.app",
+			label = "Example App",
+			locale = "en-US",
+			icon = "content://example/icon.png",
+			fallbackToOnDemandApproval = true,
+			isActivating = true
+		)
+
+		assertEquals(PreapprovalLifecycle.State.ACTIVATING, entity.getState())
+	}
+
+	@Test
 	fun getConstraintsReturnsNoneWhenNull() {
 		val session = createInstallSession(constraints = null)
 		val constraints = session.getConstraints()
@@ -178,7 +209,9 @@ class InstallSessionMappersTest {
 			label = "Example",
 			locale = "en-US",
 			icon = "content://icon",
-			fallbackToOnDemandApproval = true
+			fallbackToOnDemandApproval = true,
+			isActivating = false,
+			isActive = false
 		)
 		val entity = preapproval.toEntity("session-123")
 		assertEquals(expectedEntity, entity)

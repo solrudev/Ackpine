@@ -22,6 +22,7 @@ import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.installer.session.PreapprovalLifecycle
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
@@ -59,6 +60,14 @@ internal fun SessionEntity.InstallSession.getPreapproval(): InstallPreapproval {
 		.setIcon(preapproval.icon.toUri())
 		.setFallbackToOnDemandApproval(preapproval.fallbackToOnDemandApproval)
 		.build()
+}
+
+@JvmSynthetic
+internal fun InstallPreapprovalEntity.getState() = when {
+	isPreapproved -> PreapprovalLifecycle.State.PREAPPROVED
+	isActive -> PreapprovalLifecycle.State.ACTIVE
+	isActivating -> PreapprovalLifecycle.State.ACTIVATING
+	else -> PreapprovalLifecycle.State.IDLE
 }
 
 @JvmSynthetic
@@ -101,7 +110,9 @@ internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalE
 		label,
 		languageTag,
 		icon.toString(),
-		fallbackToOnDemandApproval
+		fallbackToOnDemandApproval,
+		isActivating = false,
+		isActive = false
 	)
 }
 

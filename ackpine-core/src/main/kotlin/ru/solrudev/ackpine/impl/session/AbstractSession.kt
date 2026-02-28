@@ -31,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
@@ -42,10 +43,7 @@ import ru.solrudev.ackpine.session.Session.State.Completed
 import ru.solrudev.ackpine.session.Session.State.Failed
 import ru.solrudev.ackpine.session.Session.State.Pending
 import ru.solrudev.ackpine.session.Session.State.Succeeded
-import java.lang.ref.WeakReference
-import java.util.Collections
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
@@ -65,14 +63,11 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val exceptionalFailureFactory: (Exception) -> F,
 	protected val notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
-) : CompletableSession<F> {
+) : CompletableSession<F>, Cleanable {
 
 	protected val cancellationSignal = CancellationSignal()
-
-	private val stateListeners = Collections.newSetFromMap(
-		ConcurrentHashMap<Session.StateListener<F>, Boolean>()
-	)
-
+	private val serialExecutor = SerialExecutor(executor)
+	private val stateListeners = ListenerStore<Session.StateListener<F>>()
 	private val isCancelling = AtomicBoolean(false)
 
 	private val stateSnapshot = AtomicReference(
@@ -83,9 +78,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		)
 	)
 
-	private var state: Session.State<F>
+	protected var state: Session.State<F>
 		get() = stateSnapshot.get().state
-		set(value) {
+		private set(value) {
 			val shouldNotify = updateState { current ->
 				val updatedState = if (current.state.isTerminal) current.state else value
 				StateUpdate(
@@ -125,9 +120,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	protected abstract fun launchConfirmation()
 
 	/**
-	 * Release any held resources after session's completion or cancellation. Processing in this method should be
-	 * lightweight.
+	 * Release any held resources after session's completion or cancellation.
 	 */
+	@WorkerThread
 	protected open fun doCleanup() { /* optional */ }
 
 	/**
@@ -161,8 +156,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare()
-			} catch (_: OperationCanceledException) {
-				handleCancellation()
+			} catch (_: OperationCanceledException) { // no-op
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -180,8 +174,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			}
 			try {
 				launchConfirmation()
-			} catch (_: OperationCanceledException) {
-				handleCancellation()
+			} catch (_: OperationCanceledException) { // no-op
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -195,7 +188,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 		try {
 			cancellationSignal.cancel()
-			handleCancellation()
+			state = Cancelled
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
 		} finally {
@@ -207,23 +200,22 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		subscriptionContainer: DisposableSubscriptionContainer,
 		listener: Session.StateListener<F>
 	): DisposableSubscription {
-		val added = stateListeners.add(listener)
-		if (!added) {
-			return DummyDisposableSubscription
-		}
+		val registration = stateListeners.add(listener) ?: return DummyDisposableSubscription
 		// postAtFrontOfQueue - notify with current state snapshot immediately to avoid duplicate notifications,
 		// as using plain Handler#post() can lead to the listener being notified after state has already changed
 		// and delivered to the same listener
 		handler.postAtFrontOfQueue {
-			listener.onStateChanged(id, state)
+			if (stateListeners.isValid(registration)) {
+				listener.onStateChanged(id, state)
+			}
 		}
-		val subscription = StateDisposableSubscription(this, listener)
+		val subscription = stateListeners.subscriptionOf(registration)
 		subscriptionContainer.add(subscription)
 		return subscription
 	}
 
 	final override fun removeStateListener(listener: Session.StateListener<F>) {
-		stateListeners -= listener
+		stateListeners.remove(listener)
 	}
 
 	final override fun notifyCommitted() {
@@ -232,7 +224,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			onCommitted()
 			notifyStateListeners(Committed)
 		}
-		executor.execute {
+		serialExecutor.execute {
 			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
 		}
 	}
@@ -240,33 +232,28 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	final override fun complete(state: Completed<F>) {
 		if (onCompleted(state)) {
 			this.state = state
-			cleanup()
 		}
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
 		state = Failed(exceptionalFailureFactory(exception))
-		cleanup()
 	}
 
-	private fun notifyStateListeners(value: Session.State<F>) {
-		persistSessionState(value)
-		for (listener in stateListeners) {
-			handler.post {
-				listener.onStateChanged(id, value)
-			}
-		}
-	}
-
-	private fun cleanup() {
+	final override fun cleanup() {
 		cancellationSignal.setOnCancelListener(null)
 		doCleanup()
 		context.getSystemService<NotificationManager>()?.cancel(id.toString(), notificationId)
 	}
 
-	private fun handleCancellation() {
-		state = Cancelled
-		cleanup()
+	private fun notifyStateListeners(value: Session.State<F>) {
+		persistSessionState(value)
+		stateListeners.forEach { registration ->
+			handler.post {
+				if (stateListeners.isValid(registration)) {
+					registration.listener.onStateChanged(id, value)
+				}
+			}
+		}
 	}
 
 	private fun tryEnterLaunch(): Boolean {
@@ -345,12 +332,15 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 		}
 	}
 
-	private fun persistSessionState(value: Session.State<F>) = executor.execute {
+	private fun persistSessionState(state: Session.State<F>) = serialExecutor.execute {
 		dbWriteSemaphore.withPermit {
-			when (value) {
-				is Failed -> sessionFailureDao.setFailure(id.toString(), value.failure)
-				else -> sessionDao.updateSessionState(id.toString(), value.toSessionEntityState())
+			when (state) {
+				is Failed -> sessionFailureDao.setFailure(id.toString(), state.failure)
+				else -> sessionDao.updateSessionState(id.toString(), state.toSessionEntityState())
 			}
+		}
+		if (state.isTerminal) {
+			cleanup()
 		}
 	}
 
@@ -375,28 +365,3 @@ private class StateUpdate<out R, F : Failure>(
 	val newState: StateSnapshot<F>,
 	val result: R
 )
-
-private class StateDisposableSubscription<F : Failure>(
-	session: Session<F>,
-	listener: Session.StateListener<F>
-) : DisposableSubscription {
-
-	private val session = WeakReference(session)
-	private val listener = WeakReference(listener)
-
-	override var isDisposed: Boolean = false
-		private set
-
-	override fun dispose() {
-		if (isDisposed) {
-			return
-		}
-		val listener = this.listener.get()
-		if (listener != null) {
-			session.get()?.removeStateListener(listener)
-		}
-		this.listener.clear()
-		session.clear()
-		isDisposed = true
-	}
-}

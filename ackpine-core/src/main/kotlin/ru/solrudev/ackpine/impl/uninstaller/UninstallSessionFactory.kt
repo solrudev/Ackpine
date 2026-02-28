@@ -123,7 +123,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		val confirmation = uninstallSession.session.confirmation
 		val notificationData = uninstallSession.getNotificationData()
 		val notificationId = uninstallSession.notificationId!!
-		return when (uninstallSession.uninstallerType) {
+		val session = when (uninstallSession.uninstallerType) {
 			UninstallerType.INTENT_BASED -> IntentBasedUninstallSession(
 				applicationContext,
 				packageName,
@@ -155,6 +155,10 @@ internal class UninstallSessionFactoryImpl internal constructor(
 				}
 			}
 		}
+		if (initialState.isTerminal) {
+			session.cleanup()
+		}
+		return session
 	}
 
 	override fun resolveNotificationData(

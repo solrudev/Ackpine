@@ -48,3 +48,15 @@ internal interface CompletableSession<F : Failure> : Session<F> {
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal interface CompletableProgressSession<F : Failure> : CompletableSession<F>, ProgressSession<F>
+
+/**
+ * An object holding cleanable resources.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal interface Cleanable {
+
+	/**
+	 * Cleans up any held resources.
+	 */
+	fun cleanup()
+}

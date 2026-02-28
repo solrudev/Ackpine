@@ -26,15 +26,13 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
-import java.lang.ref.WeakReference
-import java.util.Collections
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executor
 
 /**
@@ -49,7 +47,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<F>,
 	private val sessionProgressDao: SessionProgressDao,
-	private val executor: Executor,
+	executor: Executor,
 	private val handler: Handler,
 	exceptionalFailureFactory: (Exception) -> F,
 	notificationId: Int,
@@ -60,9 +58,8 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
 ), CompletableProgressSession<F> {
 
-	private val progressListeners = Collections.newSetFromMap(
-		ConcurrentHashMap<ProgressSession.ProgressListener, Boolean>()
-	)
+	private val serialExecutor = SerialExecutor(executor)
+	private val progressListeners = ListenerStore<ProgressSession.ProgressListener>()
 
 	@Volatile
 	private var progress = initialProgress
@@ -72,9 +69,11 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 			}
 			field = value
 			persistSessionProgress(value)
-			for (listener in progressListeners) {
+			progressListeners.forEach { registration ->
 				handler.post {
-					listener.onProgressChanged(id, value)
+					if (progressListeners.isValid(registration)) {
+						registration.listener.onProgressChanged(id, value)
+					}
 				}
 			}
 		}
@@ -83,52 +82,26 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 		subscriptionContainer: DisposableSubscriptionContainer,
 		listener: ProgressSession.ProgressListener
 	): DisposableSubscription {
-		val added = progressListeners.add(listener)
-		if (!added) {
-			return DummyDisposableSubscription
-		}
+		val registration = progressListeners.add(listener) ?: return DummyDisposableSubscription
 		handler.postAtFrontOfQueue {
-			listener.onProgressChanged(id, progress)
+			if (progressListeners.isValid(registration)) {
+				listener.onProgressChanged(id, progress)
+			}
 		}
-		val subscription = ProgressDisposableSubscription(this, listener)
+		val subscription = progressListeners.subscriptionOf(registration)
 		subscriptionContainer.add(subscription)
 		return subscription
 	}
 
 	final override fun removeProgressListener(listener: ProgressSession.ProgressListener) {
-		progressListeners -= listener
+		progressListeners.remove(listener)
 	}
 
 	protected fun setProgress(value: Int) {
 		progress = Progress(value, PROGRESS_MAX)
 	}
 
-	private fun persistSessionProgress(value: Progress) = executor.execute {
+	private fun persistSessionProgress(value: Progress) = serialExecutor.execute {
 		sessionProgressDao.updateProgress(id.toString(), value.progress, value.max)
-	}
-}
-
-private class ProgressDisposableSubscription(
-	session: ProgressSession<*>,
-	listener: ProgressSession.ProgressListener
-) : DisposableSubscription {
-
-	private val session = WeakReference(session)
-	private val listener = WeakReference(listener)
-
-	override var isDisposed: Boolean = false
-		private set
-
-	override fun dispose() {
-		if (isDisposed) {
-			return
-		}
-		val listener = this.listener.get()
-		if (listener != null) {
-			session.get()?.removeProgressListener(listener)
-		}
-		this.listener.clear()
-		session.clear()
-		isDisposed = true
 	}
 }

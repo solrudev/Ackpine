@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.testutil
 import ru.solrudev.ackpine.DisposableSubscription
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
+import ru.solrudev.ackpine.impl.session.Cleanable
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.session.Failure
@@ -32,7 +33,7 @@ internal open class TestCompletableSession<F : Failure>(
 	override val id: UUID,
 	initialState: Session.State<F> = Session.State.Pending,
 	private val exceptionalFailureFactory: ((Exception) -> F)? = null
-) : CompletableSession<F> {
+) : CompletableSession<F>, Cleanable {
 
 	private val stateListeners = CopyOnWriteArraySet<Session.StateListener<F>>()
 
@@ -50,6 +51,10 @@ internal open class TestCompletableSession<F : Failure>(
 
 	@Volatile
 	var committedNotifiedCount: Int = 0
+		private set
+
+	@Volatile
+	var cleanupCalls: Int = 0
 		private set
 
 	val committedNotified: Boolean
@@ -100,6 +105,10 @@ internal open class TestCompletableSession<F : Failure>(
 
 	override fun notifyCommitted() {
 		committedNotifiedCount++
+	}
+
+	override fun cleanup() {
+		cleanupCalls++
 	}
 
 	fun updateState(state: Session.State<F>) {

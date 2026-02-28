@@ -55,5 +55,11 @@ internal data class InstallPreapprovalEntity(
 	val fallbackToOnDemandApproval: Boolean,
 	@JvmField
 	@ColumnInfo(name = "is_preapproved")
-	val isPreapproved: Boolean = false
+	val isPreapproved: Boolean = false,
+	@JvmField
+	@ColumnInfo(name = "is_activating", defaultValue = "false")
+	val isActivating: Boolean = false,
+	@JvmField
+	@ColumnInfo(name = "is_active", defaultValue = "false")
+	val isActive: Boolean = false
 )

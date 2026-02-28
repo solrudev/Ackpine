@@ -17,6 +17,9 @@
 package ru.solrudev.ackpine
 
 import androidx.annotation.RestrictTo
+import java.util.Collections
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A handle to a subscription via listener which can be disposed.
@@ -39,17 +42,31 @@ public interface DisposableSubscription {
  */
 public class DisposableSubscriptionContainer : DisposableSubscription {
 
-	override var isDisposed: Boolean = false
-		private set
+	override val isDisposed: Boolean
+		get() = _isDisposed.get()
 
-	private val subscriptions = mutableSetOf<DisposableSubscription>()
+	private val _isDisposed = AtomicBoolean(false)
+
+	private val subscriptions = Collections.newSetFromMap(
+		ConcurrentHashMap<DisposableSubscription, Boolean>()
+	)
 
 	/**
 	 * Adds the specified [subscription] to this [DisposableSubscriptionContainer] if it's not added yet.
+	 *
+	 * If this container is already [disposed][isDisposed], the [subscription] is disposed immediately.
 	 */
 	public fun add(subscription: DisposableSubscription) {
-		if (!isDisposed && subscription != DummyDisposableSubscription) {
-			subscriptions += subscription
+		if (subscription == DummyDisposableSubscription) {
+			return
+		}
+		if (isDisposed) {
+			subscription.dispose()
+			return
+		}
+		subscriptions += subscription
+		if (isDisposed && subscriptions.remove(subscription)) {
+			subscription.dispose()
 		}
 	}
 
@@ -65,9 +82,8 @@ public class DisposableSubscriptionContainer : DisposableSubscription {
 	}
 
 	public override fun dispose() {
-		if (!isDisposed) {
+		if (_isDisposed.compareAndSet(false, true)) {
 			clear()
-			isDisposed = true
 		}
 	}
 }

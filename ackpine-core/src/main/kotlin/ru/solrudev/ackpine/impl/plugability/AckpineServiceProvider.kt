@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.impl.plugability
 
 import android.content.Context
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.impl.helpers.concurrent.Locks
 import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.concurrent.ConcurrentHashMap
@@ -73,6 +74,7 @@ public abstract class AbstractAckpineServiceProvider(
 	private val factories = serviceFactories.associate { it.serviceClass to it.serviceFactory }
 	private val pluginParameters = ConcurrentHashMap<String, PluginParametersStore>()
 	private val services = ConcurrentHashMap<KClass<out AckpineService>, AckpineService>()
+	private val locks = Locks(16)
 	private lateinit var context: Context
 
 	override fun initContext(context: Context) {
@@ -84,15 +86,15 @@ public abstract class AbstractAckpineServiceProvider(
 		if (serviceClass !in factories.keys) {
 			return null
 		}
-		return services.computeIfAbsentCompat(serviceClass) {
+		return services.computeIfAbsentCompat(serviceClass, locks) {
 			factories.getValue(serviceClass).invoke(context)
 		} as? T
 	}
 
 	override fun getPluginParametersStores(): List<PluginParametersStore> {
 		return pluginIdentifiers.mapNotNull { pluginId ->
-			pluginParameters.computeIfAbsentCompat(pluginId) {
-				pluginParametersStoreFactories[pluginId]?.invoke(context)
+			pluginParameters.computeIfAbsentCompat(pluginId, locks) {
+				pluginParametersStoreFactories.getValue(pluginId).invoke(context)
 			}
 		}
 	}

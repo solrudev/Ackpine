@@ -118,6 +118,11 @@ public interface PackageInstallerService : AckpineService {
 		public fun commit(statusReceiver: IntentSender)
 
 		/**
+		 * @see PackageInstaller.Session.abandon
+		 */
+		public fun abandon()
+
+		/**
 		 * @see PackageInstaller.Session.requestUserPreapproval
 		 */
 		@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -139,6 +144,7 @@ public class PackageInstallerSessionWrapper(private val session: PackageInstalle
 	override fun fsync(out: OutputStream): Unit = session.fsync(out)
 	override fun setStagingProgress(progress: Float): Unit = session.setStagingProgress(progress)
 	override fun commit(statusReceiver: IntentSender): Unit = session.commit(statusReceiver)
+	override fun abandon(): Unit = session.abandon()
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	override fun requestUserPreapproval(

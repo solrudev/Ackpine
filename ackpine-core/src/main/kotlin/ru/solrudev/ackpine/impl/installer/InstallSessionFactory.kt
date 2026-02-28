@@ -40,6 +40,7 @@ import ru.solrudev.ackpine.impl.database.getState
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
+import ru.solrudev.ackpine.impl.installer.session.PreapprovalLifecycle
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
@@ -142,7 +143,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 					nativeSessionId = -1,
 					notificationId,
 					commitAttemptsCount = 0,
-					isPreapproved = false,
+					initialPreapprovalState = PreapprovalLifecycle.State.IDLE,
 					dbWriteSemaphore
 				)
 			}
@@ -193,7 +194,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionProgressDao, executor, handler, installSession.notificationId!!,
 			BinarySemaphore()
 		)
-		if (!completeIfSucceeded || initialState.isTerminal) {
+		if (initialState.isTerminal) {
+			session.cleanup()
+			return session
+		}
+		if (!completeIfSucceeded) {
 			return session
 		}
 		// Though it somewhat helps with self-update sessions, it's still faulty:
@@ -246,14 +251,15 @@ internal class InstallSessionFactoryImpl internal constructor(
 				sessionProgressDao, nativeSessionIdDao, installPreapprovalDao, installConstraintsDao,
 				executor, handler, sessionCallbackHandler.value, nativeSessionId, installSession.notificationId!!,
 				commitAttemptsCount = installSession.constraints?.commitAttemptsCount ?: 0,
-				isPreapproved = installSession.preapproval?.isPreapproved == true,
+				initialPreapprovalState = installSession.preapproval?.getState() ?: PreapprovalLifecycle.State.IDLE,
 				dbWriteSemaphore = BinarySemaphore()
 			)
 		}
-		if (session.isCompleted) {
+		if (initialState.isTerminal) {
+			session.cleanup()
 			return session
 		}
-		if (!completeIfSucceeded || initialState.isTerminal) {
+		if (session.isCompleted || !completeIfSucceeded) {
 			return session
 		}
 		val commitProgressValue = CommitProgressValueHolder.get(applicationContext)

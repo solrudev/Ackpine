@@ -1,9 +1,21 @@
 package ru.solrudev.ackpine.remote;
 
+import java.util.List;
 import ru.solrudev.ackpine.remote.ISession;
 
 interface IPackageInstaller {
-	ISession createImmediateSession(String type, String uri, boolean requireUserAction);
-	ISession createDeferredSession(String type, String uri, String notificationTitle, boolean requireUserAction);
+
+	ISession createSession(int type,
+						   in List<String> uri,
+						   int confirmation,
+						   String notificationTitle,
+						   String notificationText,
+						   String preapprovalPackageName,
+						   String preapprovalLabel,
+						   String preapprovalLanguageTag,
+						   String preapprovalIconUri,
+						   boolean fallbackToOnDemandApproval,
+						   boolean requireUserAction);
+
 	ISession getSession(String id);
 }

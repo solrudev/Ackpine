@@ -105,7 +105,7 @@ internal class SessionBasedInstallSession internal constructor(
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
 	private val nativeSessionIdDao: NativeSessionIdDao,
-	private val installPreapprovalDao: InstallPreapprovalDao,
+	installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
 	handler: Handler,
@@ -113,7 +113,7 @@ internal class SessionBasedInstallSession internal constructor(
 	@Volatile private var nativeSessionId: Int,
 	notificationId: Int,
 	commitAttemptsCount: Int,
-	@Volatile private var isPreapproved: Boolean,
+	initialPreapprovalState: PreapprovalLifecycle.State,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
 	context, id, initialState, initialProgress,
@@ -136,27 +136,30 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	@Volatile
-	private var isPreapprovalActive = false
-
-	@Volatile
 	private var ignorePreapproval = false
 
-	private val attempts = AtomicInteger(commitAttemptsCount)
+	private val preapprovalLifecycle = PreapprovalLifecycle(
+		initialPreapprovalState,
+		sessionId = id.toString(),
+		installPreapprovalDao,
+		dbWriteSemaphore
+	)
+
+	private val commitAttempts = AtomicInteger(commitAttemptsCount)
 
 	override fun prepare() {
-		if (isPreapprovalActive) {
-			return
-		}
 		val sessionId = getSessionId()
-		if (!shouldRequestPreapproval()) {
+		if (!shouldRequestPreapproval() || preapprovalLifecycle.isPreapproved()) {
 			writeApksToSession(sessionId)
 			return
 		}
-		val preapprovalDetails = createPackageInstallerPreapprovalDetails()
-		packageInstaller.openSession(sessionId).requestUserPreapproval(
-			preapprovalDetails,
-			createPackageInstallerStatusIntentSender()
-		)
+		preapprovalLifecycle.runPreapprovalRequest {
+			val preapprovalDetails = createPackageInstallerPreapprovalDetails()
+			packageInstaller.openSession(sessionId).requestUserPreapproval(
+				preapprovalDetails,
+				createPackageInstallerStatusIntentSender()
+			)
+		}
 	}
 
 	override fun launchConfirmation() {
@@ -168,46 +171,41 @@ internal class SessionBasedInstallSession internal constructor(
 			Log.w(TAG, "$id: ${exception.message}")
 			commitPackageInstallerSession()
 		}
-		val currentAttempt = attempts.incrementAndGet()
+		val currentAttempt = commitAttempts.incrementAndGet()
 		notifyCommitted()
 		dbWriteSemaphore.withPermit {
 			installConstraintsDao.setCommitAttemptsCount(id.toString(), currentAttempt)
 		}
 	}
 
-	override fun onPreapprovalStarted() {
-		isPreapprovalActive = true
+	override fun isPreapprovalActive(): Boolean {
+		if (state.isTerminal) {
+			return false
+		}
+		return shouldRequestPreapproval() && preapprovalLifecycle.isActive()
 	}
 
-	override fun onPreapprovalSucceeded() {
-		isPreapproved = true
-		isPreapprovalActive = false
-		executor.execute {
-			dbWriteSemaphore.withPermit {
-				installPreapprovalDao.setPreapproved(id.toString())
-			}
+	override fun onPreapprovalSucceeded() = executor.execute {
+		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = true)) {
+			return@execute
 		}
-		executor.execute(::prepare)
+		preparePostPreapproval()
 	}
 
 	override fun onPreapprovalFailed(
 		status: PackageInstallerStatus?,
 		publicFailure: InstallFailure
-	) {
-		isPreapprovalActive = false
+	) = executor.execute {
+		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = false)) {
+			return@execute
+		}
 		if (
 			preapproval.fallbackToOnDemandApproval
 			&& status == PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE
 		) {
 			ignorePreapproval = true
-			nativeSessionId = -1
-			executor.execute {
-				dbWriteSemaphore.withPermit {
-					nativeSessionIdDao.removeNativeSessionId(id.toString())
-				}
-				prepare()
-			}
-			return
+			preparePostPreapproval()
+			return@execute
 		}
 		complete(Failed(publicFailure))
 	}
@@ -225,7 +223,7 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 		val timeoutStrategy = constraints.timeoutStrategy
 		if (timeoutStrategy is TimeoutStrategy.Retry) {
-			val currentAttempt = attempts.get()
+			val currentAttempt = commitAttempts.get()
 			val shouldRetry = currentAttempt <= timeoutStrategy.retries
 			if (shouldRetry) {
 				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
@@ -237,17 +235,26 @@ internal class SessionBasedInstallSession internal constructor(
 	}
 
 	override fun doCleanup() {
-		isPreapprovalActive = false
 		clearPackageInstallerSessionCallback()
-		executor.execute(::abandonSession) // may be long if storage is under load
+		abandonSession()
 	}
 
 	@ChecksSdkIntAtLeast(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun shouldRequestPreapproval(): Boolean {
-		return !isPreapproved
-				&& !ignorePreapproval
+		return !ignorePreapproval
 				&& preapproval != InstallPreapproval.NONE
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+	}
+
+	private fun preparePostPreapproval() {
+		if (state.isTerminal) {
+			return
+		}
+		try {
+			prepare()
+		} catch (exception: Exception) {
+			completeExceptionally(exception)
+		}
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -286,7 +293,7 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
 		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly
-				&& attempts.get() == 1
+				&& commitAttempts.get() == 1
 	}
 
 	private fun commitPackageInstallerSession() {
@@ -349,16 +356,21 @@ internal class SessionBasedInstallSession internal constructor(
 
 	private fun getSessionId(): Int {
 		val sessionId = nativeSessionId
-		if (sessionId != -1) {
-			return sessionId
+		if (sessionId == -1) {
+			return createSession()
 		}
-		return createSession()
+		if (packageInstaller.getSessionInfo(sessionId) == null) {
+			preapprovalLifecycle.reset()
+			return createSession()
+		}
+		return sessionId
 	}
 
 	private fun createSession(): Int {
 		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
 		persistNativeSessionId(sessionId)
+		clearPackageInstallerSessionCallback()
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
 		return sessionId
 	}
@@ -410,11 +422,15 @@ internal class SessionBasedInstallSession internal constructor(
 			onException = { exception ->
 				session.closeWithException(exception)
 				if (exception is CancellationException) {
-					cancel()
+					try {
+						session.abandon()
+					} catch (_: Throwable) { // no-op
+					}
 				} else {
 					completeExceptionally(exception)
 				}
-			})
+			}
+		)
 	}
 
 	private fun PackageInstallerService.Session.writeApksAsync() = CallbackToFutureAdapter.getFuture { completer ->
@@ -522,11 +538,9 @@ internal class SessionBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun abandonSession() {
-		try {
-			packageInstaller.abandonSession(nativeSessionId)
-		} catch (_: Throwable) { // no-op
-		}
+	private fun abandonSession() = try {
+		packageInstaller.abandonSession(nativeSessionId)
+	} catch (_: Throwable) { // no-op
 	}
 
 	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withPermit {

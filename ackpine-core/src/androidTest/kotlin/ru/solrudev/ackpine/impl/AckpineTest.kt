@@ -66,7 +66,7 @@ open class AckpineTest(
 		sessionFactory: AckpineRemoteService.() -> RemoteSession,
 		stateHandler: suspend (RemoteSession, RemoteSession.State, Job?) -> Unit,
 		sessionConfirmation: suspend (RemoteSession) -> Unit,
-		getSession: AckpineRemoteService.(UUID) -> RemoteSession?,
+		getSession: suspend AckpineRemoteService.(UUID) -> RemoteSession?,
 	) = runTest {
 		val switchText = if (context.isTv()) {
 			ApkFixtures.INSTALLER_LABEL
@@ -118,7 +118,9 @@ open class AckpineTest(
 				connection
 					.awaitService()
 					.packageUninstaller
-					.createImmediateSession(UninstallerType.DEFAULT, ApkFixtures.FIXTURE_PACKAGE_NAME)
+					.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
+						confirmation = Confirmation.IMMEDIATE
+					}
 					.test { ui.clickOk() }
 			}
 			assertEquals(RemoteSession.State.Succeeded, result)
@@ -146,7 +148,9 @@ open class AckpineTest(
 				connection
 					.awaitService()
 					.packageInstaller
-					.createImmediateSession(InstallerType.DEFAULT, ApkFixtures.fixtureUri())
+					.createSession(ApkFixtures.fixtureUri()) {
+						confirmation = Confirmation.IMMEDIATE
+					}
 					.test { ui.clickInstallOrUpdate() }
 			}
 			assertEquals(RemoteSession.State.Succeeded, result)

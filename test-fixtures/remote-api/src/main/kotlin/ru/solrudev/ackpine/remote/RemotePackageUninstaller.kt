@@ -16,7 +16,11 @@
 
 package ru.solrudev.ackpine.remote
 
-import ru.solrudev.ackpine.installer.parameters.InstallerType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import ru.solrudev.ackpine.remote.dsl.RemoteUninstallParameters
+import ru.solrudev.ackpine.remote.dsl.RemoteUninstallParametersDsl
+import ru.solrudev.ackpine.remote.dsl.RemoteUninstallParametersDslBuilder
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.notification
@@ -31,60 +35,56 @@ import java.util.UUID
 public class RemotePackageUninstaller internal constructor(private val uninstaller: IPackageUninstaller) {
 
 	/**
-	 * Creates an uninstall [RemoteSession] with [Confirmation.IMMEDIATE] option.
+	 * Creates an uninstall [RemoteSession] configured via [DSL][RemoteUninstallParametersDsl]. The returned session is
+	 * in [pending][RemoteSession.State.Pending] state.
 	 */
-	public fun createImmediateSession(
-		type: UninstallerType,
-		packageName: String
-	): RemoteSession {
-		val session = uninstaller.createImmediateSession(type.name, packageName)
-		return RemoteSession(session)
-	}
-
-	/**
-	 * Creates an uninstall [RemoteSession] with [Confirmation.DEFERRED] option.
-	 */
-	public fun createDeferredSession(
-		type: InstallerType,
+	public inline fun createSession(
 		packageName: String,
-		notificationTitle: String
+		configure: RemoteUninstallParametersDsl.() -> Unit = {}
 	): RemoteSession {
-		val session = uninstaller.createDeferredSession(type.name, packageName, notificationTitle)
-		return RemoteSession(session)
+		val parameters = RemoteUninstallParametersDslBuilder(packageName).apply(configure).build()
+		return createSession(parameters)
 	}
 
 	/**
 	 * Returns an uninstall [RemoteSession] which matches the provided [sessionId], or `null` if not found.
 	 */
-	public fun getSession(sessionId: UUID): RemoteSession? {
-		val session = uninstaller.getSession(sessionId.toString()) ?: return null
-		return RemoteSession(session)
+	public suspend fun getSession(sessionId: UUID): RemoteSession? = withContext(Dispatchers.IO) {
+		uninstaller.getSession(sessionId.toString())?.let(::RemoteSession)
+	}
+
+	@PublishedApi
+	internal fun createSession(parameters: RemoteUninstallParameters): RemoteSession = with(parameters) {
+		val session = uninstaller.createSession(
+			uninstallParameters.uninstallerType.ordinal,
+			uninstallParameters.packageName,
+			uninstallParameters.confirmation.ordinal,
+			notificationData.title,
+			notificationData.contentText
+		)
+		RemoteSession(session)
 	}
 }
 
 internal class RemotePackageUninstallerImpl(private val uninstaller: PackageUninstaller) : IPackageUninstaller.Stub() {
 
-	override fun createImmediateSession(
-		type: String,
-		packageName: String
-	): ISession {
-		val session = uninstaller.createSession(packageName) {
-			uninstallerType = UninstallerType.valueOf(type)
-			confirmation = Confirmation.IMMEDIATE
-		}
-		return RemoteSessionImpl(session)
-	}
-
-	override fun createDeferredSession(
-		type: String,
+	override fun createSession(
+		type: Int,
 		packageName: String,
-		notificationTitle: String
+		confirmation: Int,
+		notificationTitle: String,
+		notificationText: String
 	): ISession {
 		val session = uninstaller.createSession(packageName) {
-			uninstallerType = UninstallerType.valueOf(type)
-			confirmation = Confirmation.DEFERRED
+			uninstallerType = UninstallerType.entries[type]
+			this.confirmation = Confirmation.entries[confirmation]
 			notification {
-				title = ResolvableString.raw(notificationTitle)
+				if (notificationTitle.isNotEmpty()) {
+					title = ResolvableString.raw(notificationTitle)
+				}
+				if (notificationText.isNotEmpty()) {
+					contentText = ResolvableString.raw(notificationText)
+				}
 			}
 		}
 		return RemoteSessionImpl(session)

@@ -16,12 +16,15 @@
 
 package ru.solrudev.ackpine.impl.installer
 
+import android.app.NotificationManager
 import android.content.pm.PackageInfo
 import android.content.pm.PackageInstaller
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import androidx.core.app.NotificationCompat
+import androidx.core.content.getSystemService
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
@@ -49,6 +52,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
@@ -373,6 +377,38 @@ class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 	@Test
 	fun sessionBasedTerminalStateNotModified() = testTerminalStateNotModified(InstallerType.SESSION_BASED)
 
+	@Test
+	fun createFromEntityNotificationCancelBehavior() {
+		for (state in SessionEntity.State.entries) {
+			for (installerType in InstallerType.entries) {
+				context.getSystemService<NotificationManager>()?.cancelAll()
+				val sessionId = UUID.randomUUID().toString()
+				val notificationId = (state.ordinal + 1) * (installerType.ordinal + 1)
+				val entity = createInstallSessionEntity(
+					id = sessionId,
+					state = state,
+					installerType = installerType,
+					uris = listOf("file:///tmp/base.apk"),
+					notificationId = notificationId
+				)
+				database.installSessionDao().insertInstallSession(entity)
+				if (state == SessionEntity.State.FAILED) {
+					database.installSessionDao().setFailure(sessionId, InstallFailure.Generic("failed"))
+				}
+				showSessionNotification(sessionId, notificationId)
+
+				createFactory().create(entity)
+
+				val expectedNotifications = if (state.isTerminal) 0 else 1
+				assertEquals(
+					expectedNotifications,
+					shadowNotificationManager().allNotifications.size,
+					"state=$state, installerType=$installerType"
+				)
+			}
+		}
+	}
+
 	private fun testTerminalStateNotModified(installerType: InstallerType) {
 		val factory = createFactory()
 		val entity = createInstallSessionEntity(
@@ -427,6 +463,21 @@ class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 		val shadowPackageManager = shadowOf(context.packageManager)
 		shadowPackageManager.installPackage(packageInfo)
 	}
+
+	private fun showSessionNotification(sessionId: String, notificationId: Int) {
+		val manager = context.getSystemService<NotificationManager>()
+		assertNotNull(manager)
+		val notification = NotificationCompat.Builder(context, "ackpine")
+			.setContentTitle("title")
+			.setContentText("text")
+			.setSmallIcon(android.R.drawable.ic_dialog_alert)
+			.build()
+		manager.notify(sessionId, notificationId, notification)
+	}
+
+	private fun shadowNotificationManager() = shadowOf(
+		assertNotNull(context.getSystemService<NotificationManager>())
+	)
 
 	private fun createFactory() = InstallSessionFactoryImpl(
 		applicationContext = context,

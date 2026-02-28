@@ -111,7 +111,7 @@ internal class IntentBasedInstallSession internal constructor(
 		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, getApkUri()) }
 	}
 
-	override fun doCleanup() = executor.execute {
+	override fun doCleanup() {
 		val file = apkFile ?: getApkOrNull()
 		file?.delete()
 	}

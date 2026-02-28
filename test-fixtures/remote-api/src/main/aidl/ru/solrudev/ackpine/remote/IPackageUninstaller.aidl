@@ -3,7 +3,12 @@ package ru.solrudev.ackpine.remote;
 import ru.solrudev.ackpine.remote.ISession;
 
 interface IPackageUninstaller {
-	ISession createImmediateSession(String type, String packageName);
-	ISession createDeferredSession(String type, String packageName, String notificationTitle);
+
+	ISession createSession(int type,
+						   String packageName,
+						   int confirmation,
+						   String notificationTitle,
+						   String notificationText);
+
 	ISession getSession(String id);
 }

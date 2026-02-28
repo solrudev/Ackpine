@@ -75,6 +75,8 @@ internal class SessionEntity internal constructor(
 
 		PENDING, ACTIVE, AWAITING, COMMITTED, CANCELLED, SUCCEEDED, FAILED;
 
+		val isTerminal get() = this == CANCELLED || this == SUCCEEDED || this == FAILED
+
 		internal companion object {
 
 			@JvmSynthetic

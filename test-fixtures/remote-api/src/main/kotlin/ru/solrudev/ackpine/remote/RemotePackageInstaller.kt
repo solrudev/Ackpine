@@ -16,11 +16,20 @@
 
 package ru.solrudev.ackpine.remote
 
+import android.annotation.SuppressLint
 import android.net.Uri
+import android.os.Build
+import androidx.annotation.RequiresApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.preapproval
+import ru.solrudev.ackpine.remote.dsl.RemoteInstallParameters
+import ru.solrudev.ackpine.remote.dsl.RemoteInstallParametersDsl
+import ru.solrudev.ackpine.remote.dsl.RemoteInstallParametersDslBuilder
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.notification
@@ -32,76 +41,90 @@ import java.util.UUID
 public class RemotePackageInstaller internal constructor(private val installer: IPackageInstaller) {
 
 	/**
-	 * Creates an install [RemoteSession] with [Confirmation.IMMEDIATE] option.
+	 * Creates an install [RemoteSession] configured via [DSL][RemoteInstallParametersDsl]. The returned session is in
+	 * [pending][RemoteSession.State.Pending] state.
 	 */
-	public fun createImmediateSession(
-		type: InstallerType,
-		uri: Uri,
-		requireUserAction: Boolean = true
+	public inline fun createSession(
+		baseApk: Uri,
+		configure: RemoteInstallParametersDsl.() -> Unit = {}
 	): RemoteSession {
-		val session = installer.createImmediateSession(
-			type.name,
-			uri.toString(),
-			requireUserAction
-		)
-		return RemoteSession(session)
+		val parameters = RemoteInstallParametersDslBuilder(baseApk).apply(configure).build()
+		return createSession(parameters)
 	}
 
 	/**
-	 * Creates an install [RemoteSession] with [Confirmation.DEFERRED] option.
+	 * Creates an install [RemoteSession] configured via [DSL][RemoteInstallParametersDsl]. The returned session is in
+	 * [pending][RemoteSession.State.Pending] state.
 	 */
-	public fun createDeferredSession(
-		type: InstallerType,
-		uri: Uri,
-		notificationTitle: String,
-		requireUserAction: Boolean = true
+	@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+	public inline fun createSession(
+		apks: Iterable<Uri>,
+		configure: RemoteInstallParametersDsl.() -> Unit = {}
 	): RemoteSession {
-		val session = installer.createDeferredSession(
-			type.name,
-			uri.toString(),
-			notificationTitle,
-			requireUserAction
+		val parameters = RemoteInstallParametersDslBuilder(apks).apply(configure).build()
+		return createSession(parameters)
+	}
+
+	@PublishedApi
+	internal fun createSession(parameters: RemoteInstallParameters): RemoteSession = with(parameters) {
+		val session = installer.createSession(
+			installParameters.installerType.ordinal,
+			installParameters.apks.toList().map { it.toString() },
+			installParameters.confirmation.ordinal,
+			notificationData.title,
+			notificationData.contentText,
+			installParameters.preapproval.packageName,
+			installParameters.preapproval.label,
+			installParameters.preapproval.languageTag,
+			installParameters.preapproval.icon.toString(),
+			installParameters.preapproval.fallbackToOnDemandApproval,
+			installParameters.requireUserAction
 		)
-		return RemoteSession(session)
+		RemoteSession(session)
 	}
 
 	/**
 	 * Returns an install [RemoteSession] which matches the provided [sessionId], or `null` if not found.
 	 */
-	public fun getSession(sessionId: UUID): RemoteSession? {
-		val session = installer.getSession(sessionId.toString()) ?: return null
-		return RemoteSession(session)
+	public suspend fun getSession(sessionId: UUID): RemoteSession? = withContext(Dispatchers.IO) {
+		installer.getSession(sessionId.toString())?.let(::RemoteSession)
 	}
 }
 
 @OptIn(DelicateAckpineApi::class)
 internal class RemotePackageInstallerImpl(private val installer: PackageInstaller) : IPackageInstaller.Stub() {
 
-	override fun createImmediateSession(
-		type: String,
-		uri: String,
-		requireUserAction: Boolean
-	): ISession {
-		val session = installer.createSession(Uri.parse(uri)) {
-			installerType = InstallerType.valueOf(type)
-			confirmation = Confirmation.IMMEDIATE
-			this.requireUserAction = requireUserAction
-		}
-		return RemoteSessionImpl(session)
-	}
-
-	override fun createDeferredSession(
-		type: String,
-		uri: String,
+	@SuppressLint("NewApi")
+	override fun createSession(
+		type: Int,
+		uri: MutableList<String>,
+		confirmation: Int,
 		notificationTitle: String,
+		notificationText: String,
+		preapprovalPackageName: String,
+		preapprovalLabel: String,
+		preapprovalLanguageTag: String,
+		preapprovalIconUri: String,
+		fallbackToOnDemandApproval: Boolean,
 		requireUserAction: Boolean
 	): ISession {
-		val session = installer.createSession(Uri.parse(uri)) {
-			installerType = InstallerType.valueOf(type)
-			confirmation = Confirmation.DEFERRED
+		val session = installer.createSession(uri.map(Uri::parse)) {
+			installerType = InstallerType.entries[type]
+			this.confirmation = Confirmation.entries[confirmation]
 			this.requireUserAction = requireUserAction
 			notification {
-				title = ResolvableString.raw(notificationTitle)
+				if (notificationTitle.isNotEmpty()) {
+					title = ResolvableString.raw(notificationTitle)
+				}
+				if (notificationText.isNotEmpty()) {
+					contentText = ResolvableString.raw(notificationText)
+				}
+			}
+			if (preapprovalPackageName.isNotEmpty() && preapprovalLabel.isNotEmpty()) {
+				preapproval(preapprovalPackageName, preapprovalLabel, preapprovalLanguageTag) {
+					icon = Uri.parse(preapprovalIconUri)
+					this.fallbackToOnDemandApproval = fallbackToOnDemandApproval
+				}
 			}
 		}
 		return RemoteSessionImpl(session)

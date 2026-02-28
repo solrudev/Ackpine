@@ -68,6 +68,7 @@ internal object TestDrawableId : DrawableId {
 internal open class TestPreapprovalSession(
 	id: UUID,
 	initialState: Session.State<InstallFailure> = Session.State.Pending,
+	private val isPreapprovalActive: Boolean = true,
 	exceptionalFailureFactory: ((Exception) -> InstallFailure)? = null
 ) : TestCompletableProgressSession<InstallFailure>(
 	id,
@@ -75,12 +76,18 @@ internal open class TestPreapprovalSession(
 	exceptionalFailureFactory
 ), PreapprovalListener {
 
-	var preapprovalStarted = false
-	var preapprovalSucceeded = false
-	var preapprovalFailure: PreapprovalFailure? = null
+	var preapprovalChecked = false
+		private set
 
-	override fun onPreapprovalStarted() {
-		preapprovalStarted = true
+	var preapprovalSucceeded = false
+		private set
+
+	var preapprovalFailure: PreapprovalFailure? = null
+		private set
+
+	override fun isPreapprovalActive(): Boolean {
+		preapprovalChecked = true
+		return isPreapprovalActive
 	}
 
 	override fun onPreapprovalSucceeded() {
