@@ -30,10 +30,14 @@ import ru.solrudev.ackpine.impl.testutil.test
 import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.preapproval
+import ru.solrudev.ackpine.remote.RemoteSession
+import ru.solrudev.ackpine.remote.dsl.preapproval
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.notification
+import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -84,6 +88,51 @@ class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 	@OptInAndroid11
 	fun installPreparationsRecoverAfterProcessDeath() = testProcessDeathPreparationsRecovery(
 		InstallerType.SESSION_BASED
+	)
+
+	@Test
+	@SdkSuppress(minSdkVersion = 34)
+	fun installWithPreapprovalCompletesSuccessfully() = runTest {
+		val session = installer.createSession(ApkFixtures.fixtureUri()) {
+			installerType = InstallerType.SESSION_BASED
+			confirmation = Confirmation.IMMEDIATE
+			preapproval(
+				packageName = ApkFixtures.FIXTURE_PACKAGE_NAME,
+				label = "Ackpine Fixture",
+				locale = Locale.US
+			)
+		}
+		val result = session.test { ui.clickInstallOrUpdate() }
+		assertEquals(Session.State.Succeeded, result)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	}
+
+	@Test
+	@SdkSuppress(minSdkVersion = 34)
+	fun preapprovalRecoversAfterProcessDeath() = testProcessDeathRecovery(
+		sessionFactory = {
+			packageInstaller.createSession(ApkFixtures.fixtureUri()) {
+				installerType = InstallerType.SESSION_BASED
+				confirmation = Confirmation.IMMEDIATE
+				preapproval(
+					packageName = ApkFixtures.FIXTURE_PACKAGE_NAME,
+					label = "Ackpine Fixture",
+					locale = Locale.US
+				)
+			}
+		},
+		stateHandler = { session, state, job ->
+			when (state) {
+				RemoteSession.State.Pending -> session.launch()
+				else -> job?.cancel()
+			}
+		},
+		sessionConfirmation = {
+			ui.clickInstallOrUpdate()
+		},
+		getSession = { sessionId ->
+			packageInstaller.getSession(sessionId)
+		}
 	)
 
 	@Test
