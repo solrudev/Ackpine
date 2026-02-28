@@ -90,7 +90,10 @@ class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 	@OptInAndroid11
 	fun selfUpdateCompletesSuccessfully() = testSelfUpdate(
 		sessionFactory = { uri ->
-			createImmediateSession(InstallerType.SESSION_BASED, uri)
+			createSession(uri) {
+				installerType = InstallerType.SESSION_BASED
+				confirmation = Confirmation.IMMEDIATE
+			}
 		},
 		sessionConfirmation = {
 			ui.clickInstallOrUpdate()

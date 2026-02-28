@@ -22,6 +22,7 @@ import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.testutil.isAndroid11
 import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.remote.RemoteSession
+import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.BeforeTest
 import kotlin.test.assertFalse
@@ -39,7 +40,10 @@ open class AckpineUninstallerTest(
 		uninstallerType: UninstallerType
 	) = testProcessDeathRecovery(
 		sessionFactory = {
-			packageUninstaller.createImmediateSession(uninstallerType, ApkFixtures.FIXTURE_PACKAGE_NAME)
+			packageUninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
+				this.uninstallerType = uninstallerType
+				confirmation = Confirmation.IMMEDIATE
+			}
 		},
 		stateHandler = { session, state, job ->
 			when (state) {

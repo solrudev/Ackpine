@@ -35,6 +35,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.remote.AckpineRemoteService
 import ru.solrudev.ackpine.remote.RemotePackageInstaller
 import ru.solrudev.ackpine.remote.RemoteSession
+import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.AfterTest
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -52,7 +53,10 @@ open class AckpineInstallerTest(
 		installerType: InstallerType
 	) = testProcessDeathRecovery(
 		sessionFactory = {
-			packageInstaller.createImmediateSession(installerType, ApkFixtures.fixtureUri())
+			packageInstaller.createSession(ApkFixtures.fixtureUri()) {
+				this.installerType = installerType
+				confirmation = Confirmation.IMMEDIATE
+			}
 		},
 		stateHandler = { session, state, job ->
 			when (state) {
@@ -81,7 +85,10 @@ open class AckpineInstallerTest(
 		installerType: InstallerType
 	) = testProcessDeathRecovery(
 		sessionFactory = {
-			packageInstaller.createImmediateSession(installerType, ApkFixtures.fixtureUri())
+			packageInstaller.createSession(ApkFixtures.fixtureUri()) {
+				this.installerType = installerType
+				confirmation = Confirmation.IMMEDIATE
+			}
 		},
 		stateHandler = { session, state, job ->
 			when (state) {
