@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.20.3 (2026-02-28)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix race leading to possibly lost callbacks for `TerminalStateListener.bind()` with concurrent usage.
+- Don't notify with stale state/progress events after listener is removed from a session.
+
 Version 0.20.2 (2026-02-22)
 ---------------------------
 
