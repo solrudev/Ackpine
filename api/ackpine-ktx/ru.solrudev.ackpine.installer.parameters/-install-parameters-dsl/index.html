@@ -1,0 +1,373 @@
+<!doctype html>
+<html class="no-js" lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>InstallParametersDsl</title>
+<link href="../../../images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js", "js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+      if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      } else {
+        const savedDarkMode = JSON.parse(storage)
+        if (savedDarkMode === true) {
+          document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+      }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../ui-kit/ui-kit.min.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/safe-local-storage_blocking.js"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../ui-kit/ui-kit.min.js" defer></script>
+<link href="../../../images/logo-icon.svg">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet"></head>
+<body>
+<div class="root">
+    <header class="navigation theme-dark" id="navigation-wrapper" role="banner">
+<a class="library-name--link" href="../../../index.html" tabindex="1">
+                    Ackpine
+            </a>        <button class="navigation-controls--btn navigation-controls--btn_toc ui-kit_mobile-only" id="toc-toggle" type="button">Toggle table of contents
+        </button>
+        <div class="navigation-controls--break ui-kit_mobile-only"></div>
+        <div class="library-version" id="library-version">0.20.4
+        </div>
+        <div class="navigation-controls">
+        <ul class="filter-section filter-section_loading" id="filter-section" aria-label="Target filter">
+                <button class="platform-tag platform-selector jvm-like" data-active="" aria-pressed="true" data-filter=":ackpine-ktx/main">androidJvm</button>
+            <div class="dropdown filter-section--dropdown" data-role="dropdown" id="filter-section-dropdown">
+                <button class="button button_dropdown filter-section--dropdown-toggle" role="combobox" data-role="dropdown-toggle" aria-controls="platform-tags-listbox" aria-haspopup="listbox" aria-expanded="false" aria-label="Toggle source sets"></button>
+                <ul role="listbox" id="platform-tags-listbox" class="dropdown--list" data-role="dropdown-listbox" aria-label="Target filter">
+                    <div class="dropdown--header"><span>Target filter</span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close target filter">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                        <li role="option" class="dropdown--option platform-selector-option jvm-like" tabindex="0">
+                            <label class="checkbox">
+                                <input type="checkbox" class="checkbox--input" id=":ackpine-ktx/main" data-filter=":ackpine-ktx/main">
+                                <span class="checkbox--icon"></span>
+                                androidJvm
+                            </label>
+                        </li>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </ul>
+            <button class="navigation-controls--btn navigation-controls--btn_theme" id="theme-toggle-button" type="button">Switch theme
+            </button>
+            <div class="navigation-controls--btn navigation-controls--btn_search" id="searchBar" role="button">Search in
+                API
+            </div>
+        </div>
+    </header>
+    <div id="container">
+        <nav id="leftColumn" class="sidebar" data-item-type="SECTION" data-item-config="{&quot;defaultSize&quot;: 280, &quot;minSize&quot;: 200, &quot;maxSize&quot;: 400}">
+            <a class="toc--skip-link" href="#main">Skip to content</a>
+            <div class="dropdown theme-dark_mobile" data-role="dropdown" id="toc-dropdown">
+                <ul role="listbox" id="toc-listbox" class="dropdown--list dropdown--list_toc-list" data-role="dropdown-listbox" aria-label="Table of contents">
+                    <div class="dropdown--header">
+                            <span>
+                                    Ackpine
+                            </span>
+                        <button class="button" data-role="dropdown-toggle" aria-label="Close table of contents">
+                            <i class="ui-kit-icon ui-kit-icon_cross"></i>
+                        </button>
+                    </div>
+                    <div class="sidebar--inner" id="sideMenu"></div>
+                </ul>
+                <div class="dropdown--overlay"></div>
+            </div>
+        </nav>
+        <div id="resizer" class="resizer" data-item-type="BAR"></div>
+        <div id="main" data-item-type="SECTION" role="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="ackpine-ktx::ru.solrudev.ackpine.installer.parameters/InstallParametersDsl///PointingToDeclaration//845576960">
+  <div class="breadcrumbs"><a href="../../index.html">ackpine-ktx</a><span class="delimiter">/</span><a href="../index.html">ru.solrudev.ackpine.installer.parameters</a><span class="delimiter">/</span><span class="current">InstallParametersDsl</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Install</span><wbr><span>Parameters</span><wbr><span><span>Dsl</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">InstallParametersDsl</a> : <a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/index.html">ConfirmationDsl</a>, <a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/index.html">AckpinePluginRegistryDsl</a></div><p class="paragraph">DSL allowing to configure <a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-parameters/index.html">parameters for creating install session</a>.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="PROPERTY">
+        <h2 class="tableheader">Properties</h2>
+        <div class="table"><a data-name="-1811824808%2FProperties%2F845576960" anchor-label="apks" id="-1811824808%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="apks.html"><span><span>apks</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1811824808%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">val </span><a href="apks.html">apks</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-mutable-apk-list/index.html">MutableApkList</a></div><div class="brief "><p class="paragraph">Mutable list of APKs <a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">URIs</a> to install in one session.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-549316246%2FProperties%2F845576960" anchor-label="confirmation" id="-549316246%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/confirmation.html"><span><span>confirmation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-549316246%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/confirmation.html">confirmation</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-confirmation/index.html">Confirmation</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1435940747%2FProperties%2F845576960" anchor-label="constraints" id="-1435940747%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="constraints.html"><span><span>constraints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1435940747%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="constraints.html">constraints</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-constraints/index.html">InstallConstraints</a></div><div class="brief "><p class="paragraph">Installation constraints.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="46579145%2FProperties%2F845576960" anchor-label="installerType" id="46579145%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="installer-type.html"><span>installer</span><wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="46579145%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="installer-type.html">installerType</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-installer-type/index.html">InstallerType</a></div><div class="brief "><p class="paragraph">Type of the package installer implementation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-670773811%2FProperties%2F845576960" anchor-label="installMode" id="-670773811%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="install-mode.html"><span>install</span><wbr><span><span>Mode</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-670773811%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="install-mode.html">installMode</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-mode/index.html">InstallMode</a></div><div class="brief "><p class="paragraph">Mode for an install session. Takes effect only when using <a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-installer-type/-s-e-s-s-i-o-n_-b-a-s-e-d/index.html">InstallerType.SESSION_BASED</a> installer.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-376405724%2FProperties%2F845576960" anchor-label="name" id="-376405724%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-376405724%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Optional name of the session. It may be a name of the app being installed or a file name. Used in default notification content text.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="138253674%2FProperties%2F845576960" anchor-label="notificationData" id="138253674%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/notification-data.html"><span>notification</span><wbr><span><span>Data</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="138253674%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/notification-data.html">notificationData</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-notification-data/index.html">NotificationData</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-159651446%2FProperties%2F845576960" anchor-label="packageSource" id="-159651446%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="package-source.html"><span>package</span><wbr><span><span>Source</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-159651446%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="package-source.html">packageSource</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-package-source/index.html">PackageSource</a></div><div class="brief "><p class="paragraph">Indicates the package source of the app being installed. This is informational and may be used as a signal by the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1204343099%2FProperties%2F845576960" anchor-label="preapproval" id="-1204343099%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="preapproval.html"><span><span>preapproval</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1204343099%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="preapproval.html">preapproval</a><span class="token operator">: </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-preapproval/index.html">InstallPreapproval</a></div><div class="brief "><p class="paragraph">Details for requesting the pre-commit install approval.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-880908648%2FProperties%2F845576960" anchor-label="requestUpdateOwnership" id="-880908648%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="request-update-ownership.html"><span>request</span><wbr><span>Update</span><wbr><span><span>Ownership</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-880908648%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="request-update-ownership.html">requestUpdateOwnership</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Optionally indicate whether the package being installed needs the update ownership enforcement. Once the update ownership enforcement is enabled, the other installers will need the user action to update the package even if the installers have been granted the <code class="lang-kotlin">INSTALL_PACKAGES</code> permission. Default to <code class="lang-kotlin">false</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-574255867%2FProperties%2F845576960" anchor-label="requireUserAction" id="-574255867%2FProperties%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="require-user-action.html"><span>require</span><wbr><span>User</span><wbr><span><span>Action</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-574255867%2FProperties%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@set:</span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine/-delicate-ackpine-api/index.html"><span class="token annotation builtin">DelicateAckpineApi</span></a></div></div><span class="token keyword">abstract </span><span class="token keyword">var </span><a href="require-user-action.html">requireUserAction</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Indicate whether user action should be required when the session is committed. By default equals to <code class="lang-kotlin">true</code>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="tableheader">Functions</h2>
+        <div class="table"><a data-name="208163433%2FFunctions%2F845576960" anchor-label="constraints" id="208163433%2FFunctions%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../constraints.html"><span><span>constraints</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="208163433%2FFunctions%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../constraints.html"><span class="token function">constraints</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">timeout<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.time/-duration/index.html">Duration</a><span class="token punctuation">, </span></span><span class="parameter ">configure<span class="token operator">: </span><a href="../-install-constraints-dsl/index.html">InstallConstraintsDsl</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures <a href="../-install-constraints-dsl/index.html">installation constraints DSL</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1250459051%2FFunctions%2F845576960" anchor-label="notification" id="-1250459051%2FFunctions%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../ru.solrudev.ackpine.session.parameters/notification.html"><span><span>notification</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1250459051%2FFunctions%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="../../ru.solrudev.ackpine.session.parameters/-confirmation-dsl/index.html">ConfirmationDsl</a><span class="token punctuation">.</span><a href="../../ru.solrudev.ackpine.session.parameters/notification.html"><span class="token function">notification</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configure<span class="token operator">: </span><a href="../../ru.solrudev.ackpine.session.parameters/-notification-data-dsl/index.html">NotificationDataDsl</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures <a href="../../ru.solrudev.ackpine.session.parameters/-notification-data-dsl/index.html">notification DSL</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="815917607%2FFunctions%2F845576960" anchor-label="preapproval" id="815917607%2FFunctions%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../preapproval.html"><span><span>preapproval</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="815917607%2FFunctions%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">24</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">locale<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/icu/util/ULocale.html">ULocale</a><span class="token punctuation">, </span></span><span class="parameter ">icon<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">21</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">locale<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/util/Locale.html">Locale</a><span class="token punctuation">, </span></span><span class="parameter ">icon<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">languageTag<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">icon<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/net/Uri.html">Uri</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures <a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-preapproval/index.html">pre-commit install approval</a>.</p></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">24</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">locale<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/android/icu/util/ULocale.html">ULocale</a><span class="token punctuation">, </span></span><span class="parameter ">configure<span class="token operator">: </span><a href="../-install-preapproval-dsl/index.html">InstallPreapprovalDsl</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://developer.android.com/reference/kotlin/androidx/annotation/RequiresApi.html"><span class="token annotation builtin">RequiresApi</span></a><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span class="breakable-word"><span class="token constant">21</span></span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">locale<span class="token operator">: </span><a href="https://developer.android.com/reference/kotlin/java/util/Locale.html">Locale</a><span class="token punctuation">, </span></span><span class="parameter ">configure<span class="token operator">: </span><a href="../-install-preapproval-dsl/index.html">InstallPreapprovalDsl</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><a href="index.html">InstallParametersDsl</a><span class="token punctuation">.</span><a href="../preapproval.html"><span class="token function">preapproval</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">packageName<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">label<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">languageTag<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">configure<span class="token operator">: </span><a href="../-install-preapproval-dsl/index.html">InstallPreapprovalDsl</a><span class="token punctuation">.</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-unit/index.html">Unit</a><span class="token operator"> = </span>{}</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Configures <a href="../-install-preapproval-dsl/index.html">pre-commit install approval DSL</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1430789863%2FFunctions%2F845576960" anchor-label="usePlugin" id="1430789863%2FFunctions%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html"><span>use</span><wbr><span><span>Plugin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1430789863%2FFunctions%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html"><span class="token function">usePlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plugin<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html">AckpinePlugin</a><span class="token operator">&lt;</span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/-parameters/-none/index.html">AckpinePlugin.Parameters.None</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html">Params</a><span class="token operator"> : </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/-parameters/index.html">AckpinePlugin.Parameters</a><span class="token operator">&gt; </span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html"><span class="token function">usePlugin</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">plugin<span class="token operator">: </span><a href="https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.reflect/-k-class/index.html">KClass</a><span class="token operator">&lt;</span><span class="token keyword">out </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html">AckpinePlugin</a><span class="token operator">&lt;</span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html">Params</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">parameters<span class="token operator">: </span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html">Params</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Applies a <a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/use-plugin.html">plugin</a> to a session.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2060157211%2FFunctions%2F845576960" anchor-label="usePlugin" id="-2060157211%2FFunctions%2F845576960" data-filterable-set=":ackpine-ktx/main"></a>
+          <div class="table-row table-row_content" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":ackpine-ktx/main" data-filterable-set=":ackpine-ktx/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../ru.solrudev.ackpine.plugability/use-plugin.html"><span>use</span><wbr><span><span>Plugin</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2060157211%2FFunctions%2F845576960"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":ackpine-ktx/main"><div class="symbol monospace"><span class="token keyword">inline </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="../../ru.solrudev.ackpine.plugability/use-plugin.html">Plugin</a><span class="token operator"> : </span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html">AckpinePlugin</a><span class="token operator">&lt;</span><a href="../../../ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/-parameters/-none/index.html">AckpinePlugin.Parameters.None</a><span class="token operator">&gt;</span><span class="token operator">&gt; </span><a href="../../ru.solrudev.ackpine.plugability/-ackpine-plugin-registry-dsl/index.html">AckpinePluginRegistryDsl</a><span class="token punctuation">.</span><a href="../../ru.solrudev.ackpine.plugability/use-plugin.html"><span class="token function">usePlugin</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Applies a plugin to a session. <a href="../../ru.solrudev.ackpine.plugability/use-plugin.html">Plugin</a> is the type of the plugin being applied.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <div class="footer--container">
+            <a href="#content" id="go-to-top-link" class="footer--button footer--button_go-to-top"></a>
+            <div class="footer--content">
+                <div>
+                    <span>Generated by </span>
+                    <a class="footer--link footer--link_external" href="https://github.com/Kotlin/dokka">
+                        Dokka
+                    </a>
+                    <div>© Ilya Fomichev</div>
+                </div>
+            </div>
+        </div>
+    </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

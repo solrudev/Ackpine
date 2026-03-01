@@ -1,0 +1,1599 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A library providing consistent APIs for installing and uninstalling apps on an Android device">
+      
+      
+        <meta name="author" content="2023-2026 Ilya Fomichev">
+      
+      
+        <link rel="canonical" href="https://ackpine.solrudev.ru/architecture/">
+      
+      
+        <link rel="prev" href="../permissions/">
+      
+      
+        <link rel="next" href="../building/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../images/logo-icon.svg">
+      <meta name="generator" content="zensical-0.0.24">
+    
+    
+      
+        <title>Architecture - Ackpine</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.28978c9b.min.css">
+      
+        
+          
+        
+        <link rel="stylesheet" href="../assets/stylesheets/modern/palette.dfe2e883.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../css/docs.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,a=__md_scope)=>JSON.parse(t.getItem(a.pathname+"."+e)),__md_set=(e,t,a=localStorage,_=__md_scope)=>{try{a.setItem(_.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#architecture" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="Ackpine" class="md-header__button md-logo" aria-label="Ackpine" data-md-component="logo">
+      
+  <img src="../images/logo-icon.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Ackpine
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Architecture
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="custom" data-md-color-accent="custom"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+        <a href="https://github.com/solrudev/Ackpine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ackpine
+  </div>
+</a>
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="./.." class="md-tabs__link">
+        
+  
+  Overview
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../guide/getting_started/" class="md-tabs__link">
+          
+  
+  Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../permissions/" class="md-tabs__link">
+        
+  
+  Permissions
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="././" class="md-tabs__link">
+        
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../building/" class="md-tabs__link">
+        
+  
+  Building
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../faq/" class="md-tabs__link">
+        
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../api/index.html" class="md-tabs__link">
+        
+  
+  API reference ⏏
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  Change Log
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="Ackpine" class="md-nav__button md-logo" aria-label="Ackpine" data-md-component="logo">
+      
+  <img src="../images/logo-icon.svg" alt="logo">
+
+    </a>
+    Ackpine
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/solrudev/Ackpine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path fill="currentColor" d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    Ackpine
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/getting_started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/split_apks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Split APKs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/shizuku/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Shizuku
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/samples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Samples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../permissions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Permissions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session state machine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session state machine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-triggers-each-transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What triggers each transition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-entrancy-for-process-death-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-entrancy for process death resilience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automating-the-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automating the state machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module dependency graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin system
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consumer-facing-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consumer-facing API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-time-parameter-modification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build-time parameter modification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instantiation-and-proguard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiation and ProGuard
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uri-as-sole-apk-input-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uri as sole APK input type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-passivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session passivity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolvablestring-and-drawableid-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResolvableString and DrawableId persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../building/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Building
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/index.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API reference ⏏
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Change Log
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#session-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session state machine
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session state machine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-triggers-each-transition" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What triggers each transition
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#re-entrancy-for-process-death-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Re-entrancy for process death resilience
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automating-the-state-machine" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Automating the state machine
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#module-dependency-graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Module dependency graph
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-system" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plugin system
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin system">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#consumer-facing-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consumer-facing API
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#build-time-parameter-modification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Build-time parameter modification
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameters-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#runtime-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Runtime discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instantiation-and-proguard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instantiation and ProGuard
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Design decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uri-as-sole-apk-input-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uri as sole APK input type
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-passivity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session passivity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resolvablestring-and-drawableid-persistence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResolvableString and DrawableId persistence
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+  
+
+
+<h1 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h1>
+<p>Ackpine library has a concept of <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/index.html"><code>Session</code></a>. <code>Session</code> manages the flow of installation or uninstallation process.</p>
+<p>One can launch multiple different sessions at once, but can't create them directly. To create a session, one needs to use <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html"><code>PackageInstaller</code></a> or <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html"><code>PackageUninstaller</code></a>.</p>
+<p>In essence, <code>PackageInstaller</code> is a <em>repository</em> of <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session/-progress-session/index.html"><code>ProgressSessions</code></a>, and <code>PackageUninstaller</code> is a <em>repository</em> of <code>Sessions</code>. They track and persist every session launched.</p>
+<h2 id="session-state-machine">Session state machine<a class="headerlink" href="#session-state-machine" title="Permanent link">&para;</a></h2>
+<p><a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/index.html"><code>Session</code></a> is a finite-state machine which transitions from one <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/-state/index.html"><code>State</code></a> to another. For transitions to happen, client code needs to react to state changes and call the appropriate methods on the session.</p>
+<pre class="mermaid"><code>stateDiagram-v2
+    [*] --&gt; Pending
+    Pending --&gt; Active : launch()
+    Active --&gt; Active : launch() — re-entry
+    Active --&gt; Awaiting : preparation completes
+    Awaiting --&gt; Committed : commit()
+    Committed --&gt; Committed : commit() — re-entry
+    Committed --&gt; Succeeded : session succeeds
+    Committed --&gt; Failed : session fails
+
+    Pending --&gt; Cancelled : cancel()
+    Active --&gt; Cancelled : cancel()
+    Awaiting --&gt; Cancelled : cancel()
+    Committed --&gt; Cancelled : cancel()
+
+    Succeeded --&gt; [*]
+    Failed --&gt; [*]
+    Cancelled --&gt; [*]</code></pre>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Terminal</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Pending</strong></td>
+<td>No</td>
+<td>Session has been created but not launched yet.</td>
+</tr>
+<tr>
+<td><strong>Active</strong></td>
+<td>No</td>
+<td>Session is being actively prepared (copying files, requesting preapproval, etc.).</td>
+</tr>
+<tr>
+<td><strong>Awaiting</strong></td>
+<td>No</td>
+<td>Preparation is complete; session is waiting for <code>commit()</code>.</td>
+</tr>
+<tr>
+<td><strong>Committed</strong></td>
+<td>No</td>
+<td>Session is committed; user confirmation is in progress.</td>
+</tr>
+<tr>
+<td><strong>Succeeded</strong></td>
+<td>Yes</td>
+<td>Installation or uninstallation completed successfully.</td>
+</tr>
+<tr>
+<td><strong>Failed</strong></td>
+<td>Yes</td>
+<td>Session completed with an error. Carries a typed <code>Failure</code> object.</td>
+</tr>
+<tr>
+<td><strong>Cancelled</strong></td>
+<td>Yes</td>
+<td>Session was cancelled by the client via <code>cancel()</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-triggers-each-transition">What triggers each transition<a class="headerlink" href="#what-triggers-each-transition" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Pending → Active</strong>: calling <code>launch()</code>.</li>
+<li><strong>Active → Awaiting</strong>: session finishes its internal preparation (file copying, preapproval request, etc.).</li>
+<li><strong>Awaiting → Committed</strong>: calling <code>commit()</code>, which triggers user confirmation if needed.</li>
+<li><strong>Committed → Succeeded / Failed</strong>: the system delivers the installation/uninstallation result.</li>
+<li><strong>Any non-terminal → Cancelled</strong>: calling <code>cancel()</code>.</li>
+</ul>
+<h3 id="re-entrancy-for-process-death-resilience">Re-entrancy for process death resilience<a class="headerlink" href="#re-entrancy-for-process-death-resilience" title="Permanent link">&para;</a></h3>
+<p>Session by itself is passive — it doesn't do anything until client code says so. This is done to make sessions persistable and suspendable. If any step while the session is active is interrupted (e.g. by process death), it can be re-executed later:</p>
+<ul>
+<li><strong>Active → Active</strong>: if the preparation process was interrupted, calling <code>launch()</code> again re-starts it.</li>
+<li><strong>Committed → Committed</strong>: if the confirmation was interrupted, calling <code>commit()</code> again re-requests it.</li>
+</ul>
+<p>The library saves session state to a database, so sessions survive process death. After restart, you re-retrieve the session by its ID and re-attach listeners. See <a href="../guide/getting_started/#handling-process-death">Handling process death</a> for an example.</p>
+<h3 id="automating-the-state-machine">Automating the state machine<a class="headerlink" href="#automating-the-state-machine" title="Permanent link">&para;</a></h3>
+<p>The library provides ready-to-use implementations that automate the full session lifecycle:</p>
+<ul>
+<li><a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/-terminal-state-listener/-companion/bind.html"><code>Session.TerminalStateListener.bind()</code></a> (Java) — automatically calls <code>launch()</code> and <code>commit()</code> at the right moments and delivers the terminal result via callbacks.</li>
+<li><a href="..//api/ackpine-ktx/ru.solrudev.ackpine.session/await.html"><code>Session.await()</code></a> (Kotlin, from <code>ackpine-ktx</code>) — a suspending function that drives the session to a terminal state and returns the result.</li>
+</ul>
+<p>See <a href="../guide/getting_started/#simple-session-launch">Getting Started</a> for usage examples.</p>
+<h2 id="module-dependency-graph">Module dependency graph<a class="headerlink" href="#module-dependency-graph" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TD
+    ackpine-api --&gt; ackpine-resources
+    ackpine-core --&gt; ackpine-api
+    ackpine-ktx --&gt; ackpine-api
+    ackpine-test --&gt; ackpine-api
+    ackpine-shizuku --&gt; ackpine-core
+    ackpine-shizuku-ktx --&gt; ackpine-shizuku
+    ackpine-shizuku-ktx --&gt; ackpine-ktx
+    ackpine-splits-ktx --&gt; ackpine-splits
+    ackpine-assets</code></pre>
+<table>
+<thead>
+<tr>
+<th>Artifact</th>
+<th>Provides</th>
+<th>Depends on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ackpine-api</code></td>
+<td>Core API contracts: <code>Session</code>, <code>PackageInstaller</code>, <code>PackageUninstaller</code>, parameters, plugin interfaces</td>
+<td><code>ackpine-resources</code></td>
+</tr>
+<tr>
+<td><code>ackpine-core</code></td>
+<td>Runtime implementation of all API contracts; database persistence</td>
+<td><code>ackpine-api</code></td>
+</tr>
+<tr>
+<td><code>ackpine-ktx</code></td>
+<td>Kotlin DSL for session parameters; <code>Session.await()</code> coroutine extension</td>
+<td><code>ackpine-api</code></td>
+</tr>
+<tr>
+<td><code>ackpine-splits</code></td>
+<td><a href="../guide/split_apks/">Split APK</a> utilities: <code>ZippedApkSplits</code>, <code>Apk</code>, <code>SplitPackage</code></td>
+<td>Standalone</td>
+</tr>
+<tr>
+<td><code>ackpine-splits-ktx</code></td>
+<td>Kotlin coroutine extensions for <code>ackpine-splits</code></td>
+<td><code>ackpine-splits</code></td>
+</tr>
+<tr>
+<td><code>ackpine-assets</code></td>
+<td><code>ContentProvider</code> for reading APKs from app's asset files</td>
+<td>Standalone</td>
+</tr>
+<tr>
+<td><code>ackpine-shizuku</code></td>
+<td><a href="../guide/shizuku/">Shizuku</a>-backed <code>PackageInstallerService</code> plugin</td>
+<td><code>ackpine-core</code></td>
+</tr>
+<tr>
+<td><code>ackpine-shizuku-ktx</code></td>
+<td>Kotlin DSL for Shizuku plugin configuration</td>
+<td><code>ackpine-shizuku</code>, <code>ackpine-ktx</code></td>
+</tr>
+<tr>
+<td><code>ackpine-test</code></td>
+<td><a href="../guide/testing/">Test doubles</a>: <code>TestPackageInstaller</code>, <code>TestPackageUninstaller</code>, scripted sessions</td>
+<td><code>ackpine-api</code></td>
+</tr>
+<tr>
+<td><code>ackpine-resources</code></td>
+<td>Abstractions for persistable Android resources: <code>ResolvableString</code></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>ackpine-ktx</code> and <code>ackpine-test</code> depend only on <code>ackpine-api</code>, not on <code>ackpine-core</code>. This means coroutine extensions and test doubles work without pulling in the full runtime.</p>
+</div>
+<h2 id="plugin-system">Plugin system<a class="headerlink" href="#plugin-system" title="Permanent link">&para;</a></h2>
+<p>Ackpine has a plugin system that allows extending session behavior without coupling <code>ackpine-core</code> to concrete plugin implementations.</p>
+<h3 id="consumer-facing-api">Consumer-facing API<a class="headerlink" href="#consumer-facing-api" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html"><code>AckpinePlugin</code></a> — interface that plugins implement. Each plugin has a unique string <code>id</code> and typed <code>Parameters</code>.</li>
+<li><a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin-registry/index.html"><code>AckpinePluginRegistry</code></a> — interface exposed by parameter builders (<code>InstallParameters.Builder</code>, <code>UninstallParameters.Builder</code>). Call <code>usePlugin(pluginClass, parameters)</code> to apply a plugin to a session.</li>
+</ul>
+<h3 id="build-time-parameter-modification">Build-time parameter modification<a class="headerlink" href="#build-time-parameter-modification" title="Permanent link">&para;</a></h3>
+<p>Plugins can modify session parameters at build-time. When <code>InstallParameters.Builder.build()</code> or <code>UninstallParameters.Builder.build()</code> is called, each registered plugin's <code>apply(builder)</code> method is invoked on the builder before the parameters object is constructed. This lets plugins enforce constraints — for example, the Shizuku plugin forces session-based installer type and disables preapproval.</p>
+<h3 id="services">Services<a class="headerlink" href="#services" title="Permanent link">&para;</a></h3>
+<p>Plugins provide runtime services by implementing the <code>AckpineService</code> and <code>AckpineServiceProvider</code> interfaces (internal to <code>ackpine-core</code>). <code>AckpineService</code> defines the service's capabilities (e.g. wrapping Android's <code>PackageInstaller</code> behavior), while <code>AckpineServiceProvider</code> acts as a factory that exposes available service instances. Each provider declares a set of plugin identifiers (<code>pluginIdentifiers</code>) that tie it back to the <code>AckpinePlugin</code> implementations it serves — this is how <code>ackpine-core</code> maps a registered plugin to its service provider without depending on the concrete plugin module.</p>
+<h3 id="parameters-persistence">Parameters persistence<a class="headerlink" href="#parameters-persistence" title="Permanent link">&para;</a></h3>
+<p>Plugins can have their own parameters for a session. Each <code>AckpineServiceProvider</code> supplies <code>PluginParametersStore</code> instances responsible for persisting and restoring plugin parameters. Plugins implement parameters persistence separately from the main database of <code>ackpine-core</code>, so that plugins can maintain independent data persistence schemas and migrations, while also being decoupled from the concrete persistence mechanism.</p>
+<h3 id="runtime-discovery">Runtime discovery<a class="headerlink" href="#runtime-discovery" title="Permanent link">&para;</a></h3>
+<p>Plugin service implementations are discovered at runtime via Java <code>ServiceLoader</code> (SPI). Each plugin module declares an <code>AckpineServiceProvider</code> in <code>META-INF/services/</code>. When the first session initializes, it discovers all providers on the classpath and loads their services lazily.</p>
+<p>This design means:</p>
+<ul>
+<li><code>ackpine-core</code> never depends on concrete plugin modules — plugins are loaded dynamically.</li>
+<li>Plugin parameters are persisted alongside session data, so sessions with plugins survive process death.</li>
+<li>Adding a plugin to your app is as simple as adding the dependency and calling <code>usePlugin()</code> in your parameters.</li>
+</ul>
+<h3 id="instantiation-and-proguard">Instantiation and ProGuard<a class="headerlink" href="#instantiation-and-proguard" title="Permanent link">&para;</a></h3>
+<p>Plugin instances are created reflectively via no-arg constructors and cached as singletons in <code>AckpinePluginCache</code>. Because of this, plugin class names are persisted (they are stored as part of session parameters), and plugins must have a no-arg constructor available at runtime. Consumer ProGuard rules for <code>ackpine-api</code> keep all <code>AckpinePlugin</code> implementations, preventing class renaming or constructor removal that would break reflection.</p>
+<p>See the <a href="../guide/shizuku/">Shizuku</a> page for the currently available plugin and <a href="../guide/configuration/#plugins">Configuration</a> for usage in parameters.</p>
+<h2 id="design-decisions">Design decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h2>
+<h3 id="uri-as-sole-apk-input-type"><code>Uri</code> as sole APK input type<a class="headerlink" href="#uri-as-sole-apk-input-type" title="Permanent link">&para;</a></h3>
+<p><code>Uri</code> is chosen as the sole input type of APKs. It makes them persistable and allows to plug in any APK source via <code>ContentProvider</code>. The library leverages this in <code>ackpine-splits</code> and <code>ackpine-assets</code> modules to read APKs from zipped files and app's asset files respectively.</p>
+<h3 id="session-passivity">Session passivity<a class="headerlink" href="#session-passivity" title="Permanent link">&para;</a></h3>
+<p>Sessions are deliberately passive — they don't advance their own state. This design makes sessions persistable and suspendable. The tradeoff is that client code must drive transitions (or use the provided <code>TerminalStateListener</code> / <code>await()</code> helpers). This approach ensures that sessions can be interrupted by process death at any point and seamlessly resumed later.</p>
+<h3 id="resolvablestring-and-drawableid-persistence"><code>ResolvableString</code> and <code>DrawableId</code> persistence<a class="headerlink" href="#resolvablestring-and-drawableid-persistence" title="Permanent link">&para;</a></h3>
+<p><a href="..//api/ackpine-resources/ru.solrudev.ackpine.resources/-resolvable-string/index.html"><code>ResolvableString</code></a> and <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-drawable-id/index.html"><code>DrawableId</code></a> values are persisted to a Room database, which creates a problem with Android resource IDs.</p>
+<p>Android resource IDs (<code>R.string.*</code>, <code>R.drawable.*</code>) are generated integers that can change across builds. If a raw ID were stored, it might point to the wrong resource after an app update. To solve this, <a href="..//api/ackpine-resources/ru.solrudev.ackpine.resources/-resolvable-string/-resource/index.html"><code>ResolvableString.Resource</code></a> is abstract — consumers subclass it and override <code>stringId()</code> to return the <code>R.string.*</code> constant at call time. The serialized BLOB stores the object, and upon deserialization <code>stringId()</code> re-reads the current ID from the <code>R</code> class, keeping the mapping up-to-date. The same applies to <a href="..//api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-drawable-id/index.html"><code>DrawableId</code></a>.</p>
+<p>Because Java Object Serialization is used, subclasses need <code>serialVersionUID</code> for forward-compatible deserialization, and singletons need <code>readResolve()</code> to preserve identity. For strings that are never persisted (e.g. error messages in a ViewModel), <code>ResolvableString.transientResource()</code> stores the integer ID directly, avoiding the need for a custom subclass.</p>
+<p>See <a href="../guide/configuration/#notification">notifications configuration section</a> for full code examples.</p>
+
+  
+
+
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-circle-arrow-up" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m16 12-4-4-4 4M12 16V8"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../permissions/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Permissions">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7M19 12H5"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Permissions
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../building/" class="md-footer__link md-footer__link--next" aria-label="Next: Building">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Building
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2023-2026 Ilya Fomichev
+    </div>
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":["content.code.copy","content.tabs.link","navigation.footer","navigation.tabs","navigation.tracking","navigation.top"],"search":"../assets/javascripts/workers/search.e2d2d235.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.16f8adc2.min.js"></script>
+      
+    
+  </body>
+</html>
