@@ -31,13 +31,20 @@ import ru.solrudev.ackpine.impl.testutil.isAndroid11
 import ru.solrudev.ackpine.impl.testutil.isTv
 import ru.solrudev.ackpine.impl.testutil.test
 import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
+import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.remote.AckpineRemoteService
 import ru.solrudev.ackpine.remote.RemotePackageInstaller
 import ru.solrudev.ackpine.remote.RemoteSession
+import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
+import ru.solrudev.ackpine.session.parameters.notification
 import kotlin.test.AfterTest
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 open class AckpineInstallerTest(
@@ -47,6 +54,45 @@ open class AckpineInstallerTest(
 	@AfterTest
 	fun tearDown() = runTest {
 		uninstallFixtureIfPresent()
+	}
+
+	protected fun installImmediateCompletesSuccessfully(installerType: InstallerType) = runTest {
+		val session = installer.createSession(ApkFixtures.fixtureUri()) {
+			this.installerType = installerType
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val result = session.test { ui.clickInstallOrUpdate() }
+		assertEquals(Session.State.Succeeded, result)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	}
+
+	protected fun installDeferredCompletesSuccessfully(installerType: InstallerType) = runTest {
+		val session = installer.createSession(ApkFixtures.fixtureUri()) {
+			this.installerType = installerType
+			confirmation = Confirmation.DEFERRED
+			notification {
+				title = ResolvableString.raw("Ackpine install")
+			}
+		}
+
+		val result = session.test {
+			ui.clickNotification("Ackpine install")
+			ui.clickInstallOrUpdate()
+		}
+
+		assertEquals(Session.State.Succeeded, result)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	}
+
+	protected fun installCancelCompletesWithAbortedFailure(installerType: InstallerType) = runTest {
+		val session = installer.createSession(ApkFixtures.fixtureUri()) {
+			this.installerType = installerType
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val result = session.test { ui.clickCancel() }
+		assertIs<Session.State.Failed<InstallFailure>>(result)
+		assertIs<InstallFailure.Aborted>(result.failure)
+		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
 	}
 
 	protected fun testProcessDeathConfirmationRecovery(

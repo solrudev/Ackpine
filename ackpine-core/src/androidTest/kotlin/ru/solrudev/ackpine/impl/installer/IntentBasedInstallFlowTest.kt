@@ -18,21 +18,14 @@ package ru.solrudev.ackpine.impl.installer
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import kotlinx.coroutines.test.runTest
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
-import ru.solrudev.ackpine.impl.ApkFixtures
+import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
-import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.installer.InstallFailure
-import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
-import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -40,25 +33,20 @@ import kotlin.test.assertIs
 class IntentBasedInstallFlowTest : AckpineInstallerTest() {
 
 	@Test
-	fun installCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.INTENT_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = session.test { ui.clickInstallOrUpdate() }
-		assertEquals(Session.State.Succeeded, result)
-	}
+	fun installImmediateCompletesSuccessfully() = installImmediateCompletesSuccessfully(
+		InstallerType.INTENT_BASED
+	)
 
 	@Test
-	fun installCancelCompletesWithAbortedFailure() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.INTENT_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = session.test { ui.clickCancel() }
-		assertIs<Session.State.Failed<InstallFailure>>(result)
-		assertIs<InstallFailure.Aborted>(result.failure)
-	}
+	@ExcludeAndroidTv
+	fun installDeferredCompletesSuccessfully() = installDeferredCompletesSuccessfully(
+		InstallerType.INTENT_BASED
+	)
+
+	@Test
+	fun installCancelCompletesWithAbortedFailure() = installCancelCompletesWithAbortedFailure(
+		InstallerType.INTENT_BASED
+	)
 
 	@Test
 	@OptInAndroid11

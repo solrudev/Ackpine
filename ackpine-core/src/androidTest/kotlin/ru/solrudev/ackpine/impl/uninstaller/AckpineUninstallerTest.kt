@@ -20,11 +20,17 @@ import kotlinx.coroutines.test.runTest
 import ru.solrudev.ackpine.impl.AckpineTest
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.testutil.isAndroid11
+import ru.solrudev.ackpine.impl.testutil.test
 import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.remote.RemoteSession
+import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
+import ru.solrudev.ackpine.session.parameters.notification
+import ru.solrudev.ackpine.uninstaller.createSession
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.BeforeTest
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
 open class AckpineUninstallerTest(
@@ -34,6 +40,34 @@ open class AckpineUninstallerTest(
 	@BeforeTest
 	fun setUp() = runTest {
 		installFixtureIfAbsent()
+	}
+
+	protected fun uninstallImmediateCompletesSuccessfully(uninstallerType: UninstallerType) = runTest {
+		val session = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
+			this.uninstallerType = uninstallerType
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val result = session.test { ui.clickOk() }
+		assertEquals(Session.State.Succeeded, result)
+		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	}
+
+	protected fun uninstallDeferredCompletesSuccessfully(uninstallerType: UninstallerType) = runTest {
+		val session = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
+			this.uninstallerType = uninstallerType
+			confirmation = Confirmation.DEFERRED
+			notification {
+				title = ResolvableString.raw("Ackpine uninstall")
+			}
+		}
+
+		val result = session.test {
+			ui.clickNotification("Ackpine uninstall")
+			ui.clickOk()
+		}
+
+		assertEquals(Session.State.Succeeded, result)
+		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
 	}
 
 	protected fun testProcessDeathConfirmationRecovery(

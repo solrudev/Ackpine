@@ -25,12 +25,14 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.testutil.test
+import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.seconds
 
@@ -62,5 +64,6 @@ class SystemUnhandledFailureTest : AckpineInstallerTest() {
 			// Completing directly from PackageInstallerStatusReceiver
 			assertIs<InstallFailure.Invalid>(result.failure)
 		}
+		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
 	}
 }

@@ -33,10 +33,8 @@ import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.preapproval
 import ru.solrudev.ackpine.remote.RemoteSession
 import ru.solrudev.ackpine.remote.dsl.preapproval
-import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
-import ru.solrudev.ackpine.session.parameters.notification
 import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,34 +47,20 @@ import kotlin.test.assertTrue
 class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 
 	@Test
-	fun installImmediateCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.SESSION_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = session.test { ui.clickInstallOrUpdate() }
-		assertEquals(Session.State.Succeeded, result)
-		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
-	}
+	fun installImmediateCompletesSuccessfully() = installImmediateCompletesSuccessfully(
+		InstallerType.SESSION_BASED
+	)
 
 	@Test
 	@ExcludeAndroidTv
-	fun installDeferredCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.SESSION_BASED
-			confirmation = Confirmation.DEFERRED
-			notification {
-				title = ResolvableString.raw("Ackpine install")
-			}
-		}
+	fun installDeferredCompletesSuccessfully() = installDeferredCompletesSuccessfully(
+		InstallerType.SESSION_BASED
+	)
 
-		val result = session.test {
-			ui.clickNotification("Ackpine install")
-			ui.clickInstallOrUpdate()
-		}
-
-		assertEquals(Session.State.Succeeded, result)
-	}
+	@Test
+	fun installCancelCompletesWithAbortedFailure() = installCancelCompletesWithAbortedFailure(
+		InstallerType.SESSION_BASED
+	)
 
 	@Test
 	@OptInAndroid11
