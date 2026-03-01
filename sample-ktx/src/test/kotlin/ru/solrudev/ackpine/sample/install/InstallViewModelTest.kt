@@ -65,6 +65,8 @@ class InstallViewModelTest {
 
 			advanceUntilIdle()
 			val session = installer.sessions.last()
+			val parameters = installer.createdParameters.getValue(session.id)
+			assertEquals(TEST_APK_NAME, parameters.name)
 
 			val expectedState1 = InstallUiState(
 				error = ResolvableString.empty(),

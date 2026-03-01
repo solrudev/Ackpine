@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.sample.install;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static java.util.Collections.emptyList;
 
@@ -66,6 +67,10 @@ public class InstallViewModelTest {
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
 		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(TEST_APK_NAME, parameters.getName());
+
 		final var expectedSessions1 = List.of(new SessionData(session.getId(), TEST_APK_NAME));
 		final var expectedProgress1 = List.of(new SessionProgress(session.getId(), new Progress()));
 		assertEquals(expectedSessions1, viewModel.getSessions().getValue());
