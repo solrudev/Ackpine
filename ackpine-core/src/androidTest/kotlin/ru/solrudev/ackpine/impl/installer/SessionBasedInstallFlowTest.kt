@@ -133,7 +133,9 @@ class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 		getSession = { sessionId ->
 			packageInstaller.getSession(sessionId)
 		}
-	)
+	).also {
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	}
 
 	@Test
 	@OptInAndroid11

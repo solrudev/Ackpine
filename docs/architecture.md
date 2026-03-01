@@ -111,16 +111,22 @@ Plugin system
 
 Ackpine has a plugin system that allows extending session behavior without coupling `ackpine-core` to concrete plugin implementations.
 
-Plugins implement an internal `PackageInstallerService` interface which wraps Android's `PackageInstaller` behavior.
-
 ### Consumer-facing API
 
-- [`AckpinePlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html) — interface that plugins implement. Each plugin has a unique `id` and typed `Parameters`.
+- [`AckpinePlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html) — interface that plugins implement. Each plugin has a unique string `id` and typed `Parameters`.
 - [`AckpinePluginRegistry`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin-registry/index.html) — interface exposed by parameter builders (`InstallParameters.Builder`, `UninstallParameters.Builder`). Call `usePlugin(pluginClass, parameters)` to apply a plugin to a session.
+
+### Build-time parameter modification
+
+Plugins can modify session parameters at build-time. When `InstallParameters.Builder.build()` or `UninstallParameters.Builder.build()` is called, each registered plugin's `apply(builder)` method is invoked on the builder before the parameters object is constructed. This lets plugins enforce constraints — for example, the Shizuku plugin forces session-based installer type and disables preapproval.
+
+### Services
+
+Plugins provide runtime services by implementing the `AckpineService` and `AckpineServiceProvider` interfaces (internal to `ackpine-core`). `AckpineService` defines the service's capabilities (e.g. wrapping Android's `PackageInstaller` behavior), while `AckpineServiceProvider` acts as a factory that exposes available service instances. Each provider declares a set of plugin identifiers (`pluginIdentifiers`) that tie it back to the `AckpinePlugin` implementations it serves — this is how `ackpine-core` maps a registered plugin to its service provider without depending on the concrete plugin module.
 
 ### Parameters persistence
 
-Plugins can have their own parameters for a session. Plugins implement parameters persistence separately from the main database of `ackpine-core`, so that plugins can maintain independent data persistence schemas and migrations, while also being decoupled from the concrete persistence mechanism.
+Plugins can have their own parameters for a session. Each `AckpineServiceProvider` supplies `PluginParametersStore` instances responsible for persisting and restoring plugin parameters. Plugins implement parameters persistence separately from the main database of `ackpine-core`, so that plugins can maintain independent data persistence schemas and migrations, while also being decoupled from the concrete persistence mechanism.
 
 ### Runtime discovery
 
@@ -131,6 +137,10 @@ This design means:
 - `ackpine-core` never depends on concrete plugin modules — plugins are loaded dynamically.
 - Plugin parameters are persisted alongside session data, so sessions with plugins survive process death.
 - Adding a plugin to your app is as simple as adding the dependency and calling `usePlugin()` in your parameters.
+
+### Instantiation and ProGuard
+
+Plugin instances are created reflectively via no-arg constructors and cached as singletons in `AckpinePluginCache`. Because of this, plugin class names are persisted (they are stored as part of session parameters), and plugins must have a no-arg constructor available at runtime. Consumer ProGuard rules for `ackpine-api` keep all `AckpinePlugin` implementations, preventing class renaming or constructor removal that would break reflection.
 
 See the [Shizuku](guide/shizuku.md) page for the currently available plugin and [Configuration](guide/configuration.md#plugins) for usage in parameters.
 
