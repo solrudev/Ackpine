@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.20.4 (2026-03-01)
+---------------------------
+
+### Bug fixes and improvements
+
+- Enforce `INTENT_BASED` uninstaller type on API < 21 when configuring uninstall parameters.
+
 Version 0.20.3 (2026-02-28)
 ---------------------------
 
