@@ -27,11 +27,14 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.notification
+import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.createSession
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 open class AckpineUninstallerTest(
 	allowUnknownSources: Boolean = !isAndroid11()
@@ -40,6 +43,34 @@ open class AckpineUninstallerTest(
 	@BeforeTest
 	fun setUp() = runTest {
 		installFixtureIfAbsent()
+	}
+
+	internal inline fun <reified F : UninstallFailure> uninstallCancelCompletesWithFailure(
+		uninstallerType: UninstallerType
+	) = runTest {
+		val session = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
+			this.uninstallerType = uninstallerType
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val result = session.test { ui.clickCancel() }
+		assertIs<Session.State.Failed<UninstallFailure>>(result)
+		assertIs<F>(result.failure)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+		ui.waitForIdle()
+	}
+
+	internal inline fun <reified F : UninstallFailure> uninstallNonexistentPackageCompletesWithFailure(
+		uninstallerType: UninstallerType
+	) = runTest {
+		val session = uninstaller.createSession("ackpine.invalid.package") {
+			this.uninstallerType = uninstallerType
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val result = session.test { ui.clickOk() }
+		assertIs<Session.State.Failed<UninstallFailure>>(result)
+		assertIs<F>(result.failure)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+		ui.waitForIdle()
 	}
 
 	protected fun uninstallImmediateCompletesSuccessfully(uninstallerType: UninstallerType) = runTest {

@@ -18,22 +18,14 @@ package ru.solrudev.ackpine.impl.uninstaller
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
-import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
-import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
-import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.createSession
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertIs
-import kotlin.test.assertTrue
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -56,15 +48,17 @@ class IntentBasedUninstallFlowTest : AckpineUninstallerTest() {
 	)
 
 	@Test
-	fun uninstallCancelCompletesWithFailure() = runTest {
-		val uninstallSession = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
-			uninstallerType = UninstallerType.INTENT_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = uninstallSession.test { ui.clickCancel() }
-		assertIs<Session.State.Failed<UninstallFailure>>(result)
-		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
-		ui.waitForIdle()
+	fun uninstallCancelCompletesWithGenericFailure() {
+		uninstallCancelCompletesWithFailure<UninstallFailure.Generic>(
+			UninstallerType.INTENT_BASED
+		)
+	}
+
+	@Test
+	fun uninstallNonexistentPackageCompletesWithGenericFailure() {
+		uninstallNonexistentPackageCompletesWithFailure<UninstallFailure.Generic>(
+			UninstallerType.INTENT_BASED
+		)
 	}
 
 	@Test
