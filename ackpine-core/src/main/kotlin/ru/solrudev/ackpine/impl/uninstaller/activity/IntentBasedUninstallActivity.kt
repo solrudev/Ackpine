@@ -16,42 +16,50 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
 private const val TAG = "IntentBasedUninstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 
-	private lateinit var uninstallPackageContract: UninstallContract
-
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		val packageNameToUninstall = getPackageNameToUninstall()
-		if (packageNameToUninstall == null) {
-			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
-			finish()
-			return
-		}
-		uninstallPackageContract = UninstallPackageContract(packageNameToUninstall)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
 		}
 	}
 
 	override fun processResult(resultCode: Int) {
-		val result = uninstallPackageContract.parseResult(this, resultCode)
+		val result = when (resultCode) {
+			RESULT_OK -> Session.State.Succeeded
+			RESULT_CANCELED -> Session.State.Failed(UninstallFailure.Aborted("Session was cancelled"))
+			else -> Session.State.Failed(UninstallFailure.Generic())
+		}
 		completeSession(result)
 	}
 
+	@Suppress("DEPRECATION")
 	override fun launchUninstallActivity() {
-		val intent = uninstallPackageContract.createIntent()
+		val packageName = getPackageNameToUninstall() ?: return
+		val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
+			.setData(Uri.parse("package:$packageName"))
+			.putExtra(Intent.EXTRA_RETURN_RESULT, true)
 		startActivityForResult(intent)
 	}
 
 	private fun getPackageNameToUninstall(): String? {
-		return intent.extras?.getString(EXTRA_PACKAGE_NAME)
+		val packageNameToUninstall = intent.extras?.getString(EXTRA_PACKAGE_NAME)
 			?: intent.extras?.getString("ACKPINE_UNINSTALLER_PACKAGE_NAME")
+		if (packageNameToUninstall == null) {
+			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
+			finish()
+		}
+		return packageNameToUninstall
 	}
 }

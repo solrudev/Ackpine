@@ -23,8 +23,8 @@ import org.junit.runner.RunWith
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure

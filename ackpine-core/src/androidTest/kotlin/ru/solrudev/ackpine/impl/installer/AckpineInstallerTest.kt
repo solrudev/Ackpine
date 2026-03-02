@@ -26,11 +26,11 @@ import ru.solrudev.ackpine.impl.AckpineTest
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.InstallPermissionRequest
 import ru.solrudev.ackpine.impl.InstallPermissionRequest.Companion.STANDARD_SWITCH
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.awaitWithTimeout
 import ru.solrudev.ackpine.impl.testutil.isAndroid11
 import ru.solrudev.ackpine.impl.testutil.isTv
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType

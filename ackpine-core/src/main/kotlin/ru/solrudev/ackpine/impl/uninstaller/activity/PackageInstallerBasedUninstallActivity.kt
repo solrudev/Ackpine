@@ -24,6 +24,7 @@ import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 
 private const val TAG = "PackageInstallerBasedUninstallActivity"
 

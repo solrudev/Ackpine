@@ -19,14 +19,10 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
-import android.os.Build
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.Shadows.shadowOf
-import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.testutil.TestCompletableSession
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
@@ -43,8 +39,7 @@ class IntentBasedUninstallActivityTest {
 	private val context: Context = ApplicationProvider.getApplicationContext()
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.N])
-	fun resultCanceledCompletesWithAbortedFailureOnPreQ() {
+	fun resultCanceledCompletesWithAbortedFailure() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
 		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
@@ -60,8 +55,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.N])
-	fun resultOkCompletesSucceededOnPreQ() {
+	fun resultOkCompletesSucceeded() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
 		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
@@ -75,8 +69,7 @@ class IntentBasedUninstallActivityTest {
 	}
 
 	@Test
-	@Config(sdk = [Build.VERSION_CODES.N])
-	fun resultFirstUserCompletesGenericFailureOnPreQ() {
+	fun resultFirstUserCompletesGenericFailure() {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableSession<UninstallFailure>(sessionId)
 		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
@@ -103,22 +96,6 @@ class IntentBasedUninstallActivityTest {
 		ActivityScenario.launch<IntentBasedUninstallActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
 			assertEquals(Session.State.Succeeded, session.completedState)
-		}
-	}
-
-	@Test
-	fun packageStillInstalledCompletesWithFailure() {
-		val sessionId = UUID.randomUUID()
-		val session = TestCompletableSession<UninstallFailure>(sessionId)
-		val packageManager = shadowOf(context.packageManager)
-		packageManager.installPackage(PackageInfo().apply { packageName = "com.example.app" })
-		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
-		val intent = Intent(context, IntentBasedUninstallActivity::class.java)
-			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
-		SessionIdIntents.putSessionId(intent, sessionId)
-		ActivityScenario.launch<IntentBasedUninstallActivity>(intent).use { scenario ->
-			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
-			assertIs<Session.State.Failed<UninstallFailure>>(session.completedState)
 		}
 	}
 }

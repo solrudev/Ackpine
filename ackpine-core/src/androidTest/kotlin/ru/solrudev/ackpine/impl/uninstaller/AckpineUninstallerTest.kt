@@ -19,9 +19,9 @@ package ru.solrudev.ackpine.impl.uninstaller
 import kotlinx.coroutines.test.runTest
 import ru.solrudev.ackpine.impl.AckpineTest
 import ru.solrudev.ackpine.impl.ApkFixtures
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.isAndroid11
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.remote.RemoteSession
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session

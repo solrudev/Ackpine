@@ -24,8 +24,8 @@ import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import ru.solrudev.ackpine.impl.ApkFixtures
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.parameters.InstallerType
