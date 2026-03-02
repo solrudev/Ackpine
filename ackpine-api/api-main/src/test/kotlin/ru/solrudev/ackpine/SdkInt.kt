@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
 
 package ru.solrudev.ackpine
 
-import androidx.annotation.RestrictTo
+object SdkInt {
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-internal object SdkIntWrapper {
-	@JvmSynthetic
-	@JvmName("get")
-	fun get() = try {
-		SdkInt.get()
-	} catch (_: NoClassDefFoundError) {
-		throw NoClassDefFoundError(
-			"Class ru.solrudev.ackpine.SdkInt was not found. " +
-					"Make sure you have configured a dependency on ackpine-core module."
-		)
+	private var sdkInt = 34
+
+	fun get() = sdkInt
+
+	fun set(value: Int) {
+		sdkInt = value
+	}
+
+	fun reset() {
+		sdkInt = 34
 	}
 }

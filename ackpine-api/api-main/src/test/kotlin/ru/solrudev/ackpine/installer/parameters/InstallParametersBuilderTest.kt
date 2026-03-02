@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.installer.parameters
 
 import android.net.Uri
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.SdkInt
+import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
@@ -25,6 +27,7 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.Locale
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -33,10 +36,13 @@ import kotlin.test.assertTrue
 
 class InstallParametersBuilderTest {
 
+	@AfterTest
+	fun tearDown() = SdkInt.reset()
+
 	@Test
 	fun buildWithDefaults() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY).build()
-		assertEquals(InstallerType.SESSION_BASED, parameters.installerType)
+		assertEquals(InstallerType.DEFAULT, parameters.installerType)
 		assertEquals(Confirmation.DEFERRED, parameters.confirmation)
 		assertEquals("", parameters.name)
 		assertTrue(parameters.requireUserAction)
@@ -72,6 +78,34 @@ class InstallParametersBuilderTest {
 			.build()
 		assertEquals(InstallerType.SESSION_BASED, parameters.installerType)
 		assertEquals(4, parameters.apks.size)
+	}
+
+	@Test
+	fun lowApiEnforcesIntentBasedInstallerType() {
+		SdkInt.set(19)
+		val parameters = InstallParameters.Builder(Uri.EMPTY)
+			.setInstallerType(InstallerType.SESSION_BASED)
+			.build()
+		assertEquals(InstallerType.INTENT_BASED, parameters.installerType)
+	}
+
+	@Test
+	fun lowApiRejectsMultipleApks() {
+		SdkInt.set(19)
+		assertFailsWith<SplitPackagesNotSupportedException> {
+			InstallParameters.Builder(listOf(Uri.EMPTY, Uri.EMPTY))
+		}
+	}
+
+	@Test
+	fun lowApiRejectsAddApkMethods() {
+		SdkInt.set(19)
+		assertFailsWith<SplitPackagesNotSupportedException> {
+			InstallParameters.Builder(Uri.EMPTY).addApk(Uri.EMPTY)
+		}
+		assertFailsWith<SplitPackagesNotSupportedException> {
+			InstallParameters.Builder(Uri.EMPTY).addApks(listOf(Uri.EMPTY, Uri.EMPTY))
+		}
 	}
 
 	@Test
