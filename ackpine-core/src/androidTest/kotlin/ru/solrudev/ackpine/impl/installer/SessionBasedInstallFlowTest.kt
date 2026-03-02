@@ -19,14 +19,26 @@ package ru.solrudev.ackpine.impl.installer
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.filters.SdkSuppress
+import kotlinx.coroutines.test.runTest
 import org.junit.FixMethodOrder
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
+import ru.solrudev.ackpine.impl.testutil.awaitWithTimeout
+import ru.solrudev.ackpine.impl.testutil.test
+import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.createSession
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.constraints
+import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -61,6 +73,29 @@ class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 	fun installPreparationsRecoverAfterProcessDeath() = testProcessDeathPreparationsRecovery(
 		InstallerType.SESSION_BASED
 	)
+
+	@Test
+	@SdkSuppress(minSdkVersion = 34)
+	fun installWithUnsatisfiedConstraintsCompletesWithTimeoutFailure() = runTest {
+		val installSession = installer.createSession(ApkFixtures.fixtureUri()) {
+			installerType = InstallerType.SESSION_BASED
+			confirmation = Confirmation.IMMEDIATE
+		}
+		val installResult = installSession.test { ui.clickInstallOrUpdate() }
+		assertEquals(Session.State.Succeeded, installResult)
+
+		val updateSession = installer.createSession(ApkFixtures.fixtureUri()) {
+			installerType = InstallerType.SESSION_BASED
+			confirmation = Confirmation.IMMEDIATE
+			constraints(timeout = 1.seconds) {
+				isDeviceIdleRequired = true
+				timeoutStrategy = InstallConstraints.TimeoutStrategy.Fail
+			}
+		}
+		val result = updateSession.awaitWithTimeout()
+		assertIs<Session.State.Failed<InstallFailure>>(result)
+		assertIs<InstallFailure.Timeout>(result.failure)
+	}
 
 	@Test
 	@OptInAndroid11
