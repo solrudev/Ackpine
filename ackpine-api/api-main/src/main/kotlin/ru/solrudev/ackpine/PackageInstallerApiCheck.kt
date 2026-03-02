@@ -21,12 +21,4 @@ import androidx.annotation.ChecksSdkIntAtLeast
 
 @ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
 @JvmSynthetic
-internal fun isPackageInstallerApiAvailable(): Boolean = isPackageInstallerAvailable
-
-// To avoid referencing Build.VERSION.SDK_INT
-private val isPackageInstallerAvailable = try {
-	Class.forName("android.content.pm.PackageInstaller")
-	true
-} catch (_: ClassNotFoundException) {
-	false
-}
+internal fun isPackageInstallerApiAvailable(): Boolean = SdkIntWrapper.get() >= Build.VERSION_CODES.LOLLIPOP
