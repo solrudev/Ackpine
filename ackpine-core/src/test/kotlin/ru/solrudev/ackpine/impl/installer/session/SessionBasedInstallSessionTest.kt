@@ -373,7 +373,7 @@ internal fun createSessionBasedSession(
 	installMode: InstallMode = InstallMode.Full,
 	packageSource: PackageSource = PackageSource.Unspecified,
 	nativeSessionId: Int = -1,
-	preapprovalState: PreapprovalLifecycle.State = PreapprovalLifecycle.State.IDLE,
+	initialPreapprovalState: PreapprovalLifecycle.State = PreapprovalLifecycle.State.IDLE,
 	initialProgress: Progress = Progress(),
 	nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
 	preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),

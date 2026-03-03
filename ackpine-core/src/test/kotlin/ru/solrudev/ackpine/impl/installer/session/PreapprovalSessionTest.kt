@@ -149,7 +149,7 @@ class PreapprovalSessionTest {
 	fun restoredActivePreapprovalIsReportedActive() {
 		val session = createSessionBasedSession(
 			preapproval = InstallPreapproval("pkg", "label", "en"),
-			preapprovalState = PreapprovalLifecycle.State.ACTIVE,
+			initialPreapprovalState = PreapprovalLifecycle.State.ACTIVE,
 			initialState = Session.State.Active
 		)
 		assertTrue(session.isPreapprovalActive())
@@ -159,7 +159,7 @@ class PreapprovalSessionTest {
 	fun restoredActivatingPreapprovalIsReportedActive() {
 		val session = createSessionBasedSession(
 			preapproval = InstallPreapproval("pkg", "label", "en"),
-			preapprovalState = PreapprovalLifecycle.State.ACTIVATING,
+			initialPreapprovalState = PreapprovalLifecycle.State.ACTIVATING,
 			initialState = Session.State.Active
 		)
 		assertTrue(session.isPreapprovalActive())
@@ -169,7 +169,7 @@ class PreapprovalSessionTest {
 	fun restoredInactivePreapprovalIsReportedInactive() {
 		val session = createSessionBasedSession(
 			preapproval = InstallPreapproval("pkg", "label", "en"),
-			preapprovalState = PreapprovalLifecycle.State.IDLE,
+			initialPreapprovalState = PreapprovalLifecycle.State.IDLE,
 			initialState = Session.State.Active
 		)
 		assertFalse(session.isPreapprovalActive())
@@ -191,7 +191,7 @@ class PreapprovalSessionTest {
 			preapproval = InstallPreapproval("pkg", "label", "en"),
 			initialState = Session.State.Pending,
 			nativeSessionId = 42,
-			preapprovalState = PreapprovalLifecycle.State.PREAPPROVED
+			initialPreapprovalState = PreapprovalLifecycle.State.PREAPPROVED
 		)
 
 		session.launch()
