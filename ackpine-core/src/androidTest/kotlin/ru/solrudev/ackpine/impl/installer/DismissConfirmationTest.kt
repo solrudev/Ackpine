@@ -27,12 +27,14 @@ import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.InstallPermissionRequest
 import ru.solrudev.ackpine.impl.InstallPermissionRequest.Companion.STANDARD_SWITCH
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.test
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 
 @ExcludeAndroidTv
@@ -56,5 +58,6 @@ class DismissConfirmationTest : AckpineInstallerTest(allowUnknownSources = false
 		}
 		assertIs<Session.State.Failed<InstallFailure>>(result)
 		assertIs<InstallFailure.Aborted>(result.failure)
+		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
 	}
 }

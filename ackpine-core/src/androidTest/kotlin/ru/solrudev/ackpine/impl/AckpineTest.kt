@@ -25,14 +25,13 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import ru.solrudev.ackpine.impl.InstallPermissionRequest.Companion.STANDARD_SWITCH
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.UiAutomationUtility
 import ru.solrudev.ackpine.impl.testutil.isAndroid11
 import ru.solrudev.ackpine.impl.testutil.isTv
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
-import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.remote.AckpineRemoteService
 import ru.solrudev.ackpine.remote.RemoteSession
 import ru.solrudev.ackpine.remote.state
@@ -40,7 +39,6 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.createSession
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
 import kotlin.test.assertEquals
 

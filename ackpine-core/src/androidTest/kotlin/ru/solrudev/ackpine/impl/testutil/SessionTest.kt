@@ -42,13 +42,8 @@ suspend fun <F : Failure> Session<F>.test(
 		callsInPlace(block, InvocationKind.EXACTLY_ONCE)
 	}
 	return coroutineScope {
-		val resultDeferred = async(
-			context = Dispatchers.Default.limitedParallelism(1),
-			start = UNDISPATCHED
-		) {
-			withTimeout(timeout) {
-				await()
-			}
+		val resultDeferred = async(start = UNDISPATCHED) {
+			awaitWithTimeout(timeout)
 		}
 		block(this@test)
 		resultDeferred.await()
@@ -69,6 +64,14 @@ suspend fun RemoteSession.test(
 		}
 		block(this@test)
 		resultDeferred.await()
+	}
+}
+
+suspend fun <F : Failure> Session<F>.awaitWithTimeout(timeout: Duration = 30.seconds): Session.State.Completed<F> {
+	return withContext(Dispatchers.Default.limitedParallelism(1)) {
+		withTimeout(timeout) {
+			await()
+		}
 	}
 }
 

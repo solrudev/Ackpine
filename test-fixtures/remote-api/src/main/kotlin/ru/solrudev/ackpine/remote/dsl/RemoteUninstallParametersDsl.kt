@@ -32,6 +32,9 @@ public interface RemoteUninstallParametersDsl : RemoteConfirmationDsl {
 	 * Type of the package uninstaller implementation.
 	 *
 	 * Default value is [UninstallerType.DEFAULT].
+	 *
+	 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
+	 * returned/set regardless of the current/provided value.
 	 */
 	public var uninstallerType: UninstallerType
 }

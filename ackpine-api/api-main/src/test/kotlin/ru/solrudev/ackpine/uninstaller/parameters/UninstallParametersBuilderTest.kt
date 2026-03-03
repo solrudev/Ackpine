@@ -16,21 +16,26 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.SdkInt
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UninstallParametersBuilderTest {
 
+	@AfterTest
+	fun tearDown() = SdkInt.reset()
+
 	@Test
 	fun buildWithDefaults() {
 		val parameters = UninstallParameters.Builder("com.example").build()
 		assertEquals("com.example", parameters.packageName)
-		assertEquals(UninstallerType.PACKAGE_INSTALLER_BASED, parameters.uninstallerType)
+		assertEquals(UninstallerType.DEFAULT, parameters.uninstallerType)
 		assertEquals(Confirmation.DEFERRED, parameters.confirmation)
 		assertEquals(NotificationData.DEFAULT, parameters.notificationData)
 	}
@@ -48,6 +53,15 @@ class UninstallParametersBuilderTest {
 		assertEquals(UninstallerType.INTENT_BASED, parameters.uninstallerType)
 		assertEquals(Confirmation.IMMEDIATE, parameters.confirmation)
 		assertEquals(notificationData, parameters.notificationData)
+	}
+
+	@Test
+	fun lowApiEnforcesIntentBasedUninstallerType() {
+		SdkInt.set(19)
+		val parameters = UninstallParameters.Builder("com.example")
+			.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
+			.build()
+		assertEquals(UninstallerType.INTENT_BASED, parameters.uninstallerType)
 	}
 
 	@Test

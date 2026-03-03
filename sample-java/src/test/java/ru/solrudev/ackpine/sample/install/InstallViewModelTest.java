@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.sample.install;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static java.util.Collections.emptyList;
 
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException;
@@ -66,6 +68,10 @@ public class InstallViewModelTest {
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
 		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(TEST_APK_NAME, parameters.getName());
+
 		final var expectedSessions1 = List.of(new SessionData(session.getId(), TEST_APK_NAME));
 		final var expectedProgress1 = List.of(new SessionProgress(session.getId(), new Progress()));
 		assertEquals(expectedSessions1, viewModel.getSessions().getValue());
@@ -218,6 +224,19 @@ public class InstallViewModelTest {
 			session.getController().succeed();
 		}
 		assertTrue(viewModel.getError().getValue().isEmpty());
+		assertTrue(viewModel.getSessions().getValue().isEmpty());
+		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
+	}
+
+	@Test
+	public void nonexistentSavedSessionIdIsRemoved() {
+		final var installer = new TestPackageInstaller();
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var sessionId = UUID.randomUUID();
+		final var sessionData = new SessionData(sessionId, TEST_APK_NAME);
+		repository.addSessionData(sessionData);
+
+		final var viewModel = new InstallViewModel(installer, repository);
 		assertTrue(viewModel.getSessions().getValue().isEmpty());
 		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
 	}

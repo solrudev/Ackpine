@@ -26,21 +26,19 @@ import org.junit.runners.MethodSorters
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
+import ru.solrudev.ackpine.impl.testutil.awaitWithTimeout
 import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
+import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.createSession
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallerType
-import ru.solrudev.ackpine.installer.parameters.preapproval
-import ru.solrudev.ackpine.remote.RemoteSession
-import ru.solrudev.ackpine.remote.dsl.preapproval
-import ru.solrudev.ackpine.resources.ResolvableString
+import ru.solrudev.ackpine.installer.parameters.constraints
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
-import ru.solrudev.ackpine.session.parameters.notification
-import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertIs
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -49,34 +47,20 @@ import kotlin.test.assertTrue
 class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 
 	@Test
-	fun installImmediateCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.SESSION_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = session.test { ui.clickInstallOrUpdate() }
-		assertEquals(Session.State.Succeeded, result)
-		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
-	}
+	fun installImmediateCompletesSuccessfully() = installImmediateCompletesSuccessfully(
+		InstallerType.SESSION_BASED
+	)
 
 	@Test
 	@ExcludeAndroidTv
-	fun installDeferredCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
-			installerType = InstallerType.SESSION_BASED
-			confirmation = Confirmation.DEFERRED
-			notification {
-				title = ResolvableString.raw("Ackpine install")
-			}
-		}
+	fun installDeferredCompletesSuccessfully() = installDeferredCompletesSuccessfully(
+		InstallerType.SESSION_BASED
+	)
 
-		val result = session.test {
-			ui.clickNotification("Ackpine install")
-			ui.clickInstallOrUpdate()
-		}
-
-		assertEquals(Session.State.Succeeded, result)
-	}
+	@Test
+	fun installCancelCompletesWithAbortedFailure() = installCancelCompletesWithAbortedFailure(
+		InstallerType.SESSION_BASED
+	)
 
 	@Test
 	@OptInAndroid11
@@ -92,49 +76,25 @@ class SessionBasedInstallFlowTest : AckpineInstallerTest() {
 
 	@Test
 	@SdkSuppress(minSdkVersion = 34)
-	fun installWithPreapprovalCompletesSuccessfully() = runTest {
-		val session = installer.createSession(ApkFixtures.fixtureUri()) {
+	fun installWithUnsatisfiedConstraintsCompletesWithTimeoutFailure() = runTest {
+		val installSession = installer.createSession(ApkFixtures.fixtureUri()) {
 			installerType = InstallerType.SESSION_BASED
 			confirmation = Confirmation.IMMEDIATE
-			preapproval(
-				packageName = ApkFixtures.FIXTURE_PACKAGE_NAME,
-				label = "Ackpine Fixture",
-				locale = Locale.US
-			)
 		}
-		val result = session.test { ui.clickInstallOrUpdate() }
-		assertEquals(Session.State.Succeeded, result)
-		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
-	}
+		val installResult = installSession.test { ui.clickInstallOrUpdate() }
+		assertEquals(Session.State.Succeeded, installResult)
 
-	@Test
-	@SdkSuppress(minSdkVersion = 34)
-	fun preapprovalRecoversAfterProcessDeath() = testProcessDeathRecovery(
-		sessionFactory = {
-			packageInstaller.createSession(ApkFixtures.fixtureUri()) {
-				installerType = InstallerType.SESSION_BASED
-				confirmation = Confirmation.IMMEDIATE
-				preapproval(
-					packageName = ApkFixtures.FIXTURE_PACKAGE_NAME,
-					label = "Ackpine Fixture",
-					locale = Locale.US
-				)
+		val updateSession = installer.createSession(ApkFixtures.fixtureUri()) {
+			installerType = InstallerType.SESSION_BASED
+			confirmation = Confirmation.IMMEDIATE
+			constraints(timeout = 1.seconds) {
+				isDeviceIdleRequired = true
+				timeoutStrategy = InstallConstraints.TimeoutStrategy.Fail
 			}
-		},
-		stateHandler = { session, state, job ->
-			when (state) {
-				RemoteSession.State.Pending -> session.launch()
-				else -> job?.cancel()
-			}
-		},
-		sessionConfirmation = {
-			ui.clickInstallOrUpdate()
-		},
-		getSession = { sessionId ->
-			packageInstaller.getSession(sessionId)
 		}
-	).also {
-		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+		val result = updateSession.awaitWithTimeout()
+		assertIs<Session.State.Failed<InstallFailure>>(result)
+		assertIs<InstallFailure.Timeout>(result.failure)
 	}
 
 	@Test

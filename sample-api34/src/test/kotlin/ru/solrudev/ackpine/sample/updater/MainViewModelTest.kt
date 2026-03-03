@@ -30,6 +30,9 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.AssetFileProvider
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.installer.parameters.InstallConstraints
+import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
+import ru.solrudev.ackpine.installer.parameters.PackageSource
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.test.TestInstallSession
@@ -38,7 +41,10 @@ import ru.solrudev.ackpine.test.TestSessionScript
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 private const val SESSION_ID_KEY = "SESSION_ID"
 private const val OKHTTP_PROVIDER_AUTHORITY = "ru.solrudev.ackpine.sample.updater.OkHttpProvider"
@@ -71,6 +77,12 @@ class MainViewModelTest {
 			advanceUntilIdle()
 
 			val session = installer.sessions.single()
+			val parameters = assertNotNull(installer.createdParameters[session.id])
+			assertTrue(parameters.requestUpdateOwnership)
+			assertEquals(PackageSource.Store, parameters.packageSource)
+			assertNotEquals(InstallPreapproval.NONE, parameters.preapproval)
+			assertNotEquals(InstallConstraints.NONE, parameters.constraints)
+
 			assertEquals(session.id, savedStateHandle[SESSION_ID_KEY])
 			val installingState = UpdaterUiState(
 				isInstalling = true,

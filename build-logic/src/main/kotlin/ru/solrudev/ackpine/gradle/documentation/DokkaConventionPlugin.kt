@@ -32,6 +32,7 @@ import org.jetbrains.dokka.gradle.engine.plugins.DokkaHtmlPluginParameters
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin
 import ru.solrudev.ackpine.gradle.AckpineLibraryExtension
 import ru.solrudev.ackpine.gradle.docsDirectory
+import ru.solrudev.ackpine.gradle.tasks.DokkaGenerateModuleIndexTask
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 import java.net.URI
 
@@ -43,7 +44,7 @@ public class DokkaConventionPlugin : Plugin<Project> {
 		configureDokka()
 		pluginManager.withPlugin(AckpineLibraryBasePlugin.PLUGIN_ID) {
 			val ackpineLibraryExtension = the<AckpineLibraryExtension>()
-			configureModuleName(ackpineLibraryExtension)
+			configureModule(ackpineLibraryExtension)
 			val internalPackages = ackpineLibraryExtension.internalPackages
 			configureDokkaSuppressedFiles(internalPackages)
 		}
@@ -74,11 +75,21 @@ public class DokkaConventionPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureModuleName(
+	private fun Project.configureModule(
 		ackpineLibraryExtension: AckpineLibraryExtension
-	) = extensions.configure<DokkaExtension> {
-		ackpineLibraryExtension.addIdListener { id ->
-			moduleName = "ackpine-$id"
+	) = ackpineLibraryExtension.addIdListener { id ->
+		val moduleName = "ackpine-$id"
+		val moduleDescriptionProvider = provider { description }
+		val indexFile = layout.buildDirectory.file("dokkaDocs/module-index.md")
+		val generateIndexTask = tasks.register<DokkaGenerateModuleIndexTask>("dokkaGenerateModuleIndex") {
+			moduleDisplayName = moduleName
+			moduleDescription = moduleDescriptionProvider
+			outputFile = indexFile
+		}
+		val dokka = the<DokkaExtension>()
+		dokka.moduleName = moduleName
+		dokka.dokkaSourceSets.configureEach {
+			includes.from(generateIndexTask)
 		}
 	}
 

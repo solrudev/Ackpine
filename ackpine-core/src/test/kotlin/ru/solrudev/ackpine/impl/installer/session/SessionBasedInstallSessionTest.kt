@@ -17,6 +17,9 @@
 package ru.solrudev.ackpine.impl.installer.session
 
 import android.content.Context
+import android.content.pm.PackageInstaller
+import android.content.pm.PackageInstaller.SessionParams
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -24,6 +27,7 @@ import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.util.ReflectionHelpers
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.CommitAttemptsUpdate
@@ -46,6 +50,7 @@ import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrate
 import ru.solrudev.ackpine.installer.parameters.InstallMode
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.installer.parameters.PackageSource
+import ru.solrudev.ackpine.installer.parameters.packageSources
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -360,6 +365,117 @@ class SessionBasedInstallSessionTest {
 		assertContains(packageInstaller.abandonedSessions, 123)
 		assertEquals(1, packageInstaller.unregisteredCallbacks.size)
 	}
+
+	@Test
+	fun createSessionParamsWithFullInstallMode() {
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			installMode = InstallMode.Full
+		)
+
+		session.launch()
+		idleMainThread()
+
+		val params = packageInstaller.createdSessions.single().params
+		assertEquals(SessionParams.MODE_FULL_INSTALL, params.mode)
+	}
+
+	@Test
+	fun createSessionParamsWithInheritExistingInstallMode() {
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			installMode = InstallMode.InheritExisting("pkg", dontKillApp = true)
+		)
+
+		session.launch()
+		idleMainThread()
+
+		val params = packageInstaller.createdSessions.single().params
+		assertEquals(SessionParams.MODE_INHERIT_EXISTING, params.mode)
+		assertEquals("pkg", ReflectionHelpers.getField(params, "appPackageName"))
+		assertTrue(params.installFlags and INSTALL_DONT_KILL_APP != 0)
+	}
+
+	@Test
+	fun createSessionParamsSetsOriginatingUidAndInstallReason() {
+		val packageInstaller = RecordingPackageInstallerService(uid = 2000)
+		val session = createSessionBasedSession(packageInstaller = packageInstaller)
+
+		session.launch()
+		idleMainThread()
+
+		val params = packageInstaller.createdSessions.single().params
+		assertEquals(2000, ReflectionHelpers.getField(params, "originatingUid"))
+		assertEquals(PackageManager.INSTALL_REASON_USER, ReflectionHelpers.getField(params, "installReason"))
+	}
+
+	@Test
+	fun createSessionParamsMapsRequireUserAction() {
+		val packageInstaller = RecordingPackageInstallerService()
+		val sessionTrue = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			requireUserAction = true
+		)
+		val sessionFalse = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			requireUserAction = false
+		)
+
+		sessionTrue.launch()
+		sessionFalse.launch()
+		idleMainThread()
+
+		val paramsTrue = packageInstaller.createdSessions[0].params
+		val paramsFalse = packageInstaller.createdSessions[1].params
+		assertEquals(SessionParams.USER_ACTION_REQUIRED, paramsTrue.requireUserAction)
+		assertEquals(SessionParams.USER_ACTION_NOT_REQUIRED, paramsFalse.requireUserAction)
+	}
+
+	@Test
+	fun createSessionParamsMapsPackageSource() {
+		val packageInstaller = RecordingPackageInstallerService()
+		val sources = packageSources.onEach { source ->
+			val session = createSessionBasedSession(
+				packageInstaller = packageInstaller,
+				packageSource = source
+			)
+			session.launch()
+		}
+		idleMainThread()
+
+		val expectedMapping = mapOf(
+			PackageSource.Unspecified to PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED,
+			PackageSource.Store to PackageInstaller.PACKAGE_SOURCE_STORE,
+			PackageSource.LocalFile to PackageInstaller.PACKAGE_SOURCE_LOCAL_FILE,
+			PackageSource.DownloadedFile to PackageInstaller.PACKAGE_SOURCE_DOWNLOADED_FILE,
+			PackageSource.Other to PackageInstaller.PACKAGE_SOURCE_OTHER
+		)
+		packageInstaller.createdSessions.forEachIndexed { index, record ->
+			val source = sources[index]
+			assertEquals(
+				expectedMapping.getValue(source),
+				ReflectionHelpers.getField(record.params, "packageSource"),
+				"PackageSource.$source"
+			)
+		}
+	}
+
+	@Test
+	fun createSessionParamsWithRequestUpdateOwnership() {
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			requestUpdateOwnership = true
+		)
+
+		session.launch()
+		idleMainThread()
+
+		val params = packageInstaller.createdSessions.single().params
+		assertTrue(params.installFlags and INSTALL_REQUEST_UPDATE_OWNERSHIP != 0)
+	}
 }
 
 internal fun createSessionBasedSession(
@@ -372,8 +488,10 @@ internal fun createSessionBasedSession(
 	commitAttemptsCount: Int = 0,
 	installMode: InstallMode = InstallMode.Full,
 	packageSource: PackageSource = PackageSource.Unspecified,
+	requireUserAction: Boolean = true,
+	requestUpdateOwnership: Boolean = false,
 	nativeSessionId: Int = -1,
-	preapprovalState: PreapprovalLifecycle.State = PreapprovalLifecycle.State.IDLE,
+	initialPreapprovalState: PreapprovalLifecycle.State = PreapprovalLifecycle.State.IDLE,
 	initialProgress: Progress = Progress(),
 	nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
 	preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),
@@ -381,31 +499,30 @@ internal fun createSessionBasedSession(
 	executor: Executor = ImmediateExecutor
 ) = SessionBasedInstallSession(
 	context = ApplicationProvider.getApplicationContext(),
-	packageInstaller = packageInstaller,
-	apks = apks,
-	id = id,
-	initialState = initialState,
-	initialProgress = initialProgress,
+	packageInstaller, apks, id, initialState, initialProgress,
 	confirmation = Confirmation.DEFERRED,
 	notificationData = NotificationData.DEFAULT,
-	requireUserAction = true,
-	installMode = installMode,
-	preapproval = preapproval,
-	constraints = constraints,
-	requestUpdateOwnership = false,
-	packageSource = packageSource,
+	requireUserAction, installMode, preapproval, constraints, requestUpdateOwnership, packageSource,
 	sessionDao = RecordingSessionDao(),
 	sessionFailureDao = TestSessionFailureDao(),
 	sessionProgressDao = RecordingSessionProgressDao(),
-	nativeSessionIdDao = nativeSessionIdDao,
-	installPreapprovalDao = preapprovalDao,
-	installConstraintsDao = constraintsDao,
-	executor = executor,
+	nativeSessionIdDao, preapprovalDao, constraintsDao, executor,
 	handler = Handler(Looper.getMainLooper()),
 	sessionCallbackHandler = Handler(Looper.getMainLooper()),
-	nativeSessionId = nativeSessionId,
+	nativeSessionId,
 	notificationId = 1,
-	commitAttemptsCount = commitAttemptsCount,
-	initialPreapprovalState = preapprovalState,
+	commitAttemptsCount, initialPreapprovalState,
 	dbWriteSemaphore = BinarySemaphore()
 )
+
+private val SessionParams.installFlags: Int
+	get() = ReflectionHelpers.getField(this, "installFlags")
+
+private val SessionParams.mode: Int
+	get() = ReflectionHelpers.getField(this, "mode")
+
+private val SessionParams.requireUserAction: Int
+	get() = ReflectionHelpers.getField(this, "requireUserAction")
+
+private const val INSTALL_DONT_KILL_APP = 0x00001000
+private const val INSTALL_REQUEST_UPDATE_OWNERSHIP = 1 shl 25

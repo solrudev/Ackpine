@@ -19,21 +19,12 @@ package ru.solrudev.ackpine.impl.uninstaller
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.filters.SdkSuppress
-import kotlinx.coroutines.test.runTest
 import org.junit.runner.RunWith
-import ru.solrudev.ackpine.impl.ApkFixtures
+import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
-import ru.solrudev.ackpine.impl.testutil.test
-import ru.solrudev.ackpine.impl.uninstaller.activity.isPackageInstalled
-import ru.solrudev.ackpine.session.Session
-import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.createSession
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertIs
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -41,26 +32,28 @@ import kotlin.test.assertIs
 class PackageInstallerBasedUninstallFlowTest : AckpineUninstallerTest() {
 
 	@Test
-	fun uninstallCompletesSuccessfully() = runTest {
-		val uninstallSession = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
-			uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = uninstallSession.test { ui.clickOk() }
-		assertEquals(Session.State.Succeeded, result)
-		assertFalse(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
+	fun uninstallImmediateCompletesSuccessfully() = uninstallImmediateCompletesSuccessfully(
+		UninstallerType.PACKAGE_INSTALLER_BASED
+	)
+
+	@Test
+	@ExcludeAndroidTv
+	fun uninstallDeferredCompletesSuccessfully() = uninstallDeferredCompletesSuccessfully(
+		UninstallerType.PACKAGE_INSTALLER_BASED
+	)
+
+	@Test
+	fun uninstallCancelCompletesWithAbortedFailure() {
+		uninstallCancelCompletesWithFailure<UninstallFailure.Aborted>(
+			UninstallerType.PACKAGE_INSTALLER_BASED
+		)
 	}
 
 	@Test
-	fun uninstallCancelCompletesWithAbortedFailure() = runTest {
-		val uninstallSession = uninstaller.createSession(ApkFixtures.FIXTURE_PACKAGE_NAME) {
-			uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
-			confirmation = Confirmation.IMMEDIATE
-		}
-		val result = uninstallSession.test { ui.clickCancel() }
-		assertIs<Session.State.Failed<UninstallFailure>>(result)
-		assertIs<UninstallFailure.Aborted>(result.failure)
-		ui.waitForIdle()
+	fun uninstallNonexistentPackageCompletesWithAbortedFailure() {
+		uninstallNonexistentPackageCompletesWithFailure<UninstallFailure.Aborted>(
+			UninstallerType.PACKAGE_INSTALLER_BASED
+		)
 	}
 
 	@Test

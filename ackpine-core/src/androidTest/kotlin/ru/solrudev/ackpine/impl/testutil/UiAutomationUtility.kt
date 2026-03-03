@@ -30,7 +30,7 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class UiAutomationUtility(
-	private val device: UiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+	val device: UiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 ) {
 
 	private val context: Context
@@ -115,6 +115,22 @@ class UiAutomationUtility(
 
 	fun revokeInstallPermission(packageName: String) {
 		device.executeShellCommand("appops set $packageName REQUEST_INSTALL_PACKAGES ignore")
+	}
+
+	inline fun withDisabledPreapproval(block: () -> Unit) = device.run {
+		val previousValue = executeShellCommand("device_config get package_manager_service is_preapproval_available")
+			.trim()
+			.takeUnless { it == "null" }
+		executeShellCommand("device_config put package_manager_service is_preapproval_available false")
+		try {
+			block()
+		} finally {
+			if (previousValue == null) {
+				executeShellCommand("device_config delete package_manager_service is_preapproval_available")
+			} else {
+				executeShellCommand("device_config put package_manager_service is_preapproval_available $previousValue")
+			}
+		}
 	}
 
 	private suspend fun launchInstallerApp(installPermissionRequest: InstallPermissionRequest) = device.run {

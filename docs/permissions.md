@@ -23,7 +23,7 @@ If you don't need some of the features listed above and don't want to have unnee
     tools:node="remove" />
 ```
 
-For getting correct uninstall results, your app must have permission to query the uninstalled package. Add this to your `AndroidManifest.xml`:
+For always getting correct uninstall results with `PACKAGE_INSTALLER_BASED` uninstaller, your app must have permission to query the uninstalled package. Add this to your `AndroidManifest.xml`:
 ```xml
 <queries>
     <package android:name="com.your.uninstalled.package" />

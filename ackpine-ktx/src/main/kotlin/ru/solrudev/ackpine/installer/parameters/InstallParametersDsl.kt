@@ -226,7 +226,7 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 /**
  * Configures [installation constraints DSL][InstallConstraintsDsl].
- * @param timeout the maximum time to wait, in milliseconds until the constraints are satisfied.
+ * @param timeout the maximum time to wait, until the constraints are satisfied.
  */
 public inline fun InstallParametersDsl.constraints(
 	timeout: Duration,

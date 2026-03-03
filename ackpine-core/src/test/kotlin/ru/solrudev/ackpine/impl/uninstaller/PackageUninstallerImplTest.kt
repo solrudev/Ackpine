@@ -38,6 +38,7 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -49,112 +50,96 @@ class PackageUninstallerImplTest : HasAckpineDatabaseTest() {
 
 	@Test
 	fun createSessionStoresInMemory() = runTest {
-		val factory = FakeUninstallSessionFactory()
-		val uninstaller = createUninstaller(factory)
+		val uninstaller = createUninstaller()
 
 		val session = uninstaller.createSession("com.example.app")
 		val sessionFromMap = uninstaller.getSession(session.id)
 
 		assertSame(session, sessionFromMap)
-		assertEquals(listOf(session.id), factory.createdIds)
 	}
 
 	@Test
-	fun getSessionAsyncLoadsFromDaoWhenAbsentInMemory() = runTest {
-		val sessionId = UUID.randomUUID()
-		val entity = createUninstallSessionEntity(
-			id = sessionId.toString(),
-			state = SessionEntity.State.PENDING,
-			uninstallerType = UninstallerType.DEFAULT,
-			packageName = "com.example.app"
-		)
-		database.uninstallSessionDao().insertUninstallSession(entity)
+	fun getSessionAsyncLoadsFromDbWhenAbsentInMemory() = runTest {
+		val sessionId = insertUninstallSession(state = SessionEntity.State.PENDING)
 		val factory = FakeUninstallSessionFactory()
 		val uninstaller = createUninstaller(factory)
 
 		val session = uninstaller.getSession(sessionId)
+		val sameSession = uninstaller.getSession(sessionId)
 
 		assertNotNull(session)
-		assertEquals(listOf(sessionId), factory.createdIds)
+		assertSame(session, sameSession)
+		assertContains(factory.restoredIds, session.id)
 	}
 
 	@Test
 	fun getActiveSessionsAsyncFiltersInactive() = runTest {
-		val activeId = UUID.randomUUID()
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = activeId.toString(),
-				state = SessionEntity.State.ACTIVE,
-				uninstallerType = UninstallerType.DEFAULT,
-				packageName = "com.example.app"
-			)
-		)
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = UUID.randomUUID().toString(),
-				state = SessionEntity.State.PENDING,
-				uninstallerType = UninstallerType.DEFAULT,
-				packageName = "com.example.app"
-			)
-		)
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = UUID.randomUUID().toString(),
-				state = SessionEntity.State.SUCCEEDED,
-				uninstallerType = UninstallerType.DEFAULT,
-				packageName = "com.example.app"
-			)
-		)
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = UUID.randomUUID().toString(),
-				state = SessionEntity.State.CANCELLED,
-				uninstallerType = UninstallerType.DEFAULT,
-				packageName = "com.example.app"
-			)
-		)
+		val activeId1 = insertUninstallSession(state = SessionEntity.State.ACTIVE)
+		val activeId2 = insertUninstallSession(state = SessionEntity.State.AWAITING)
+		val activeId3 = insertUninstallSession(state = SessionEntity.State.COMMITTED)
+		insertUninstallSession(state = SessionEntity.State.PENDING)
+		insertUninstallSession(state = SessionEntity.State.SUCCEEDED)
+		insertUninstallSession(state = SessionEntity.State.CANCELLED)
 
 		val uninstaller = createUninstaller()
-		val activeSessions = uninstaller.getActiveSessions()
+		val activeSessions = uninstaller.getActiveSessions().map { it.id }
 
-		assertEquals(listOf(activeId), activeSessions.map { it.id })
+		assertEquals(3, activeSessions.size)
+		val expectedActiveSessions = setOf(activeId1, activeId2, activeId3)
+		assertEquals(expectedActiveSessions, activeSessions.toSet())
 	}
 
 	@Test
 	fun getSessionsAsyncReturnsAllSessionsFromDatabase() = runTest {
-		val sessionId1 = UUID.randomUUID()
-		val sessionId2 = UUID.randomUUID()
-		val sessionId3 = UUID.randomUUID()
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = sessionId1.toString(),
-				state = SessionEntity.State.PENDING,
-				uninstallerType = UninstallerType.INTENT_BASED,
-				packageName = "com.example.app1"
-			)
-		)
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = sessionId2.toString(),
-				state = SessionEntity.State.AWAITING,
-				uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED,
-				packageName = "com.example.app2"
-			)
-		)
-		database.uninstallSessionDao().insertUninstallSession(
-			createUninstallSessionEntity(
-				id = sessionId3.toString(),
-				state = SessionEntity.State.SUCCEEDED,
-				uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED,
-				packageName = "com.example.app2"
-			)
-		)
+		val expectedSessions = mutableSetOf<UUID>()
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.PENDING)
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.ACTIVE)
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.AWAITING)
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.COMMITTED)
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.SUCCEEDED)
+		expectedSessions += insertUninstallSession(state = SessionEntity.State.CANCELLED)
 
 		val uninstaller = createUninstaller()
-		val sessions = uninstaller.getSessions()
+		val sessions = uninstaller.getSessions().map { it.id }
 
-		assertEquals(3, sessions.size)
-		assertEquals(setOf(sessionId1, sessionId2, sessionId3), sessions.map { it.id }.toSet())
+		assertEquals(6, sessions.size)
+		assertEquals(expectedSessions, sessions.toSet())
+	}
+
+	@Test
+	fun getSessionsAsyncReusesInMemorySessionsAndRestoresRemaining() = runTest {
+		getSessionsReusesInMemorySessionsAndRestoresRemaining { uninstaller ->
+			uninstaller.getSessions()
+		}
+	}
+
+	@Test
+	fun getActiveSessionsAsyncReusesInMemorySessionsAndRestoresRemaining() = runTest {
+		getSessionsReusesInMemorySessionsAndRestoresRemaining { uninstaller ->
+			uninstaller.getActiveSessions()
+		}
+	}
+
+	private suspend inline fun getSessionsReusesInMemorySessionsAndRestoresRemaining(
+		getSessions: (PackageUninstallerImpl) -> List<Session<UninstallFailure>>
+	) {
+		val inMemoryId = insertUninstallSession(state = SessionEntity.State.ACTIVE)
+		val sessionId1 = insertUninstallSession(state = SessionEntity.State.AWAITING)
+		val sessionId2 = insertUninstallSession(state = SessionEntity.State.ACTIVE)
+		val factory = FakeUninstallSessionFactory()
+		val uninstaller = createUninstaller(factory)
+
+		val restoredSession = uninstaller.getSession(inMemoryId)
+		assertNotNull(restoredSession)
+
+		val sessions = getSessions(uninstaller).associateBy { it.id }
+		val sameSessions = getSessions(uninstaller).associateBy { it.id }
+
+		assertEquals(setOf(inMemoryId, sessionId1, sessionId2), sessions.keys)
+		assertSame(restoredSession, sessions.getValue(inMemoryId))
+		assertSame(sessions.getValue(inMemoryId), sameSessions.getValue(inMemoryId))
+		assertSame(sessions.getValue(sessionId1), sameSessions.getValue(sessionId1))
+		assertSame(sessions.getValue(sessionId2), sameSessions.getValue(sessionId2))
 	}
 
 	@Test
@@ -182,9 +167,26 @@ class PackageUninstallerImplTest : HasAckpineDatabaseTest() {
 		notificationIdFactory = { 1 }
 	)
 
+	private fun insertUninstallSession(
+		id: UUID = UUID.randomUUID(),
+		state: SessionEntity.State,
+		uninstallerType: UninstallerType = UninstallerType.DEFAULT,
+		packageName: String = "com.example.app"
+	): UUID {
+		val entity = createUninstallSessionEntity(
+			id = id.toString(),
+			state = state,
+			uninstallerType = uninstallerType,
+			packageName = packageName
+		)
+		database.uninstallSessionDao().insertUninstallSession(entity)
+		return id
+	}
+
 	private class FakeUninstallSessionFactory : UninstallSessionFactory {
 
-		val createdIds = mutableListOf<UUID>()
+		private val _restoredIds = mutableListOf<UUID>()
+		val restoredIds: List<UUID> = _restoredIds
 
 		override fun create(
 			parameters: UninstallParameters,
@@ -192,12 +194,16 @@ class PackageUninstallerImplTest : HasAckpineDatabaseTest() {
 			initialState: Session.State<UninstallFailure>,
 			notificationId: Int,
 			dbWriteSemaphore: BinarySemaphore
-		) = TestCompletableSession(id, initialState).also { createdIds += id }
+		) = TestCompletableSession(id, initialState)
 
-		override fun create(uninstallSession: SessionEntity.UninstallSession) = TestCompletableSession(
+		override fun create(
+			uninstallSession: SessionEntity.UninstallSession
+		) = TestCompletableSession(
 			UUID.fromString(uninstallSession.session.id),
-			initialState = uninstallSession.session.state.toSessionState<UninstallFailure> { UninstallFailure.Generic("fail") }
-		).also { createdIds += it.id }
+			initialState = uninstallSession.session.state.toSessionState<UninstallFailure> {
+				UninstallFailure.Generic("fail")
+			}
+		).also { _restoredIds += it.id }
 
 		override fun resolveNotificationData(
 			notificationData: NotificationData,

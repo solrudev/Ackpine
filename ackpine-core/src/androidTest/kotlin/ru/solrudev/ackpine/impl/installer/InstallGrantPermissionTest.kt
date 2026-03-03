@@ -26,12 +26,14 @@ import org.junit.runners.MethodSorters
 import ru.solrudev.ackpine.impl.AndroidTv
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.InstallPermissionRequest
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.testutil.test
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @AndroidTv
 @RunWith(AndroidJUnit4::class)
@@ -55,5 +57,6 @@ class InstallGrantPermissionTest : AckpineInstallerTest(allowUnknownSources = fa
 			ui.clickInstallOrUpdate()
 		}
 		assertEquals(Session.State.Succeeded, result)
+		assertTrue(context.isPackageInstalled(ApkFixtures.FIXTURE_PACKAGE_NAME))
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,17 @@
 
 package ru.solrudev.ackpine
 
-import android.os.Build
-import androidx.annotation.ChecksSdkIntAtLeast
+object SdkInt {
 
-@ChecksSdkIntAtLeast(api = Build.VERSION_CODES.LOLLIPOP)
-@JvmSynthetic
-internal fun isPackageInstallerApiAvailable(): Boolean = SdkIntWrapper.get() >= Build.VERSION_CODES.LOLLIPOP
+	private var sdkInt = 34
+
+	fun get() = sdkInt
+
+	fun set(value: Int) {
+		sdkInt = value
+	}
+
+	fun reset() {
+		sdkInt = 34
+	}
+}
