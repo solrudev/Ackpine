@@ -197,6 +197,8 @@ public final class InstallViewModel extends ViewModel {
 			public void onSuccess(@Nullable ProgressSession<InstallFailure> session) {
 				if (session != null) {
 					addSessionListeners(session);
+				} else {
+					sessionDataRepository.removeSessionData(id);
 				}
 			}
 

@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import ru.solrudev.ackpine.exceptions.ConflictingBaseApkException;
 import ru.solrudev.ackpine.exceptions.ConflictingPackageNameException;
@@ -223,6 +224,19 @@ public class InstallViewModelTest {
 			session.getController().succeed();
 		}
 		assertTrue(viewModel.getError().getValue().isEmpty());
+		assertTrue(viewModel.getSessions().getValue().isEmpty());
+		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
+	}
+
+	@Test
+	public void nonexistentSavedSessionIdIsRemoved() {
+		final var installer = new TestPackageInstaller();
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var sessionId = UUID.randomUUID();
+		final var sessionData = new SessionData(sessionId, TEST_APK_NAME);
+		repository.addSessionData(sessionData);
+
+		final var viewModel = new InstallViewModel(installer, repository);
 		assertTrue(viewModel.getSessions().getValue().isEmpty());
 		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
 	}

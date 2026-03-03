@@ -87,9 +87,13 @@ class UninstallViewModel(
 	}
 
 	private fun awaitSessionFromSavedState() = viewModelScope.launch {
-		val sessionId = savedStateHandle.get<UUID>(SESSION_ID_KEY)
-		if (sessionId != null) {
-			packageUninstaller.getSession(sessionId)?.let(::awaitSession)
+		val session = savedStateHandle
+			.get<UUID>(SESSION_ID_KEY)
+			?.let { id -> packageUninstaller.getSession(id) }
+		if (session != null) {
+			awaitSession(session)
+		} else {
+			clearSavedState()
 		}
 	}
 

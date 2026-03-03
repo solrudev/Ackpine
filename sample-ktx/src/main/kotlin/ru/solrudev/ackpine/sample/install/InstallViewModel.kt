@@ -101,10 +101,15 @@ class InstallViewModel(
 		if (sessions.isNotEmpty()) {
 			sessions
 				.map { sessionData ->
-					async { packageInstaller.getSession(sessionData.id) }
+					async { sessionData.id to packageInstaller.getSession(sessionData.id) }
 				}
 				.awaitAll()
-				.filterNotNull()
+				.mapNotNull { (id, session) ->
+					if (session == null) {
+						sessionDataRepository.removeSessionData(id)
+					}
+					session
+				}
 				.forEach(::awaitSession)
 		}
 	}

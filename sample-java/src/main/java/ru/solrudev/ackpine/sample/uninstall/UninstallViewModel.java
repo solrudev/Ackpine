@@ -152,6 +152,8 @@ public final class UninstallViewModel extends ViewModel {
 			public void onSuccess(@Nullable Session<UninstallFailure> session) {
 				if (session != null) {
 					attachSessionStateListener(session);
+				} else {
+					clearSavedState();
 				}
 			}
 

@@ -40,6 +40,7 @@ import ru.solrudev.ackpine.test.TestInstallSession
 import ru.solrudev.ackpine.test.TestPackageInstaller
 import ru.solrudev.ackpine.test.TestSessionScript
 import ru.solrudev.ackpine.test.futures.ImmediateFuture
+import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -251,6 +252,28 @@ class InstallViewModelTest {
 			for (session in sessions) {
 				session.controller.succeed()
 			}
+			assertEquals(InstallUiState(), awaitItem())
+		}
+	}
+
+	@Test
+	fun nonexistentSavedSessionIdIsRemoved() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller()
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val sessionId = UUID.randomUUID()
+		val sessionData = SessionData(sessionId, TEST_APK_NAME)
+		val sessionProgress = SessionProgress(sessionId, Progress())
+		repository.addSessionData(sessionData)
+		val viewModel = InstallViewModel(installer, repository)
+		viewModel.uiState.test {
+			awaitItem() // initial state
+
+			val sessionLoaded = InstallUiState(
+				sessions = listOf(sessionData),
+				sessionsProgress = listOf(sessionProgress)
+			)
+			assertEquals(sessionLoaded, awaitItem())
+
 			assertEquals(InstallUiState(), awaitItem())
 		}
 	}
