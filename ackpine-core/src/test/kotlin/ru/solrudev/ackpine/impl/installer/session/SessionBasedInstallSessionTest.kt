@@ -424,7 +424,6 @@ class SessionBasedInstallSessionTest {
 		)
 
 		sessionTrue.launch()
-		idleMainThread()
 		sessionFalse.launch()
 		idleMainThread()
 
