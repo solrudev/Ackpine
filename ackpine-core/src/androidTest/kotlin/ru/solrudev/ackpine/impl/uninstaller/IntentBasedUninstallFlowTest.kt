@@ -48,8 +48,8 @@ class IntentBasedUninstallFlowTest : AckpineUninstallerTest() {
 	)
 
 	@Test
-	fun uninstallCancelCompletesWithGenericFailure() {
-		uninstallCancelCompletesWithFailure<UninstallFailure.Generic>(
+	fun uninstallCancelCompletesWithAbortedFailure() {
+		uninstallCancelCompletesWithFailure<UninstallFailure.Aborted>(
 			UninstallerType.INTENT_BASED
 		)
 	}
