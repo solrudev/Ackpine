@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.20.5 (2026-03-03)
+---------------------------
+
+### Bug fixes and improvements
+
+- Use only `ACTION_UNINSTALL_PACKAGE` for intent-based uninstaller on all Android versions. It improves uninstall result diagnostics.
+
 Version 0.20.4 (2026-03-01)
 ---------------------------
 
