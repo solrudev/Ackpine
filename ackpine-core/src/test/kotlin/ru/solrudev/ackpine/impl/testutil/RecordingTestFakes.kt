@@ -164,9 +164,8 @@ internal class RecordingInstallConstraintsDao : InstallConstraintsDao {
 	}
 }
 
-internal class RecordingPackageInstallerService : PackageInstallerService {
+internal class RecordingPackageInstallerService(override val uid: Int = 10000) : PackageInstallerService {
 
-	override val uid = 10000
 	val session = RecordingSession()
 
 	private val _uninstallCalls = mutableListOf<UninstallCall>()
