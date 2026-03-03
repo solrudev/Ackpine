@@ -17,10 +17,12 @@
 package ru.solrudev.ackpine.impl.uninstaller
 
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageInstaller
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -107,5 +109,15 @@ class UninstallStatusReceiverTest {
 		val actionFromInstance = receiver.getAction(context)
 		val actionFromCompanion = UninstallStatusReceiver.getAction(context)
 		assertEquals(actionFromCompanion, actionFromInstance)
+	}
+
+	@Test
+	fun modifyConfirmationWrapperIntentForwardsPackageName() {
+		val sourceIntent = Intent().putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+		val wrapperIntent = Intent()
+
+		val modifiedIntent = receiver.modifyConfirmationWrapperIntent(sourceIntent, wrapperIntent)
+
+		assertEquals("com.example.app", modifiedIntent.getStringExtra(UninstallActivity.EXTRA_PACKAGE_NAME))
 	}
 }
