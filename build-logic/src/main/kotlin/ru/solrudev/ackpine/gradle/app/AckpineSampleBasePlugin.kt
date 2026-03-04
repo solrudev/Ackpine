@@ -67,6 +67,7 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 			minSdk = SampleConstants.MIN_SDK
 			versionCode = ackpineVersion.get().versionCode
 			versionName = ackpineVersion.get().toString()
+			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 		}
 
 		buildTypes.named("release") {
