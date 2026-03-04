@@ -25,7 +25,7 @@ Fully written in Java. Demonstrates the callback-based API with `Session.Termina
 
 ### [`sample-ktx`](https://github.com/solrudev/Ackpine/tree/master/sample-ktx)
 
-Leverages the `ackpine-ktx` artifact with Kotlin coroutines and DSL APIs. Uses [`Session.await()`](/api/ackpine-ktx/ru.solrudev.ackpine.session/await.html) for session lifecycle management.
+Leverages the `ackpine-ktx` artifact with Kotlin coroutines and DSL APIs. Uses [`Session.await()`](../api/ackpine-ktx/ru.solrudev.ackpine.session/await.html) for session lifecycle management.
 
 ### [`sample-api34`](https://github.com/solrudev/Ackpine/tree/master/sample-api34)
 
