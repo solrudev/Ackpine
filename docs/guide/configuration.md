@@ -213,7 +213,7 @@ It is possible to provide notification title, text and icon.
 
 `android.R.drawable.ic_dialog_alert` is used as a default icon.
 
-!!! info "Why custom classes?"
+!!! info "Why custom subclasses?"
     `ResolvableString` and `DrawableId` are persisted to a database, and Android resource IDs can change across builds. Custom subclasses resolve the resource ID at call time, keeping it up-to-date after app updates. See [this section](../architecture.md#resolvablestring-and-drawableid-persistence) for the full explanation.
 
 `ResolvableString` can also be useful outside of session parameters — for example, for displaying localized error messages or status text in your own UI. For such general-purpose strings that are not persisted in storage, use the simpler `ResolvableString.transientResource()` factory instead of defining custom subclasses:
@@ -258,7 +258,7 @@ By default, the value of installer type on API level < 21 is `INTENT_BASED`, and
 Uninstaller type
 --------------
 
-Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` or `ACTION_DELETE` action. They're configured with `UninstallerType` enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
+Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` action. They're configured with `UninstallerType` enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
 
 By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level 21+ it is `PACKAGE_INSTALLER_BASED`.
 
