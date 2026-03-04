@@ -1,7 +1,7 @@
 Configuration
 =============
 
-Sessions can be configured via [`InstallParameters`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-parameters/index.html) and [`UninstallParameters`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-uninstall-parameters/index.html). For an overview of how [sessions](../architecture.md#session-state-machine) work, see [Architecture](../architecture.md).
+Sessions can be configured via [`InstallParameters`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-parameters/index.html) and [`UninstallParameters`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-uninstall-parameters/index.html). For an overview of how [sessions](../architecture.md#session-state-machine) work, see [Architecture](../architecture.md).
 
 Session parameters
 ------------------
@@ -175,7 +175,7 @@ Most configuration options are applied on a best-effort basis — options unavai
 User's confirmation
 -------------------
 
-A strategy for handling user's confirmation of installation or uninstallation. [`Confirmation`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-confirmation/index.html) can be `DEFERRED` (used by default) or `IMMEDIATE`.
+A strategy for handling user's confirmation of installation or uninstallation. [`Confirmation`](../api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-confirmation/index.html) can be `DEFERRED` (used by default) or `IMMEDIATE`.
 
 - `DEFERRED` (default) — user will be shown a high-priority notification which will launch confirmation activity.
 
@@ -207,9 +207,9 @@ It is possible to provide notification title, text and icon.
 !!! Note
     Any configuration for notification will be ignored if `Confirmation` is set to `IMMEDIATE`, because the notification will not be shown.
 
-[`ResolvableString`](/api/ackpine-resources/ru.solrudev.ackpine.resources/-resolvable-string/index.html) is a type used for [`NotificationData`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-notification-data/index.html) text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
+[`ResolvableString`](../api/ackpine-resources/ru.solrudev.ackpine.resources/-resolvable-string/index.html) is a type used for [`NotificationData`](../api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-notification-data/index.html) text values. It allows to incapsulate an Android string resource (with arguments) which will be resolved only when notification will be shown, a hardcoded string value or a default value from Ackpine library if nothing was set.
 
-[`DrawableId`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-drawable-id/index.html) holds the drawable ID which is used for notification icon.
+[`DrawableId`](../api/ackpine-api/api-main/ru.solrudev.ackpine.session.parameters/-drawable-id/index.html) holds the drawable ID which is used for notification icon.
 
 `android.R.drawable.ic_dialog_alert` is used as a default icon.
 
@@ -246,7 +246,7 @@ Available for install sessions. You can provide an optional session `name` param
 Installer type
 --------------
 
-Available for install sessions. Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with [`InstallerType`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-installer-type/index.html) enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
+Available for install sessions. Ackpine supports two different package installer implementations: Android's `PackageInstaller` and an intent with `ACTION_INSTALL_PACKAGE` action. They're configured with [`InstallerType`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-installer-type/index.html) enum with entries `SESSION_BASED` and `INTENT_BASED` respectively.
 
 `InstallParameters` builder will maintain the following invariants when configuring the installer type:
 
@@ -265,7 +265,7 @@ By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, a
 Install mode
 ------------
 
-Available for install sessions. Takes effect only when using `SESSION_BASED` installer. See [`InstallMode`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-mode/index.html) API reference.
+Available for install sessions. Takes effect only when using `SESSION_BASED` installer. See [`InstallMode`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-mode/index.html) API reference.
 
 - `Full` (default) — mode for an install session whose staged APKs should fully replace any existing APKs for the target app.
 
@@ -280,7 +280,7 @@ Available for install sessions. Takes effect only when using `SESSION_BASED` ins
 Preapproval
 -----------
 
-Available for install sessions on API level 34+. [`InstallPreapproval`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-preapproval/index.html) attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
+Available for install sessions on API level 34+. [`InstallPreapproval`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-preapproval/index.html) attempts to request the approval before committing this session. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.Session#requestUserPreapproval(android.content.pm.PackageInstaller.PreapprovalDetails,%20android.content.IntentSender)).
 
 Preapproval requires package name of the app being installed, label representing it and locale used to get the label to be provided. Optionally, it's possible to also provide the app's icon via `Uri`.
 
@@ -289,7 +289,7 @@ If preapproval is not available on the device, session will fail. If you want to
 Constraints
 -----------
 
-Available for install sessions on API level 34+. [`InstallConstraints`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-constraints/index.html) specify the conditions to check against for the installed packages. This can be used by app stores to deliver auto updates without disrupting the user experience (referred as gentle update) - for example, an app store might hold off updates when it find out the app to update is interacting with the user. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.InstallConstraints).
+Available for install sessions on API level 34+. [`InstallConstraints`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-install-constraints/index.html) specify the conditions to check against for the installed packages. This can be used by app stores to deliver auto updates without disrupting the user experience (referred as gentle update) - for example, an app store might hold off updates when it find out the app to update is interacting with the user. See the details [here](https://developer.android.com/reference/android/content/pm/PackageInstaller.InstallConstraints).
 
 Installer waits for constraints to be satisfied, so to configure them, timeout duration is required to be provided after which installer will act based on set `TimeoutStrategy`.
 
@@ -334,7 +334,7 @@ Package source
 
 Available for install sessions.
 
-Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is [`PackageSource.Unspecified`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-package-source/index.html).
+Optionally indicates the package source of the app being installed. This is informational and may be used as a signal by the system. Default value is [`PackageSource.Unspecified`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer.parameters/-package-source/index.html).
 
 Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level 33+.
 

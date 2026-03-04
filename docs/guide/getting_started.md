@@ -1,7 +1,7 @@
 Getting Started
 ===============
 
-To obtain an instance of [`PackageInstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html) or [`PackageUninstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html), use the `getInstance(Context)` method:
+To obtain an instance of [`PackageInstaller`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html) or [`PackageUninstaller`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html), use the `getInstance(Context)` method:
 
 === "Kotlin"
 
@@ -38,7 +38,7 @@ Launching an install or uninstall session with default parameters and getting it
     }
     ```
 
-    Session launches when [`await()`](/api/ackpine-ktx/ru.solrudev.ackpine.session/await.html) is called.
+    Session launches when [`await()`](../api/ackpine-ktx/ru.solrudev.ackpine.session/await.html) is called.
 
 === "Java"
 
@@ -58,7 +58,7 @@ Launching an install or uninstall session with default parameters and getting it
             });
     ```
 
-    Session launches when [`TerminalStateListener.bind()`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/-terminal-state-listener/-companion/bind.html) is called.
+    Session launches when [`TerminalStateListener.bind()`](../api/ackpine-api/api-main/ru.solrudev.ackpine.session/-session/-terminal-state-listener/-companion/bind.html) is called.
 
 It works as long as you don't care about UI lifecycle and unpredictable situations such as process death.
 
@@ -158,7 +158,7 @@ Install sessions provide progress updates:
 Error handling
 --------------
 
-Error causes are delivered as [`Failure`](/api/ackpine-api/api-main/ru.solrudev.ackpine.session/-failure/index.html) objects through state listener or as a return value from `await()`. They're sealed hierarchies of typed errors — such as [`InstallFailure`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-install-failure/index.html) and [`UninstallFailure`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-uninstall-failure/index.html) — and you can match on their type. For example:
+Error causes are delivered as [`Failure`](../api/ackpine-api/api-main/ru.solrudev.ackpine.session/-failure/index.html) objects through state listener or as a return value from `await()`. They're sealed hierarchies of typed errors — such as [`InstallFailure`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-install-failure/index.html) and [`UninstallFailure`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-uninstall-failure/index.html) — and you can match on their type. For example:
 
 === "Kotlin"
 
@@ -214,4 +214,4 @@ The `ackpine-test` artifact provides test doubles and utilities to drive [sessio
 
 See [Testing](testing.md) section for details and examples, and [Samples](samples.md#testing-patterns) for real-world test examples.
 
-Every example on this page is using [`PackageInstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html), but APIs for [`PackageUninstaller`](/api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html) are absolutely the same except for progress updates.
+Every example on this page is using [`PackageInstaller`](../api/ackpine-api/api-main/ru.solrudev.ackpine.installer/-package-installer/index.html), but APIs for [`PackageUninstaller`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller/-package-uninstaller/index.html) are absolutely the same except for progress updates.
