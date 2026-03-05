@@ -66,11 +66,11 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		configureTestTask()
 		pluginManager.withPlugin("com.android.library") {
 			configureAndroid<LibraryExtension>()
-			configureAndroidComponents<LibraryAndroidComponentsExtension, LibraryVariant>()
+			configureAndroidComponents<LibraryAndroidComponentsExtension, LibraryVariant, LibraryExtension>()
 		}
 		pluginManager.withPlugin("com.android.application") {
 			configureAndroid<ApplicationExtension>()
-			configureAndroidComponents<ApplicationAndroidComponentsExtension, ApplicationVariant>()
+			configureAndroidComponents<ApplicationAndroidComponentsExtension, ApplicationVariant, ApplicationExtension>()
 		}
 	}
 
@@ -103,25 +103,27 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	private inline fun <reified E : AndroidComponentsExtension<*, *, V>, V> Project.configureAndroidComponents()
-			where V : Variant,
+	private inline fun <reified E, V, reified C> Project.configureAndroidComponents()
+			where E : AndroidComponentsExtension<*, *, V>,
+				  V : Variant,
 				  V : HasHostTests,
-				  V : HasDeviceTests {
+				  V : HasDeviceTests,
+				  C : CommonExtension<*, *, *, *, *, *> {
 		extensions.configure<E> {
 			onVariants(withDebugBuildType()) { variant ->
 				val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
 				if (jacocoConfig.hasAndroidTests) {
 					configureConnectedAndroidTest(variant, jacocoConfig)
-					configureManagedDevices(variant, jacocoConfig)
+					configureManagedDevices<C>(variant, jacocoConfig)
 				}
 			}
 		}
 	}
 
-	private fun Project.configureManagedDevices(
+	private inline fun <reified C : CommonExtension<*, *, *, *, *, *>> Project.configureManagedDevices(
 		component: Component,
 		jacocoConfig: JacocoConfig
-	) = extensions.configure<LibraryExtension> {
+	) = extensions.configure<C> {
 		testOptions.managedDevices.allDevices.configureEach {
 			configureManagedDeviceReport(component, jacocoConfig.sources, testTaskAction = name)
 		}

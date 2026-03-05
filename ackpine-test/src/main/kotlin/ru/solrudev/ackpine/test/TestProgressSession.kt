@@ -42,6 +42,38 @@ public class TestProgressSession<F : Failure> @JvmOverloads public constructor(
 	private val initialProgress: Progress = Progress()
 ) : TestSession<F>(script, id, initialState), ProgressSession<F> {
 
+	/**
+	 * Returns a [TestProgressSession] with the provided [initialProgress], a random [id][Session.id],
+	 * [Pending][Session.State.Pending] initial state and [TestSessionScript.auto] completing with
+	 * [Session.State.Succeeded].
+	 */
+	public constructor(initialProgress: Progress) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = UUID.randomUUID(),
+		initialState = Pending,
+		initialProgress = initialProgress
+	)
+
+	/**
+	 * Returns a [TestProgressSession] with the provided [id], [Pending][Session.State.Pending] initial state,
+	 * default initial progress and [TestSessionScript.auto] completing with [Session.State.Succeeded].
+	 */
+	public constructor(id: UUID) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = id,
+		initialState = Pending
+	)
+
+	/**
+	 * Returns a [TestProgressSession] with the provided [id] and [initialState], default initial progress and
+	 * [TestSessionScript.auto] completing with [Session.State.Succeeded].
+	 */
+	public constructor(id: UUID, initialState: Session.State<F>) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = id,
+		initialState = initialState
+	)
+
 	private val progressListeners = CopyOnWriteArraySet<ProgressListener>()
 	private val progressHistoryValues = CopyOnWriteArrayList<Progress>().apply { add(initialProgress) }
 

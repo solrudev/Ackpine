@@ -6,6 +6,18 @@ hide:
 Change Log
 ==========
 
+Version 0.20.6 (2026-03-05)
+---------------------------
+
+### Bug fixes and improvements
+
+- Improve `ackpine-test` test doubles creation ergonomics for Java consumers.
+
+### Public API changes
+
+- Added 3 secondary constructors to `TestSession`.
+- Added 3 secondary constructors to `TestProgressSession`.
+
 Version 0.20.5 (2026-03-03)
 ---------------------------
 

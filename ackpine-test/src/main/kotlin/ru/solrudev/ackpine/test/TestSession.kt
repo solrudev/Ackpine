@@ -44,6 +44,36 @@ public open class TestSession<F : Failure> @JvmOverloads public constructor(
 	initialState: Session.State<F> = Pending
 ) : Session<F> {
 
+	/**
+	 * Returns a [TestSession] with the provided [initialState], a random [id][Session.id] and
+	 * [TestSessionScript.auto] completing with [Session.State.Succeeded].
+	 */
+	public constructor(initialState: Session.State<F>) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = UUID.randomUUID(),
+		initialState = initialState
+	)
+
+	/**
+	 * Returns a [TestSession] with the provided [id], [Pending][Session.State.Pending] initial state and
+	 * [TestSessionScript.auto] completing with [Session.State.Succeeded].
+	 */
+	public constructor(id: UUID) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = id,
+		initialState = Pending
+	)
+
+	/**
+	 * Returns a [TestSession] with the provided [id] and [initialState], using [TestSessionScript.auto] completing
+	 * with [Session.State.Succeeded].
+	 */
+	public constructor(id: UUID, initialState: Session.State<F>) : this(
+		script = TestSessionScript.auto(Session.State.Succeeded),
+		id = id,
+		initialState = initialState
+	)
+
 	private val stateListeners = CopyOnWriteArraySet<Session.StateListener<F>>()
 	private val stateLock = Any()
 	private val stateHistoryValues = CopyOnWriteArrayList<Session.State<F>>().apply { add(initialState) }
