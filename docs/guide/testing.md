@@ -263,10 +263,7 @@ If you need deterministic session IDs or want to seed sessions into the reposito
     ```java
     var uninstaller = new TestPackageUninstaller();
     var sessionId = UUID.fromString("00000000-0000-4000-8000-000000000000");
-    var session = new TestSession<UninstallFailure>(
-            TestSessionScript.auto(Session.State.Succeeded.INSTANCE),
-            sessionId
-    );
+    var session = new TestSession<UninstallFailure>(sessionId);
     uninstaller.seedSession(session);
     ```
 
