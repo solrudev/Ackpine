@@ -10,9 +10,31 @@ permissions:
   contents: read
 
 jobs:
+  classify:
+    runs-on: ubuntu-latest
+    name: Classify pull request
+
+    outputs:
+      docs_only: ${{ steps.classify.outputs.docs_only }}
+      ci_only: ${{ steps.classify.outputs.ci_only }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # 6.0.0
+        with:
+          repository: ${{ github.event.pull_request.base.repo.full_name }}
+          ref: ${{ github.event.pull_request.base.ref }}
+          persist-credentials: false
+
+      - name: Classify pull request
+        id: classify
+        uses: ./.github/actions/classify-pr
+
   build:
     runs-on: ubuntu-latest
     name: Build Ackpine
+    needs: [ classify ]
+    if: needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
 
     permissions:
       checks: write
@@ -39,8 +61,8 @@ jobs:
   unit-tests:
     runs-on: ubuntu-latest
     name: Unit tests
-    needs: [ build ]
-    if: github.event.pull_request.merged != true && join(github.event.pull_request.labels.*.name, ',') != 'documentation' && join(github.event.pull_request.labels.*.name, ',') != 'ci'
+    needs: [ classify, build ]
+    if: github.event.pull_request.merged != true && needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
 
     permissions:
       checks: write
@@ -79,8 +101,8 @@ jobs:
   device-tests:
     runs-on: ubuntu-latest
     name: Device tests (API ${{ matrix.api-level }})
-    needs: [ build ]
-    if: github.event.pull_request.merged != true && join(github.event.pull_request.labels.*.name, ',') != 'documentation' && join(github.event.pull_request.labels.*.name, ',') != 'ci'
+    needs: [ classify, build ]
+    if: github.event.pull_request.merged != true && needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
     timeout-minutes: 60
 
     strategy:
@@ -138,7 +160,7 @@ jobs:
   status-check:
     runs-on: ubuntu-latest
     if: always()
-    needs: [ build, unit-tests, device-tests ]
+    needs: [ classify, build, unit-tests, device-tests ]
 
     steps:
       - name: Check
