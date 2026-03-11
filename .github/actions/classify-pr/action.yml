@@ -1,0 +1,52 @@
+name: Classify pull request
+description: Classifies a pull request from its changed files
+
+outputs:
+  docs:
+    description: Whether the pull request contains documentation-related changes
+    value: ${{ steps.related.outputs.docs }}
+  ci:
+    description: Whether the pull request contains CI-related changes
+    value: ${{ steps.related.outputs.ci }}
+  release:
+    description: Whether the pull request changes version.properties
+    value: ${{ steps.related.outputs.release }}
+  docs_only:
+    description: Whether every changed file is documentation-related
+    value: ${{ steps.exclusive.outputs.docs }}
+  ci_only:
+    description: Whether every changed file is CI-related
+    value: ${{ steps.exclusive.outputs.ci }}
+
+runs:
+  using: composite
+
+  steps:
+    - name: Classify related changes
+      id: related
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # 3.0.2
+      with:
+        token: ${{ github.token }}
+        filters: |
+          docs:
+            - 'docs/**'
+            - 'README*.md'
+            - 'zensical.toml'
+          ci:
+            - '.github/**'
+          release:
+            - 'version.properties'
+
+    - name: Classify exclusive changes
+      id: exclusive
+      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # 3.0.2
+      with:
+        token: ${{ github.token }}
+        predicate-quantifier: every
+        filters: |
+          docs:
+            - 'docs/**'
+            - 'README*.md'
+            - 'zensical.toml'
+          ci:
+            - '.github/**'
