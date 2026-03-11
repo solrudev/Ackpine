@@ -13,10 +13,10 @@ outputs:
     value: ${{ steps.related.outputs.release }}
   docs_only:
     description: Whether every changed file is documentation-related
-    value: ${{ steps.exclusive.outputs.docs }}
+    value: ${{ steps.exclusive.outputs.not_docs == 'false' }}
   ci_only:
     description: Whether every changed file is CI-related
-    value: ${{ steps.exclusive.outputs.ci }}
+    value: ${{ steps.exclusive.outputs.not_ci == 'false' }}
 
 runs:
   using: composite
@@ -24,7 +24,7 @@ runs:
   steps:
     - name: Classify related changes
       id: related
-      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # 3.0.2
+      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
       with:
         token: ${{ github.token }}
         filters: |
@@ -39,14 +39,16 @@ runs:
 
     - name: Classify exclusive changes
       id: exclusive
-      uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # 3.0.2
+      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
       with:
         token: ${{ github.token }}
         predicate-quantifier: every
         filters: |
-          docs:
-            - 'docs/**'
-            - 'README*.md'
-            - 'zensical.toml'
-          ci:
-            - '.github/**'
+          not_docs:
+            - '**'
+            - '!docs/**'
+            - '!README*.md'
+            - '!zensical.toml'
+          not_ci:
+            - '**'
+            - '!.github/**'
