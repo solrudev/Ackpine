@@ -15,6 +15,9 @@ jobs:
     name: Classify pull request
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: read
+
     outputs:
       release: ${{ steps.classify.outputs.release }}
 

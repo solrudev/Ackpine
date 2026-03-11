@@ -14,6 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Classify pull request
 
+    permissions:
+      pull-requests: read
+
     outputs:
       docs_only: ${{ steps.classify.outputs.docs_only }}
       ci_only: ${{ steps.classify.outputs.ci_only }}
