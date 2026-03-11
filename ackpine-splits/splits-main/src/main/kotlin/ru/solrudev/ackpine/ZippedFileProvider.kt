@@ -49,7 +49,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	override fun attachInfo(context: Context, info: ProviderInfo) {
 		super.attachInfo(context, info)
-		authority = info.authority
+		providerAuthority = info.authority
 	}
 
 	override fun onCreate(): Boolean {
@@ -57,9 +57,10 @@ public class ZippedFileProvider : ContentProvider() {
 	}
 
 	override fun getType(uri: Uri): String? {
-		return uri.encodedQuery
-			?.substringAfterLast('.', "")
-			?.let { extension -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) }
+		return uri.toZipEntryUri()
+			.entryName
+			.substringAfterLast('.', missingDelimiterValue = "")
+			.let { extension -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) }
 	}
 
 	override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor {
@@ -133,6 +134,7 @@ public class ZippedFileProvider : ContentProvider() {
 		signal: CancellationSignal?
 	): Cursor {
 		val columnNames = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
+		val zipEntryUri = uri.toZipEntryUri()
 
 		fun Array<Any?>.setColumn(columnName: String, value: Any?) {
 			val index = columnNames.indexOf(columnName)
@@ -146,9 +148,9 @@ public class ZippedFileProvider : ContentProvider() {
 			return cursor
 		}
 		val row = arrayOfNulls<Any>(columnNames.size)
-		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.encodedQuery)
+		row.setColumn(OpenableColumns.DISPLAY_NAME, zipEntryUri.entryName)
 		if (OpenableColumns.SIZE in columnNames) {
-			openZipEntryStream(uri, signal).use { zipStream ->
+			openZipEntryStream(zipEntryUri, signal).use { zipStream ->
 				row.setColumn(OpenableColumns.SIZE, zipStream.size)
 			}
 		}
@@ -176,12 +178,12 @@ public class ZippedFileProvider : ContentProvider() {
 	 * @return zip entry size.
 	 */
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
-		val zipStream = openZipEntryStream(uri, signal)
+		val zipStream = openZipEntryStream(uri.toZipEntryUri(), signal)
 		val size = zipStream.size
 		AckpineThreadPool.execute {
 			outputFd.safeWrite { outputStream ->
-				zipStream.buffered().use { zipStream ->
-					zipStream.copyTo(outputStream, signal)
+				zipStream.buffered().use { bufferedZipStream ->
+					bufferedZipStream.copyTo(outputStream, signal)
 					outputStream.flush()
 				}
 			}
@@ -189,14 +191,31 @@ public class ZippedFileProvider : ContentProvider() {
 		return size
 	}
 
-	private fun openZipEntryStream(uri: Uri, signal: CancellationSignal?): ZipEntryStream {
-		val zipFileUri = zipFileUri(uri)
-		val zipEntryName = uri.encodedQuery
-		return ZipEntryStream.open(zipFileUri, zipEntryName.orEmpty(), context!!, signal)
-			?: throw IOException("Zip entry $zipEntryName not found at $uri")
+	private fun openZipEntryStream(uri: ZipEntryUri, signal: CancellationSignal?): ZipEntryStream {
+		return ZipEntryStream.open(uri.zipFileUri, uri.entryName, context!!, signal)
+			?: throw IOException("Zip entry ${uri.entryName} not found at ${uri.zipFileUri}")
 	}
 
-	private fun zipFileUri(uri: Uri): Uri {
+	private fun Uri.toZipEntryUri() = when {
+		authority != providerAuthority -> throw FileNotFoundException("uri=$this")
+		isV2() -> parseV2Uri(this)
+		else -> parseLegacyUri(this)
+	}
+
+	private fun parseV2Uri(uri: Uri): ZipEntryUri {
+		val source = uri.getQueryParameter(QUERY_PARAMETER_SOURCE)
+			?: throw FileNotFoundException("No source for uri=$uri")
+		val zipEntryName = uri.getQueryParameter(QUERY_PARAMETER_ENTRY)
+			?: throw FileNotFoundException("No entry for uri=$uri")
+		return ZipEntryUri(source.toZipFileUri(), zipEntryName)
+	}
+
+	private fun parseLegacyUri(uri: Uri): ZipEntryUri {
+		val zipEntryName = uri.encodedQuery ?: throw FileNotFoundException("uri=$uri")
+		return ZipEntryUri(legacyZipFileUri(uri), zipEntryName)
+	}
+
+	private fun legacyZipFileUri(uri: Uri): Uri {
 		val path = uri.encodedPath?.drop(1) ?: throw FileNotFoundException("uri=$uri")
 		val uriFromPath = path.toUri()
 		if (uriFromPath.scheme == null) {
@@ -217,6 +236,14 @@ public class ZippedFileProvider : ContentProvider() {
 			.encodedFragment(uriFromPath.encodedFragment)
 			.build() // creates opaque uri
 			.toString().toUri() // converting to hierarchical uri
+	}
+
+	private fun String.toZipFileUri(): Uri {
+		val uri = toUri()
+		if (uri.scheme != null) {
+			return uri
+		}
+		return File(this).toUri()
 	}
 
 	private inline fun ParcelFileDescriptor.safeWrite(block: (outputStream: OutputStream) -> Unit) {
@@ -260,16 +287,26 @@ public class ZippedFileProvider : ContentProvider() {
 		throw UnsupportedOperationException("Updating not supported by ZippedFileProvider")
 	}
 
+	private class ZipEntryUri(
+		val zipFileUri: Uri,
+		val entryName: String
+	)
+
 	public companion object {
 
-		private lateinit var authority: String
+		private const val CURRENT_URI_VERSION = "v2"
+		private const val QUERY_PARAMETER_SOURCE = "source"
+		private const val QUERY_PARAMETER_ENTRY = "entry"
+		private lateinit var providerAuthority: String
 
 		/**
 		 * Returns whether provided [uri] was created by [ZippedFileProvider].
 		 */
 		@JvmStatic
-		public fun isZippedFileProviderUri(uri: Uri): Boolean {
-			return uri.authority == authority && uri.encodedPath != null && uri.encodedQuery != null
+		public fun isZippedFileProviderUri(uri: Uri): Boolean = when {
+			uri.authority != providerAuthority -> false
+			uri.isV2() -> true
+			else -> uri.encodedPath != null && uri.encodedQuery != null
 		}
 
 		/**
@@ -283,9 +320,10 @@ public class ZippedFileProvider : ContentProvider() {
 		public fun getUriForZipEntry(zipPath: String, zipEntryName: String): Uri {
 			return Uri.Builder()
 				.scheme(ContentResolver.SCHEME_CONTENT)
-				.authority(authority)
-				.encodedPath(zipPath)
-				.encodedQuery(zipEntryName)
+				.authority(providerAuthority)
+				.appendPath(CURRENT_URI_VERSION)
+				.appendQueryParameter(QUERY_PARAMETER_SOURCE, zipPath)
+				.appendQueryParameter(QUERY_PARAMETER_ENTRY, zipEntryName)
 				.build()
 		}
 
@@ -310,5 +348,9 @@ public class ZippedFileProvider : ContentProvider() {
 		public fun getUriForZipEntry(uri: Uri, zipEntryName: String): Uri {
 			return getUriForZipEntry(uri.toString(), zipEntryName)
 		}
+
+		private fun Uri.isV2() = pathSegments.firstOrNull() == CURRENT_URI_VERSION
+				&& getQueryParameter(QUERY_PARAMETER_SOURCE) != null
+				&& getQueryParameter(QUERY_PARAMETER_ENTRY) != null
 	}
 }
