@@ -3,7 +3,7 @@ description: Classifies a pull request from its changed files
 
 outputs:
   docs:
-    description: Whether the pull request contains documentation-related changes
+    description: Whether the pull request contains documentation-related changes, excluding changelog changes
     value: ${{ steps.related.outputs.docs }}
   ci:
     description: Whether the pull request contains CI-related changes
@@ -27,9 +27,11 @@ runs:
       uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
       with:
         token: ${{ github.token }}
+        predicate-quantifier: every
         filters: |
           docs:
             - 'docs/**'
+            - '!docs/changelog.md'
             - 'README*.md'
             - 'zensical.toml'
           ci:
