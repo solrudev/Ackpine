@@ -24,6 +24,7 @@ plugins {
 	id("ru.solrudev.ackpine.dokka")
 	id("ru.solrudev.ackpine.asset-app-artifacts")
 	id("ru.solrudev.ackpine.jacoco")
+	id("ru.solrudev.ackpine.managed-devices")
 	alias(libs.plugins.kotlin.ksp)
 	alias(androidx.plugins.room)
 }
@@ -61,32 +62,6 @@ android {
 	}
 	testOptions {
 		unitTests.isIncludeAndroidResources = true
-		managedDevices {
-			localDevices.register("api27") {
-				device = "Pixel 2"
-				sdkVersion = 27
-				systemImageSource = "aosp"
-				require64Bit = true
-			}
-			localDevices.register("api30") {
-				device = "Pixel 5"
-				sdkVersion = 30
-				systemImageSource = "aosp"
-				require64Bit = true
-			}
-			localDevices.register("api31") {
-				device = "Pixel 6"
-				sdkVersion = 31
-				systemImageSource = "aosp"
-				require64Bit = true
-			}
-			localDevices.register("api34") {
-				device = "Pixel 8"
-				sdkVersion = 34
-				systemImageSource = "aosp"
-				require64Bit = true
-			}
-		}
 	}
 }
 

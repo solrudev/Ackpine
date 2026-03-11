@@ -69,6 +69,10 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.jacoco"
 			implementationClass = "ru.solrudev.ackpine.gradle.testing.AckpineJacocoPlugin"
 		}
+		register("ackpine-managed-devices") {
+			id = "ru.solrudev.ackpine.managed-devices"
+			implementationClass = "ru.solrudev.ackpine.gradle.testing.ManagedDevicesConventionPlugin"
+		}
 	}
 }
 
