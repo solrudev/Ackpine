@@ -56,7 +56,7 @@ android {
 	}
 	sourceSets {
 		named("test") {
-			assets.srcDir(layout.projectDirectory.dir("schemas"))
+			assets.directories += layout.projectDirectory.dir("schemas").asFile.absolutePath
 		}
 	}
 	testOptions {
