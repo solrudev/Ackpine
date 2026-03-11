@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.20.7 (2026-03-11)
+---------------------------
+
+### Bug fixes and improvements
+
+- Improve URI handling in `ZippedFileProvider` and `AssetFileProvider`.
+
 Version 0.20.6 (2026-03-05)
 ---------------------------
 
