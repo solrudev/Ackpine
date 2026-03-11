@@ -33,6 +33,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build Ackpine
+    needs: [ classify ]
+    if: needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
 
     permissions:
       checks: write
