@@ -43,15 +43,16 @@ public class AssetFileProvider : ContentProvider() {
 
 	override fun attachInfo(context: Context, info: ProviderInfo) {
 		super.attachInfo(context, info)
-		authority = info.authority
+		providerAuthority = info.authority
 	}
 
 	override fun onCreate(): Boolean = true
 
 	override fun getType(uri: Uri): String? {
-		return uri.lastPathSegment
-			?.substringAfterLast('.', "")
-			?.let { extension -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) }
+		return uri.toAssetPath()
+			.substringAfterLast('/')
+			.substringAfterLast('.', "")
+			.let { extension -> MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) }
 	}
 
 	override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
@@ -60,7 +61,7 @@ public class AssetFileProvider : ContentProvider() {
 
 	override fun openFile(uri: Uri, mode: String, signal: CancellationSignal?): ParcelFileDescriptor? {
 		checkWriteMode(mode)
-		return uri.encodedPath?.drop(1)?.let { path -> context?.assets?.openFd(path)?.parcelFileDescriptor }
+		return uri.toAssetPath().let { path -> context?.assets?.openFd(path)?.parcelFileDescriptor }
 	}
 
 	override fun openAssetFile(uri: Uri, mode: String): AssetFileDescriptor? {
@@ -69,7 +70,7 @@ public class AssetFileProvider : ContentProvider() {
 
 	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor? {
 		checkWriteMode(mode)
-		return uri.encodedPath?.drop(1)?.let { path -> context?.assets?.openFd(path) }
+		return uri.toAssetPath().let { path -> context?.assets?.openFd(path) }
 	}
 
 	override fun openTypedAssetFile(uri: Uri, mimeTypeFilter: String, opts: Bundle?): AssetFileDescriptor? {
@@ -121,6 +122,7 @@ public class AssetFileProvider : ContentProvider() {
 		signal: CancellationSignal?
 	): Cursor {
 		val columnNames = projection ?: arrayOf(OpenableColumns.DISPLAY_NAME, OpenableColumns.SIZE)
+		val assetPath = uri.toAssetPath()
 
 		fun Array<Any?>.setColumn(columnName: String, value: Any?) {
 			val index = columnNames.indexOf(columnName)
@@ -134,7 +136,7 @@ public class AssetFileProvider : ContentProvider() {
 			return cursor
 		}
 		val row = arrayOfNulls<Any>(columnNames.size)
-		row.setColumn(OpenableColumns.DISPLAY_NAME, uri.lastPathSegment)
+		row.setColumn(OpenableColumns.DISPLAY_NAME, assetPath.substringAfterLast('/'))
 		if (OpenableColumns.SIZE in columnNames) {
 			openAssetFile(uri, "r", signal).use { assetFileDescriptor ->
 				row.setColumn(OpenableColumns.SIZE, assetFileDescriptor?.declaredLength ?: -1L)
@@ -148,6 +150,24 @@ public class AssetFileProvider : ContentProvider() {
 		if ('w' in mode || 'W' in mode) {
 			throw UnsupportedOperationException("Write mode is not supported by AssetFileProvider")
 		}
+	}
+
+	private fun Uri.toAssetPath() = when {
+		authority != providerAuthority -> throw FileNotFoundException("uri=$this")
+		isEncoded() -> parseEncodedUri(this)
+		else -> parseLegacyUri(this)
+	}
+
+	private fun parseEncodedUri(uri: Uri): String {
+		val assetPathSegments = uri.pathSegments
+		if (assetPathSegments.isEmpty()) {
+			throw FileNotFoundException("No asset path for uri=$uri")
+		}
+		return assetPathSegments.joinToString(separator = "/")
+	}
+
+	private fun parseLegacyUri(uri: Uri): String {
+		return uri.encodedPath?.drop(1) ?: throw FileNotFoundException("uri=$uri")
 	}
 
 	override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -164,14 +184,18 @@ public class AssetFileProvider : ContentProvider() {
 
 	public companion object {
 
-		private lateinit var authority: String
+		private const val QUERY_PARAMETER_ENCODED = "_encoded"
+		private const val QUERY_PARAMETER_TRUE = "1"
+		private lateinit var providerAuthority: String
 
 		/**
 		 * Returns whether provided [uri] was created by [AssetFileProvider].
 		 */
 		@JvmStatic
-		public fun isAssetFileProviderUri(uri: Uri): Boolean {
-			return uri.authority == authority && uri.encodedPath != null
+		public fun isAssetFileProviderUri(uri: Uri): Boolean = when {
+			uri.authority != providerAuthority -> false
+			uri.isEncoded() -> true
+			else -> uri.encodedPath != null
 		}
 
 		/**
@@ -180,11 +204,19 @@ public class AssetFileProvider : ContentProvider() {
 		 */
 		@JvmStatic
 		public fun getUriForAsset(fileName: String): Uri {
+			require(fileName.isNotEmpty()) { "fileName cannot be empty" }
 			return Uri.Builder()
 				.scheme(ContentResolver.SCHEME_CONTENT)
-				.authority(authority)
-				.encodedPath(fileName)
+				.authority(providerAuthority)
+				.apply {
+					fileName.split('/').forEach(::appendPath)
+				}
+				.appendQueryParameter(QUERY_PARAMETER_ENCODED, QUERY_PARAMETER_TRUE)
 				.build()
+		}
+
+		private fun Uri.isEncoded(): Boolean {
+			return getQueryParameter(QUERY_PARAMETER_ENCODED) == QUERY_PARAMETER_TRUE
 		}
 	}
 }
