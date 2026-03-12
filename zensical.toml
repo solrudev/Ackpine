@@ -33,6 +33,7 @@ icon.repo = "fontawesome/brands/github"
 features = [
     "content.code.copy",
     "content.tabs.link",
+    "content.tooltips",
     "navigation.footer",
     "navigation.tabs",
     "navigation.tracking",
@@ -44,7 +45,7 @@ scheme = "default"
 media = "(prefers-color-scheme: light)"
 primary = "custom"
 accent = "custom"
-toggle.icon = "material/brightness-7"
+toggle.icon = "lucide/sun"
 toggle.name = "Switch to dark mode"
 
 [[project.theme.palette]]
@@ -52,7 +53,7 @@ scheme = "slate"
 media = "(prefers-color-scheme: dark)"
 primary = "custom"
 accent = "custom"
-toggle.icon = "material/brightness-4"
+toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
 
 [project.markdown_extensions.pymdownx.superfences]
