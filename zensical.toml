@@ -33,6 +33,7 @@ icon.repo = "fontawesome/brands/github"
 features = [
     "content.code.copy",
     "content.tabs.link",
+    "content.tooltips",
     "navigation.footer",
     "navigation.tabs",
     "navigation.tracking",
