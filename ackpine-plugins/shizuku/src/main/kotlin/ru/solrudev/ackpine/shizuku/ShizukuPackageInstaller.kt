@@ -172,9 +172,13 @@ internal class ShizukuPackageInstaller(
 			val uid = Shizuku.getUid()
 			val isRoot = uid == 0
 			val installerPackageName = if (isRoot) context.packageName else "com.android.shell"
-			val userId = if (isRoot) UserHandleHidden.myUserId() else 0
 			return ShizukuPackageInstaller(
-				createPackageInstaller(context, remotePackageInstaller, installerPackageName, userId),
+				createPackageInstaller(
+					context,
+					remotePackageInstaller,
+					installerPackageName,
+					UserHandleHidden.myUserId()
+				),
 				remotePackageInstaller,
 				uid
 			)
