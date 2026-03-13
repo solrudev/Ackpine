@@ -22,6 +22,7 @@ import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Entity
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
@@ -52,7 +53,7 @@ internal abstract class ShizukuDatabase : RoomDatabase() {
 @Dao
 internal interface ShizukuParamsDao {
 
-	@Insert
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	fun insertParameters(params: ShizukuParametersEntity)
 
 	@Query("SELECT * FROM shizuku_parameters WHERE session_id = :sessionId")
@@ -62,7 +63,7 @@ internal interface ShizukuParamsDao {
 @Dao
 internal interface ShizukuUninstallParamsDao {
 
-	@Insert
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	fun insertParameters(params: ShizukuUninstallParametersEntity)
 
 	@Query("SELECT * FROM shizuku_uninstall_parameters WHERE session_id = :sessionId")
