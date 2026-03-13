@@ -153,7 +153,7 @@ public open class SplitPackage(
 		if (libs != other.libs) return false
 		if (screenDensity != other.screenDensity) return false
 		if (localization != other.localization) return false
-		if (other != other.other) return false
+		if (this.other != other.other) return false
 		if (dynamicFeatures != other.dynamicFeatures) return false
 		return true
 	}
