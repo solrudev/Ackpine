@@ -32,6 +32,7 @@ internal class ShizukuPluginParametersStore(
 
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
 		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
+			?: return AckpinePlugin.Parameters.None
 		return ShizukuPlugin.Parameters.Builder()
 			.setBypassLowTargetSdkBlock(shizukuParams.bypassLowTargetSdkBlock)
 			.setAllowTest(shizukuParams.allowTest)
@@ -71,6 +72,7 @@ internal class ShizukuUninstallPluginParametersStore(
 
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
 		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
+			?: return AckpinePlugin.Parameters.None
 		return ShizukuUninstallPlugin.Parameters.Builder()
 			.setKeepData(shizukuParams.keepData)
 			.setAllUsers(shizukuParams.allUsers)

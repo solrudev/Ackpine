@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.shizuku
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
@@ -26,8 +27,9 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstallerHidden
 import android.os.Build
 import android.os.Handler
-import android.os.Process
+import android.os.UserHandleHidden
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
@@ -109,6 +111,7 @@ internal class ShizukuPackageInstaller(
 		remotePackageInstaller.abandonSession(sessionId)
 	}
 
+	@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
 	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
 		if (Build.VERSION.SDK_INT < 27) {
 			packageInstaller.uninstall(packageName, statusReceiver)
@@ -152,7 +155,13 @@ internal class ShizukuPackageInstaller(
 		@JvmSynthetic
 		internal fun create(context: Context): ShizukuPackageInstaller {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				HiddenApiBypass.addHiddenApiExemptions("Landroid/content/pm")
+				HiddenApiBypass.addHiddenApiExemptions(
+					"Landroid/content/pm/IPackageManager",
+					"Landroid/content/pm/IPackageInstaller",
+					"Landroid/content/pm/IPackageInstallerSession",
+					"Landroid/content/pm/PackageInstaller",
+					"Landroid/os/UserHandle"
+				)
 			}
 			val remotePackageManager = IPackageManager.Stub.asInterface(
 				ShizukuBinderWrapper(SystemServiceHelper.getSystemService("package"))
@@ -163,9 +172,13 @@ internal class ShizukuPackageInstaller(
 			val uid = Shizuku.getUid()
 			val isRoot = uid == 0
 			val installerPackageName = if (isRoot) context.packageName else "com.android.shell"
-			val userId = if (isRoot) Process.myUserHandle().hashCode() else 0
 			return ShizukuPackageInstaller(
-				createPackageInstaller(context, remotePackageInstaller, installerPackageName, userId),
+				createPackageInstaller(
+					context,
+					remotePackageInstaller,
+					installerPackageName,
+					UserHandleHidden.myUserId()
+				),
 				remotePackageInstaller,
 				uid
 			)

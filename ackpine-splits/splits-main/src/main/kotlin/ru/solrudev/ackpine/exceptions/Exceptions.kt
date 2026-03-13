@@ -56,3 +56,11 @@ public class ConflictingVersionCodeException(
 	public val actual: Long,
 	public val name: String
 ) : SplitPackageException("Conflicting version code. Expected: $expected, found: $actual, name: $name")
+
+/**
+ * Thrown when an `AndroidManifest.xml` of an [APK][Apk] has an invalid or missing required attribute.
+ */
+public class InvalidManifestAttributeException(
+	public val attribute: String,
+	public val apkName: String
+) : RuntimeException("$apkName: AndroidManifest.xml has invalid or missing '$attribute' attribute")

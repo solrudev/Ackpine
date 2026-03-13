@@ -16,12 +16,10 @@
 
 package ru.solrudev.ackpine.test
 
-import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
 
 class TestSessionControllerTest {
@@ -130,15 +128,5 @@ class TestSessionControllerTest {
 		val defaultSession = TestSession<UninstallFailure>(TestSessionScript.empty())
 		defaultSession.cancel()
 		assertEquals(Session.State.Cancelled, defaultSession.state)
-	}
-
-	@Test
-	@Suppress("DEPRECATION_ERROR")
-	fun deprecatedBaseSetProgressOnNonProgressSessionFailsWithExpectedError() {
-		val session = TestSession<UninstallFailure>(TestSessionScript.empty())
-		val exception = assertFailsWith<IllegalStateException> {
-			session.controller.setProgress(Progress())
-		}
-		assertEquals("Progress can only be set for TestProgressSession.", exception.message)
 	}
 }

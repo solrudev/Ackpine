@@ -103,7 +103,10 @@ internal fun InstallMode.toEntity(sessionId: String): InstallModeEntity {
 }
 
 @JvmSynthetic
-internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalEntity {
+internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalEntity? {
+	if (this == InstallPreapproval.NONE) {
+		return null
+	}
 	return InstallPreapprovalEntity(
 		sessionId,
 		packageName,
@@ -117,7 +120,10 @@ internal fun InstallPreapproval.toEntity(sessionId: String): InstallPreapprovalE
 }
 
 @JvmSynthetic
-internal fun InstallConstraints.toEntity(sessionId: String): InstallConstraintsEntity {
+internal fun InstallConstraints.toEntity(sessionId: String): InstallConstraintsEntity? {
+	if (this == InstallConstraints.NONE) {
+		return null
+	}
 	return InstallConstraintsEntity(
 		sessionId,
 		isAppNotForegroundRequired,

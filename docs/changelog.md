@@ -6,6 +6,22 @@ hide:
 Change Log
 ==========
 
+Version 0.21.0 (2026-03-14)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fail `SESSION_BASED` install sessions with an exception when the underlying system session is not found while committing.
+- Fail `INTENT_BASED` install sessions eagerly when storage is not available on API < 24.
+- Fix `SplitPackage.equals()` always returning `false`.
+- Improve error messages for invalid or missing `AndroidManifest.xml` attributes when parsing APKs in `ackpine-splits`.
+- Fix Shizuku plugin using wrong user ID on secondary user profiles.
+
+### Public API changes
+
+- Added `InvalidManifestAttributeException` in `ackpine-splits`.
+- Removed deprecated `TestSessionController.setProgress()`. Use `TestProgressSessionController.setProgress()` instead.
+
 Version 0.20.7 (2026-03-11)
 ---------------------------
 

@@ -299,23 +299,29 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun commitPackageInstallerSession() {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
-		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			writeCommitProgressIfAbsent()
-			packageInstaller.openSession(sessionId).commit(statusReceiver)
+		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
+		if (progress == null) {
+			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
+			return
 		}
+		writeCommitProgressIfAbsent(progress)
+		packageInstaller.openSession(sessionId).commit(statusReceiver)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	private fun commitPackageInstallerSessionWithConstraints() {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
-		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			val installConstraints = createPackageInstallerInstallConstraints()
-			writeCommitProgressIfAbsent()
-			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
-				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
-			)
+		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
+		if (progress == null) {
+			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
+			return
 		}
+		val installConstraints = createPackageInstallerInstallConstraints()
+		writeCommitProgressIfAbsent(progress)
+		packageInstaller.commitSessionAfterInstallConstraintsAreMet(
+			sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
+		)
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
@@ -350,8 +356,8 @@ internal class SessionBasedInstallSession internal constructor(
 		return builder.build()
 	}
 
-	private fun writeCommitProgressIfAbsent() = CommitProgressValueHolder.putIfAbsent(context) {
-		packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
+	private fun writeCommitProgressIfAbsent(progress: Float) = CommitProgressValueHolder.putIfAbsent(context) {
+		progress + 0.01f
 	}
 
 	private fun getSessionId(): Int {
