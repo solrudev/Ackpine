@@ -52,6 +52,12 @@ public final class ru/solrudev/ackpine/exceptions/ConflictingVersionCodeExceptio
 	public final fun getName ()Ljava/lang/String;
 }
 
+public final class ru/solrudev/ackpine/exceptions/InvalidManifestAttributeException : java/lang/RuntimeException {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;)V
+	public final fun getApkName ()Ljava/lang/String;
+	public final fun getAttribute ()Ljava/lang/String;
+}
+
 public final class ru/solrudev/ackpine/exceptions/NoBaseApkException : ru/solrudev/ackpine/exceptions/SplitPackageException {
 	public fun <init> ()V
 }

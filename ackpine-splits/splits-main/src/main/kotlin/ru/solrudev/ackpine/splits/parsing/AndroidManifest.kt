@@ -17,11 +17,15 @@
 package ru.solrudev.ackpine.splits.parsing
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.exceptions.InvalidManifestAttributeException
 
 private const val ANDROID_NAMESPACE = "http://schemas.android.com/apk/res/android"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class AndroidManifest internal constructor(private val manifest: Map<String, String>) {
+internal class AndroidManifest internal constructor(
+	private val manifest: Map<String, String>,
+	private val apkName: String
+) {
 
 	@get:JvmSynthetic
 	internal val splitName: String
@@ -29,11 +33,13 @@ internal class AndroidManifest internal constructor(private val manifest: Map<St
 
 	@get:JvmSynthetic
 	internal val packageName: String
-		get() = manifest.getValue("package")
+		get() = manifest["package"]
+			?: throw InvalidManifestAttributeException("package", apkName)
 
 	@get:JvmSynthetic
 	internal val versionCode: Long
-		get() = manifest.getValue("$ANDROID_NAMESPACE:versionCode").toLong()
+		get() = manifest["$ANDROID_NAMESPACE:versionCode"]?.toLongOrNull()
+			?: throw InvalidManifestAttributeException("versionCode", apkName)
 
 	@get:JvmSynthetic
 	internal val versionName: String

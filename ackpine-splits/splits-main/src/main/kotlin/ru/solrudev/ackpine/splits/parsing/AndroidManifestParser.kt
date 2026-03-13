@@ -23,7 +23,7 @@ import java.nio.ByteBuffer
 internal const val ANDROID_MANIFEST_FILE_NAME = "AndroidManifest.xml"
 
 @JvmSynthetic
-internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
+internal fun AndroidManifest(androidManifest: ByteBuffer, apkName: String): AndroidManifest? {
 	var seenManifestElement = false
 	val manifest = mutableMapOf<String, String>()
 	val parser = AndroidBinXmlParser(androidManifest)
@@ -53,5 +53,5 @@ internal fun AndroidManifest(androidManifest: ByteBuffer): AndroidManifest? {
 	if (!seenManifestElement) {
 		return null
 	}
-	return AndroidManifest(manifest)
+	return AndroidManifest(manifest, apkName)
 }

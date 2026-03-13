@@ -281,7 +281,7 @@ public sealed class Apk(
 		}
 
 		private fun createApkSplit(manifestByteBuffer: ByteBuffer, name: String, uri: Uri, size: Long): Apk? {
-			val manifest = AndroidManifest(manifestByteBuffer) ?: return null
+			val manifest = AndroidManifest(manifestByteBuffer, name) ?: return null
 			return when {
 				manifest.splitName.isEmpty() -> {
 					Base(uri, name, size, manifest.packageName, manifest.versionCode, manifest.versionName)
