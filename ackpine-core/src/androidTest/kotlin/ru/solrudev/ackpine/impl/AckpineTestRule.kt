@@ -63,9 +63,6 @@ class AckpineTestRule(
 			if (allowUnknownSources) {
 				uiAutomation.allowAppOp(context.packageName, "REQUEST_INSTALL_PACKAGES")
 				uiAutomation.allowAppOp(context.packageName, "REQUEST_DELETE_PACKAGES")
-			} else {
-				uiAutomation.ignoreAppOp(context.packageName, "REQUEST_INSTALL_PACKAGES")
-				uiAutomation.ignoreAppOp(context.packageName, "REQUEST_DELETE_PACKAGES")
 			}
 			if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
 				uiAutomation.executeShellCommand("settings put secure install_non_market_apps 1").close()
@@ -75,10 +72,6 @@ class AckpineTestRule(
 
 		private fun UiAutomation.allowAppOp(packageName: String, op: String) {
 			executeShellCommand("appops set $packageName $op allow").close()
-		}
-
-		private fun UiAutomation.ignoreAppOp(packageName: String, op: String) {
-			executeShellCommand("appops set $packageName $op ignore").close()
 		}
 	}
 }
