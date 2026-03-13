@@ -152,7 +152,12 @@ internal class ShizukuPackageInstaller(
 		@JvmSynthetic
 		internal fun create(context: Context): ShizukuPackageInstaller {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				HiddenApiBypass.addHiddenApiExemptions("Landroid/content/pm")
+				HiddenApiBypass.addHiddenApiExemptions(
+					"Landroid/content/pm/IPackageManager",
+					"Landroid/content/pm/IPackageInstaller",
+					"Landroid/content/pm/IPackageInstallerSession",
+					"Landroid/content/pm/PackageInstaller"
+				)
 			}
 			val remotePackageManager = IPackageManager.Stub.asInterface(
 				ShizukuBinderWrapper(SystemServiceHelper.getSystemService("package"))
