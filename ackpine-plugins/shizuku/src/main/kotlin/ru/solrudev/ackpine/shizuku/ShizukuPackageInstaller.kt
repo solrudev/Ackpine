@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.shizuku
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
@@ -26,7 +27,7 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstallerHidden
 import android.os.Build
 import android.os.Handler
-import android.os.Process
+import android.os.UserHandleHidden
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
@@ -158,7 +159,8 @@ internal class ShizukuPackageInstaller(
 					"Landroid/content/pm/IPackageManager",
 					"Landroid/content/pm/IPackageInstaller",
 					"Landroid/content/pm/IPackageInstallerSession",
-					"Landroid/content/pm/PackageInstaller"
+					"Landroid/content/pm/PackageInstaller",
+					"Landroid/os/UserHandle"
 				)
 			}
 			val remotePackageManager = IPackageManager.Stub.asInterface(
@@ -170,7 +172,7 @@ internal class ShizukuPackageInstaller(
 			val uid = Shizuku.getUid()
 			val isRoot = uid == 0
 			val installerPackageName = if (isRoot) context.packageName else "com.android.shell"
-			val userId = if (isRoot) Process.myUserHandle().hashCode() else 0
+			val userId = if (isRoot) UserHandleHidden.myUserId() else 0
 			return ShizukuPackageInstaller(
 				createPackageInstaller(context, remotePackageInstaller, installerPackageName, userId),
 				remotePackageInstaller,
