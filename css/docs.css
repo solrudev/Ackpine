@@ -1,0 +1,23 @@
+:root {
+  --md-hue:                          148deg;
+  --md-primary-fg-color:             hsla(var(--md-hue), 65%, 25%, 1);
+  --md-primary-fg-color--light:      hsla(var(--md-hue), 65%, 40%, 1);
+  --md-primary-fg-color--dark:       hsla(var(--md-hue), 65%, 20%, 1);
+  --md-accent-fg-color:              hsla(var(--md-hue), 80%, 38%, 1);
+  --md-accent-fg-color--transparent: hsla(var(--md-hue), 80%, 38%, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue:                          148deg;
+  --md-accent-fg-color:              hsla(var(--md-hue), 80%, 42%, 1);
+  --md-accent-fg-color--transparent: hsla(var(--md-hue), 80%, 42%, 0.1);
+  --md-default-bg-color:             hsla(var(--md-hue), 15%, 7%, 1);
+  --md-typeset-a-color:              var(--md-primary-fg-color--light);
+  --md-footer-bg-color:              hsla(var(--md-hue), 15%, 15%, 0.87);
+  --md-footer-bg-color--dark:        hsla(var(--md-hue), 15%, 8%, 1);
+}
+
+.md-typeset h1, .md-typeset h2, .md-typeset h3, .md-typeset h4 {
+    font-weight:                     bold;
+    color:                           var(--md-default-fg-color);
+}
