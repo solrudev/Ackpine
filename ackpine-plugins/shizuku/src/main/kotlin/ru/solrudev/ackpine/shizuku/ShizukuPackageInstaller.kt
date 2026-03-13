@@ -28,6 +28,7 @@ import android.os.Build
 import android.os.Handler
 import android.os.Process
 import androidx.annotation.RequiresApi
+import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
@@ -109,6 +110,7 @@ internal class ShizukuPackageInstaller(
 		remotePackageInstaller.abandonSession(sessionId)
 	}
 
+	@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
 	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
 		if (Build.VERSION.SDK_INT < 27) {
 			packageInstaller.uninstall(packageName, statusReceiver)
