@@ -65,7 +65,6 @@ import java.util.UUID
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
@@ -303,6 +302,7 @@ class IntentBasedInstallSessionTest {
 	@Config(sdk = [Build.VERSION_CODES.M])
 	fun launchFailsWhenExternalStorageIsNotMountedPreN() {
 		ShadowEnvironment.setExternalStorageState(Environment.MEDIA_UNMOUNTED)
+		shadowOf(context as Application).grantPermissions(WRITE_EXTERNAL_STORAGE)
 		val session = createSession(
 			apk = Uri.EMPTY,
 			initialState = Session.State.Pending
@@ -314,8 +314,9 @@ class IntentBasedInstallSessionTest {
 		val state = session.captureStates().last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
 		val failure = assertIs<InstallFailure.Exceptional>(state.failure)
-		val message = assertNotNull(failure.exception.message)
-		assertContains(message, "External storage is not available")
+		val exception = assertIs<IllegalStateException>(failure.exception)
+		val message = assertNotNull(exception.message)
+		assertEquals("External storage is not available.", message)
 	}
 
 	@Test
@@ -334,9 +335,9 @@ class IntentBasedInstallSessionTest {
 		val state = session.captureStates().last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
 		val failure = assertIs<InstallFailure.Exceptional>(state.failure)
-		val message = assertNotNull(failure.exception.message)
-		assertContains(message, "External storage is not available")
-		assertContains(message, "WRITE_EXTERNAL_STORAGE permission denied")
+		val exception = assertIs<IllegalStateException>(failure.exception)
+		val message = assertNotNull(exception.message)
+		assertEquals("External storage is not available. WRITE_EXTERNAL_STORAGE permission denied.", message)
 	}
 
 	private fun createSession(

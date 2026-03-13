@@ -86,7 +86,7 @@ internal class IntentBasedInstallSession internal constructor(
 	override fun prepare() {
 		createApkCopy()
 		val apkPackageName = context.packageManager
-			.getPackageArchiveInfo(getOrCreateApkFile().absolutePath, 0)
+			.getPackageArchiveInfo(requireApkFile().absolutePath, 0)
 			?.packageName
 			.orEmpty()
 		if (context.packageName == apkPackageName) {
@@ -128,7 +128,7 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	private fun getApkUri(): Uri {
-		val file = getOrCreateApkFile()
+		val file = requireApkFile()
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
 			return file.toUri()
 		}
@@ -136,7 +136,7 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	private fun createApkCopy() {
-		val file = getOrCreateApkFile()
+		val file = requireApkFile()
 		if (file.exists()) {
 			file.delete()
 		}
@@ -158,25 +158,11 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 	}
 
-	private fun getOrCreateApkFile(): File {
+	private fun requireApkFile(): File {
 		apkFile?.let { return it }
-		val file = getApkOrNull()
-		if (file == null) {
-			val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
-				" WRITE_EXTERNAL_STORAGE permission denied."
-			} else {
-				""
-			}
-			completeExceptionally(IllegalStateException("External storage is not available.$cause"))
-			return File("")
-		}
+		val file = getApkFile(requireRootApkDir())
 		apkFile = file
 		return file
-	}
-
-	private fun getApkOrNull(): File? {
-		val rootDir = getRootApkDirOrNull() ?: return null
-		return File(rootDir, "ackpine/sessions/$id/0.apk")
 	}
 
 	private fun getRootApkDirOrNull(): File? {
@@ -189,6 +175,22 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 		return null
 	}
+
+	private fun requireRootApkDir(): File {
+		val rootDir = getRootApkDirOrNull()
+		if (rootDir == null) {
+			val cause = if (ContextCompat.checkSelfPermission(context, WRITE_EXTERNAL_STORAGE) == PERMISSION_DENIED) {
+				" WRITE_EXTERNAL_STORAGE permission denied."
+			} else {
+				""
+			}
+			error("External storage is not available.$cause")
+		}
+		return rootDir
+	}
+
+	private fun getApkFile(rootDir: File) = File(rootDir, "ackpine/sessions/$id/0.apk")
+	private fun getApkOrNull() = getRootApkDirOrNull()?.let(::getApkFile)
 
 	private fun getLastSelfUpdateTimestamp(): Long {
 		return context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
