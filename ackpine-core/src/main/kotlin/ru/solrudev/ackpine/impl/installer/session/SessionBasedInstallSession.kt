@@ -300,10 +300,12 @@ internal class SessionBasedInstallSession internal constructor(
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
-		if (progress != null) {
-			writeCommitProgressIfAbsent(progress)
-			packageInstaller.openSession(sessionId).commit(statusReceiver)
+		if (progress == null) {
+			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
+			return
 		}
+		writeCommitProgressIfAbsent(progress)
+		packageInstaller.openSession(sessionId).commit(statusReceiver)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
@@ -311,13 +313,15 @@ internal class SessionBasedInstallSession internal constructor(
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
-		if (progress != null) {
-			val installConstraints = createPackageInstallerInstallConstraints()
-			writeCommitProgressIfAbsent(progress)
-			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
-				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
-			)
+		if (progress == null) {
+			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
+			return
 		}
+		val installConstraints = createPackageInstallerInstallConstraints()
+		writeCommitProgressIfAbsent(progress)
+		packageInstaller.commitSessionAfterInstallConstraintsAreMet(
+			sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
+		)
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
