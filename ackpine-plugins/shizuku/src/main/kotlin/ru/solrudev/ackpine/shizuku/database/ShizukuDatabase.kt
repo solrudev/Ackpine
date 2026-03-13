@@ -57,7 +57,7 @@ internal interface ShizukuParamsDao {
 	fun insertParameters(params: ShizukuParametersEntity)
 
 	@Query("SELECT * FROM shizuku_parameters WHERE session_id = :sessionId")
-	fun getBySessionId(sessionId: String): ShizukuParametersEntity
+	fun getBySessionId(sessionId: String): ShizukuParametersEntity?
 }
 
 @Dao
@@ -67,7 +67,7 @@ internal interface ShizukuUninstallParamsDao {
 	fun insertParameters(params: ShizukuUninstallParametersEntity)
 
 	@Query("SELECT * FROM shizuku_uninstall_parameters WHERE session_id = :sessionId")
-	fun getBySessionId(sessionId: String): ShizukuUninstallParametersEntity
+	fun getBySessionId(sessionId: String): ShizukuUninstallParametersEntity?
 }
 
 @Entity(tableName = "shizuku_parameters")
