@@ -299,8 +299,9 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun commitPackageInstallerSession() {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
-		if (packageInstaller.getSessionInfo(sessionId) != null) {
-			writeCommitProgressIfAbsent()
+		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
+		if (progress != null) {
+			writeCommitProgressIfAbsent(progress)
 			packageInstaller.openSession(sessionId).commit(statusReceiver)
 		}
 	}
@@ -309,9 +310,10 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun commitPackageInstallerSessionWithConstraints() {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
-		if (packageInstaller.getSessionInfo(sessionId) != null) {
+		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
+		if (progress != null) {
 			val installConstraints = createPackageInstallerInstallConstraints()
-			writeCommitProgressIfAbsent()
+			writeCommitProgressIfAbsent(progress)
 			packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 				sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 			)
@@ -350,8 +352,8 @@ internal class SessionBasedInstallSession internal constructor(
 		return builder.build()
 	}
 
-	private fun writeCommitProgressIfAbsent() = CommitProgressValueHolder.putIfAbsent(context) {
-		packageInstaller.getSessionInfo(nativeSessionId)!!.progress + 0.01f
+	private fun writeCommitProgressIfAbsent(progress: Float) = CommitProgressValueHolder.putIfAbsent(context) {
+		progress + 0.01f
 	}
 
 	private fun getSessionId(): Int {
