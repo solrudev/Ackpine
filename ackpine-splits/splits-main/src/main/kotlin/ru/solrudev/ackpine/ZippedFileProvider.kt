@@ -32,6 +32,7 @@ import android.os.ParcelFileDescriptor
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.io.ZipEntryStream
 import java.io.File
 import java.io.FileNotFoundException
@@ -163,14 +164,20 @@ public class ZippedFileProvider : ContentProvider() {
 		signal: CancellationSignal?,
 		block: (inputFd: ParcelFileDescriptor, outputFd: ParcelFileDescriptor) -> R
 	): R {
-		try {
-			if ('w' in mode || 'W' in mode) {
-				throw UnsupportedOperationException("Write mode is not supported by ZippedFileProvider")
+		if ('w' in mode || 'W' in mode) {
+			throw UnsupportedOperationException("Write mode is not supported by ZippedFileProvider")
+		}
+		val (inputFd, outputFd) = ParcelFileDescriptor.createReliablePipe()
+		return try {
+			try {
+				block(inputFd, outputFd)
+			} finally {
+				signal?.throwIfCanceled()
 			}
-			val (inputFd, outputFd) = ParcelFileDescriptor.createReliablePipe()
-			return block(inputFd, outputFd)
-		} finally {
-			signal?.throwIfCanceled()
+		} catch (throwable: Throwable) {
+			inputFd.closeWithFailure(throwable)
+			outputFd.closeWithFailure(throwable)
+			throw throwable
 		}
 	}
 
@@ -178,15 +185,20 @@ public class ZippedFileProvider : ContentProvider() {
 	 * @return zip entry size.
 	 */
 	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
-		val zipStream = openZipEntryStream(uri.toZipEntryUri(), signal)
-		val size = zipStream.size
-		AckpineThreadPool.execute {
-			outputFd.safeWrite { outputStream ->
-				zipStream.buffered().use { bufferedZipStream ->
-					bufferedZipStream.copyTo(outputStream, signal)
-					outputStream.flush()
+		val zipEntryStream = openZipEntryStream(uri.toZipEntryUri(), signal)
+		val size = zipEntryStream.size
+		try {
+			AckpineThreadPool.execute {
+				zipEntryStream.use {
+					outputFd.safeWrite { outputStream ->
+						zipEntryStream.buffered().copyTo(outputStream, signal)
+						outputStream.flush()
+					}
 				}
 			}
+		} catch (throwable: Throwable) {
+			zipEntryStream.closeWithException(throwable)
+			throw throwable
 		}
 		return size
 	}
@@ -255,7 +267,7 @@ public class ZippedFileProvider : ContentProvider() {
 		} finally {
 			try {
 				if (exception != null) {
-					closeWithError(exception.message)
+					closeWithError(exception.message ?: exception.javaClass.name)
 				} else {
 					close()
 				}
@@ -266,10 +278,19 @@ public class ZippedFileProvider : ContentProvider() {
 		}
 	}
 
+	private fun ParcelFileDescriptor.closeWithFailure(throwable: Throwable) {
+		try {
+			closeWithError(throwable.message ?: throwable.javaClass.name)
+		} catch (closeException: Throwable) {
+			throwable.addSuppressed(closeException)
+		}
+	}
+
 	private fun InputStream.copyTo(out: OutputStream, signal: CancellationSignal?) {
 		val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
 		var bytesRead = read(buffer)
-		while (bytesRead >= 0 && (signal == null || !signal.isCanceled)) {
+		while (bytesRead >= 0) {
+			signal?.throwIfCanceled()
 			out.write(buffer, 0, bytesRead)
 			bytesRead = read(buffer)
 		}
