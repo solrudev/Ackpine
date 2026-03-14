@@ -39,10 +39,7 @@ public object Ackpine {
 	@get:JvmSynthetic
 	internal val globalNotificationId = AtomicInteger(Random.nextInt(10000..1000000))
 
-	@Volatile
 	private var applicationContext: Context? = null
-
-	private val lock = Any()
 
 	private val configurationChangesCallback = object : ComponentCallbacks {
 		override fun onConfigurationChanged(newConfig: Configuration) = createNotificationChannel()
@@ -84,21 +81,17 @@ public object Ackpine {
 		if (applicationContext != null) {
 			throw AckpineReinitializeException()
 		}
-		synchronized(lock) {
-			applicationContext = context.applicationContext.also { ctx ->
-				ctx.registerComponentCallbacks(configurationChangesCallback)
-				createNotificationChannel(ctx)
-			}
+		applicationContext = context.applicationContext.also { ctx ->
+			ctx.registerComponentCallbacks(configurationChangesCallback)
+			createNotificationChannel(ctx)
 		}
 	}
 
 	@VisibleForTesting
 	@JvmSynthetic
 	internal fun reset() {
-		synchronized(lock) {
-			applicationContext?.unregisterComponentCallbacks(configurationChangesCallback)
-			applicationContext = null
-		}
+		applicationContext?.unregisterComponentCallbacks(configurationChangesCallback)
+		applicationContext = null
 	}
 
 	private fun createNotificationChannel(context: Context? = applicationContext) {
