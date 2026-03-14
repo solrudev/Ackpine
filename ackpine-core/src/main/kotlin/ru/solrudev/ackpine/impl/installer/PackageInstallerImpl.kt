@@ -85,9 +85,9 @@ internal class PackageInstallerImpl internal constructor(
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
 		val dbWriteSemaphore = BinarySemaphore()
-		persistSession(parameters, id, notificationId, dbWriteSemaphore)
 		val session = installSessionFactory.create(parameters, id, notificationId, dbWriteSemaphore)
 		sessions[id] = session
+		persistSession(parameters, id, notificationId, dbWriteSemaphore)
 		return session
 	}
 
