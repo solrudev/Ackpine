@@ -65,7 +65,7 @@ internal class PackageInstallerImpl internal constructor(
 
 	private val sessions = ConcurrentHashMap<UUID, CompletableProgressSession<InstallFailure>>()
 	private val committedSessionsInitSemaphore = BinarySemaphore()
-	private val sessionLocks = Locks(32)
+	private val sessionLocks = Locks(16)
 
 	@Volatile
 	private var isSessionsMapInitialized = false
