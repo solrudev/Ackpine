@@ -29,6 +29,7 @@ import ru.solrudev.ackpine.io.ZipEntryStream
 import ru.solrudev.ackpine.io.nonClosing
 import ru.solrudev.ackpine.io.toByteBuffer
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
+import ru.solrudev.ackpine.splits.helpers.comparator
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import ru.solrudev.ackpine.splits.helpers.displayNameAndSize
 import ru.solrudev.ackpine.splits.helpers.isApk
@@ -88,6 +89,9 @@ public sealed class Apk(
 		 * Name of the split which this configuration APK is intended for.
 		 *
 		 * Empty value means this is for [Base] APK.
+		 *
+		 * If the target [feature split][Feature] is not present, this APK remains exposed in top-level configuration
+		 * splits.
 		 */
 		public val configForSplit: String
 	}
@@ -181,10 +185,10 @@ public sealed class Apk(
 	) : Apk(uri, name, size, packageName, versionCode, description = ""), ConfigSplit {
 
 		override val description: String
-			get() = locale.displayLanguage
+			get() = locale.displayName
 
 		override fun isCompatible(context: Context): Boolean {
-			return locale.language in deviceLocales(context).map { it.language }
+			return locale.comparator(deviceLocales(context)) != Int.MAX_VALUE
 		}
 	}
 

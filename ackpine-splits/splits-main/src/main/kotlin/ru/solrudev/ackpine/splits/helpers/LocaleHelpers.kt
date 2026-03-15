@@ -21,6 +21,11 @@ import androidx.core.os.ConfigurationCompat
 import java.util.IllformedLocaleException
 import java.util.Locale
 
+private val availableLocales = Locale.getAvailableLocales()
+	.asSequence()
+	.filter { it.language.isNotEmpty() }
+	.toSet()
+
 @JvmSynthetic
 internal fun deviceLocales(context: Context): List<Locale> {
 	val locales = ConfigurationCompat.getLocales(context.resources.configuration)
@@ -34,10 +39,35 @@ internal fun deviceLocales(context: Context): List<Locale> {
 @JvmSynthetic
 internal fun localeFromSplitName(name: String): Locale? {
 	val localePart = splitTypePart(name) ?: return null
+	val tag = localePart.replace(oldChar = '_', newChar = '-')
 	val locale = try {
-		Locale.Builder().setLanguageTag(localePart).build()
+		Locale.Builder().setLanguageTag(tag).build()
 	} catch (_: IllformedLocaleException) {
-		null
+		return null
 	}
-	return Locale.getAvailableLocales().firstOrNull { it == locale }
+	if (locale.language.isEmpty()) {
+		return null
+	}
+	return locale.takeIf { it in availableLocales }
 }
+
+@JvmSynthetic
+internal fun Locale.comparator(deviceLocales: List<Locale>) = deviceLocales
+	.withIndex()
+	.minOfOrNull { (index, deviceLocale) ->
+		if (language.isEmpty() || language != deviceLocale.language) {
+			return@minOfOrNull Int.MAX_VALUE
+		}
+		val matchBase = index * 5
+		if (toLanguageTag() == deviceLocale.toLanguageTag()) {
+			return@minOfOrNull matchBase
+		}
+		val scriptMatches = script.isNotEmpty() && script == deviceLocale.script
+		val countryMatches = country.isNotEmpty() && country == deviceLocale.country
+		when {
+			scriptMatches && countryMatches -> matchBase + 1
+			scriptMatches -> matchBase + 2
+			countryMatches -> matchBase + 3
+			else -> matchBase + 4
+		}
+	} ?: Int.MAX_VALUE

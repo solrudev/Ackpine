@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.helpers.ImmediateListenableFuture
 import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
+import ru.solrudev.ackpine.splits.helpers.comparator
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import java.util.Locale
 import kotlin.math.abs
@@ -257,7 +258,7 @@ public open class SplitPackage(
 				return splitPackage
 			}
 			val deviceDensity = context.resources.displayMetrics.densityDpi
-			val deviceLanguages = deviceLocales(context).map { it.language }
+			val deviceLocales = deviceLocales(context)
 			val libs = splitPackage
 				.libs
 				.sortedByCompatibility(
@@ -270,8 +271,8 @@ public open class SplitPackage(
 			val localization = splitPackage
 				.localization
 				.sortedByCompatibility(
-					isCompatible = { apk -> apk.locale.language in deviceLanguages },
-					selector = { apk -> localizationComparator(apk, deviceLanguages) }
+					isCompatible = { apk -> apk.locale.comparator(deviceLocales) != Int.MAX_VALUE },
+					selector = { apk -> apk.locale.comparator(deviceLocales) }
 				)
 			val features = splitPackage.dynamicFeatures.map { feature ->
 				val featureLibs = feature
@@ -286,8 +287,8 @@ public open class SplitPackage(
 				val featureLocalization = feature
 					.localization
 					.sortedByCompatibility(
-						isCompatible = { apk -> apk.locale.language in deviceLanguages },
-						selector = { apk -> localizationComparator(apk, deviceLanguages) }
+						isCompatible = { apk -> apk.locale.comparator(deviceLocales) != Int.MAX_VALUE },
+						selector = { apk -> apk.locale.comparator(deviceLocales) }
 					)
 				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
 			}
@@ -304,11 +305,6 @@ public open class SplitPackage(
 
 		private fun libsComparator(apk: Apk.Libs): Int {
 			val index = Abi.deviceAbis.indexOf(apk.abi)
-			return if (index == -1) Int.MAX_VALUE else index
-		}
-
-		private fun localizationComparator(apk: Apk.Localization, deviceLanguages: List<String>): Int {
-			val index = deviceLanguages.indexOf(apk.locale.language)
 			return if (index == -1) Int.MAX_VALUE else index
 		}
 
