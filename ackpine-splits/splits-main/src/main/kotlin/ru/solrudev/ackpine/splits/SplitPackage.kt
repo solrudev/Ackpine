@@ -202,6 +202,9 @@ public open class SplitPackage(
 		 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 		 * matching split is chosen.
 		 *
+		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
+		 * split by compatibility, the base-targeted one takes precedence.
+		 *
 		 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 		 */
 		public fun filterCompatible(context: Context): Provider {
@@ -221,6 +224,9 @@ public open class SplitPackage(
 		 *
 		 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
 		 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+		 *
+		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
+		 * split by compatibility, the base-targeted one takes precedence.
 		 *
 		 * Result of preference evaluation for every [entry][Entry] of this Provider is written to their
 		 * [isPreferred][Entry.isPreferred] flag.
@@ -261,32 +267,32 @@ public open class SplitPackage(
 			val deviceLocales = deviceLocales(context)
 			val libs = splitPackage
 				.libs
-				.sortedByCompatibility(
+				.baseSortedByCompatibility(
 					isCompatible = { apk -> apk.abi in Abi.deviceAbis },
 					selector = ::libsComparator
 				)
 			val density = splitPackage
 				.screenDensity
-				.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
+				.baseSortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
 			val localization = splitPackage
 				.localization
-				.sortedByCompatibility(
+				.baseSortedByCompatibility(
 					isCompatible = { apk -> apk.locale.comparator(deviceLocales) != Int.MAX_VALUE },
 					selector = { apk -> apk.locale.comparator(deviceLocales) }
 				)
 			val features = splitPackage.dynamicFeatures.map { feature ->
 				val featureLibs = feature
 					.libs
-					.sortedByCompatibility(
+					.featureSortedByCompatibility(
 						isCompatible = { apk -> apk.abi in Abi.deviceAbis },
 						selector = ::libsComparator
 					)
 				val featureDensity = feature
 					.screenDensity
-					.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
+					.featureSortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
 				val featureLocalization = feature
 					.localization
-					.sortedByCompatibility(
+					.featureSortedByCompatibility(
 						isCompatible = { apk -> apk.locale.comparator(deviceLocales) != Int.MAX_VALUE },
 						selector = { apk -> apk.locale.comparator(deviceLocales) }
 					)
@@ -295,7 +301,19 @@ public open class SplitPackage(
 			return SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 		}
 
-		private inline fun <T : Apk, R : Comparable<R>> List<Entry<T>>.sortedByCompatibility(
+		private inline fun <T, R : Comparable<R>> List<Entry<T>>.baseSortedByCompatibility(
+			crossinline isCompatible: (T) -> Boolean = { true },
+			crossinline selector: (T) -> R?
+		) where T : Apk, T : Apk.ConfigSplit = sortedWith(
+			compareBy<Entry<T>>(
+				{ entry -> selector(entry.apk) },
+				{ entry -> entry.apk.configForSplit.isNotEmpty() } // base-targeted splits appear first
+			)
+		).mapIndexed { index, entry ->
+			Entry(isPreferred = index == 0 && isCompatible(entry.apk), entry.apk)
+		}
+
+		private inline fun <T : Apk, R : Comparable<R>> List<Entry<T>>.featureSortedByCompatibility(
 			crossinline isCompatible: (T) -> Boolean = { true },
 			crossinline selector: (T) -> R?
 		) = sortedBy { entry -> selector(entry.apk) }
