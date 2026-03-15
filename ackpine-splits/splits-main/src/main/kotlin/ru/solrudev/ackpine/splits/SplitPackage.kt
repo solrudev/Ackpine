@@ -166,8 +166,7 @@ public open class SplitPackage(
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
-		if (javaClass != other?.javaClass) return false
-		other as SplitPackage
+		if (other !is SplitPackage) return false
 		if (base != other.base) return false
 		if (libs != other.libs) return false
 		if (screenDensity != other.screenDensity) return false
