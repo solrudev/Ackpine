@@ -206,16 +206,22 @@ public final class ru/solrudev/ackpine/splits/Apk$Localization : ru/solrudev/ack
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/splits/Apk$Other : ru/solrudev/ackpine/splits/Apk {
+public final class ru/solrudev/ackpine/splits/Apk$Other : ru/solrudev/ackpine/splits/Apk, ru/solrudev/ackpine/splits/Apk$ConfigSplit {
 	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)V
+	public fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;)V
+	public synthetic fun <init> (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Landroid/net/Uri;
 	public final fun component2 ()Ljava/lang/String;
 	public final fun component3 ()J
 	public final fun component4 ()Ljava/lang/String;
 	public final fun component5 ()J
-	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)Lru/solrudev/ackpine/splits/Apk$Other;
+	public final fun component6 ()Ljava/lang/String;
+	public final synthetic fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;J)Lru/solrudev/ackpine/splits/Apk$Other;
+	public final fun copy (Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;)Lru/solrudev/ackpine/splits/Apk$Other;
 	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Other;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Other;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/Apk$Other;Landroid/net/Uri;Ljava/lang/String;JLjava/lang/String;JLjava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/Apk$Other;
 	public fun equals (Ljava/lang/Object;)Z
+	public fun getConfigForSplit ()Ljava/lang/String;
 	public fun getName ()Ljava/lang/String;
 	public fun getPackageName ()Ljava/lang/String;
 	public fun getSize ()J
@@ -309,16 +315,22 @@ public final class ru/solrudev/ackpine/splits/SplitPackage$Companion {
 
 public final class ru/solrudev/ackpine/splits/SplitPackage$DynamicFeature {
 	public fun <init> (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public fun <init> (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)V
+	public synthetic fun <init> (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun component1 ()Lru/solrudev/ackpine/splits/Apk$Feature;
 	public final fun component2 ()Ljava/util/List;
 	public final fun component3 ()Ljava/util/List;
 	public final fun component4 ()Ljava/util/List;
-	public final fun copy (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
+	public final fun component5 ()Ljava/util/List;
+	public final synthetic fun copy (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
+	public final fun copy (Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
 	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;Lru/solrudev/ackpine/splits/Apk$Feature;Ljava/util/List;Ljava/util/List;Ljava/util/List;Ljava/util/List;ILjava/lang/Object;)Lru/solrudev/ackpine/splits/SplitPackage$DynamicFeature;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getFeature ()Lru/solrudev/ackpine/splits/Apk$Feature;
 	public final fun getLibs ()Ljava/util/List;
 	public final fun getLocalization ()Ljava/util/List;
+	public final fun getOther ()Ljava/util/List;
 	public final fun getScreenDensity ()Ljava/util/List;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

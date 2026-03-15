@@ -195,14 +195,28 @@ public sealed class Apk(
 	/**
 	 * Unknown APK split.
 	 */
-	public data class Other(
+	public data class Other @JvmOverloads public constructor(
 		override val uri: Uri,
 		override val name: String,
 		override val size: Long,
 		override val packageName: String,
-		override val versionCode: Long
-	) : Apk(uri, name, size, packageName, versionCode, description = name) {
+		override val versionCode: Long,
+		override val configForSplit: String = ""
+	) : Apk(uri, name, size, packageName, versionCode, description = name), ConfigSplit {
+
 		override fun isCompatible(context: Context): Boolean = true
+
+		/**
+		 * Preserved for binary compatibility.
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			uri: Uri = this.uri,
+			name: String = this.name,
+			size: Long = this.size,
+			packageName: String = this.packageName,
+			versionCode: Long = this.versionCode
+		): Other = Other(uri, name, size, packageName, versionCode, configForSplit)
 	}
 
 	/**
@@ -344,7 +358,8 @@ public sealed class Apk(
 					splitName,
 					size,
 					manifest.packageName,
-					manifest.versionCode
+					manifest.versionCode,
+					manifest.configForSplit
 				)
 			}
 		}
