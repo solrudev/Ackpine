@@ -29,11 +29,11 @@ import ru.solrudev.ackpine.io.ZipEntryStream
 import ru.solrudev.ackpine.io.nonClosing
 import ru.solrudev.ackpine.io.toByteBuffer
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
-import ru.solrudev.ackpine.splits.helpers.comparator
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import ru.solrudev.ackpine.splits.helpers.displayNameAndSize
 import ru.solrudev.ackpine.splits.helpers.isApk
 import ru.solrudev.ackpine.splits.helpers.localeFromSplitName
+import ru.solrudev.ackpine.splits.helpers.matchScore
 import ru.solrudev.ackpine.splits.parsing.ANDROID_MANIFEST_FILE_NAME
 import ru.solrudev.ackpine.splits.parsing.AndroidManifest
 import java.io.File
@@ -188,7 +188,7 @@ public sealed class Apk(
 			get() = locale.displayName
 
 		override fun isCompatible(context: Context): Boolean {
-			return locale.comparator(deviceLocales(context)) != Int.MAX_VALUE
+			return locale.matchScore(deviceLocales(context)) != Int.MAX_VALUE
 		}
 	}
 

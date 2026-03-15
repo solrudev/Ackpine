@@ -47,16 +47,12 @@ public enum class Dpi(public val density: Int) {
 		public val Context.dpi: Dpi
 			get() {
 				val dpi = resources.displayMetrics.densityDpi
-				return when {
-					dpi == DisplayMetrics.DENSITY_TV -> TVDPI
-					dpi <= DisplayMetrics.DENSITY_LOW -> LDPI
-					dpi <= DisplayMetrics.DENSITY_MEDIUM -> MDPI
-					dpi <= DisplayMetrics.DENSITY_HIGH -> HDPI
-					dpi <= DisplayMetrics.DENSITY_XHIGH -> XHDPI
-					dpi <= DisplayMetrics.DENSITY_XXHIGH -> XXHDPI
-					dpi <= DisplayMetrics.DENSITY_XXXHIGH -> XXXHDPI
-					else -> XXXHDPI
-				}
+				val preferred = entries
+					.filter { it.density >= dpi }
+					.minByOrNull { it.density - dpi }
+				return preferred ?: entries
+					.filter { it.density < dpi }
+					.maxBy { it.density }
 			}
 
 		@JvmSynthetic

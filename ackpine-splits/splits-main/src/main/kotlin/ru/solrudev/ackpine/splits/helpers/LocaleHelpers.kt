@@ -52,7 +52,7 @@ internal fun localeFromSplitName(name: String): Locale? {
 }
 
 @JvmSynthetic
-internal fun Locale.comparator(deviceLocales: List<Locale>) = deviceLocales
+internal fun Locale.matchScore(deviceLocales: List<Locale>) = deviceLocales
 	.withIndex()
 	.minOfOrNull { (index, deviceLocale) ->
 		if (language.isEmpty() || language != deviceLocale.language) {
