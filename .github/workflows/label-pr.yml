@@ -33,21 +33,16 @@ jobs:
       - name: Add labels
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # 8.0.0
         env:
-          DOCS_ONLY: ${{ steps.classify.outputs.docs_only }}
           DOCS: ${{ steps.classify.outputs.docs }}
           CI: ${{ steps.classify.outputs.ci }}
           RELEASE: ${{ steps.classify.outputs.release }}
         with:
           script: |
-            let desiredLabels = {
+            const desiredLabels = {
               documentation: process.env.DOCS === 'true',
               ci: process.env.CI === 'true',
               release: process.env.RELEASE === 'true',
             };
-
-            if (process.env.DOCS_ONLY === 'true') {
-              desiredLabels = { documentation: true };
-            }
 
             const owner = context.repo.owner;
             const repo = context.repo.repo;
