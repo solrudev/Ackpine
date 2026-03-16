@@ -19,14 +19,18 @@ package ru.solrudev.ackpine.io
 import android.content.Context
 import android.net.Uri
 import android.os.CancellationSignal
-import android.os.ParcelFileDescriptor
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.helpers.closeAll
+import ru.solrudev.ackpine.helpers.closeAllWithException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.getFileFromUri
+import java.io.EOFException
 import java.io.File
 import java.io.FileInputStream
 import java.io.FilterInputStream
+import java.io.IOException
 import java.io.InputStream
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 
 internal class ZipEntryStream private constructor(
@@ -83,7 +87,11 @@ internal class ZipEntryStream private constructor(
 		}
 
 		private fun openUsingZipFile(file: File, zipEntryName: String): ZipEntryStream? {
-			val zipFile = ZipFile(file)
+			val zipFile = try {
+				ZipFile(file)
+			} catch (exception: ZipException) {
+				throw ZipEntryStreamException(exception)
+			}
 			try {
 				val zipEntry = zipFile.getEntry(zipEntryName)
 				if (zipEntry == null) {
@@ -91,9 +99,12 @@ internal class ZipEntryStream private constructor(
 					return null
 				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile)
+			} catch (exception: ZipException) {
+				closeAndThrow(ZipEntryStreamException(exception), zipFile)
+			} catch (exception: EOFException) {
+				closeAndThrow(ZipEntryStreamException(exception), zipFile)
 			} catch (throwable: Throwable) {
-				zipFile.closeWithException(throwable)
-				throw throwable
+				closeAndThrow(throwable, zipFile)
 			}
 		}
 
@@ -103,34 +114,57 @@ internal class ZipEntryStream private constructor(
 			context: Context,
 			signal: CancellationSignal?
 		): ZipEntryStream? {
-			var fd: ParcelFileDescriptor? = null
-			var fileInputStream: FileInputStream? = null
-			val zipFile: ru.solrudev.ackpine.compress.archivers.zip.ZipFile
-			try {
-				fd = context.contentResolver.openFileDescriptor(uri, "r", signal)
-					?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
-				fileInputStream = FileInputStream(fd.fileDescriptor)
-				zipFile = ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
-					.setFileChannel(fileInputStream.channel)
-					.get()
+			val fd = context.contentResolver.openFileDescriptor(uri, "r", signal)
+				?: throw NullPointerException("ParcelFileDescriptor was null: $uri")
+			val fileInputStream = try {
+				FileInputStream(fd.fileDescriptor)
 			} catch (throwable: Throwable) {
-				fd?.closeWithException(throwable)
-				fileInputStream?.closeWithException(throwable)
+				fd.closeWithException(throwable)
 				throw throwable
 			}
-			try {
+			val zipFile = wrapZipExceptions(fd, fileInputStream) {
+				ru.solrudev.ackpine.compress.archivers.zip.ZipFile.builder()
+					.setFileChannel(fileInputStream.channel)
+					.get()
+			}
+			wrapZipExceptions(fd, fileInputStream, zipFile) {
 				val zipEntry = zipFile.getEntry(zipEntryName)
 				if (zipEntry == null) {
 					closeAll(fd, fileInputStream, zipFile)
 					return null
 				}
 				return ZipEntryStream(zipFile.getInputStream(zipEntry), zipEntry.size, zipFile, fileInputStream, fd)
-			} catch (throwable: Throwable) {
-				fd.closeWithException(throwable)
-				fileInputStream.closeWithException(throwable)
-				zipFile.closeWithException(throwable)
-				throw throwable
 			}
+		}
+
+		private inline fun <R> wrapZipExceptions(vararg resources: AutoCloseable, block: () -> R): R {
+			try {
+				return block()
+			} catch (exception: ZipException) {
+				closeAndThrow(ZipEntryStreamException(exception), resources.asIterable())
+			} catch (exception: EOFException) {
+				closeAndThrow(ZipEntryStreamException(exception), resources.asIterable())
+			} catch (exception: IllegalArgumentException) {
+				closeAndThrow(ZipEntryStreamException(exception), resources.asIterable())
+			} catch (throwable: Throwable) {
+				closeAndThrow(throwable, resources.asIterable())
+			}
+		}
+
+		private fun closeAndThrow(throwable: Throwable, resources: Iterable<AutoCloseable>): Nothing {
+			closeAllWithException(resources, throwable)
+			throw throwable
+		}
+
+		private fun closeAndThrow(throwable: Throwable, resource: AutoCloseable): Nothing {
+			resource.closeWithException(throwable)
+			throw throwable
 		}
 	}
 }
+
+/**
+ * Signals that an error related to corrupt or invalid ZIP occurred. It doesn't include I/O or permission errors.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal class ZipEntryStreamException(cause: Throwable) : IOException(cause)
