@@ -21,5 +21,5 @@ private const val CONFIG_PART = "config."
 @JvmSynthetic
 internal fun splitTypePart(name: String) = name
 	.lowercase()
-	.substringAfter(CONFIG_PART, missingDelimiterValue = "")
+	.substringAfterLast(CONFIG_PART, missingDelimiterValue = "")
 	.ifEmpty { null }
