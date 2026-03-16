@@ -18,8 +18,7 @@ jobs:
       pull-requests: read
 
     outputs:
-      docs_only: ${{ steps.classify.outputs.docs_only }}
-      ci_only: ${{ steps.classify.outputs.ci_only }}
+      run_checks: ${{ steps.classify.outputs.other }}
 
     steps:
       - name: Checkout
@@ -37,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Ackpine
     needs: [ classify ]
-    if: needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
+    if: needs.classify.outputs.run_checks == 'true'
 
     permissions:
       checks: write
@@ -65,7 +64,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Unit tests
     needs: [ classify, build ]
-    if: github.event.pull_request.merged != true && needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
+    if: github.event.pull_request.merged != true && needs.classify.outputs.run_checks == 'true'
 
     permissions:
       checks: write
@@ -105,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Device tests (API ${{ matrix.api-level }})
     needs: [ classify, build ]
-    if: github.event.pull_request.merged != true && needs.classify.outputs.docs_only != 'true' && needs.classify.outputs.ci_only != 'true'
+    if: github.event.pull_request.merged != true && needs.classify.outputs.run_checks == 'true'
     timeout-minutes: 60
 
     strategy:
