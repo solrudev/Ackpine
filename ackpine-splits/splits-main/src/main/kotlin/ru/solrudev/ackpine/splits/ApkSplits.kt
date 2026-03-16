@@ -151,7 +151,7 @@ private class ApkPropertyChecker<Property>(
 ) {
 
 	private var baseApkProperty: Property? = null
-	private val propertyValues = mutableListOf<Property>()
+	private val propertyValues = mutableListOf<Pair<Property, String>>()
 
 	fun check(apk: Apk): Result<Unit> {
 		val apkProperty = propertySelector(apk)
@@ -163,14 +163,14 @@ private class ApkPropertyChecker<Property>(
 			if (expectedProperty != apkProperty) {
 				return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, apkProperty, apk.name))
 			}
-			for (property in propertyValues) {
+			for ((property, apkName) in propertyValues) {
 				if (expectedProperty != property) {
-					return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, property, apk.name))
+					return Result.failure(conflictingPropertyExceptionInitializer(expectedProperty, property, apkName))
 				}
 			}
 			propertyValues.clear()
 		} else {
-			propertyValues += apkProperty
+			propertyValues += apkProperty to apk.name
 		}
 		return Result.success(Unit)
 	}

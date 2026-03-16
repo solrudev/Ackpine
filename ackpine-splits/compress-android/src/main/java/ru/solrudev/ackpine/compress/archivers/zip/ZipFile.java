@@ -18,7 +18,12 @@
  */
 package ru.solrudev.ackpine.compress.archivers.zip;
 
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 import androidx.core.util.Function;
+
+import org.apache.commons.io.Charsets;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -29,6 +34,7 @@ import java.io.InputStream;
 import java.io.SequenceInputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.SeekableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -43,15 +49,15 @@ import java.util.zip.Inflater;
 import java.util.zip.ZipException;
 
 import ru.solrudev.ackpine.compress.archivers.EntryStreamOffsets;
+import ru.solrudev.ackpine.compress.archivers.zip.SeekableByteChannelCompat.FileChannelWrapper;
 import ru.solrudev.ackpine.compress.compressors.bzip2.BZip2CompressorInputStream;
 import ru.solrudev.ackpine.compress.compressors.deflate64.Deflate64CompressorInputStream;
 import ru.solrudev.ackpine.compress.compressors.xz.XZCompressorInputStream;
 import ru.solrudev.ackpine.compress.compressors.zstandard.ZstdCompressorInputStream;
 import ru.solrudev.ackpine.compress.utils.BoundedArchiveInputStream;
+import ru.solrudev.ackpine.compress.utils.BoundedInputStream;
 import ru.solrudev.ackpine.compress.utils.IOUtils;
 import ru.solrudev.ackpine.compress.utils.InputStreamStatistics;
-import ru.solrudev.ackpine.compress.utils.BoundedInputStream;
-import org.apache.commons.io.Charsets;
 
 /**
  * Replacement for {@link java.util.zip.ZipFile}.
@@ -82,9 +88,9 @@ public class ZipFile implements Closeable {
 	 * significantly faster in concurrent environment.
 	 */
 	private static final class BoundedFileChannelInputStream extends BoundedArchiveInputStream {
-		private final FileChannel archive;
+		private final FileChannelWrapper archive;
 
-		BoundedFileChannelInputStream(final long start, final long remaining, final FileChannel archive) {
+		BoundedFileChannelInputStream(final long start, final long remaining, final FileChannelWrapper archive) {
 			super(start, remaining);
 			this.archive = archive;
 		}
@@ -115,7 +121,7 @@ public class ZipFile implements Closeable {
 	public static class Builder {
 
 		static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-		private FileChannel fileChannel;
+		private SeekableByteChannelCompat channel;
 		private Function<InputStream, InputStream> zstdInputStreamFactory;
 
 		/**
@@ -124,8 +130,8 @@ public class ZipFile implements Closeable {
 		public Builder() { }
 
 		public ZipFile get() throws IOException {
-			final FileChannel actualChannel = fileChannel;
-			final String actualDescription = fileChannel.getClass().getSimpleName();
+			final SeekableByteChannelCompat actualChannel = channel;
+			final String actualDescription = channel.getClass().getSimpleName();
 			final boolean closeOnError = true;
 			final boolean useUnicodeExtraFields = true;
 			final boolean ignoreLocalFileHeader = false;
@@ -140,7 +146,19 @@ public class ZipFile implements Closeable {
 		 * @return {@code this} instance.
 		 */
 		public Builder setFileChannel(final FileChannel fileChannel) {
-			this.fileChannel = fileChannel;
+			this.channel = SeekableByteChannelCompat.wrap(fileChannel);
+			return this;
+		}
+
+		/**
+		 * The actual channel, overrides any other input aspects like a File, Path, and so on.
+		 *
+		 * @param seekableByteChannel The actual channel.
+		 * @return {@code this} instance.
+		 */
+		@RequiresApi(Build.VERSION_CODES.N)
+		public Builder setSeekableByteChannel(final SeekableByteChannel seekableByteChannel) {
+			this.channel = SeekableByteChannelCompat.wrap(seekableByteChannel);
 			return this;
 		}
 
@@ -444,7 +462,7 @@ public class ZipFile implements Closeable {
 	 *
 	 * @return true if it's Zip64 end of central directory or false if it's Zip32
 	 */
-	private static boolean positionAtEndOfCentralDirectoryRecord(final FileChannel channel) throws IOException {
+	private static boolean positionAtEndOfCentralDirectoryRecord(final SeekableByteChannelCompat channel) throws IOException {
 		final boolean found = tryToLocateSignature(channel, MIN_EOCD_SIZE, MAX_EOCD_SIZE, EOCD_SIG);
 		if (!found) {
 			throw new ZipException("Archive is not a ZIP archive");
@@ -506,7 +524,7 @@ public class ZipFile implements Closeable {
 	 * Searches the archive backwards from minDistance to maxDistance for the given signature, positions the RandomaccessFile right at the signature if it has
 	 * been found.
 	 */
-	private static boolean tryToLocateSignature(final FileChannel channel, final long minDistanceFromEnd, final long maxDistanceFromEnd,
+	private static boolean tryToLocateSignature(final SeekableByteChannelCompat channel, final long minDistanceFromEnd, final long maxDistanceFromEnd,
 												final byte[] sig) throws IOException {
 		final ByteBuffer wordBuf = ByteBuffer.allocate(ZipConstants.WORD);
 		boolean found = false;
@@ -571,7 +589,7 @@ public class ZipFile implements Closeable {
 	/**
 	 * The actual data source.
 	 */
-	private final FileChannel archive;
+	private final SeekableByteChannelCompat archive;
 
 	/**
 	 * Whether to look for and use Unicode extra fields.
@@ -615,7 +633,7 @@ public class ZipFile implements Closeable {
 
 	private long firstLocalFileHeaderOffset;
 
-	private ZipFile(final FileChannel channel, final String channelDescription, final Charset encoding, final boolean useUnicodeExtraFields,
+	private ZipFile(final SeekableByteChannelCompat channel, final String channelDescription, final Charset encoding, final boolean useUnicodeExtraFields,
 					final boolean closeOnError, final boolean ignoreLocalFileHeader, final Function<InputStream, InputStream> zstdInputStream) throws IOException {
 		this.isSplitZipArchive = false;
 		this.encoding = Charsets.toCharset(encoding, Builder.DEFAULT_CHARSET);
@@ -665,7 +683,8 @@ public class ZipFile implements Closeable {
 		if (start < 0 || remaining < 0 || start + remaining < start) {
 			throw new IllegalArgumentException("Corrupted archive, stream boundaries are out of range");
 		}
-		return new BoundedFileChannelInputStream(start, remaining, archive);
+		return archive instanceof FileChannelWrapper ? new BoundedFileChannelInputStream(start, remaining, (FileChannelWrapper) archive)
+				: new BoundedSeekableByteChannelInputStream(start, remaining, archive);
 	}
 
 	/**

@@ -204,6 +204,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 				if (!isOnActivityResultCalled) {
 					abortSession()
 				}
+				finish()
 			}
 		}
 	}

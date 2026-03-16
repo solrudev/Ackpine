@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.ZippedFileProvider
 import ru.solrudev.ackpine.helpers.entries
 import ru.solrudev.ackpine.helpers.getFileFromUri
 import ru.solrudev.ackpine.io.ZipEntryStream
+import ru.solrudev.ackpine.io.ZipEntryStreamException
 import ru.solrudev.ackpine.io.nonClosing
 import ru.solrudev.ackpine.io.toByteBuffer
 import ru.solrudev.ackpine.splits.Dpi.Companion.dpi
@@ -33,13 +34,16 @@ import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import ru.solrudev.ackpine.splits.helpers.displayNameAndSize
 import ru.solrudev.ackpine.splits.helpers.isApk
 import ru.solrudev.ackpine.splits.helpers.localeFromSplitName
+import ru.solrudev.ackpine.splits.helpers.matchScore
 import ru.solrudev.ackpine.splits.parsing.ANDROID_MANIFEST_FILE_NAME
 import ru.solrudev.ackpine.splits.parsing.AndroidManifest
+import java.io.EOFException
 import java.io.File
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.util.Locale
 import java.util.zip.ZipEntry
+import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
@@ -88,6 +92,9 @@ public sealed class Apk(
 		 * Name of the split which this configuration APK is intended for.
 		 *
 		 * Empty value means this is for [Base] APK.
+		 *
+		 * If the target [feature split][Feature] is not present, this APK remains exposed in top-level configuration
+		 * splits.
 		 */
 		public val configForSplit: String
 	}
@@ -181,24 +188,38 @@ public sealed class Apk(
 	) : Apk(uri, name, size, packageName, versionCode, description = ""), ConfigSplit {
 
 		override val description: String
-			get() = locale.displayLanguage
+			get() = locale.displayName
 
 		override fun isCompatible(context: Context): Boolean {
-			return locale.language in deviceLocales(context).map { it.language }
+			return locale.matchScore(deviceLocales(context)) != Int.MAX_VALUE
 		}
 	}
 
 	/**
 	 * Unknown APK split.
 	 */
-	public data class Other(
+	public data class Other @JvmOverloads public constructor(
 		override val uri: Uri,
 		override val name: String,
 		override val size: Long,
 		override val packageName: String,
-		override val versionCode: Long
-	) : Apk(uri, name, size, packageName, versionCode, description = name) {
+		override val versionCode: Long,
+		override val configForSplit: String = ""
+	) : Apk(uri, name, size, packageName, versionCode, description = name), ConfigSplit {
+
 		override fun isCompatible(context: Context): Boolean = true
+
+		/**
+		 * Preserved for binary compatibility.
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			uri: Uri = this.uri,
+			name: String = this.name,
+			size: Long = this.size,
+			packageName: String = this.packageName,
+			versionCode: Long = this.versionCode
+		): Other = Other(uri, name, size, packageName, versionCode, configForSplit)
 	}
 
 	/**
@@ -236,14 +257,15 @@ public sealed class Apk(
 			if (file.canRead()) {
 				return fromFile(file, uri)
 			}
-			if (!uri.isApk(context)) {
+			val androidManifest = try {
+				ZipEntryStream
+					.open(uri, ANDROID_MANIFEST_FILE_NAME, context, cancellationSignal)
+					?.use(InputStream::toByteBuffer) ?: return null
+			} catch (_: ZipEntryStreamException) {
 				return null
 			}
 			val (displayName, size) = uri.displayNameAndSize(context, cancellationSignal)
 			val name = displayName.substringAfterLast('/').substringBeforeLast('.')
-			val androidManifest = ZipEntryStream
-				.open(uri, ANDROID_MANIFEST_FILE_NAME, context, cancellationSignal)
-				?.use(InputStream::toByteBuffer) ?: return null
 			return createApkSplit(androidManifest, name, uri, size)
 		}
 
@@ -272,12 +294,17 @@ public sealed class Apk(
 			if (!file.isApk) {
 				return null
 			}
-			val name = file.name.substringAfterLast('/').substringBeforeLast('.')
-			val androidManifest = ZipFile(file).use { zipFile ->
-				val zipEntry = zipFile.getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
-				zipFile.getInputStream(zipEntry).toByteBuffer()
+			val androidManifest = try {
+				ZipFile(file).use { zipFile ->
+					val zipEntry = zipFile.getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
+					zipFile.getInputStream(zipEntry).toByteBuffer()
+				}
+			} catch (_: ZipException) {
+				return null
+			} catch (_: EOFException) {
+				return null
 			}
-			return createApkSplit(androidManifest, name, uri, file.length())
+			return createApkSplit(androidManifest, file.nameWithoutExtension, uri, file.length())
 		}
 
 		private fun createApkSplit(manifestByteBuffer: ByteBuffer, name: String, uri: Uri, size: Long): Apk? {
@@ -340,7 +367,8 @@ public sealed class Apk(
 					splitName,
 					size,
 					manifest.packageName,
-					manifest.versionCode
+					manifest.versionCode,
+					manifest.configForSplit
 				)
 			}
 		}

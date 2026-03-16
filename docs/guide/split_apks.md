@@ -192,7 +192,7 @@ Each [entry](../api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split
 
 List of available [`SplitPackage.Provider`](../api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-provider/index.html) operations:
 
-- `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+- `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one. If an unresolved feature-targeted configuration split ties a base-targeted top-level configuration split by compatibility, the base-targeted one takes precedence.
 
 - `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device. It acts the same as applying `sortedByCompatibility(context)` to the provider and calling `filterPreferred()` for the resulting `SplitPackage`.
 

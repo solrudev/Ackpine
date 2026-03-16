@@ -60,7 +60,7 @@ internal class PackageUninstallerImpl internal constructor(
 ) : PackageUninstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, CompletableSession<UninstallFailure>>()
-	private val sessionLocks = Locks(32)
+	private val sessionLocks = Locks(16)
 
 	@Volatile
 	private var isSessionsMapInitialized = false

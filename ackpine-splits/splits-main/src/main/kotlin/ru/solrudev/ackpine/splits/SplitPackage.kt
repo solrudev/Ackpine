@@ -25,7 +25,7 @@ import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
-import java.util.Locale
+import ru.solrudev.ackpine.splits.helpers.matchScore
 import kotlin.math.abs
 
 /**
@@ -70,7 +70,7 @@ public open class SplitPackage(
 	/**
 	 * [APK splits][Apk] of a dynamic feature.
 	 */
-	public data class DynamicFeature(
+	public data class DynamicFeature @JvmOverloads public constructor(
 
 		/**
 		 * A [base APK of the dynamic feature][Apk.Feature].
@@ -91,8 +91,25 @@ public open class SplitPackage(
 		/**
 		 * A list of all [APKs with localized resources][Apk.Localization] needed for the dynamic feature.
 		 */
-		public val localization: List<Entry<Apk.Localization>>
-	)
+		public val localization: List<Entry<Apk.Localization>>,
+
+		/**
+		 * A list of all [unknown APKs][Apk.Other] needed for the dynamic feature.
+		 */
+		public val other: List<Entry<Apk.Other>> = emptyList()
+	) {
+
+		/**
+		 * Preserved for binary compatibility.
+		 */
+		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
+		public fun copy(
+			feature: Apk.Feature = this.feature,
+			libs: List<Entry<Apk.Libs>> = this.libs,
+			screenDensity: List<Entry<Apk.ScreenDensity>> = this.screenDensity,
+			localization: List<Entry<Apk.Localization>> = this.localization
+		): DynamicFeature = DynamicFeature(feature, libs, screenDensity, localization, other)
+	}
 
 	/**
 	 * A [SplitPackage] entry.
@@ -121,7 +138,7 @@ public open class SplitPackage(
 			val featureLibs = feature.libs.filter { it.isPreferred }
 			val featureDensity = feature.screenDensity.filter { it.isPreferred }
 			val featureLocalization = feature.localization.filter { it.isPreferred }
-			DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+			DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization, feature.other)
 		}
 		return FilteredSplitPackage(base, libs, density, localization, other, features)
 	}
@@ -141,14 +158,14 @@ public open class SplitPackage(
 				addAll(feature.libs)
 				addAll(feature.screenDensity)
 				addAll(feature.localization)
+				addAll(feature.other)
 			}
 		}
 	}
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
-		if (javaClass != other?.javaClass) return false
-		other as SplitPackage
+		if (other !is SplitPackage) return false
 		if (base != other.base) return false
 		if (libs != other.libs) return false
 		if (screenDensity != other.screenDensity) return false
@@ -201,6 +218,9 @@ public open class SplitPackage(
 		 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
 		 * matching split is chosen.
 		 *
+		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
+		 * split by compatibility, the base-targeted one takes precedence.
+		 *
 		 * This function will call [Context.getApplicationContext] internally, so it's safe to pass in any Context.
 		 */
 		public fun filterCompatible(context: Context): Provider {
@@ -220,6 +240,9 @@ public open class SplitPackage(
 		 *
 		 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
 		 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+		 *
+		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
+		 * split by compatibility, the base-targeted one takes precedence.
 		 *
 		 * Result of preference evaluation for every [entry][Entry] of this Provider is written to their
 		 * [isPreferred][Entry.isPreferred] flag.
@@ -257,63 +280,71 @@ public open class SplitPackage(
 				return splitPackage
 			}
 			val deviceDensity = context.resources.displayMetrics.densityDpi
-			val deviceLanguages = deviceLocales(context).map { it.language }
+			val deviceLocales = deviceLocales(context)
+			val densityComparator = compareBy<Apk.ScreenDensity>(
+				{ apk -> apk.dpi.density < deviceDensity },
+				{ apk -> abs(deviceDensity - apk.dpi.density) }
+			)
+			val localizationComparator = compareBy<Apk.Localization> { apk ->
+				apk.locale.matchScore(deviceLocales)
+			}
 			val libs = splitPackage
 				.libs
-				.sortedByCompatibility(
+				.baseSortedByCompatibility(
 					isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-					selector = ::libsComparator
+					comparator = libsComparator
 				)
 			val density = splitPackage
 				.screenDensity
-				.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
+				.baseSortedByCompatibility(comparator = densityComparator)
 			val localization = splitPackage
 				.localization
-				.sortedByCompatibility(
-					isCompatible = { apk -> apk.locale.language in deviceLanguages },
-					selector = { apk -> localizationComparator(apk, deviceLanguages) }
+				.baseSortedByCompatibility(
+					isCompatible = { apk -> apk.locale.matchScore(deviceLocales) != Int.MAX_VALUE },
+					comparator = localizationComparator
 				)
 			val features = splitPackage.dynamicFeatures.map { feature ->
 				val featureLibs = feature
 					.libs
 					.sortedByCompatibility(
 						isCompatible = { apk -> apk.abi in Abi.deviceAbis },
-						selector = ::libsComparator
+						comparator = libsComparator
 					)
 				val featureDensity = feature
 					.screenDensity
-					.sortedByCompatibility { apk -> densityComparator(apk, deviceDensity) }
+					.sortedByCompatibility(comparator = densityComparator)
 				val featureLocalization = feature
 					.localization
 					.sortedByCompatibility(
-						isCompatible = { apk -> apk.locale.language in deviceLanguages },
-						selector = { apk -> localizationComparator(apk, deviceLanguages) }
+						isCompatible = { apk -> apk.locale.matchScore(deviceLocales) != Int.MAX_VALUE },
+						comparator = localizationComparator
 					)
-				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization)
+				DynamicFeature(feature.feature, featureLibs, featureDensity, featureLocalization, feature.other)
 			}
 			return SortedSplitPackage(splitPackage.base, libs, density, localization, splitPackage.other, features)
 		}
 
-		private inline fun <T : Apk, R : Comparable<R>> List<Entry<T>>.sortedByCompatibility(
-			crossinline isCompatible: (T) -> Boolean = { true },
-			crossinline selector: (T) -> R?
-		) = sortedBy { entry -> selector(entry.apk) }
+		private inline fun <T> List<Entry<T>>.baseSortedByCompatibility(
+			isCompatible: (T) -> Boolean = { true },
+			comparator: Comparator<T>
+		) where T : Apk, T : Apk.ConfigSplit = sortedByCompatibility(
+			isCompatible,
+			comparator.thenBy { apk -> apk.configForSplit.isNotEmpty() } // base-targeted splits appear first
+		)
+
+		private inline fun <T : Apk> List<Entry<T>>.sortedByCompatibility(
+			isCompatible: (T) -> Boolean = { true },
+			comparator: Comparator<T>
+		) = sortedWith(compareBy<Entry<T>, T>(comparator) { it.apk })
 			.mapIndexed { index, entry ->
 				Entry(isPreferred = index == 0 && isCompatible(entry.apk), entry.apk)
 			}
 
-		private fun libsComparator(apk: Apk.Libs): Int {
-			val index = Abi.deviceAbis.indexOf(apk.abi)
-			return if (index == -1) Int.MAX_VALUE else index
-		}
-
-		private fun localizationComparator(apk: Apk.Localization, deviceLanguages: List<String>): Int {
-			val index = deviceLanguages.indexOf(apk.locale.language)
-			return if (index == -1) Int.MAX_VALUE else index
-		}
-
-		private fun densityComparator(apk: Apk.ScreenDensity, deviceDensity: Int): Int {
-			return abs(deviceDensity - apk.dpi.density)
+		private companion object {
+			private val libsComparator = compareBy<Apk.Libs>(
+				{ apk -> apk.abi !in Abi.deviceAbis },
+				{ apk -> Abi.deviceAbis.indexOf(apk.abi) }
+			)
 		}
 	}
 
@@ -380,14 +411,17 @@ public open class SplitPackage(
 			val featureLibsMap = libs.groupBy { it.apk.configForSplit }
 			val featureDensityMap = density.groupBy { it.apk.configForSplit }
 			val featureLocalizationMap = localization.groupBy { it.apk.configForSplit }
+			val featureOtherMap = other.groupBy { it.apk.configForSplit }
 			val dynamicFeatures = features.map { feature ->
 				val featureLibs = featureLibsMap[feature.name].orEmpty()
 				val featureDensity = featureDensityMap[feature.name].orEmpty()
 				val featureLocalization = featureLocalizationMap[feature.name].orEmpty()
+				val featureOther = featureOtherMap[feature.name].orEmpty()
 				libs.removeAll(featureLibs)
 				density.removeAll(featureDensity)
 				localization.removeAll(featureLocalization)
-				DynamicFeature(feature, featureLibs, featureDensity, featureLocalization)
+				other.removeAll(featureOther)
+				DynamicFeature(feature, featureLibs, featureDensity, featureLocalization, featureOther)
 			}
 			return SequenceSplitPackage(base, libs, density, localization, other, dynamicFeatures)
 		}

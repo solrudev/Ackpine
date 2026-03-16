@@ -34,6 +34,7 @@ import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.io.ZipEntryStream
+import ru.solrudev.ackpine.io.ZipEntryStreamException
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -204,8 +205,12 @@ public class ZippedFileProvider : ContentProvider() {
 	}
 
 	private fun openZipEntryStream(uri: ZipEntryUri, signal: CancellationSignal?): ZipEntryStream {
-		return ZipEntryStream.open(uri.zipFileUri, uri.entryName, context!!, signal)
-			?: throw IOException("Zip entry ${uri.entryName} not found at ${uri.zipFileUri}")
+		try {
+			return ZipEntryStream.open(uri.zipFileUri, uri.entryName, context!!, signal)
+				?: throw IOException("Zip entry ${uri.entryName} not found at ${uri.zipFileUri}")
+		} catch (exception: ZipEntryStreamException) {
+			throw IOException("Failed to open ZIP source at ${uri.zipFileUri}", exception)
+		}
 	}
 
 	private fun Uri.toZipEntryUri() = when {

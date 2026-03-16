@@ -33,13 +33,18 @@ internal class AndroidManifest internal constructor(
 
 	@get:JvmSynthetic
 	internal val packageName: String
-		get() = manifest["package"]
-			?: throw InvalidManifestAttributeException("package", apkName)
+		get() = manifest["package"] ?: throw InvalidManifestAttributeException("package", apkName)
 
 	@get:JvmSynthetic
 	internal val versionCode: Long
-		get() = manifest["$ANDROID_NAMESPACE:versionCode"]?.toLongOrNull()
-			?: throw InvalidManifestAttributeException("versionCode", apkName)
+		get() {
+			val versionCode = manifest["$ANDROID_NAMESPACE:versionCode"]?.toLongOrNull()
+				?: throw InvalidManifestAttributeException("versionCode", apkName)
+			val versionCodeMajor = manifest["$ANDROID_NAMESPACE:versionCodeMajor"]?.let { value ->
+				value.toLongOrNull() ?: throw InvalidManifestAttributeException("versionCodeMajor", apkName)
+			} ?: 0L
+			return (versionCodeMajor shl 32) or (versionCode and 0xFFFF_FFFFL)
+		}
 
 	@get:JvmSynthetic
 	internal val versionName: String

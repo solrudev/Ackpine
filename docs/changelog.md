@@ -6,6 +6,25 @@ hide:
 Change Log
 ==========
 
+Version 0.21.1 (2026-03-16)
+---------------------------
+
+### Bug fixes and improvements
+
+- Group unknown APK splits (`Apk.Other`) by their targeted feature/base in `ackpine-splits`.
+- Handle `versionCodeMajor` attribute when parsing `AndroidManifest.xml` in `ackpine-splits`.
+- Handle malformed ZIP sources gracefully when parsing splits in `ackpine-splits`.
+- Improve DPI matching to better align with Android's screen density selection behavior in `Context.dpi`, `Apk.isCompatible()` and `SplitPackage` APIs.
+- Improve localization splits resolution to also consider region and script in addition to language in `Apk.isCompatible()` and `SplitPackage` APIs.
+- Prioritize base-targeted configuration splits over unresolved feature-targeted ones when resolving compatibility in `ackpine-splits`.
+- Fix `SplitPackage.equals()` not working correctly for subclasses (e.g. the result of `filterCompatible()` and `sortByCompatibility()`).
+- Fix APK name incorrectly reported in manifest attribute conflict exceptions when parsing splits in `ackpine-splits`.
+
+### Public API changes
+
+- `Apk.Other` now implements `Apk.ConfigSplit` and has a new `configForSplit` property.
+- Added `other: List<SplitPackage.Entry<Apk.Other>>` property to `SplitPackage.DynamicFeature`.
+
 Version 0.21.0 (2026-03-14)
 ---------------------------
 

@@ -19,9 +19,7 @@ package ru.solrudev.ackpine.splits.helpers
 private const val CONFIG_PART = "config."
 
 @JvmSynthetic
-internal fun splitTypePart(name: String): String? {
-	if (!name.contains(CONFIG_PART, ignoreCase = true) && !name.contains(".$CONFIG_PART", ignoreCase = true)) {
-		return null
-	}
-	return name.substringAfter(CONFIG_PART).lowercase()
-}
+internal fun splitTypePart(name: String) = name
+	.lowercase()
+	.substringAfterLast(CONFIG_PART, missingDelimiterValue = "")
+	.ifEmpty { null }
