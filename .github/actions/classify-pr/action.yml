@@ -11,6 +11,9 @@ outputs:
   release:
     description: Whether the pull request changes version.properties
     value: ${{ steps.related.outputs.release }}
+  other:
+    description: Whether the pull request changes something not related to documentation and CI
+    value: ${{ steps.exclusive.outputs.not_docs == 'true' && steps.exclusive.outputs.not_ci == 'true' }}
   docs_only:
     description: Whether every changed file is documentation-related
     value: ${{ steps.exclusive.outputs.not_docs == 'false' }}
