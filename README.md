@@ -32,12 +32,14 @@ Ackpine is available on `mavenCentral()`.
 
 Ackpine depends on Jetpack libraries, so it's also necessary to add the `google()` Maven repository.
 
+Latest version: ![Maven Central](https://img.shields.io/maven-central/v/ru.solrudev.ackpine/ackpine-core)
+
 <details open>
   <summary>Gradle version catalog</summary>
 
 ```toml
 [versions]
-ackpine = "0.21.1"
+ackpine = "see badge above"
 
 [libraries]
 ackpine-core = { module = "ru.solrudev.ackpine:ackpine-core", version.ref = "ackpine" }
@@ -81,7 +83,7 @@ ackpine = [
 
 ```kotlin
 dependencies {
-    val ackpineVersion = "0.21.1"
+    val ackpineVersion = "see badge above"
     implementation("ru.solrudev.ackpine:ackpine-core:$ackpineVersion")
 
     // optional - Kotlin extensions and Coroutines support
