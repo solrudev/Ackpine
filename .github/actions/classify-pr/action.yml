@@ -3,30 +3,28 @@ description: Classifies a pull request from its changed files
 
 outputs:
   docs:
-    description: Whether the pull request contains documentation-related changes, excluding changelog changes
-    value: ${{ steps.related.outputs.docs_pages == 'true' || steps.related.outputs.docs_readme == 'true' || steps.related.outputs.docs_zensical == 'true' }}
+    description: Whether the pull request contains documentation-related changes
+    value: >-
+      ${{ steps.classification.outputs.docs_pages == 'true'
+       || steps.classification.outputs.docs_readme == 'true'
+       || steps.classification.outputs.docs_zensical == 'true'
+       || (steps.classification.outputs.docs_changelog == 'true' && steps.classification.outputs.release == 'false') }}
   ci:
     description: Whether the pull request contains CI-related changes
-    value: ${{ steps.related.outputs.ci }}
+    value: ${{ steps.classification.outputs.ci }}
   release:
     description: Whether the pull request changes version.properties
-    value: ${{ steps.related.outputs.release }}
+    value: ${{ steps.classification.outputs.release }}
   other:
     description: Whether the pull request changes something not related to documentation and CI
-    value: ${{ steps.other.outputs.other }}
-  docs_only:
-    description: Whether every changed file is documentation-related
-    value: ${{ steps.exclusive.outputs.not_docs == 'false' }}
-  ci_only:
-    description: Whether every changed file is CI-related
-    value: ${{ steps.exclusive.outputs.not_ci == 'false' }}
+    value: ${{ steps.classification.outputs.other }}
 
 runs:
   using: composite
 
   steps:
-    - name: Classify related changes
-      id: related
+    - name: Classify changes
+      id: classification
       uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
       with:
         token: ${{ github.token }}
@@ -35,6 +33,8 @@ runs:
           docs_pages:
             - 'docs/**'
             - '!docs/changelog.md'
+          docs_changelog:
+            - 'docs/changelog.md'
           docs_readme:
             - 'README*.md'
           docs_zensical:
@@ -43,30 +43,6 @@ runs:
             - '.github/**'
           release:
             - 'version.properties'
-
-    - name: Classify exclusive changes
-      id: exclusive
-      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
-      with:
-        token: ${{ github.token }}
-        predicate-quantifier: every
-        filters: |
-          not_docs:
-            - '**'
-            - '!docs/**'
-            - '!README*.md'
-            - '!zensical.toml'
-          not_ci:
-            - '**'
-            - '!.github/**'
-
-    - name: Classify other changes
-      id: other
-      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
-      with:
-        token: ${{ github.token }}
-        predicate-quantifier: every
-        filters: |
           other:
             - '**'
             - '!docs/**'
