@@ -24,7 +24,7 @@ runs:
   steps:
     - name: Classify related changes
       id: related
-      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
+      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
       with:
         token: ${{ github.token }}
         filters: |
@@ -40,7 +40,7 @@ runs:
 
     - name: Classify exclusive changes
       id: exclusive
-      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
+      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
       with:
         token: ${{ github.token }}
         predicate-quantifier: every
