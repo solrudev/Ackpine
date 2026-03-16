@@ -36,7 +36,9 @@ public enum class Abi {
 		 */
 		@JvmStatic
 		public val deviceAbis: List<Abi> by lazy(LazyThreadSafetyMode.NONE) {
-			Build.SUPPORTED_ABIS.map { valueOf(it.replace(oldChar = '-', newChar = '_').uppercase()) }
+			Build.SUPPORTED_ABIS.mapNotNull { abiString ->
+				entries.find { it.name == abiString.replace(oldChar = '-', newChar = '_').uppercase() }
+			}
 		}
 
 		private val abis = entries.map { it.name.lowercase() }.toSet()
