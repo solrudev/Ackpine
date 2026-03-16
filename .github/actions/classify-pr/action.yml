@@ -11,6 +11,9 @@ outputs:
   release:
     description: Whether the pull request changes version.properties
     value: ${{ steps.related.outputs.release }}
+  other:
+    description: Whether the pull request changes something not related to documentation and CI
+    value: ${{ steps.exclusive.outputs.not_docs == 'true' && steps.exclusive.outputs.not_ci == 'true' }}
   docs_only:
     description: Whether every changed file is documentation-related
     value: ${{ steps.exclusive.outputs.not_docs == 'false' }}
@@ -24,10 +27,9 @@ runs:
   steps:
     - name: Classify related changes
       id: related
-      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
+      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
       with:
         token: ${{ github.token }}
-        predicate-quantifier: every
         filters: |
           docs:
             - 'docs/**'
@@ -41,7 +43,7 @@ runs:
 
     - name: Classify exclusive changes
       id: exclusive
-      uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
+      uses: dorny/paths-filter@9d7afb8d214ad99e78fbd4247752c4caed2b6e4c # 4.0.0
       with:
         token: ${{ github.token }}
         predicate-quantifier: every
