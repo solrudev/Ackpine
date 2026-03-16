@@ -27,7 +27,6 @@ runs:
       uses: dorny/paths-filter@668c092af3649c4b664c54e4b704aa46782f6f7c # unreleased
       with:
         token: ${{ github.token }}
-        predicate-quantifier: every
         filters: |
           docs:
             - 'docs/**'
