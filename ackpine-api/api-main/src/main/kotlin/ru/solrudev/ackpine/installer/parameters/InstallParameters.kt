@@ -440,13 +440,7 @@ public class InstallParameters private constructor(
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			val pluginContainer = AckpinePluginContainer.from(plugins)
-			val pluginInstances = pluginContainer
-				.getPlugins()
-				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
-			for (plugin in pluginInstances) {
-				plugin.apply(this)
-			}
+			applyPlugins()
 			return InstallParameters(
 				ReadOnlyApkList(apks),
 				installerType,
@@ -459,8 +453,20 @@ public class InstallParameters private constructor(
 				constraints,
 				requestUpdateOwnership,
 				packageSource,
-				pluginContainer
+				AckpinePluginContainer.from(plugins)
 			)
+		}
+
+		private fun applyPlugins() {
+			val appliedPlugins = mutableSetOf<Class<out AckpinePlugin<*>>>()
+			var pluginsToApply: List<Class<out AckpinePlugin<*>>>
+			do {
+				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
+				for (pluginClass in pluginsToApply) {
+					AckpinePluginCache.get(pluginClass).apply(this)
+					appliedPlugins += pluginClass
+				}
+			} while (pluginsToApply.isNotEmpty())
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {

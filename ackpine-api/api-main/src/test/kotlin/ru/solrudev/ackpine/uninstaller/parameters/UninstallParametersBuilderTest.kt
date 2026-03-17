@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.SdkInt
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.ChainedPlugin
+import ru.solrudev.ackpine.plugability.ChainedTestPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -78,6 +80,20 @@ class UninstallParametersBuilderTest {
 			.usePlugin(TestParameterlessPlugin::class.java)
 			.build()
 		assertEquals("applied-by-plugin", parameters.packageName)
+	}
+
+	@Test
+	fun chainedPluginIsAppliedDuringBuild() {
+		val parameters = UninstallParameters.Builder("com.example")
+			.usePlugin(ChainedTestPlugin::class.java)
+			.build()
+		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>(
+			ChainedTestPlugin::class.java to AckpinePlugin.Parameters.None,
+			ChainedPlugin::class.java to AckpinePlugin.Parameters.None,
+			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
+		)
+		assertEquals("applied-by-plugin", parameters.packageName)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 	}
 
 	@Test

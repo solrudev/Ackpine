@@ -46,3 +46,29 @@ class TestParameterlessPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
 		builder.setPackageName("applied-by-plugin")
 	}
 }
+
+class ChainedTestPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "chained-test-plugin"
+
+	override fun apply(builder: InstallParameters.Builder) {
+		builder.usePlugin(ChainedPlugin::class.java)
+	}
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		builder.usePlugin(ChainedPlugin::class.java)
+	}
+}
+
+class ChainedPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "chained-plugin"
+
+	override fun apply(builder: InstallParameters.Builder) {
+		builder.usePlugin(TestParameterlessPlugin::class.java)
+	}
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		builder.usePlugin(TestParameterlessPlugin::class.java)
+	}
+}
