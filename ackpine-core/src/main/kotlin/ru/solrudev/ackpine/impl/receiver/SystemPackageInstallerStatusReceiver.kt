@@ -73,12 +73,14 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 				Log.e(tag, null, exception)
 			},
 			block = { session ->
+				session ?: return@handleResult
 				handlePackageInstallerStatus(session, ackpineSessionId, intent, context, pendingResult)
-			})
+			}
+		)
 	}
 
 	private fun handlePackageInstallerStatus(
-		session: CompletableSession<F>?,
+		session: CompletableSession<F>,
 		ackpineSessionId: UUID,
 		intent: Intent,
 		context: Context,
@@ -95,7 +97,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 				status == PackageInstaller.STATUS_PENDING_USER_ACTION -> {
 					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
 					if (confirmationIntent == null) {
-						session?.completeExceptionally(
+						session.completeExceptionally(
 							IllegalStateException("$tag: confirmationIntent was null.")
 						)
 						return
@@ -148,7 +150,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 	}
 
 	private fun handleSessionResult(
-		session: CompletableSession<F>?,
+		session: CompletableSession<F>,
 		status: Int,
 		message: String?,
 		intent: Intent
@@ -157,11 +159,11 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 			PackageInstaller.STATUS_SUCCESS -> Session.State.Succeeded
 			else -> Session.State.Failed(getFailure(intent, status, message))
 		}
-		session?.complete(result)
+		session.complete(result)
 	}
 
 	private fun handlePreapprovalResult(
-		session: CompletableSession<F>?,
+		session: CompletableSession<F>,
 		status: Int,
 		packageInstallerStatus: PackageInstallerStatus?,
 		message: String?,
