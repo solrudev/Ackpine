@@ -215,7 +215,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	private fun Uri.toZipEntryUri() = when {
 		authority != providerAuthority -> throw FileNotFoundException("uri=$this")
-		isV2() -> parseV2Uri(this)
+		pathSegments.firstOrNull() == CURRENT_URI_VERSION -> parseV2Uri(this)
 		else -> parseLegacyUri(this)
 	}
 
