@@ -74,7 +74,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 		abiValidation {
 			enabled = true
-			filters.excluded.annotatedWith.add("androidx.annotation.RestrictTo")
+			filters.exclude.annotatedWith.add("androidx.annotation.RestrictTo")
 		}
 
 		configureAbiValidationArtifacts(abiValidation)

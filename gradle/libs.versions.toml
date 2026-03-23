@@ -6,7 +6,7 @@ hidden-api-refine = "4.4.0"
 jacoco = "0.8.14"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
-kotlin = "2.3.0"
+kotlin = "2.3.20"
 kotlin-ksp = "2.3.4"
 bundletool = "1.18.3"
 shizuku = "13.1.5"

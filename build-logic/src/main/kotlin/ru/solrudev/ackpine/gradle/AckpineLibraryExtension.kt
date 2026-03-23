@@ -61,7 +61,7 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 		}
 		_internalPackages = packageNames.toSet()
 		abiValidationExtension.value?.run {
-			filters.excluded.byNames.addAll(packageNames.map { "$it.**" })
+			filters.exclude.byNames.addAll(packageNames.map { "$it.**" })
 		}
 	}
 }
