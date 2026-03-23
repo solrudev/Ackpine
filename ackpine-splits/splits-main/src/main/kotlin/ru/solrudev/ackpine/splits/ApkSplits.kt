@@ -34,6 +34,8 @@ public object ApkSplits {
 	 * Returns a sequence which throws [SplitPackageException] on iteration if the split package is invalid and closes
 	 * all I/O resources opened in the upstream sequence if it's [supported][CloseableSequence].
 	 *
+	 * Empty sequence is considered valid.
+	 *
 	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
 	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will
 	 * be thrown.
@@ -69,6 +71,8 @@ public object ApkSplits {
 
 	/**
 	 * Returns a list of [APK splits][Apk] and throws [SplitPackageException] if the split package is invalid.
+	 *
+	 * Empty iterable is considered valid.
 	 *
 	 * If any [APK split][Apk] conflicts with [base APK][Apk.Base] by package name, [ConflictingPackageNameException]
 	 * will be thrown. If any APK split conflicts with base APK by version code, [ConflictingVersionCodeException] will

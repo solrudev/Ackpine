@@ -25,13 +25,13 @@ import android.os.CancellationSignal
 import android.provider.OpenableColumns
 
 @JvmSynthetic
-internal fun Context.openAssetFileDescriptor(uri: Uri, signal: CancellationSignal): AssetFileDescriptor? {
+internal fun Context.openAssetFileDescriptorWithSize(uri: Uri, signal: CancellationSignal): AssetFileDescriptor? {
 	val afd = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
 		contentResolver.openAssetFileDescriptor(uri, "r", signal)
 	} else {
 		contentResolver.openAssetFileDescriptor(uri, "r")
 	}
-	if (afd == null || afd.declaredLength != -1L) {
+	if (afd == null || afd.declaredLength >= 0) {
 		return afd
 	}
 	return AssetFileDescriptor(afd.parcelFileDescriptor, afd.startOffset, contentResolver.getSize(uri, signal))

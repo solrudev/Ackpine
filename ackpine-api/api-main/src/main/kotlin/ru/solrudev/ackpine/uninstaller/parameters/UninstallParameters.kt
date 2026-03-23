@@ -187,14 +187,26 @@ public class UninstallParameters private constructor(
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			val pluginContainer = AckpinePluginContainer.from(plugins)
-			val pluginInstances = pluginContainer
-				.getPlugins()
-				.map { (pluginClass, _) -> AckpinePluginCache.get(pluginClass) }
-			for (plugin in pluginInstances) {
-				plugin.apply(this)
-			}
-			return UninstallParameters(packageName, uninstallerType, confirmation, notificationData, pluginContainer)
+			applyPlugins()
+			return UninstallParameters(
+				packageName,
+				uninstallerType,
+				confirmation,
+				notificationData,
+				AckpinePluginContainer.from(plugins)
+			)
+		}
+
+		private fun applyPlugins() {
+			val appliedPlugins = mutableSetOf<Class<out AckpinePlugin<*>>>()
+			var pluginsToApply: List<Class<out AckpinePlugin<*>>>
+			do {
+				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
+				for (pluginClass in pluginsToApply) {
+					AckpinePluginCache.get(pluginClass).apply(this)
+					appliedPlugins += pluginClass
+				}
+			} while (pluginsToApply.isNotEmpty())
 		}
 
 		private fun applyUninstallerTypeInvariants(value: UninstallerType) = when {

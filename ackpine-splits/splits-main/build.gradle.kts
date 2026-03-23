@@ -14,19 +14,38 @@
  * limitations under the License.
  */
 
+import com.android.build.api.variant.HostTestBuilder
+
 description = "Utilities for working with split APKs"
 
 plugins {
 	id("ru.solrudev.ackpine.library")
 	id("ru.solrudev.ackpine.library-publish")
 	id("ru.solrudev.ackpine.dokka")
+	id("ru.solrudev.ackpine.asset-app-artifacts")
+	id("ru.solrudev.ackpine.jacoco")
 }
 
 ackpine {
 	id = "splits"
 	minSdk = 21
+	testing {
+		enableHostTests = true
+	}
 	artifact {
 		name = "Ackpine Splits"
+	}
+}
+
+assetAppArtifacts {
+	components(withDebugBuildType()) {
+		consumeIn(hostTests[HostTestBuilder.UNIT_TEST_TYPE])
+	}
+}
+
+android {
+	testOptions {
+		unitTests.isIncludeAndroidResources = true
 	}
 }
 
@@ -38,4 +57,9 @@ dependencies {
 	implementation(androidx.core.ktx)
 	implementation(androidx.concurrent.futures.core)
 	implementation(libs.apksig)
+	testImplementation(libs.kotlin.test)
+	testImplementation(kotlinx.coroutines.test)
+	testImplementation(libs.robolectric)
+	testImplementation(androidx.test.core)
+	assetAppArtifacts(projects.testFixtures.splitsFixture)
 }

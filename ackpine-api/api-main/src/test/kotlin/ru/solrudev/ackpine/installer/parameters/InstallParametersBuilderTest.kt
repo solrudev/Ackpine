@@ -21,6 +21,8 @@ import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.SdkInt
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.ChainedPlugin
+import ru.solrudev.ackpine.plugability.ChainedTestPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
 import ru.solrudev.ackpine.resources.ResolvableString
@@ -165,6 +167,20 @@ class InstallParametersBuilderTest {
 			.usePlugin(TestParameterlessPlugin::class.java)
 			.build()
 		assertEquals("applied-by-plugin", parameters.name)
+	}
+
+	@Test
+	fun chainedPluginIsAppliedDuringBuild() {
+		val parameters = InstallParameters.Builder(Uri.EMPTY)
+			.usePlugin(ChainedTestPlugin::class.java)
+			.build()
+		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>(
+			ChainedTestPlugin::class.java to AckpinePlugin.Parameters.None,
+			ChainedPlugin::class.java to AckpinePlugin.Parameters.None,
+			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
+		)
+		assertEquals("applied-by-plugin", parameters.name)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 	}
 
 	@Test

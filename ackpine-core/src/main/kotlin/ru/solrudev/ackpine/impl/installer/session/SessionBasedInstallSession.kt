@@ -58,7 +58,7 @@ import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
 import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
-import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
+import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptorWithSize
 import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -449,7 +449,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val tag = "SessionBasedInstallSession.writeApks"
 		val assetFileDescriptors = apks
 			.mapCatchingFirst { uri ->
-				context.openAssetFileDescriptor(uri, cancellationSignal)
+				context.openAssetFileDescriptorWithSize(uri, cancellationSignal)
 					?: throw NullPointerException("AssetFileDescriptor was null: $uri")
 			}
 			.getOrElse { failure ->

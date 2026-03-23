@@ -21,7 +21,7 @@ import java.util.zip.ZipEntry
 
 @get:JvmSynthetic
 internal val ZipEntry.isApk: Boolean
-	get() = name.endsWith(".apk", ignoreCase = true) && !isDirectory
+	get() = name.endsWith(".apk", ignoreCase = true)
 
 @get:JvmSynthetic
 internal val File.isApk: Boolean

@@ -23,6 +23,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.pm.ProviderInfo
 import android.content.res.AssetFileDescriptor
+import android.content.res.AssetFileDescriptor.UNKNOWN_LENGTH
 import android.database.Cursor
 import android.database.MatrixCursor
 import android.net.Uri
@@ -82,8 +83,8 @@ public class ZippedFileProvider : ContentProvider() {
 
 	override fun openAssetFile(uri: Uri, mode: String, signal: CancellationSignal?): AssetFileDescriptor {
 		preparePipe(mode, signal) { inputFd, outputFd ->
-			val size = openZipEntry(uri, outputFd, signal)
-			return AssetFileDescriptor(inputFd, 0, size)
+			openZipEntry(uri, outputFd, signal)
+			return AssetFileDescriptor(inputFd, 0, UNKNOWN_LENGTH)
 		}
 	}
 
@@ -182,12 +183,8 @@ public class ZippedFileProvider : ContentProvider() {
 		}
 	}
 
-	/**
-	 * @return zip entry size.
-	 */
-	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?): Long {
+	private fun openZipEntry(uri: Uri, outputFd: ParcelFileDescriptor, signal: CancellationSignal?) {
 		val zipEntryStream = openZipEntryStream(uri.toZipEntryUri(), signal)
-		val size = zipEntryStream.size
 		try {
 			AckpineThreadPool.execute {
 				zipEntryStream.use {
@@ -201,7 +198,6 @@ public class ZippedFileProvider : ContentProvider() {
 			zipEntryStream.closeWithException(throwable)
 			throw throwable
 		}
-		return size
 	}
 
 	private fun openZipEntryStream(uri: ZipEntryUri, signal: CancellationSignal?): ZipEntryStream {
@@ -215,7 +211,7 @@ public class ZippedFileProvider : ContentProvider() {
 
 	private fun Uri.toZipEntryUri() = when {
 		authority != providerAuthority -> throw FileNotFoundException("uri=$this")
-		isV2() -> parseV2Uri(this)
+		pathSegments.firstOrNull() == CURRENT_URI_VERSION -> parseV2Uri(this)
 		else -> parseLegacyUri(this)
 	}
 

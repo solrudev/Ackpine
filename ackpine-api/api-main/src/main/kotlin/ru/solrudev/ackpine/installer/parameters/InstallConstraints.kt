@@ -153,6 +153,9 @@ public class InstallConstraints private constructor(
 		 * If constraints are met earlier, session will be committed immediately.
 		 */
 		public data class Retry(public val retries: Int) : TimeoutStrategy {
+			init {
+				require(retries > 0) { "Retries count must be greater than zero, but was $retries" }
+			}
 			private companion object {
 				private const val serialVersionUID = -8122854334695670099L
 			}
@@ -185,6 +188,10 @@ public class InstallConstraints private constructor(
 	 * Builder for [InstallConstraints].
 	 */
 	public class Builder(private val timeoutMillis: Long) {
+
+		init {
+			require(timeoutMillis >= 0) { "Timeout cannot be negative, but was $timeoutMillis" }
+		}
 
 		@RequiresApi(Build.VERSION_CODES.O)
 		public constructor(timeout: java.time.Duration) : this(timeout.toMillis())

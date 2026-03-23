@@ -6,8 +6,9 @@ hidden-api-refine = "4.4.0"
 jacoco = "0.8.14"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
-kotlin = "2.3.0"
-kotlin-ksp = "2.3.4"
+kotlin = "2.3.20"
+kotlin-ksp = "2.3.6"
+bundletool = "1.18.3"
 shizuku = "13.1.5"
 
 [libraries]
@@ -19,6 +20,7 @@ plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.
 plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle.toolchains.foojay-resolver-convention.gradle.plugin:1.0.0"
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
+bundletool = { module = "com.android.tools.build:bundletool", version.ref = "bundletool" }
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
 dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
 guava = "com.google.guava:guava:33.4.8-android"
@@ -30,7 +32,7 @@ junit4 = "junit:junit:4.13.2"
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
-okHttp = "com.squareup.okhttp3:okhttp:5.1.0"
+okHttp = "com.squareup.okhttp3:okhttp:5.3.2"
 robolectric = "org.robolectric:robolectric:4.16.1"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 turbine = "app.cash.turbine:turbine:1.2.1"

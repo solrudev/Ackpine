@@ -6,6 +6,15 @@ hide:
 Change Log
 ==========
 
+Version 0.21.2 (2026-03-24)
+---------------------------
+
+### Bug fixes and improvements
+
+- Add parameters validation when creating `InstallContraints`.
+- Remove region and script handling in localization configuration splits resolution. All variants are always packed into a single language split, so it's not necessary at the app level.
+- Return -1 instead of ZIP entry size as declared length from `ZippedFileProvider.openAssetFile()`. This unblocks usage of `openFileDescriptor()` with `ZippedFileProvider` and also is more consistent with the `ContentProvider` convention (file descriptor contents are consumed in whole, not a subsection of it). Use `query()` with `OpenableColumns.SIZE` to get the entry size.
+
 Version 0.21.1 (2026-03-16)
 ---------------------------
 

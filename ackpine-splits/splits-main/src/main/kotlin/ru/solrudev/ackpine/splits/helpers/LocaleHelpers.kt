@@ -18,12 +18,12 @@ package ru.solrudev.ackpine.splits.helpers
 
 import android.content.Context
 import androidx.core.os.ConfigurationCompat
-import java.util.IllformedLocaleException
 import java.util.Locale
 
-private val availableLocales = Locale.getAvailableLocales()
+private val availableLanguages = Locale.getAvailableLocales()
 	.asSequence()
-	.filter { it.language.isNotEmpty() }
+	.map(Locale::getLanguage)
+	.filter { it.isNotEmpty() }
 	.toSet()
 
 @JvmSynthetic
@@ -39,35 +39,21 @@ internal fun deviceLocales(context: Context): List<Locale> {
 @JvmSynthetic
 internal fun localeFromSplitName(name: String): Locale? {
 	val localePart = splitTypePart(name) ?: return null
-	val tag = localePart.replace(oldChar = '_', newChar = '-')
-	val locale = try {
-		Locale.Builder().setLanguageTag(tag).build()
-	} catch (_: IllformedLocaleException) {
+	val language = localePart.substringBefore('_').substringBefore('-')
+	if (language.isEmpty() || language !in availableLanguages) {
 		return null
 	}
-	if (locale.language.isEmpty()) {
-		return null
-	}
-	return locale.takeIf { it in availableLocales }
+	return Locale(language)
 }
 
 @JvmSynthetic
-internal fun Locale.matchScore(deviceLocales: List<Locale>) = deviceLocales
-	.withIndex()
-	.minOfOrNull { (index, deviceLocale) ->
-		if (language.isEmpty() || language != deviceLocale.language) {
-			return@minOfOrNull Int.MAX_VALUE
-		}
-		val matchBase = index * 5
-		if (toLanguageTag() == deviceLocale.toLanguageTag()) {
-			return@minOfOrNull matchBase
-		}
-		val scriptMatches = script.isNotEmpty() && script == deviceLocale.script
-		val countryMatches = country.isNotEmpty() && country == deviceLocale.country
-		when {
-			scriptMatches && countryMatches -> matchBase + 1
-			scriptMatches -> matchBase + 2
-			countryMatches -> matchBase + 3
-			else -> matchBase + 4
-		}
-	} ?: Int.MAX_VALUE
+internal fun Locale.matchScore(deviceLocales: List<Locale>): Int {
+	if (language.isEmpty()) {
+		return Int.MAX_VALUE
+	}
+	val index = deviceLocales.indexOfFirst { it.language == language }
+	if (index == -1) {
+		return Int.MAX_VALUE
+	}
+	return index
+}

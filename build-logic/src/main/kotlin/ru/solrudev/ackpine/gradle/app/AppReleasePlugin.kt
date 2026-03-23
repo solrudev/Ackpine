@@ -18,67 +18,91 @@ package ru.solrudev.ackpine.gradle.app
 
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.SigningConfig
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
+import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.VersionCatalogsExtension
+import org.gradle.api.problems.ProblemGroup
+import org.gradle.api.problems.ProblemId
+import org.gradle.api.problems.Problems
+import org.gradle.api.problems.Severity
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.create
+import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.get
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.the
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.getOrThrow
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.propertiesProvider
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
+import ru.solrudev.ackpine.gradle.tasks.ExtractBundleApksTask
 import ru.solrudev.ackpine.gradle.tasks.PrepareSingleApkTask
 import java.io.File
+import javax.inject.Inject
+import kotlin.jvm.optionals.getOrNull
 
 private const val APP_SIGNING_KEY_ALIAS = "APP_SIGNING_KEY_ALIAS"
 private const val APP_SIGNING_KEY_PASSWORD = "APP_SIGNING_KEY_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PASSWORD = "APP_SIGNING_KEY_STORE_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PATH = "APP_SIGNING_KEY_STORE_PATH"
 private const val APP_SIGNING_PREFIX = "APP_SIGNING_"
+private val PROBLEM_GROUP = ProblemGroup.create("ackpine-app-release", "Ackpine AppRelease plugin")
 
-public class AppReleasePlugin : Plugin<Project> {
+public class AppReleasePlugin @Inject public constructor(private val problems: Problems) : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.withPlugin("com.android.application") {
-			configureSigning()
-			registerProduceReleaseArtifactsTasks()
+			val extension = extensions.create<AppReleaseExtension>("app")
+			extension.publishSplits.convention(false)
+			val signingConfig = configureSigning()
+			registerTasks(extension, signingConfig)
 		}
 	}
 
-	private fun Project.configureSigning() = extensions.configure<ApplicationExtension> {
+	private fun Project.configureSigning(): Provider<out SigningConfig> {
+		val android = the<ApplicationExtension>()
 		val keystorePropertiesFile = layout.settingsDirectory.file("keystore.properties")
 		val fileConfigProvider = propertiesProvider(name = "app_signing", keystorePropertiesFile)
 			.map { properties ->
 				properties.filterKeys { it.startsWith(APP_SIGNING_PREFIX) }
 			}
 		val environmentConfigProvider = providers.environmentVariablesPrefixedBy(APP_SIGNING_PREFIX)
-		val releaseSigningConfig = releaseSigningConfigProvider(fileConfigProvider, environmentConfigProvider)
-		buildTypes.named("release") {
+		val releaseSigningConfig = android.releaseSigningConfigProvider(fileConfigProvider, environmentConfigProvider)
+		android.buildTypes.named("release") {
 			signingConfig = releaseSigningConfig.get()
 		}
+		return releaseSigningConfig
 	}
 
-	private fun Project.registerProduceReleaseArtifactsTasks() {
-		extensions.configure<ApplicationAndroidComponentsExtension> {
-			val appElements = configurations.consumable("ackpineAppElements") {
+	@Suppress("NewApi")
+	private fun Project.registerTasks(extension: AppReleaseExtension, signingConfig: Provider<out SigningConfig>) {
+		val appElements = lazy {
+			configurations.consumable("ackpineAppElements") {
 				libraryElements(LIBRARY_ELEMENTS)
 			}
-			val apkElements = configurations.consumable(APK_CONFIGURATION_NAME)
+		}
+		val apkElements = configurations.consumable(APK_CONFIGURATION_NAME)
+		configureBundles(extension, appElements, signingConfig)
+		extensions.configure<ApplicationAndroidComponentsExtension> {
 			onVariants(withReleaseBuildType()) { variant ->
-				val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
-				appElements.addOutgoingArtifact(produceArtifactsTask)
+				if (!extension.publishSplits.get()) {
+					val produceArtifactsTask = registerProduceArtifactsTaskForVariant(variant)
+					appElements.value.addOutgoingArtifact(produceArtifactsTask)
+				}
 				val prepareApk = registerPrepareApkFileTaskForVariant(variant)
 				apkElements.addOutgoingArtifact(prepareApk)
-				configureCleanTask(produceArtifactsTask)
 			}
 		}
 	}
@@ -99,7 +123,7 @@ public class AppReleasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.registerProduceArtifactsTaskForVariant(variant: ApplicationVariant): TaskProvider<Sync> {
-		val releaseDir = layout.projectDirectory.dir(variant.name)
+		val outputDir = layout.buildDirectory.dir("generated/${variant.name}_artifacts")
 		val apks = variant.artifacts.get(SingleArtifact.APK)
 		val mapping = if (variant.isMinifyEnabled) {
 			variant.artifacts.get(SingleArtifact.OBFUSCATION_MAPPING_FILE)
@@ -117,7 +141,56 @@ public class AppReleasePlugin : Plugin<Project> {
 					rename { mappingDestinationName }
 				}
 			}
-			into(releaseDir)
+			into(outputDir)
+		}
+	}
+
+	@Suppress("NewApi")
+	private fun Project.configureBundles(
+		extension: AppReleaseExtension,
+		appElements: Lazy<NamedDomainObjectProvider<out Configuration>>,
+		signingConfig: Provider<out SigningConfig>
+	) = extensions.configure<ApplicationAndroidComponentsExtension> {
+		finalizeDsl {
+			if (!extension.publishSplits.get()) {
+				return@finalizeDsl
+			}
+			val bundletool = extensions.findByType<VersionCatalogsExtension>()
+				?.named("libs")
+				?.findLibrary("bundletool")
+				?.getOrNull()
+				?: return@finalizeDsl reportBundletoolNotFound()
+			val bundletoolScope = configurations.dependencyScope("bundletool")
+			val bundletoolClasspath = configurations.resolvable("bundletoolClasspath") {
+				extendsFrom(bundletoolScope.get())
+			}
+			dependencies.add(bundletoolScope.name, bundletool)
+			onVariants(withReleaseBuildType()) { variant ->
+				val extractTask = registerExtractBundleApksTaskForVariant(variant, bundletoolClasspath, signingConfig)
+				appElements.value.addOutgoingArtifact(extractTask)
+			}
+		}
+	}
+
+	private fun Project.registerExtractBundleApksTaskForVariant(
+		variant: ApplicationVariant,
+		bundletoolClasspath: Provider<*>,
+		signingConfig: Provider<out SigningConfig>
+	): TaskProvider<ExtractBundleApksTask> {
+		val bundle = variant.artifacts.get(SingleArtifact.BUNDLE)
+		val aapt2 = the<ApplicationAndroidComponentsExtension>().sdkComponents.aapt2
+		val outputDir = layout.buildDirectory.dir("generated/bundle_apks/${variant.name}")
+		val taskName = variant.computeTaskName(action = "extract", subject = "bundleApks")
+		return tasks.register<ExtractBundleApksTask>(taskName) {
+			bundleFile = bundle
+			this.bundletoolClasspath.from(bundletoolClasspath)
+			this.aapt2 = aapt2
+			keystoreFile.fileProvider(signingConfig.map { it.storeFile!! })
+			keyAlias = signingConfig.map { it.keyAlias!! }
+			keyPassword = signingConfig.map { it.keyPassword!! }
+			storePassword = signingConfig.map { it.storePassword!! }
+			artifactDirectoryName = project.name
+			outputDirectory = outputDir
 		}
 	}
 
@@ -135,9 +208,21 @@ public class AppReleasePlugin : Plugin<Project> {
 		}
 	}
 
-	private fun Project.configureCleanTask(deleteTarget: Any) {
-		tasks.named<Delete>("clean") {
-			delete(deleteTarget)
+	private fun reportBundletoolNotFound() {
+		val problem = ProblemId.create(
+			"bundletool-not-found",
+			"'bundletool' version catalog entry was not found.",
+			PROBLEM_GROUP
+		)
+		problems.reporter.report(problem) {
+			details(
+				"""
+				|'bundletool' version catalog entry was not found in libs.versions.toml.
+				|Split APKs won't be published.
+			""".trimMargin()
+			)
+			solution("Add 'com.android.tools.build:bundletool' to 'libs' version catalog.")
+			severity(Severity.WARNING)
 		}
 	}
 

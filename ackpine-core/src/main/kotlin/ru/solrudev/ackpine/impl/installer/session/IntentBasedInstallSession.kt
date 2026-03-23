@@ -39,7 +39,7 @@ import ru.solrudev.ackpine.impl.helpers.launchConfirmation
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
-import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptor
+import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptorWithSize
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
@@ -142,7 +142,7 @@ internal class IntentBasedInstallSession internal constructor(
 		}
 		file.parentFile?.mkdirs()
 		file.createNewFile()
-		val afd = context.openAssetFileDescriptor(apk, cancellationSignal)
+		val afd = context.openAssetFileDescriptorWithSize(apk, cancellationSignal)
 			?: throw NullPointerException("AssetFileDescriptor was null: $apk")
 		afd.createInputStream().buffered().use { apkStream ->
 			val outputStream = file.outputStream()
