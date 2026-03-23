@@ -81,6 +81,11 @@ jobs:
         with:
           gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
 
+      - name: Copy debug.keystore
+        run: |
+          mkdir -p /home/runner/.config/.android/
+          cp .github/debug.keystore /home/runner/.config/.android/debug.keystore
+
       - name: Run unit tests
         run: |
           ./gradlew test --stacktrace
