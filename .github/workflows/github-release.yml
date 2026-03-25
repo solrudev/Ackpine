@@ -50,6 +50,7 @@ jobs:
 
       - name: Create GitHub release
         run: |
-          gh release create ${{ github.ref_name }} release/* --title ${{ github.ref_name }} --notes-file changelog.txt
+          gh release create "$TAG" release/* --title "$TAG" --notes-file changelog.txt
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
