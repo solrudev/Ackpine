@@ -96,14 +96,10 @@ jobs:
         with:
           report_paths: '**/build/**/TEST-*.xml'
 
-      - name: Publish JaCoCo report
-        uses: madrapps/jacoco-report@50d3aff4548aa991e6753342d9ba291084e63848 # 1.7.2
-        if: success() || failure()
+      - name: Upload coverage
+        uses: codecov/codecov-action@1af58845a975a7985b0beb0cbe6fbbb71a41dbad # 5.5.3
         with:
-          paths: '**/build/jacocoReports/**/*.xml'
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: Unit tests coverage
-          update-comment: true
+          token: ${{ secrets.CODECOV_TOKEN }}
 
   device-tests:
     runs-on: ubuntu-latest
