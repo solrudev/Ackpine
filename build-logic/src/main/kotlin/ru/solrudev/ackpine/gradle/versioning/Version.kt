@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.gradle.versioning
 
 import kotlinx.serialization.Serializable
 
+private val validSuffix = Regex("[a-z0-9]*")
+
 /**
  * Version of the project, adhering to semantic versioning.
  */
@@ -52,17 +54,20 @@ public data class Version(
 	}
 
 	private fun computeVersionCode(): Int {
+		if (!suffix.matches(validSuffix)) {
+			error("Version suffix contains illegal characters: $suffix")
+		}
 		val suffixBase = when {
 			suffix.startsWith("dev") -> 0
 			suffix.startsWith("alpha") -> 1
 			suffix.startsWith("beta") -> 2
 			suffix.startsWith("rc") -> 8
 			suffix.isEmpty() -> 9
-			else -> error("Unknown version suffix")
+			else -> error("Unknown version suffix: $suffix")
 		}
 		val suffixVersionIndex = suffix.indexOfFirst { it.isDigit() }
 		if (suffix.isNotEmpty() && suffixVersionIndex == -1) {
-			error("No suffix version found")
+			error("No suffix version found: $suffix")
 		}
 		val suffixVersion = if (suffixVersionIndex != -1) suffix.substring(suffixVersionIndex).toInt() else 0
 		val snapshot = if (isSnapshot) 0 else 1
