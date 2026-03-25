@@ -16,9 +16,12 @@
 
 package ru.solrudev.ackpine.gradle.versioning
 
+import kotlinx.serialization.Serializable
+
 /**
  * Version of the project, adhering to semantic versioning.
  */
+@Serializable
 public data class Version(
 	public val majorVersion: Int,
 	public val minorVersion: Int,

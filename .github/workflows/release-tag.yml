@@ -46,10 +46,26 @@ jobs:
           fetch-depth: '0'
           persist-credentials: false
 
+      - name: Read version.json
+        id: version
+        run: |
+          is_snapshot=$(jq -r '.isSnapshot' version.json)
+          if [ "$is_snapshot" = "true" ]; then
+            echo "::error::Snapshot versions cannot be released"
+            exit 1
+          fi
+          version=$(
+            jq -r '
+              "\(.majorVersion).\(.minorVersion).\(.patchVersion)"
+              + (if (.suffix // "") != "" then "-\(.suffix)" else "" end)
+            ' version.json
+          )
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
       - name: Push tag
         uses: anothrNick/github-tag-action@4ed44965e0db8dab2b466a16da04aec3cc312fd8 # 1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_AUTOTAG }}
-          CUSTOM_TAG: ${{ github.event.pull_request.title }}
+          CUSTOM_TAG: ${{ steps.version.outputs.version }}
           WITH_V: false
           PRERELEASE: false

@@ -22,13 +22,13 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.registerIfAbsent
 
 /**
- * Returns a provider of a [Version] object parsed from `version.properties` file in root project directory.
+ * Returns a provider of a [Version] object parsed from `version.json` file in root project directory.
  */
 public val Project.ackpineVersion: Provider<Version>
 	get() = gradle
 		.sharedServices
 		.registerIfAbsent("versioning", VersioningService::class) {
-			parameters.versionFile = layout.settingsDirectory.file("version.properties")
+			parameters.versionFile = layout.settingsDirectory.file("version.json")
 		}
 		.map { service ->
 			service.version
