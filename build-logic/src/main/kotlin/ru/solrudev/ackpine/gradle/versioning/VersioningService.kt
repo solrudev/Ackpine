@@ -16,23 +16,18 @@
 
 package ru.solrudev.ackpine.gradle.versioning
 
+import kotlinx.serialization.json.Json
 import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
-import ru.solrudev.ackpine.gradle.helpers.getOrThrow
-import ru.solrudev.ackpine.gradle.helpers.readProperties
 
 internal abstract class VersioningService : BuildService<VersioningService.Parameters> {
 
+	private val json = Json { ignoreUnknownKeys = false }
+
 	internal val version by lazy {
-		val versionProperties = parameters.versionFile.get().asFile.readProperties()
-		val majorVersion = versionProperties.getOrThrow("MAJOR_VERSION").toInt()
-		val minorVersion = versionProperties.getOrThrow("MINOR_VERSION").toInt()
-		val patchVersion = versionProperties.getOrThrow("PATCH_VERSION").toInt()
-		check("SUFFIX" in versionProperties.keys) { "SUFFIX was not provided" }
-		val suffix = (versionProperties["SUFFIX"] as String).lowercase()
-		val isSnapshot = versionProperties.getOrThrow("SNAPSHOT").toBooleanStrict()
-		Version(majorVersion, minorVersion, patchVersion, suffix, isSnapshot)
+		val versionJson = parameters.versionFile.get().asFile.readText()
+		json.decodeFromString<Version>(versionJson)
 	}
 
 	internal interface Parameters : BuildServiceParameters {

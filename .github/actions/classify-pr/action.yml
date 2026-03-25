@@ -13,7 +13,7 @@ outputs:
     description: Whether the pull request contains CI-related changes
     value: ${{ steps.classification.outputs.ci }}
   release:
-    description: Whether the pull request changes version.properties
+    description: Whether the pull request changes version.json
     value: ${{ steps.classification.outputs.release }}
   other:
     description: Whether the pull request changes something not related to documentation and CI
@@ -42,10 +42,11 @@ runs:
           ci:
             - '.github/**'
           release:
-            - 'version.properties'
+            - 'version.json'
           other:
             - '**'
             - '!docs/**'
             - '!README*.md'
             - '!zensical.toml'
             - '!.github/**'
+            - '!requirements.*'
