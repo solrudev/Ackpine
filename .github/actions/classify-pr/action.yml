@@ -49,3 +49,4 @@ runs:
             - '!README*.md'
             - '!zensical.toml'
             - '!.github/**'
+            - '!requirements.*'

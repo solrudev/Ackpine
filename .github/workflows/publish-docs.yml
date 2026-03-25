@@ -42,7 +42,7 @@ jobs:
 
       - name: Build Zensical
         run: |
-          pip3 install --upgrade pip && pip3 install zensical
+          pip3 install --upgrade pip && pip3 install -r requirements.txt
           zensical build
 
       - name: Deploy docs

@@ -32,7 +32,12 @@ Projects are added to `:api-documentation:dokkaGenerate` task through `dependenc
 
 ## Documentation website
 
-To serve documentation website on localhost, execute this command (requires Python 3 and Zensical to be installed):
+Documentation is built using Zensical (requires Python 3). To install Zensical locally, you can use this command while you're in the Ackpine repository root directory:
+```
+pip3 install -r requirements.txt
+```
+
+To serve documentation website on localhost, execute this command:
 ```
 zensical serve
 ```
