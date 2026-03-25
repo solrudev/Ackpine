@@ -1,0 +1,54 @@
+name: publish-docs
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  publish-docs:
+    name: Publish documentation
+    runs-on: ubuntu-latest
+    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.merged == true
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # 6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-gradle-environment-action
+        with:
+          gradle-encryption-key: ${{ secrets.GRADLE_ENCRYPTION_KEY }}
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # 6.2.0
+        with:
+          python-version: 3.14.3
+
+      - name: Prepare API docs
+        run: |
+          ./gradlew :api-documentation:dokkaGenerate
+
+      - name: Build Zensical
+        run: |
+          pip3 install --upgrade pip && pip3 install zensical
+          zensical build
+
+      - name: Deploy docs
+        if: success()
+        uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f # 4.8.0
+        with:
+          branch: gh-pages
+          folder: site
+          single-commit: true
