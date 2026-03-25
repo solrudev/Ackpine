@@ -1,9 +1,7 @@
 name: publish-docs
 
 on:
-  pull_request:
-    types:
-      - closed
+  push:
     branches:
       - master
 
@@ -14,7 +12,7 @@ jobs:
   build-docs:
     name: Build documentation
     runs-on: ubuntu-latest
-    if: github.repository == 'solrudev/Ackpine' && github.event.pull_request.merged == true
+    if: github.repository == 'solrudev/Ackpine'
 
     steps:
       - name: Checkout
@@ -45,6 +43,7 @@ jobs:
       - name: Upload docs artifact
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
         with:
+          name: github-pages
           path: site
 
   deploy-docs:
