@@ -41,4 +41,14 @@ class InstallConstraintsTest {
 			InstallConstraints.gentleUpdate((-1).milliseconds)
 		}
 	}
+
+	@Test
+	fun retryTimeoutStrategyNonPositiveRetryCountThrows() {
+		assertFailsWith<IllegalArgumentException> {
+			InstallConstraints.TimeoutStrategy.Retry(0)
+		}
+		assertFailsWith<IllegalArgumentException> {
+			InstallConstraints.TimeoutStrategy.Retry(-1)
+		}
+	}
 }
