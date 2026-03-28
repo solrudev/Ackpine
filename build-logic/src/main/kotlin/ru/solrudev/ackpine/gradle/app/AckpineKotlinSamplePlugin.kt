@@ -23,14 +23,13 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 
 public class AckpineKotlinSamplePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.run {
 			apply(AckpineSampleBasePlugin::class)
-			apply(KotlinAndroidPluginWrapper::class)
+			apply("com.android.built-in-kotlin")
 		}
 		configureKotlin()
 	}

@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "8.13.2"
+android-plugin = "9.1.0"
 dokka = "2.2.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
@@ -15,6 +15,7 @@ shizuku = "13.1.5"
 plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-android-settings = { module = "com.android.tools.build:gradle-settings", version.ref = "android-plugin" }
+plugin-builtInKotlin = { module = "com.android.built-in-kotlin:com.android.built-in-kotlin.gradle.plugin", version.ref = "android-plugin" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle.toolchains.foojay-resolver-convention.gradle.plugin:1.0.0"

@@ -87,7 +87,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		reportsDirectory = layout.buildDirectory.dir("jacocoReports")
 	}
 
-	private inline fun <reified E : CommonExtension<*, *, *, *, *, *>> Project.configureAndroid() {
+	private inline fun <reified E : CommonExtension> Project.configureAndroid() {
 		extensions.configure<E> {
 			buildTypes.named("debug") {
 				enableUnitTestCoverage = true
@@ -108,7 +108,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 				  V : Variant,
 				  V : HasHostTests,
 				  V : HasDeviceTests,
-				  C : CommonExtension<*, *, *, *, *, *> {
+				  C : CommonExtension {
 		extensions.configure<E> {
 			onVariants(withDebugBuildType()) { variant ->
 				val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
@@ -120,7 +120,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	private inline fun <reified C : CommonExtension<*, *, *, *, *, *>> Project.configureManagedDevices(
+	private inline fun <reified C : CommonExtension> Project.configureManagedDevices(
 		component: Component,
 		jacocoConfig: JacocoConfig
 	) = extensions.configure<C> {

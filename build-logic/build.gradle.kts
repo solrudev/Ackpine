@@ -82,5 +82,6 @@ dependencies {
 	implementation(libs.plugin.kotlin)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
+	implementation(libs.plugin.builtInKotlin)
 	implementation(kotlinx.serialization.json)
 }
