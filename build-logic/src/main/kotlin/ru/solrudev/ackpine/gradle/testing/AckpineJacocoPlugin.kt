@@ -269,7 +269,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		include("**/coverage.ec", "**/*.ec", "**/*.exec")
 	}
 
-	private data class JacocoConfig(
+	private class JacocoConfig(
 		val hasAndroidTests: Boolean,
 		val task: TaskProvider<AckpineJacocoReportTask>,
 		val androidTestExecutionData: ConfigurableFileCollection,
