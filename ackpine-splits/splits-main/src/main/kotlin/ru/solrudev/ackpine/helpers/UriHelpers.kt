@@ -19,12 +19,14 @@ package ru.solrudev.ackpine.helpers
 import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
+import android.os.Build
 import android.os.CancellationSignal
 import android.os.Environment
-import android.os.Process
 import android.provider.DocumentsContract
 import java.io.File
 import java.io.FileNotFoundException
+import java.io.IOException
+import java.nio.file.Paths
 
 @JvmSynthetic
 internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null): File {
@@ -36,14 +38,8 @@ internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null
 			if (fileDescriptor == null) {
 				throw NullPointerException("ParcelFileDescriptor was null: $uri")
 			}
-			val path = "/proc/${Process.myPid()}/fd/${fileDescriptor.fd}"
-			val canonicalPath = File(path).canonicalPath.let { canonicalPath ->
-				if (canonicalPath.startsWith("/mnt/media_rw")) {
-					canonicalPath.replaceFirst("/mnt/media_rw", "/storage")
-				} else {
-					canonicalPath
-				}
-			}
+			val path = "/proc/self/fd/${fileDescriptor.fd}"
+			val canonicalPath = getCanonicalPath(path)
 			if (canonicalPath == path) {
 				return tryGetFileFromExternalDocumentUri(this, uri) ?: File("")
 			}
@@ -52,6 +48,22 @@ internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null
 	} catch (_: FileNotFoundException) {
 		return File("")
 	}
+}
+
+private fun getCanonicalPath(path: String): String {
+	val canonicalPath = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+		try {
+			Paths.get(path).toRealPath().toString()
+		} catch (_: IOException) {
+			return path
+		}
+	} else {
+		File(path).canonicalPath
+	}
+	if (canonicalPath.startsWith("/mnt/media_rw", ignoreCase = true)) {
+		return canonicalPath.replaceFirst("/mnt/media_rw", "/storage", ignoreCase = true)
+	}
+	return canonicalPath
 }
 
 private fun tryGetFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
