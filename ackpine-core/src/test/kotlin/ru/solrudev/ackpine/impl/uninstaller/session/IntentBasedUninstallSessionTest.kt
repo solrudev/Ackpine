@@ -32,7 +32,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.impl.uninstaller.activity.IntentBasedUninstallActivity
 import ru.solrudev.ackpine.impl.uninstaller.activity.UninstallActivity
 import ru.solrudev.ackpine.session.Session
@@ -78,7 +78,7 @@ class IntentBasedUninstallSessionTest {
 		)
 
 		assertTrue(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		val notificationManager = shadowOf(context.getSystemService<NotificationManager>())
 		assertNotNull(notificationManager.getNotification(sessionId.toString(), NOTIFICATION_ID))

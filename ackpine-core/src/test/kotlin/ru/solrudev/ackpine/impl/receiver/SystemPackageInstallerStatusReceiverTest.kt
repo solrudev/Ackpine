@@ -48,7 +48,7 @@ import ru.solrudev.ackpine.impl.installer.session.PackageInstallerStatus
 import ru.solrudev.ackpine.impl.testutil.TestCompletableProgressSession
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
 import ru.solrudev.ackpine.impl.testutil.createInstallSessionEntity
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.impl.testutil.withRealtimeTimeoutOrNull
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallerType
@@ -86,7 +86,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			confirmation = Confirmation.IMMEDIATE
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		assertNotNull(session.completionException)
@@ -108,7 +108,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			confirmation = Confirmation.IMMEDIATE
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
@@ -133,7 +133,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			notificationId = 42
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		val notificationManager = shadowOf(context.getSystemService<NotificationManager>())
@@ -154,7 +154,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			status = PackageInstaller.STATUS_SUCCESS
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		assertEquals(Session.State.Succeeded, session.completedState)
@@ -174,7 +174,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			status = PackageInstaller.STATUS_FAILURE
 		).putExtra(PackageInstaller.EXTRA_STATUS_MESSAGE, "failure")
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		val completedState = session.completedState
@@ -204,7 +204,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			.putExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_SUCCESS)
 		SessionIdIntents.putSessionId(intent, sessionId)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertFalse(shadowOf(receiver).wentAsync())
 		assertEquals(0, receiver.getAckpineSessionCalls)
@@ -224,7 +224,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			preapproval = true
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		assertTrue(session.preapprovalSucceeded)
@@ -247,7 +247,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE.legacyStatus
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		assertNotNull(session.preapprovalFailure)
@@ -269,7 +269,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			preapproval = true
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
@@ -307,7 +307,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			requireUserAction = false
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		val wasConfirmationLaunched = withContext(Dispatchers.IO) {
 			database
@@ -336,7 +336,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			confirmation = Confirmation.IMMEDIATE
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		assertAsyncReceiver(receiver)
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity

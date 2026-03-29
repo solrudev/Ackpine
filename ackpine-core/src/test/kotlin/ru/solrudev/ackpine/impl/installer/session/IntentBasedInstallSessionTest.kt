@@ -53,7 +53,7 @@ import ru.solrudev.ackpine.impl.testutil.captureProgress
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.createAckpineFile
 import ru.solrudev.ackpine.impl.testutil.deleteAckpineFiles
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.runtime.R
 import ru.solrudev.ackpine.session.Progress
@@ -111,7 +111,7 @@ class IntentBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val copiedApk = File(context.filesDir, "ackpine/sessions/$sessionId/0.apk")
 		assertTrue(copiedApk.exists())
@@ -126,7 +126,7 @@ class IntentBasedInstallSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertTrue(progressEvents.size > 1)
 	}
@@ -146,7 +146,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals("new", existingApk.readText())
 	}
@@ -161,7 +161,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.commit()
-		idleMainThread()
+		drainMainThread()
 
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
 		assertNotNull(started)
@@ -183,7 +183,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.commit()
-		idleMainThread()
+		drainMainThread()
 
 		val notificationManager = shadowOf(context.getSystemService<NotificationManager>())
 		assertNotNull(notificationManager.getNotification(sessionId.toString(), NOTIFICATION_ID))
@@ -195,7 +195,7 @@ class IntentBasedInstallSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.notifyCommitted()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(90, progressEvents.last().progress)
 	}
@@ -210,7 +210,7 @@ class IntentBasedInstallSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.complete(Session.State.Succeeded)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(100, progressEvents.last().progress)
 		assertEquals(Progress(100, 100), progressDao.progressUpdates.values.last().last())
@@ -222,7 +222,7 @@ class IntentBasedInstallSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.complete(Session.State.Failed(InstallFailure.Generic("error")))
-		idleMainThread()
+		drainMainThread()
 
 		assertNotEquals(100, progressEvents.last().progress)
 	}
@@ -243,7 +243,7 @@ class IntentBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.cancel()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Cancelled, states.last())
 		assertFalse(apkFile.exists())
@@ -261,7 +261,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.commit()
-		idleMainThread()
+		drainMainThread()
 
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
 		assertNotNull(started)
@@ -292,7 +292,7 @@ class IntentBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.cancel()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Cancelled, states.last())
 		assertFalse(apkFile.exists())
@@ -309,7 +309,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val state = session.captureStates().last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -330,7 +330,7 @@ class IntentBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val state = session.captureStates().last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)

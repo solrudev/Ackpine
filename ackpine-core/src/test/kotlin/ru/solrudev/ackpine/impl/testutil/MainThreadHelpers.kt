@@ -22,7 +22,7 @@ import org.robolectric.Shadows
 /**
  * Executes all posted tasks scheduled before or at the current time.
  */
-internal fun idleMainThread() {
+internal fun drainMainThread() {
 	Shadows.shadowOf(Looper.getMainLooper()).idle()
 }
 

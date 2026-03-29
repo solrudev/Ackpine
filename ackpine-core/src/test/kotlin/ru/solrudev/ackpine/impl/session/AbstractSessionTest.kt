@@ -36,7 +36,7 @@ import ru.solrudev.ackpine.impl.testutil.SessionStateUpdate
 import ru.solrudev.ackpine.impl.testutil.TestFailure
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
 import ru.solrudev.ackpine.impl.testutil.captureStates
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
@@ -111,11 +111,11 @@ class AbstractSessionTest {
 		val listener = Session.StateListener { _, state -> states += state }
 
 		val subscription = session.addStateListener(container, listener)
-		idleMainThread()
+		drainMainThread()
 		subscription.dispose()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		// Only initial notification, no Active/Awaiting notifications
 		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
@@ -128,11 +128,11 @@ class AbstractSessionTest {
 		val states = mutableListOf<Session.State<TestFailure>>()
 		val listener = Session.StateListener { _, state -> states += state }
 		session.addStateListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.launch()
 		session.removeStateListener(listener)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
 	}
@@ -143,11 +143,11 @@ class AbstractSessionTest {
 		val states = mutableListOf<Session.State<TestFailure>>()
 		val listener = Session.StateListener { _, state -> states += state }
 		val subscription = session.addStateListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.launch()
 		subscription.dispose()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf<Session.State<*>>(Session.State.Pending), states)
 	}
@@ -158,12 +158,12 @@ class AbstractSessionTest {
 		val states = mutableListOf<Session.State<TestFailure>>()
 		val listener = Session.StateListener { _, state -> states += state }
 		session.addStateListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.launch()
 		session.removeStateListener(listener)
 		session.addStateListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		val expectedStates = listOf<Session.State<*>>(
 			Session.State.Pending,
@@ -182,7 +182,7 @@ class AbstractSessionTest {
 
 		val subscription = session.addStateListener(container, listener)
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertTrue(subscription.isDisposed)
 		assertTrue(states.isEmpty())
@@ -193,10 +193,10 @@ class AbstractSessionTest {
 		val session = TestSession(initialState = Session.State.Pending)
 		val states1 = session.captureStates()
 		val states2 = session.captureStates()
-		idleMainThread()
+		drainMainThread()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(states1, states2)
 		val expectedStates = listOf(
@@ -245,7 +245,7 @@ class AbstractSessionTest {
 
 		assertTrue(session.launch())
 		assertFalse(session.launch())
-		idleMainThread()
+		drainMainThread()
 
 		val expectedStateUpdates = expectedPersistedStates.map { state ->
 			SessionStateUpdate(session.id.toString(), state)
@@ -305,7 +305,7 @@ class AbstractSessionTest {
 
 		assertTrue(session.commit())
 		assertFalse(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		val expectedStateUpdates = expectedPersistedStates.map { state ->
 			SessionStateUpdate(session.id.toString(), state)
@@ -343,7 +343,7 @@ class AbstractSessionTest {
 			val states = session.captureStates()
 
 			session.cancel()
-			idleMainThread()
+			drainMainThread()
 
 			assertEquals(Session.State.Cancelled, states.last())
 		}
@@ -367,7 +367,7 @@ class AbstractSessionTest {
 		notificationManager.notify(sessionId.toString(), 42, notification)
 
 		session.cancel()
-		idleMainThread()
+		drainMainThread()
 
 		val shadowManager = shadowOf(notificationManager)
 		assertEquals(0, shadowManager.allNotifications.size)
@@ -382,7 +382,7 @@ class AbstractSessionTest {
 		)) {
 			val session = TestSession(initialState = state)
 			val states = session.captureStates()
-			idleMainThread()
+			drainMainThread()
 
 			session.cancel()
 			session.complete(Session.State.Succeeded)
@@ -398,7 +398,7 @@ class AbstractSessionTest {
 		val states = session.captureStates()
 
 		session.complete(Session.State.Succeeded)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Succeeded, states.last())
 	}
@@ -416,7 +416,7 @@ class AbstractSessionTest {
 		val failure = TestFailure.Aborted("User aborted")
 
 		session.complete(Session.State.Failed(failure))
-		idleMainThread()
+		drainMainThread()
 
 		assertIs<Session.State.Failed<InstallFailure>>(states.last())
 		assertEquals(failure, failureDao.getFailure(session.id.toString()))
@@ -433,7 +433,7 @@ class AbstractSessionTest {
 
 		val exception = IllegalStateException("boom")
 		session.completeExceptionally(exception)
-		idleMainThread()
+		drainMainThread()
 
 		assertIs<Session.State.Failed<TestFailure>>(states.last())
 		val failure = failureDao.getFailure(session.id.toString())

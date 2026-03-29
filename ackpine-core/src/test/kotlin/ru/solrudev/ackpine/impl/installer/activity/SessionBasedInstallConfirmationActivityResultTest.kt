@@ -31,7 +31,7 @@ import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.installer.CommitProgressValueHolder
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.impl.testutil.runScheduledMainThreadTasks
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
@@ -66,7 +66,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_CANCELED) }
-			idleMainThread()
+			drainMainThread()
 			val completedState = session.completedState
 			assertNotNull(completedState)
 			assertIs<Session.State.Failed<InstallFailure>>(completedState)
@@ -87,7 +87,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_CANCELED) }
-			idleMainThread()
+			drainMainThread()
 			scenario.onActivity {
 				assertTrue(it.isFinishing)
 				assertNull(session.completedState)
@@ -108,7 +108,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
-			idleMainThread()
+			drainMainThread()
 			scenario.onActivity {
 				assertTrue(it.isFinishing)
 				assertNull(session.completedState)
@@ -154,7 +154,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			// Trigger the else branch which posts deadSessionCompletionRunnable
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
-			idleMainThread()
+			drainMainThread()
 			scenario.onActivity { it.finish() }
 		}
 		runScheduledMainThreadTasks()
@@ -178,7 +178,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
-			idleMainThread()
+			drainMainThread()
 			// Session is alive and not stuck, should just finish without completing session
 			scenario.onActivity {
 				assertTrue(it.isFinishing)
@@ -204,7 +204,7 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_CANCELED) }
-			idleMainThread()
+			drainMainThread()
 			val completedState = session.completedState
 			assertNotNull(completedState)
 			assertIs<Session.State.Failed<InstallFailure>>(completedState)

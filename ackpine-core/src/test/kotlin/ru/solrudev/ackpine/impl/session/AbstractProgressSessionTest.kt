@@ -31,7 +31,7 @@ import ru.solrudev.ackpine.impl.testutil.RecordingSessionProgressDao
 import ru.solrudev.ackpine.impl.testutil.TestFailure
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
 import ru.solrudev.ackpine.impl.testutil.captureProgress
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
@@ -66,7 +66,7 @@ class AbstractProgressSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.updateProgress(42)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100), Progress(42, 100)), progressEvents)
 		assertEquals(listOf(Progress(42, 100)), progressDao.progressUpdates.values.last())
@@ -81,10 +81,10 @@ class AbstractProgressSessionTest {
 		}
 
 		session.addProgressListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 		session.removeProgressListener(listener)
 		session.updateProgress(10)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100)), progressEvents)
 	}
@@ -112,11 +112,11 @@ class AbstractProgressSessionTest {
 		}
 
 		val subscription = session.addProgressListener(container, listener)
-		idleMainThread()
+		drainMainThread()
 		subscription.dispose()
 
 		session.updateProgress(50)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100)), progressEvents)
 		assertTrue(subscription.isDisposed)
@@ -128,11 +128,11 @@ class AbstractProgressSessionTest {
 		val progressEvents = mutableListOf<Progress>()
 		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
 		session.addProgressListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.updateProgress(10)
 		session.removeProgressListener(listener)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100)), progressEvents)
 	}
@@ -143,11 +143,11 @@ class AbstractProgressSessionTest {
 		val progressEvents = mutableListOf<Progress>()
 		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
 		val subscription = session.addProgressListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.updateProgress(10)
 		subscription.dispose()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100)), progressEvents)
 	}
@@ -158,12 +158,12 @@ class AbstractProgressSessionTest {
 		val progressEvents = mutableListOf<Progress>()
 		val listener = ProgressSession.ProgressListener { _, progress -> progressEvents += progress }
 		session.addProgressListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		session.updateProgress(10)
 		session.removeProgressListener(listener)
 		session.addProgressListener(DisposableSubscriptionContainer(), listener)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(0, 100), Progress(10, 100)), progressEvents)
 	}
@@ -178,7 +178,7 @@ class AbstractProgressSessionTest {
 
 		val subscription = session.addProgressListener(container, listener)
 		session.updateProgress(10)
-		idleMainThread()
+		drainMainThread()
 
 		assertTrue(subscription.isDisposed)
 		assertTrue(progressEvents.isEmpty())
@@ -189,10 +189,10 @@ class AbstractProgressSessionTest {
 		val session = TestProgressSession(initialProgress = Progress(0, 100))
 		val progress1 = session.captureProgress()
 		val progress2 = session.captureProgress()
-		idleMainThread()
+		drainMainThread()
 
 		session.updateProgress(25)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(progress1, progress2)
 		assertEquals(listOf(Progress(0, 100), Progress(25, 100)), progress1)
@@ -204,7 +204,7 @@ class AbstractProgressSessionTest {
 		val progressEvents = session.captureProgress()
 
 		session.updateProgress(50)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(listOf(Progress(50, 100)), progressEvents)
 	}
