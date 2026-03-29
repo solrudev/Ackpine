@@ -73,7 +73,10 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 				Log.e(tag, null, exception)
 			},
 			block = { session ->
-				session ?: return@handleResult
+				if (session == null) {
+					pendingResult.finish()
+					return@handleResult
+				}
 				handlePackageInstallerStatus(session, ackpineSessionId, intent, context, pendingResult)
 			}
 		)
