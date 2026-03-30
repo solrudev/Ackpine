@@ -60,6 +60,7 @@ public class AckpineSampleBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<ApplicationExtension> {
+		enableKotlin = false
 		namespace = SampleConstants.PACKAGE_NAME
 
 		defaultConfig {

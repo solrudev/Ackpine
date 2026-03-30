@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.gradle
 
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -23,21 +24,19 @@ import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.findByType
+import org.gradle.kotlin.dsl.the
 import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
 import ru.solrudev.ackpine.gradle.validation.AbiValidationSupport
 
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		pluginManager.run {
-			apply(AckpineLibraryBasePlugin::class)
-			apply(KotlinAndroidPluginWrapper::class)
-		}
+		pluginManager.apply(AckpineLibraryBasePlugin::class)
 		AbiValidationSupport.enable(this)
+		the<LibraryExtension>().enableKotlin = true
 		configureKotlin()
 	}
 

@@ -28,10 +28,8 @@ ackpine {
 	id = "remote-api"
 }
 
-kotlin {
-	abiValidation {
-		enabled = false
-	}
+apiValidation {
+	validationDisabled = true
 }
 
 android {

@@ -45,9 +45,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	override fun apply(target: Project): Unit = target.run {
 		group = Constants.PACKAGE_NAME
 		version = ackpineVersion.get().toString()
-		pluginManager.run {
-			apply(LibraryPlugin::class)
-		}
+		pluginManager.apply(LibraryPlugin::class)
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
 		val extension = extensions.create(
@@ -69,6 +67,8 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
+		enableKotlin = false
+
 		defaultConfig {
 			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 			consumerProguardFiles("consumer-rules.pro")

@@ -18,6 +18,12 @@ plugins {
 	id("ru.solrudev.ackpine.project")
 }
 
+buildscript {
+	dependencies {
+		classpath(libs.plugin.kotlin)
+	}
+}
+
 dependencies {
 	// task :buildAckpine
 	library(projects.ackpineApi.apiMain)
