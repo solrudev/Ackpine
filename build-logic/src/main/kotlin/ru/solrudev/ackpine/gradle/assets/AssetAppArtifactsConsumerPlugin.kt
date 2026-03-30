@@ -39,7 +39,7 @@ public class AssetAppArtifactsConsumerPlugin : Plugin<Project> {
 			)
 			val appArtifactsAssets = configurations.dependencyScope("assetAppArtifacts")
 			val appArtifacts = configurations.resolvableAppArtifacts("appArtifacts") {
-				extendsFrom(appArtifactsAssets.get())
+				extendsFrom(appArtifactsAssets)
 			}
 			extension.addComponentsSelectionListener { selection ->
 				registerPrepareAssetAppArtifactsTasks(selection, appArtifacts)

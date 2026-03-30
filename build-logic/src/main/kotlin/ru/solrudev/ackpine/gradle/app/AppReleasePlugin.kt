@@ -162,7 +162,7 @@ public class AppReleasePlugin @Inject public constructor(private val problems: P
 				?: return@finalizeDsl reportBundletoolNotFound()
 			val bundletoolScope = configurations.dependencyScope("bundletool")
 			val bundletoolClasspath = configurations.resolvable("bundletoolClasspath") {
-				extendsFrom(bundletoolScope.get())
+				extendsFrom(bundletoolScope)
 			}
 			dependencies.add(bundletoolScope.name, bundletool)
 			onVariants(withReleaseBuildType()) { variant ->
