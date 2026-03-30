@@ -83,10 +83,11 @@ gradlePlugin {
 
 dependencies {
 	implementation(libs.plugin.agp)
-	implementation(libs.plugin.kotlin)
 	implementation(libs.plugin.bcv)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
-	implementation(libs.plugin.builtInKotlin)
 	implementation(kotlinx.serialization.json)
+	constraints {
+		implementation(libs.plugin.kotlinApi)
+	}
 }
