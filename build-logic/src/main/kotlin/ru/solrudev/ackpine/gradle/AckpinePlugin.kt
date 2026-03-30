@@ -53,7 +53,7 @@ public class AckpinePlugin : Plugin<Project> {
 
 	private fun Project.registerBuildAckpineTask(library: Provider<out Configuration>) {
 		val libraryArtifacts = configurations.resolvableLibraryArtifacts("ackpineLibraryArtifacts") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 		}
 		tasks.register("buildAckpine") {
 			group = LifecycleBasePlugin.BUILD_GROUP
@@ -64,13 +64,13 @@ public class AckpinePlugin : Plugin<Project> {
 
 	private fun Project.registerAbiValidationTasks(library: Provider<out Configuration>) {
 		val abiValidationUpdate = configurations.resolvable("abiValidationUpdate") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 			attributes {
 				attribute(ABI_VALIDATION_UPDATE_ATTRIBUTE, objects.named(ABI_UPDATE))
 			}
 		}
 		val abiValidationCheck = configurations.resolvable("abiValidationCheck") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 			attributes {
 				attribute(ABI_VALIDATION_CHECK_ATTRIBUTE, objects.named(ABI_CHECK))
 			}
@@ -91,7 +91,7 @@ public class AckpinePlugin : Plugin<Project> {
 		val releaseDir = layout.projectDirectory.dir("release")
 		val sample = configurations.dependencyScope("sample")
 		val sampleArtifacts = configurations.resolvableAppArtifacts("ackpineSampleArtifacts") {
-			extendsFrom(sample.get())
+			extendsFrom(sample)
 		}
 		return tasks.register<Sync>("buildSamples") {
 			group = LifecycleBasePlugin.BUILD_GROUP
