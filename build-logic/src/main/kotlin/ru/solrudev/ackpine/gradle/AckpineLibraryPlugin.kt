@@ -27,14 +27,9 @@ import org.jetbrains.kotlin.gradle.dsl.JvmDefaultMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidExtension
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
-import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.plugin.KotlinAndroidPluginWrapper
-import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK_CONFIGURATION
-import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE_CONFIGURATION
-import ru.solrudev.ackpine.gradle.helpers.abiValidation
+import ru.solrudev.ackpine.gradle.validation.AbiValidationSupport
 
-@OptIn(ExperimentalAbiValidation::class)
 public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
@@ -42,6 +37,7 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			apply(AckpineLibraryBasePlugin::class)
 			apply(KotlinAndroidPluginWrapper::class)
 		}
+		AbiValidationSupport.enable(this)
 		configureKotlin()
 	}
 
@@ -70,24 +66,6 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 			jvmTarget = JVM_1_8
 			jvmDefault = JvmDefaultMode.NO_COMPATIBILITY
 			freeCompilerArgs.addAll("-Xconsistent-data-class-copy-visibility")
-		}
-
-		abiValidation {
-			enabled = true
-			filters.exclude.annotatedWith.add("androidx.annotation.RestrictTo")
-		}
-
-		configureAbiValidationArtifacts(abiValidation)
-	}
-
-	private fun Project.configureAbiValidationArtifacts(abiValidation: AbiValidationExtension) {
-		configurations.named(ABI_UPDATE_CONFIGURATION) {
-			outgoing.artifact(abiValidation.legacyDump.legacyUpdateTaskProvider)
-		}
-		configurations.named(ABI_CHECK_CONFIGURATION) {
-			outgoing.artifact(layout.buildDirectory.dir("abiCheck")) {
-				builtBy(abiValidation.legacyDump.legacyCheckTaskProvider)
-			}
 		}
 	}
 }

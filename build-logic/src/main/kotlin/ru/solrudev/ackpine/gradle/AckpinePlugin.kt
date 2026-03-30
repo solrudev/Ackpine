@@ -26,13 +26,13 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.language.base.plugins.LifecycleBasePlugin
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE
 import ru.solrudev.ackpine.gradle.helpers.resolvableAppArtifacts
 import ru.solrudev.ackpine.gradle.helpers.resolvableLibraryArtifacts
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpinePlugin : Plugin<Project> {

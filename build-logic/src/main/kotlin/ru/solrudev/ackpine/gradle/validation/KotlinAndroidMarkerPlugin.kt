@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle
+package ru.solrudev.ackpine.gradle.validation
 
-import org.gradle.api.Named
-import org.gradle.api.attributes.Attribute
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-internal interface AbiValidationAttribute : Named {
-	companion object {
-		val ABI_VALIDATION_UPDATE_ATTRIBUTE = Attribute.of(
-			"ru.solrudev.ackpine.gradle.abi-validation.update",
-			AbiValidationAttribute::class.java
-		)
-		val ABI_VALIDATION_CHECK_ATTRIBUTE = Attribute.of(
-			"ru.solrudev.ackpine.gradle.abi-validation.check",
-			AbiValidationAttribute::class.java
-		)
+@Suppress("Unused")
+internal class KotlinAndroidMarkerPlugin : Plugin<Project> {
+	override fun apply(target: Project) { // no-op
 	}
 }

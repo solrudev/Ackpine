@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.helpers
+package ru.solrudev.ackpine.gradle.validation
 
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
+import org.gradle.api.Project
 
-/**
- * Retrieves the org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension extension.
- */
-internal val KotlinBaseExtension.abiValidation: AbiValidationExtension
-	get() = (this as ExtensionAware).extensions.getByType<AbiValidationExtension>()
+internal enum class AbiValidation {
+	KGP,
+	BCV;
+
+	internal companion object {
+		internal fun resolve(project: Project): AbiValidation {
+			val useBcv = project.providers.gradleProperty("ackpine.abiValidation.useBcv")
+				.map(String::toBoolean)
+				.getOrElse(false)
+			return if (useBcv) BCV else KGP
+		}
+	}
+}

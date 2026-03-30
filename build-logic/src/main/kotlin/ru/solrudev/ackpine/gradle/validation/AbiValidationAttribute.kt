@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.helpers
+package ru.solrudev.ackpine.gradle.validation
 
-import org.gradle.api.plugins.ExtensionAware
-import org.gradle.kotlin.dsl.getByType
-import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
+import org.gradle.api.Named
+import org.gradle.api.attributes.Attribute
 
-/**
- * Retrieves the org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension extension.
- */
-internal val KotlinBaseExtension.abiValidation: AbiValidationExtension
-	get() = (this as ExtensionAware).extensions.getByType<AbiValidationExtension>()
+internal interface AbiValidationAttribute : Named {
+	companion object {
+		val ABI_VALIDATION_UPDATE_ATTRIBUTE = Attribute.of(
+			"ru.solrudev.ackpine.gradle.abi-validation.update",
+			AbiValidationAttribute::class.java
+		)
+		val ABI_VALIDATION_CHECK_ATTRIBUTE = Attribute.of(
+			"ru.solrudev.ackpine.gradle.abi-validation.check",
+			AbiValidationAttribute::class.java
+		)
+	}
+}

@@ -74,12 +74,17 @@ gradlePlugin {
 			id = "ru.solrudev.ackpine.managed-devices"
 			implementationClass = "ru.solrudev.ackpine.gradle.testing.ManagedDevicesConventionPlugin"
 		}
+		register("kotlin-android-marker") {
+			id = "kotlin-android"
+			implementationClass = "ru.solrudev.ackpine.gradle.validation.KotlinAndroidMarkerPlugin"
+		}
 	}
 }
 
 dependencies {
 	implementation(libs.plugin.agp)
 	implementation(libs.plugin.kotlin)
+	implementation(libs.plugin.bcv)
 	implementation(libs.plugin.gradleMavenPublish)
 	implementation(libs.plugin.dokka)
 	implementation(libs.plugin.builtInKotlin)
