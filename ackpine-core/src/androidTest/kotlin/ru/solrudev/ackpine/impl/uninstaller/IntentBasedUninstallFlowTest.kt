@@ -22,6 +22,7 @@ import org.junit.runner.RunWith
 import ru.solrudev.ackpine.impl.ApkFixtures
 import ru.solrudev.ackpine.impl.ExcludeAndroidTv
 import ru.solrudev.ackpine.impl.OptInAndroid11
+import ru.solrudev.ackpine.impl.testutil.isTv
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.BeforeTest
@@ -48,8 +49,12 @@ class IntentBasedUninstallFlowTest : AckpineUninstallerTest() {
 	)
 
 	@Test
-	fun uninstallCancelCompletesWithAbortedFailure() {
-		uninstallCancelCompletesWithFailure<UninstallFailure.Aborted>(
+	fun uninstallCancelCompletesWithFailure() = when {
+		context.isTv() -> uninstallCancelCompletesWithFailure<UninstallFailure.Generic>(
+			UninstallerType.INTENT_BASED
+		)
+
+		else -> uninstallCancelCompletesWithFailure<UninstallFailure.Aborted>(
 			UninstallerType.INTENT_BASED
 		)
 	}
