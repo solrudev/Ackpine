@@ -140,7 +140,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		val reportTaskAction = "${testTaskAction}Jacoco"
 		val testTaskName = component.computeTaskName(action = testTaskAction, subject = "androidTest")
 		val reportTask = registerAndroidTestReportTask(component, sources, testTaskName, reportTaskAction)
-		tasks.matching { it.name == testTaskName }.configureEach {
+		tasks.named { it == testTaskName }.configureEach {
 			finalizedBy(reportTask)
 		}
 	}
@@ -151,7 +151,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 	) {
 		val providerFactory = providers
 		val connectedTaskName = component.computeTaskName(action = "connected", subject = "androidTest")
-		tasks.matching { it.name == connectedTaskName }.configureEach {
+		tasks.named { it == connectedTaskName }.configureEach {
 			jacocoConfig.androidTestExecutionData.fromCoverageTask(this, providerFactory)
 			finalizedBy(jacocoConfig.task)
 		}
