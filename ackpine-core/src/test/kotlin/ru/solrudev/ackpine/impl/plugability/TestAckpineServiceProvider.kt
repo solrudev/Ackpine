@@ -16,7 +16,9 @@
 
 package ru.solrudev.ackpine.impl.plugability
 
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import java.util.UUID
 
 internal interface TestService : AckpineService
@@ -46,15 +48,21 @@ internal class TestAckpineServiceProvider : AbstractAckpineServiceProvider(
 	}
 }
 
-internal class TestPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+internal class TestPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 	override val id: String = TestAckpineServiceProvider.TEST_PLUGIN_ID
 }
 
-internal class PluginOne : AckpinePlugin<PluginOneParams> {
+internal class PluginOne :
+	AckpineInstallPlugin<PluginOneParams>,
+	AckpineUninstallPlugin<PluginOneParams> {
 	override val id: String = TestAckpineServiceProvider.PLUGIN_ONE_ID
 }
 
-internal class PluginTwo : AckpinePlugin<PluginTwoParams> {
+internal class PluginTwo :
+	AckpineInstallPlugin<PluginTwoParams>,
+	AckpineUninstallPlugin<PluginTwoParams> {
 	override val id: String = TestAckpineServiceProvider.PLUGIN_TWO_ID
 }
 

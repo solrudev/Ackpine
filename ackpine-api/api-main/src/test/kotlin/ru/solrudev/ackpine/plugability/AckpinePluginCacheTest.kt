@@ -40,7 +40,9 @@ class AckpinePluginCacheTest {
 	}
 }
 
-class TestCachedPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+class TestCachedPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 	override val id: String = "test-cached-plugin"
 	override fun apply(builder: InstallParameters.Builder) {}
 	override fun apply(builder: UninstallParameters.Builder) {}

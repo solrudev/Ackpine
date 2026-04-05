@@ -21,36 +21,18 @@ import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 /**
  * DSL allowing to configure [parameters for ShizukuUninstallPlugin][ShizukuUninstallPlugin.Parameters].
  */
+@Deprecated(
+	message = "Use ShizukuUninstallParametersDsl instead. This will become an error in the next minor version.",
+	replaceWith = ReplaceWith(
+		"ShizukuUninstallParametersDsl",
+		"ru.solrudev.ackpine.shizuku.ShizukuUninstallParametersDsl"
+	)
+)
 @SessionParametersDsl
-public interface ShizukuUninstallPluginParametersDsl {
+public interface ShizukuUninstallPluginParametersDsl : ShizukuUninstallParametersDsl
 
-	/**
-	 * Flag parameter to indicate that you don't want to delete the package's data directory.
-	 */
-	public var keepData: Boolean
-
-	/**
-	 * Flag parameter to indicate that you want the package deleted for all users.
-	 */
-	public var allUsers: Boolean
-}
-
+@Suppress("DEPRECATION")
 @PublishedApi
-internal class ShizukuUninstallPluginParametersDslBuilder : ShizukuUninstallPluginParametersDsl {
-
-	private val builder = ShizukuUninstallPlugin.Parameters.Builder()
-
-	override var keepData: Boolean
-		get() = builder.keepData
-		set(value) {
-			builder.setKeepData(value)
-		}
-
-	override var allUsers: Boolean
-		get() = builder.allUsers
-		set(value) {
-			builder.setAllUsers(value)
-		}
-
-	fun build() = builder.build()
-}
+internal class ShizukuUninstallPluginParametersDslBuilder :
+	ShizukuUninstallParametersDslBuilder(),
+	ShizukuUninstallPluginParametersDsl

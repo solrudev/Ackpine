@@ -34,7 +34,7 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 	internal fun getAll() = serviceProviders.value
 
 	@JvmSynthetic
-	internal fun getByPlugins(pluginClasses: Collection<Class<out AckpinePlugin<*>>>): List<AckpineServiceProvider> {
+	internal fun getByPlugins(pluginClasses: Collection<Class<out AckpinePlugin>>): List<AckpineServiceProvider> {
 		val appliedPlugins = pluginClasses.mapTo(mutableSetOf()) { pluginClass ->
 			AckpinePluginCache.get(pluginClass).id
 		}
@@ -64,7 +64,7 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 		serviceClass: KClass<S>,
 		defaultService: Lazy<S>,
 		sessionId: UUID,
-		pluginClasses: Result<Collection<Class<out AckpinePlugin<*>>>>,
+		pluginClasses: Result<Collection<Class<out AckpinePlugin>>>,
 		serviceProviders: Result<List<AckpineServiceProvider>> = pluginClasses.mapCatching(::getByPlugins),
 		pluginParameters: Result<Collection<AckpinePlugin.Parameters>> = serviceProviders.mapCatching { providers ->
 			providers.flatMap { serviceProvider ->

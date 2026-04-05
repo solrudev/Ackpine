@@ -20,6 +20,7 @@ import ru.solrudev.ackpine.SdkInt
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.ChainedPlugin
 import ru.solrudev.ackpine.plugability.ChainedTestPlugin
+import ru.solrudev.ackpine.plugability.TestInstallPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -27,6 +28,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class UninstallParametersBuilderTest {
 
@@ -67,43 +69,81 @@ class UninstallParametersBuilderTest {
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun pluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
+			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
+			.build()
+		assertEquals("applied-by-plugin", parameters.packageName)
+
+		val deprecatedParameters = UninstallParameters.Builder("com.example")
 			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
 			.build()
-		assertEquals("applied-by-plugin", parameters.packageName)
+		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun parameterlessPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
-			.usePlugin(TestParameterlessPlugin::class.java)
+			.registerPlugin(TestParameterlessPlugin::class.java)
 			.build()
 		assertEquals("applied-by-plugin", parameters.packageName)
+
+		val deprecatedParameters = UninstallParameters.Builder("com.example")
+			.usePlugin(TestParameterlessPlugin::class.java)
+			.build()
+		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
-			.usePlugin(ChainedTestPlugin::class.java)
+			.registerPlugin(ChainedTestPlugin::class.java)
 			.build()
-		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>(
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
 			ChainedTestPlugin::class.java to AckpinePlugin.Parameters.None,
 			ChainedPlugin::class.java to AckpinePlugin.Parameters.None,
 			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
 		)
 		assertEquals("applied-by-plugin", parameters.packageName)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+
+		val deprecatedParameters = UninstallParameters.Builder("com.example")
+			.usePlugin(ChainedTestPlugin::class.java)
+			.build()
+		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun pluginParametersArePreserved() {
 		val parameters = UninstallParameters.Builder("com.example")
-			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
+			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
 			.build()
-		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, TestPlugin.Parameters>(
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, TestPlugin.Parameters>(
 			TestPlugin::class.java to TestPlugin.Parameters("value")
 		)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+
+		val deprecatedParameters = UninstallParameters.Builder("com.example")
+			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
+			.build()
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
+	}
+
+	@Test
+	@Suppress("DEPRECATION")
+	fun deprecatedUsePluginWithInstallPluginThrows() {
+		assertFailsWith<IllegalStateException> {
+			UninstallParameters.Builder("com.example")
+				.usePlugin(TestInstallPlugin::class.java)
+		}
+		assertFailsWith<IllegalStateException> {
+			UninstallParameters.Builder("com.example")
+				.usePlugin(TestInstallPlugin::class.java, AckpinePlugin.Parameters.None)
+		}
 	}
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package ru.solrudev.ackpine.installer.parameters
 
 import android.annotation.SuppressLint
@@ -24,6 +26,7 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
@@ -208,7 +211,7 @@ public class InstallParameters private constructor(
 		}
 
 		private val _apks: MutableApkList
-		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
+		private val plugins = mutableMapOf<Class<out AckpineInstallPlugin<*>>, AckpinePlugin.Parameters>()
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.
@@ -424,15 +427,53 @@ public class InstallParameters private constructor(
 			this.packageSource = packageSource
 		}
 
-		override fun <Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<out AckpinePlugin<Params>>,
+		/**
+		 * Registers a [plugin] for the install session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineInstallPlugin].
+		 * @param parameters parameters of the registered plugin for the session being configured.
+		 */
+		public fun <Params : AckpinePlugin.Parameters> registerPlugin(
+			plugin: Class<out AckpineInstallPlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
 			plugins[plugin] = parameters
 		}
 
-		override fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+		/**
+		 * Registers a [plugin] for the install session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineInstallPlugin].
+		 */
+		public fun registerPlugin(plugin: Class<out AckpineInstallPlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
 			plugins[plugin] = AckpinePlugin.Parameters.None
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin>,
+			parameters: Params
+		): Builder = apply {
+			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an install plugin: ${plugin.name}")
+			}
+			plugins[plugin as Class<AckpineInstallPlugin<Params>>] = parameters
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
+			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an install plugin: ${plugin.name}")
+			}
+			plugins[plugin as Class<AckpineInstallPlugin<*>>] = AckpinePlugin.Parameters.None
 		}
 
 		/**
@@ -458,8 +499,8 @@ public class InstallParameters private constructor(
 		}
 
 		private fun applyPlugins() {
-			val appliedPlugins = mutableSetOf<Class<out AckpinePlugin<*>>>()
-			var pluginsToApply: List<Class<out AckpinePlugin<*>>>
+			val appliedPlugins = mutableSetOf<Class<out AckpineInstallPlugin<*>>>()
+			var pluginsToApply: List<Class<out AckpineInstallPlugin<*>>>
 			do {
 				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {

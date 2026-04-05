@@ -19,6 +19,13 @@ package ru.solrudev.ackpine.plugability
 /**
  * A registry allowing to add plugins to a session.
  */
+@Deprecated(
+	message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
+			"directly. This will become an error in the next minor version. " +
+			"Using methods of this interface with untyped plugins (implementing AckpinePlugin directly) will throw.",
+	level = DeprecationLevel.WARNING
+)
+@Suppress("DEPRECATION")
 public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 
 	/**
@@ -26,8 +33,14 @@ public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
+	@Deprecated(
+		message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
+				"directly. This will become an error in the next minor version. " +
+				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+		level = DeprecationLevel.WARNING
+	)
 	public fun <Params : AckpinePlugin.Parameters> usePlugin(
-		plugin: Class<out AckpinePlugin<Params>>,
+		plugin: Class<out AckpinePlugin>,
 		parameters: Params
 	): Self
 
@@ -35,5 +48,11 @@ public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 	 * Applies a [plugin] to a session.
 	 * @param plugin Java class of an applied plugin, implementing [AckpinePlugin].
 	 */
-	public fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Self
+	@Deprecated(
+		message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
+				"directly. This will become an error in the next minor version. " +
+				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+		level = DeprecationLevel.WARNING
+	)
+	public fun usePlugin(plugin: Class<out AckpinePlugin>): Self
 }

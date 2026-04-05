@@ -1,4 +1,4 @@
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin {
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
 	public fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
 	public fun apply (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;)V
 	public fun equals (Ljava/lang/Object;)Z
@@ -7,10 +7,9 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpi
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
-	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion;
-	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
-	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Z
 	public final fun getAllowTest ()Z
@@ -23,9 +22,9 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/sol
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder {
+public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder {
 	public fun <init> ()V
-	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
+	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
 	public final fun getAllUsers ()Z
 	public final fun getAllowTest ()Z
 	public final fun getBypassLowTargetSdkBlock ()Z
@@ -33,20 +32,56 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder 
 	public final fun getInstallerPackageName ()Ljava/lang/String;
 	public final fun getReplaceExisting ()Z
 	public final fun getRequestDowngrade ()Z
-	public final fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setAllowTest (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setReplaceExisting (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
-	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder;
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setAllowTest (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setReplaceExisting (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters {
+	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
+	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder : ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder {
+	public fun <init> ()V
+	public synthetic fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
+	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion {
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin {
-	public fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
+public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder {
+	public fun <init> ()V
+	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder;
+	public final fun setKeepData (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
 	public fun apply (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getId ()Ljava/lang/String;
@@ -54,24 +89,16 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solru
 	public fun toString ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters : ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
 	public synthetic fun <init> (ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public final fun getAllUsers ()Z
-	public final fun getKeepData ()Z
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Builder {
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Builder : ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder {
 	public fun <init> ()V
-	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
-	public final fun getAllUsers ()Z
-	public final fun getKeepData ()Z
-	public final fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Builder;
-	public final fun setKeepData (Z)Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Builder;
+	public synthetic fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
+	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Companion {

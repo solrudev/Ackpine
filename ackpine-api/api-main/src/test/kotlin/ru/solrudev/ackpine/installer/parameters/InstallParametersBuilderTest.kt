@@ -25,6 +25,7 @@ import ru.solrudev.ackpine.plugability.ChainedPlugin
 import ru.solrudev.ackpine.plugability.ChainedTestPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
+import ru.solrudev.ackpine.plugability.TestUninstallPlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -154,43 +155,81 @@ class InstallParametersBuilderTest {
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun pluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
+			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
+			.build()
+		assertEquals("applied-by-plugin", parameters.name)
+
+		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
 			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
 			.build()
-		assertEquals("applied-by-plugin", parameters.name)
+		assertEquals("applied-by-plugin", deprecatedParameters.name)
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun parameterlessPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
-			.usePlugin(TestParameterlessPlugin::class.java)
+			.registerPlugin(TestParameterlessPlugin::class.java)
 			.build()
 		assertEquals("applied-by-plugin", parameters.name)
+
+		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
+			.usePlugin(TestParameterlessPlugin::class.java)
+			.build()
+		assertEquals("applied-by-plugin", deprecatedParameters.name)
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
-			.usePlugin(ChainedTestPlugin::class.java)
+			.registerPlugin(ChainedTestPlugin::class.java)
 			.build()
-		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>(
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
 			ChainedTestPlugin::class.java to AckpinePlugin.Parameters.None,
 			ChainedPlugin::class.java to AckpinePlugin.Parameters.None,
 			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
 		)
 		assertEquals("applied-by-plugin", parameters.name)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+
+		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
+			.usePlugin(ChainedTestPlugin::class.java)
+			.build()
+		assertEquals("applied-by-plugin", deprecatedParameters.name)
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
 	@Test
+	@Suppress("DEPRECATION")
 	fun pluginParametersArePreserved() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
-			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
+			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
 			.build()
-		val expectedPlugins = mapOf<Class<out AckpinePlugin<*>>, TestPlugin.Parameters>(
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, TestPlugin.Parameters>(
 			TestPlugin::class.java to TestPlugin.Parameters("value")
 		)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+
+		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
+			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
+			.build()
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
+	}
+
+	@Test
+	@Suppress("DEPRECATION")
+	fun deprecatedUsePluginWithUninstallPluginThrows() {
+		assertFailsWith<IllegalStateException> {
+			InstallParameters.Builder(Uri.EMPTY)
+				.usePlugin(TestUninstallPlugin::class.java)
+		}
+		assertFailsWith<IllegalStateException> {
+			InstallParameters.Builder(Uri.EMPTY)
+				.usePlugin(TestUninstallPlugin::class.java, AckpinePlugin.Parameters.None)
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,9 @@ package ru.solrudev.ackpine.shizuku
 /**
  * Constructs a new instance of [ShizukuPlugin.InstallParameters].
  */
-@Deprecated(
-	message = "Renamed to ShizukuInstallParameters. This will become an error in the next minor version.",
-	replaceWith = ReplaceWith(
-		"ShizukuInstallParameters(configure)",
-		imports = ["ru.solrudev.ackpine.shizuku.ShizukuInstallParameters"]
-	)
-)
-@Suppress("FunctionName", "DEPRECATION")
-public inline fun ShizukuPluginParameters(
-	configure: ShizukuPluginParametersDsl.() -> Unit = {}
+@Suppress("FunctionName")
+public inline fun ShizukuInstallParameters(
+	configure: ShizukuInstallParametersDsl.() -> Unit = {}
 ): ShizukuPlugin.InstallParameters {
-	return ShizukuPluginParametersDslBuilder().apply(configure).build()
+	return ShizukuInstallParametersDslBuilder().apply(configure).build()
 }

@@ -19,7 +19,9 @@ package ru.solrudev.ackpine.plugability
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 
-class TestPlugin : AckpinePlugin<TestPlugin.Parameters> {
+class TestPlugin :
+	AckpineInstallPlugin<TestPlugin.Parameters>,
+	AckpineUninstallPlugin<TestPlugin.Parameters> {
 
 	override val id = "test-plugin"
 
@@ -34,7 +36,9 @@ class TestPlugin : AckpinePlugin<TestPlugin.Parameters> {
 	data class Parameters(val value: String) : AckpinePlugin.Parameters
 }
 
-class TestParameterlessPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+class TestParameterlessPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "test-parameterless-plugin"
 
@@ -47,28 +51,40 @@ class TestParameterlessPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
 	}
 }
 
-class ChainedTestPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+class ChainedTestPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "chained-test-plugin"
 
 	override fun apply(builder: InstallParameters.Builder) {
-		builder.usePlugin(ChainedPlugin::class.java)
+		builder.registerPlugin(ChainedPlugin::class.java)
 	}
 
 	override fun apply(builder: UninstallParameters.Builder) {
-		builder.usePlugin(ChainedPlugin::class.java)
+		builder.registerPlugin(ChainedPlugin::class.java)
 	}
 }
 
-class ChainedPlugin : AckpinePlugin<AckpinePlugin.Parameters.None> {
+class ChainedPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "chained-plugin"
 
 	override fun apply(builder: InstallParameters.Builder) {
-		builder.usePlugin(TestParameterlessPlugin::class.java)
+		builder.registerPlugin(TestParameterlessPlugin::class.java)
 	}
 
 	override fun apply(builder: UninstallParameters.Builder) {
-		builder.usePlugin(TestParameterlessPlugin::class.java)
+		builder.registerPlugin(TestParameterlessPlugin::class.java)
 	}
+}
+
+class TestInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+	override val id = "test-install-plugin"
+}
+
+class TestUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+	override val id = "test-uninstall-plugin"
 }

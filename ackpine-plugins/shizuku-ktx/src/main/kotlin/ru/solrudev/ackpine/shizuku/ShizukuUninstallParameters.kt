@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,16 +19,9 @@ package ru.solrudev.ackpine.shizuku
 /**
  * Constructs a new instance of [ShizukuPlugin.UninstallParameters].
  */
-@Deprecated(
-	message = "Use ShizukuUninstallParameters instead. This will become an error in the next minor version.",
-	replaceWith = ReplaceWith(
-		"ShizukuUninstallParameters(configure)",
-		"ru.solrudev.ackpine.shizuku.ShizukuUninstallParameters"
-	)
-)
-@Suppress("FunctionName", "DEPRECATION")
-public inline fun ShizukuUninstallPluginParameters(
-	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
+@Suppress("FunctionName")
+public inline fun ShizukuUninstallParameters(
+	configure: ShizukuUninstallParametersDsl.() -> Unit = {}
 ): ShizukuPlugin.UninstallParameters {
-	return ShizukuUninstallPluginParametersDslBuilder().apply(configure).build()
+	return ShizukuUninstallParametersDslBuilder().apply(configure).build()
 }

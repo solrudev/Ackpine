@@ -32,12 +32,13 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 	),
 	pluginEntries = setOf(
 		PluginEntry(ShizukuPlugin.PLUGIN_ID) { context ->
+			val database = ShizukuDatabase.getInstance(context, AckpineThreadPool)
 			ShizukuPluginParametersStore(
-				ShizukuDatabase
-					.getInstance(context, AckpineThreadPool)
-					.shizukuParamsDao()
+				database.shizukuParamsDao(),
+				database.shizukuUninstallParamsDao()
 			)
 		},
+		@Suppress("DEPRECATION")
 		PluginEntry(ShizukuUninstallPlugin.PLUGIN_ID) { context ->
 			ShizukuUninstallPluginParametersStore(
 				ShizukuDatabase

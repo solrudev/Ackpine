@@ -347,4 +347,4 @@ Plugins
 
 Ackpine supports [plugins](../architecture.md#plugin-system). They are available for sessions that use Android's `PackageInstaller` API.
 
-At the moment, there are two Ackpine plugins: [`ShizukuPlugin` and `ShizukuUninstallPlugin`](shizuku.md). See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
+At the moment, the [`ShizukuPlugin`](shizuku.md) is the only built-in Ackpine plugin. It supports both install and uninstall sessions. See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.

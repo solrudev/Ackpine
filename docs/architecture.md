@@ -113,8 +113,10 @@ Ackpine has a plugin system that allows extending session behavior without coupl
 
 ### Consumer-facing API
 
-- [`AckpinePlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html) — interface that plugins implement. Each plugin has a unique string `id` and typed `Parameters`.
-- [`AckpinePluginRegistry`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin-registry/index.html) — interface exposed by parameter builders (`InstallParameters.Builder`, `UninstallParameters.Builder`). Call `usePlugin(pluginClass, parameters)` to apply a plugin to a session.
+- [`AckpinePlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html) — base interface for all plugins. Each plugin has a unique string `id`.
+- [`AckpineInstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-install-plugin/index.html) — interface for plugins that extend install sessions. Has typed `Parameters`.
+- [`AckpineUninstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-uninstall-plugin/index.html) — interface for plugins that extend uninstall sessions. Has typed `Parameters`.
+- `InstallParameters.Builder` and `UninstallParameters.Builder` expose typed `registerPlugin(pluginClass, parameters)` methods to apply install or uninstall plugins to a session respectively.
 
 ### Build-time parameter modification
 
@@ -136,7 +138,7 @@ This design means:
 
 - `ackpine-core` never depends on concrete plugin modules — plugins are loaded dynamically.
 - Plugin parameters are persisted alongside session data, so sessions with plugins survive process death.
-- Adding a plugin to your app is as simple as adding the dependency and calling `usePlugin()` in your parameters.
+- Adding a plugin to your app is as simple as adding the dependency and calling `registerPlugin()` in your parameters.
 
 ### Instantiation and ProGuard
 

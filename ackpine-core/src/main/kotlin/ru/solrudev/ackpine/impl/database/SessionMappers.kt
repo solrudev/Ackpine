@@ -43,9 +43,9 @@ internal fun HasSession.getNotificationData() = NotificationData.Builder()
 
 @Suppress("UNCHECKED_CAST")
 @JvmSynthetic
-internal fun HasPlugins.getPlugins(): List<Class<out AckpinePlugin<*>>> {
+internal fun HasPlugins.getPlugins(): List<Class<out AckpinePlugin>> {
 	return plugins.map { pluginEntity ->
-		Class.forName(pluginEntity.pluginClassName) as Class<out AckpinePlugin<*>>
+		Class.forName(pluginEntity.pluginClassName) as Class<out AckpinePlugin>
 	}
 }
 

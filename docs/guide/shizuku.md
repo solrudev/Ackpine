@@ -91,10 +91,10 @@ To apply the plugin to an install session, just add this to your install paramet
     ```kotlin
     val session = packageInstaller.createSession(uri) {
         // ...some session configuration...
-        useShizuku()
+        shizuku()
     
         // Or, if you want to configure some parameters for the plugin
-        useShizuku {
+        shizuku {
             bypassLowTargetSdkBlock = true
             allowTest = true
             replaceExisting = true
@@ -111,11 +111,11 @@ To apply the plugin to an install session, just add this to your install paramet
     ```java
     var parameters = new InstallParameters.Builder(uri)
             // ...some session configuration...
-            .usePlugin(ShizukuPlugin.class, ShizukuPlugin.Parameters.DEFAULT)
+            .registerPlugin(ShizukuPlugin.class, ShizukuPlugin.InstallParameters.DEFAULT)
             .build();
     
     // Or, if you want to configure some parameters for the plugin
-    var shizukuParameters = new ShizukuPlugin.Parameters.Builder()
+    var shizukuParameters = new ShizukuPlugin.InstallParameters.Builder()
             .setBypassLowTargetSdkBlock(true)
             .setAllowTest(true)
             .setReplaceExisting(true)
@@ -125,7 +125,7 @@ To apply the plugin to an install session, just add this to your install paramet
             .setInstallerPackageName("com.android.vending")
             .build();
     var parameters = new InstallParameters.Builder(uri)
-            .usePlugin(ShizukuPlugin.class, shizukuParameters)
+            .registerPlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
     ```
 
@@ -136,10 +136,10 @@ Also, you can use Shizuku for uninstall sessions:
     ```kotlin
     val session = packageUninstaller.createSession(packageName) {
         // ...some session configuration...
-        useShizuku()
+        shizuku()
     
         // Or, if you want to configure some parameters for the plugin
-        useShizuku {
+        shizuku {
             keepData = true
             allUsers = true
         }
@@ -151,21 +151,21 @@ Also, you can use Shizuku for uninstall sessions:
     ```java
     var parameters = new UninstallParameters.Builder(packageName)
             // ...some session configuration...
-            .usePlugin(ShizukuUninstallPlugin.class, ShizukuUninstallPlugin.Parameters.DEFAULT)
+            .registerPlugin(ShizukuPlugin.class, ShizukuPlugin.UninstallParameters.DEFAULT)
             .build();
     
     // Or, if you want to configure some parameters for the plugin
-    var shizukuParameters = new ShizukuUninstallPlugin.Parameters.Builder()
+    var shizukuParameters = new ShizukuPlugin.UninstallParameters.Builder()
             .setKeepData(true)
             .setAllUsers(true)
             .build();
     var parameters = new UninstallParameters.Builder(packageName)
-            .usePlugin(ShizukuUninstallPlugin.class, shizukuParameters)
+            .registerPlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
     ```
 
 !!! Note
-    Shizuku versions below 11 are not supported, and with these versions installations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer (if was set).
+    Shizuku versions below 11 are not supported, and with these versions operations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer/uninstaller (if was set).
 
 If Shizuku service is not running, or if Shizuku permission is not granted for your app, session will fail.
 

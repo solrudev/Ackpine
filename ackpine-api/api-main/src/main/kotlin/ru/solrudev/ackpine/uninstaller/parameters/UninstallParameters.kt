@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
@@ -21,6 +23,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
+import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -100,7 +103,7 @@ public class UninstallParameters private constructor(
 	 */
 	public class Builder(packageName: String) : ConfirmationAware, AckpinePluginRegistry<Builder> {
 
-		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
+		private val plugins = mutableMapOf<Class<out AckpineUninstallPlugin<*>>, AckpinePlugin.Parameters>()
 
 		/**
 		 * Name of the package to be uninstalled.
@@ -172,15 +175,55 @@ public class UninstallParameters private constructor(
 			this.notificationData = notificationData
 		}
 
-		override fun <Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<out AckpinePlugin<Params>>,
+		/**
+		 * Registers a [plugin] for the uninstall session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineUninstallPlugin].
+		 * @param parameters parameters of the registered plugin for the session being configured.
+		 */
+		public fun <Params : AckpinePlugin.Parameters> registerPlugin(
+			plugin: Class<out AckpineUninstallPlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
 			plugins[plugin] = parameters
 		}
 
-		override fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+		/**
+		 * Registers a [plugin] for the uninstall session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineUninstallPlugin].
+		 */
+		public fun registerPlugin(
+			plugin: Class<out AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>
+		): Builder = apply {
 			plugins[plugin] = AckpinePlugin.Parameters.None
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin>,
+			parameters: Params
+		): Builder = apply {
+			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an uninstall plugin: ${plugin.name}")
+			}
+			plugins[plugin as Class<AckpineUninstallPlugin<Params>>] = parameters
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
+			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an uninstall plugin: ${plugin.name}")
+			}
+			plugins[plugin as Class<AckpineUninstallPlugin<*>>] = AckpinePlugin.Parameters.None
 		}
 
 		/**
@@ -198,8 +241,8 @@ public class UninstallParameters private constructor(
 		}
 
 		private fun applyPlugins() {
-			val appliedPlugins = mutableSetOf<Class<out AckpinePlugin<*>>>()
-			var pluginsToApply: List<Class<out AckpinePlugin<*>>>
+			val appliedPlugins = mutableSetOf<Class<out AckpineUninstallPlugin<*>>>()
+			var pluginsToApply: List<Class<out AckpineUninstallPlugin<*>>>
 			do {
 				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {

@@ -51,14 +51,14 @@ internal class ShizukuPackageInstaller(
 	override val uid: Int
 ) : PackageInstallerService {
 
-	private val installParameters = ConcurrentHashMap<UUID, ShizukuPlugin.Parameters>()
-	private val uninstallParameters = ConcurrentHashMap<UUID, ShizukuUninstallPlugin.Parameters>()
+	private val installParameters = ConcurrentHashMap<UUID, ShizukuPlugin.InstallParameters>()
+	private val uninstallParameters = ConcurrentHashMap<UUID, ShizukuPlugin.UninstallParameters>()
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
-		if (parameters is ShizukuPlugin.Parameters) {
+		if (parameters is ShizukuPlugin.InstallParameters) {
 			installParameters[sessionId] = parameters
 		}
-		if (parameters is ShizukuUninstallPlugin.Parameters) {
+		if (parameters is ShizukuPlugin.UninstallParameters) {
 			uninstallParameters[sessionId] = parameters
 		}
 	}
@@ -129,7 +129,7 @@ internal class ShizukuPackageInstaller(
 
 	private fun applyInstallFlags(
 		params: PackageInstallerHidden.SessionParams,
-		shizukuParams: ShizukuPlugin.Parameters
+		shizukuParams: ShizukuPlugin.InstallParameters
 	) {
 		var flags = params.installFlags
 		shizukuParams.run {
