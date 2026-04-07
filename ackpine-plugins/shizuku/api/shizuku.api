@@ -81,7 +81,7 @@ public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Build
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion {
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
 	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getId ()Ljava/lang/String;

@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
+import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
@@ -40,7 +41,9 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
 	replaceWith = ReplaceWith("ShizukuPlugin", "ru.solrudev.ackpine.shizuku.ShizukuPlugin")
 )
 @Suppress("DEPRECATION")
-public class ShizukuUninstallPlugin private constructor() : AckpineUninstallPlugin<ShizukuUninstallPlugin.Parameters> {
+public class ShizukuUninstallPlugin private constructor() :
+	AckpinePlugin,
+	AckpineUninstallPlugin<ShizukuUninstallPlugin.Parameters> {
 
 	override val id: String = PLUGIN_ID
 
