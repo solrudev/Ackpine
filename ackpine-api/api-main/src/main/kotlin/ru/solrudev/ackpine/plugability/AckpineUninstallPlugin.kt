@@ -30,7 +30,8 @@ public interface AckpineUninstallPlugin<Params : AckpinePlugin.Parameters> : Ack
 	}
 
 	@Deprecated(
-		"Implement AckpineUninstallPlugin instead. This will become an error in the next minor version.",
+		"Implement AckpineUninstallPlugin instead. This will become an error in the next minor version. " +
+				"If overridden, this overload will be prioritized over AckpineUninstallPlugin.apply(scope).",
 		level = DeprecationLevel.WARNING
 	)
 	override fun apply(builder: UninstallParameters.Builder) {
