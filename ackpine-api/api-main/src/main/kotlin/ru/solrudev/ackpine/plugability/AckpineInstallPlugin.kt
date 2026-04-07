@@ -21,12 +21,19 @@ import ru.solrudev.ackpine.installer.parameters.InstallParameters
 /**
  * A plugin for Ackpine which extends install session functionality.
  */
-@Suppress("Unused", "OVERRIDE_DEPRECATION")
 public interface AckpineInstallPlugin<Params : AckpinePlugin.Parameters> : AckpinePlugin {
 
 	/**
-	 * Applies some settings to install parameters to accommodate the plugin's functionality.
+	 * Applies some settings to install session scope to accommodate the plugin's functionality.
 	 */
-	override fun apply(builder: InstallParameters.Builder) { // no-op by default
+	public fun apply(scope: InstallPluginScope) { // no-op by default
+	}
+
+	@Deprecated(
+		"Implement AckpineInstallPlugin instead. This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
+	override fun apply(builder: InstallParameters.Builder) {
+		apply(builder.pluginScope)
 	}
 }

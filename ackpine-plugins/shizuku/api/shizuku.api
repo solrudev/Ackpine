@@ -1,6 +1,6 @@
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
-	public fun apply (Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;)V
-	public fun apply (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
@@ -82,7 +82,7 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
-	public fun apply (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getId ()Ljava/lang/String;
 	public fun hashCode ()I

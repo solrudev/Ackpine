@@ -24,6 +24,7 @@ import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
+import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -101,14 +102,25 @@ public class UninstallParameters private constructor(
 	/**
 	 * Builder for [UninstallParameters].
 	 */
-	public class Builder(packageName: String) : ConfirmationAware, AckpinePluginRegistry<Builder> {
+	public class Builder : ConfirmationAware, AckpinePluginRegistry<Builder> {
 
-		private val plugins = mutableMapOf<Class<out AckpineUninstallPlugin<*>>, AckpinePlugin.Parameters>()
+		public constructor(packageName: String) {
+			this.packageName = packageName
+			pluginScope = UninstallPluginScope.create()
+		}
+
+		private constructor(packageName: String, scope: UninstallPluginScope) {
+			this.packageName = packageName
+			pluginScope = scope
+		}
+
+		@get:JvmSynthetic
+		internal val pluginScope: UninstallPluginScope
 
 		/**
 		 * Name of the package to be uninstalled.
 		 */
-		public var packageName: String = packageName
+		public var packageName: String
 			private set
 
 		/**
@@ -119,13 +131,10 @@ public class UninstallParameters private constructor(
 		 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
 		 * returned/set regardless of the current/provided value.
 		 */
-		public var uninstallerType: UninstallerType = UninstallerType.DEFAULT
-			get() {
-				field = applyUninstallerTypeInvariants(field)
-				return field
-			}
+		public var uninstallerType: UninstallerType
+			get() = pluginScope.normalizeUninstallerType()
 			private set(value) {
-				field = applyUninstallerTypeInvariants(value)
+				pluginScope.normalizeUninstallerType(value)
 			}
 
 		/**
@@ -184,7 +193,7 @@ public class UninstallParameters private constructor(
 			plugin: Class<out AckpineUninstallPlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
-			plugins[plugin] = parameters
+			pluginScope.registerPlugin(plugin, parameters)
 		}
 
 		/**
@@ -194,7 +203,7 @@ public class UninstallParameters private constructor(
 		public fun registerPlugin(
 			plugin: Class<out AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>
 		): Builder = apply {
-			plugins[plugin] = AckpinePlugin.Parameters.None
+			pluginScope.registerPlugin(plugin)
 		}
 
 		@Deprecated(
@@ -210,7 +219,7 @@ public class UninstallParameters private constructor(
 			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
 				error("Not an uninstall plugin: ${plugin.name}")
 			}
-			plugins[plugin as Class<AckpineUninstallPlugin<Params>>] = parameters
+			pluginScope.registerPlugin(plugin as Class<AckpineUninstallPlugin<Params>>, parameters)
 		}
 
 		@Deprecated(
@@ -223,20 +232,21 @@ public class UninstallParameters private constructor(
 			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
 				error("Not an uninstall plugin: ${plugin.name}")
 			}
-			plugins[plugin as Class<AckpineUninstallPlugin<*>>] = AckpinePlugin.Parameters.None
+			pluginScope.registerPlugin(plugin as Class<AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>)
 		}
 
 		/**
 		 * Constructs a new instance of [UninstallParameters].
 		 */
 		public fun build(): UninstallParameters {
-			applyPlugins()
+			val snapshot = createUninstallSnapshot()
+			snapshot.applyPlugins()
 			return UninstallParameters(
-				packageName,
-				uninstallerType,
-				confirmation,
-				notificationData,
-				AckpinePluginContainer.from(plugins)
+				snapshot.packageName,
+				snapshot.uninstallerType,
+				snapshot.confirmation,
+				snapshot.notificationData,
+				AckpinePluginContainer.from(snapshot.pluginScope.getPlugins())
 			)
 		}
 
@@ -244,12 +254,29 @@ public class UninstallParameters private constructor(
 			val appliedPlugins = mutableSetOf<Class<out AckpineUninstallPlugin<*>>>()
 			var pluginsToApply: List<Class<out AckpineUninstallPlugin<*>>>
 			do {
-				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
+				pluginScope.normalizeUninstallerType()
+				pluginsToApply = pluginScope
+					.getPlugins()
+					.keys
+					.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {
 					AckpinePluginCache.get(pluginClass).apply(this)
+					pluginScope.normalizeUninstallerType()
 					appliedPlugins += pluginClass
 				}
 			} while (pluginsToApply.isNotEmpty())
+		}
+
+		private fun createUninstallSnapshot() = Builder(packageName, pluginScope.copy())
+			.setConfirmation(confirmation)
+			.setNotificationData(notificationData)
+
+		private fun UninstallPluginScope.normalizeUninstallerType(
+			value: UninstallerType = this.uninstallerType
+		): UninstallerType {
+			val uninstallerType = applyUninstallerTypeInvariants(value)
+			this.uninstallerType = uninstallerType
+			return uninstallerType
 		}
 
 		private fun applyUninstallerTypeInvariants(value: UninstallerType) = when {

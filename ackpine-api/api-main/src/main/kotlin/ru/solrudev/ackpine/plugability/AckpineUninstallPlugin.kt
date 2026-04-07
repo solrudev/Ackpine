@@ -21,12 +21,19 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 /**
  * A plugin for Ackpine which extends uninstall session functionality.
  */
-@Suppress("Unused", "OVERRIDE_DEPRECATION")
 public interface AckpineUninstallPlugin<Params : AckpinePlugin.Parameters> : AckpinePlugin {
 
 	/**
-	 * Applies some settings to uninstall parameters to accommodate the plugin's functionality.
+	 * Applies some settings to uninstall session scope to accommodate the plugin's functionality.
 	 */
-	override fun apply(builder: UninstallParameters.Builder) { // no-op by default
+	public fun apply(scope: UninstallPluginScope) { // no-op by default
+	}
+
+	@Deprecated(
+		"Implement AckpineUninstallPlugin instead. This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
+	override fun apply(builder: UninstallParameters.Builder) {
+		apply(builder.pluginScope)
 	}
 }

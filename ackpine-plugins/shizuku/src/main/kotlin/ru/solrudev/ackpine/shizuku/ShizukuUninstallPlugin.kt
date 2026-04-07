@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.shizuku
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
 
@@ -44,11 +44,11 @@ public class ShizukuUninstallPlugin private constructor() : AckpineUninstallPlug
 
 	override val id: String = PLUGIN_ID
 
-	override fun apply(builder: UninstallParameters.Builder) {
+	override fun apply(scope: UninstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		builder.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
+		scope.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuUninstallPlugin

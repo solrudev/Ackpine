@@ -18,16 +18,14 @@ package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
-import ru.solrudev.ackpine.DelicateAckpineApi
-import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
-import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
+import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
+import ru.solrudev.ackpine.plugability.InstallPluginScope
+import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
-import ru.solrudev.ackpine.installer.parameters.InstallParameters as AckpineInstallParameters
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters as AckpineUninstallParameters
 
 /**
  * Ackpine plugin which enables installation and uninstallation through Shizuku when applied.
@@ -44,23 +42,20 @@ public class ShizukuPlugin private constructor() :
 
 	override val id: String = PLUGIN_ID
 
-	@OptIn(DelicateAckpineApi::class)
-	override fun apply(builder: AckpineInstallParameters.Builder) {
+	override fun apply(scope: InstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		builder.apply {
-			setInstallerType(InstallerType.SESSION_BASED)
-			setRequireUserAction(false)
-			setPreapproval(InstallPreapproval.NONE)
-		}
+		scope.installerType = InstallerType.SESSION_BASED
+		scope.requireUserAction = false
+		scope.disablePreapproval()
 	}
 
-	override fun apply(builder: AckpineUninstallParameters.Builder) {
+	override fun apply(scope: UninstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		builder.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
+		scope.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin

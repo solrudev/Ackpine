@@ -114,13 +114,15 @@ Ackpine has a plugin system that allows extending session behavior without coupl
 ### Consumer-facing API
 
 - [`AckpinePlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-plugin/index.html) — base interface for all plugins. Each plugin has a unique string `id`.
-- [`AckpineInstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-install-plugin/index.html) — interface for plugins that extend install sessions. Has typed `Parameters`.
-- [`AckpineUninstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-uninstall-plugin/index.html) — interface for plugins that extend uninstall sessions. Has typed `Parameters`.
+- [`AckpineInstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-install-plugin/index.html) — interface for plugins that extend install sessions. Has typed `Parameters`. Plugins implement `apply(InstallPluginScope)` to influence the resulting `InstallParameters`.
+- [`AckpineUninstallPlugin`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-ackpine-uninstall-plugin/index.html) — interface for plugins that extend uninstall sessions. Has typed `Parameters`. Plugins implement `apply(UninstallPluginScope)` to influence the resulting `UninstallParameters`.
+- [`InstallPluginScope`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-install-plugin-scope/index.html) — scope passed to `AckpineInstallPlugin.apply()`. Exposes the install session parameters that plugins may control and a `registerPlugin` method for transitive plugin registration.
+- [`UninstallPluginScope`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-uninstall-plugin-scope/index.html) — scope passed to `AckpineUninstallPlugin.apply()`. Exposes the uninstall session parameters that plugins may control and a `registerPlugin` method for transitive plugin registration.
 - `InstallParameters.Builder` and `UninstallParameters.Builder` expose typed `registerPlugin(pluginClass, parameters)` methods to apply install or uninstall plugins to a session respectively.
 
 ### Build-time parameter modification
 
-Plugins can modify session parameters at build-time. When `InstallParameters.Builder.build()` or `UninstallParameters.Builder.build()` is called, each registered plugin's `apply(builder)` method is invoked on the builder before the parameters object is constructed. This lets plugins enforce constraints — for example, the Shizuku plugin forces session-based installer type and disables preapproval.
+Plugins can modify session parameters at build-time. When `InstallParameters.Builder.build()` or `UninstallParameters.Builder.build()` is called, each registered plugin's `apply(scope)` method is invoked before the parameters object is constructed. Install plugins receive an `InstallPluginScope` and uninstall plugins receive an `UninstallPluginScope` — these scopes expose the parameters that plugins are allowed to control and let plugins register additional plugins transitively. This lets plugins enforce constraints — for example, the Shizuku plugin forces session-based installer type and disables preapproval.
 
 ### Services
 

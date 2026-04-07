@@ -18,8 +18,12 @@ package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.SdkInt
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.plugability.BackendFlipperPlugin
 import ru.solrudev.ackpine.plugability.ChainedPlugin
 import ru.solrudev.ackpine.plugability.ChainedTestPlugin
+import ru.solrudev.ackpine.plugability.IntentBasedBackendObserverPlugin
+import ru.solrudev.ackpine.plugability.LegacyChainedUninstallPlugin
+import ru.solrudev.ackpine.plugability.LegacyUninstallPlugin
 import ru.solrudev.ackpine.plugability.TestInstallPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
@@ -68,36 +72,42 @@ class UninstallParametersBuilderTest {
 		assertEquals(UninstallerType.INTENT_BASED, parameters.uninstallerType)
 	}
 
-	@Test
 	@Suppress("DEPRECATION")
+	@Test
 	fun pluginIsAppliedDuringBuild() {
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
+			TestPlugin::class.java to TestPlugin.Parameters("")
+		)
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
 			.build()
-		assertEquals("applied-by-plugin", parameters.packageName)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 
 		val deprecatedParameters = UninstallParameters.Builder("com.example")
 			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
 			.build()
-		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Test
 	@Suppress("DEPRECATION")
+	@Test
 	fun parameterlessPluginIsAppliedDuringBuild() {
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
+			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
+		)
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(TestParameterlessPlugin::class.java)
 			.build()
-		assertEquals("applied-by-plugin", parameters.packageName)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 
 		val deprecatedParameters = UninstallParameters.Builder("com.example")
 			.usePlugin(TestParameterlessPlugin::class.java)
 			.build()
-		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
+		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Test
 	@Suppress("DEPRECATION")
+	@Test
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(ChainedTestPlugin::class.java)
@@ -107,18 +117,16 @@ class UninstallParametersBuilderTest {
 			ChainedPlugin::class.java to AckpinePlugin.Parameters.None,
 			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
 		)
-		assertEquals("applied-by-plugin", parameters.packageName)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 
 		val deprecatedParameters = UninstallParameters.Builder("com.example")
 			.usePlugin(ChainedTestPlugin::class.java)
 			.build()
-		assertEquals("applied-by-plugin", deprecatedParameters.packageName)
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Test
 	@Suppress("DEPRECATION")
+	@Test
 	fun pluginParametersArePreserved() {
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
@@ -132,6 +140,53 @@ class UninstallParametersBuilderTest {
 			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
 			.build()
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
+	}
+
+	@Test
+	fun buildIsIdempotent() {
+		val builder = UninstallParameters.Builder("com.example")
+			.registerPlugin(ChainedTestPlugin::class.java)
+			.registerPlugin(LegacyUninstallPlugin::class.java)
+		val first = builder.build()
+		val second = builder.build()
+		assertEquals(first, second)
+	}
+
+	@Test
+	@Suppress("DEPRECATION")
+	fun legacyPluginIsAppliedDuringBuild() {
+		val parameters = UninstallParameters.Builder("com.example")
+			.registerPlugin(LegacyUninstallPlugin::class.java)
+			.build()
+		assertEquals("com.legacy", parameters.packageName)
+	}
+
+	@Test
+	@Suppress("DEPRECATION")
+	fun legacyChainedPluginIsAppliedDuringBuild() {
+		val parameters = UninstallParameters.Builder("com.example")
+			.registerPlugin(LegacyChainedUninstallPlugin::class.java)
+			.build()
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
+			LegacyChainedUninstallPlugin::class.java to AckpinePlugin.Parameters.None,
+			TestPlugin::class.java to TestPlugin.Parameters("")
+		)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+	}
+
+	@Test
+	fun transitivePluginObservesNormalizedUninstallerType() {
+		SdkInt.set(16)
+		val parameters = UninstallParameters.Builder("com.example")
+			.registerPlugin(BackendFlipperPlugin::class.java)
+			.build()
+		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
+			BackendFlipperPlugin::class.java to AckpinePlugin.Parameters.None,
+			IntentBasedBackendObserverPlugin::class.java to AckpinePlugin.Parameters.None,
+			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None // applied by observer on intent-based
+		)
+		assertEquals(UninstallerType.INTENT_BASED, parameters.uninstallerType)
+		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 	}
 
 	@Test

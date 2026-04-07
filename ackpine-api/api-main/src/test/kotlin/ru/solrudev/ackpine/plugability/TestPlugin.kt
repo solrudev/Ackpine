@@ -16,8 +16,11 @@
 
 package ru.solrudev.ackpine.plugability
 
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 
 class TestPlugin :
 	AckpineInstallPlugin<TestPlugin.Parameters>,
@@ -25,12 +28,8 @@ class TestPlugin :
 
 	override val id = "test-plugin"
 
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.setName("applied-by-plugin")
-	}
-
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.setPackageName("applied-by-plugin")
+	override fun apply(scope: InstallPluginScope) {
+		scope.requireUserAction = false
 	}
 
 	data class Parameters(val value: String) : AckpinePlugin.Parameters
@@ -42,12 +41,8 @@ class TestParameterlessPlugin :
 
 	override val id = "test-parameterless-plugin"
 
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.setName("applied-by-plugin")
-	}
-
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.setPackageName("applied-by-plugin")
+	override fun apply(scope: InstallPluginScope) {
+		scope.requireUserAction = false
 	}
 }
 
@@ -57,12 +52,12 @@ class ChainedTestPlugin :
 
 	override val id = "chained-test-plugin"
 
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.registerPlugin(ChainedPlugin::class.java)
+	override fun apply(scope: InstallPluginScope) {
+		scope.registerPlugin(ChainedPlugin::class.java)
 	}
 
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.registerPlugin(ChainedPlugin::class.java)
+	override fun apply(scope: UninstallPluginScope) {
+		scope.registerPlugin(ChainedPlugin::class.java)
 	}
 }
 
@@ -72,12 +67,12 @@ class ChainedPlugin :
 
 	override val id = "chained-plugin"
 
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.registerPlugin(TestParameterlessPlugin::class.java)
+	override fun apply(scope: InstallPluginScope) {
+		scope.registerPlugin(TestParameterlessPlugin::class.java)
 	}
 
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.registerPlugin(TestParameterlessPlugin::class.java)
+	override fun apply(scope: UninstallPluginScope) {
+		scope.registerPlugin(TestParameterlessPlugin::class.java)
 	}
 }
 
@@ -87,4 +82,88 @@ class TestInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
 
 class TestUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 	override val id = "test-uninstall-plugin"
+}
+
+@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+class LegacyInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "legacy-install-plugin"
+
+	@OptIn(DelicateAckpineApi::class)
+	override fun apply(builder: InstallParameters.Builder) {
+		builder.setRequireUserAction(false)
+		builder.setName("legacy")
+	}
+}
+
+@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+class LegacyUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "legacy-uninstall-plugin"
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		builder.setPackageName("com.legacy")
+	}
+}
+
+@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+class LegacyChainedInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "legacy-chained-install-plugin"
+
+	override fun apply(builder: InstallParameters.Builder) {
+		builder.registerPlugin(TestParameterlessPlugin::class.java)
+	}
+}
+
+@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+class LegacyChainedUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "legacy-chained-uninstall-plugin"
+
+	override fun apply(builder: UninstallParameters.Builder) {
+		builder.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
+	}
+}
+
+class BackendFlipperPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "sets-intent-based-plugin"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.installerType = when (scope.installerType) {
+			InstallerType.INTENT_BASED -> InstallerType.SESSION_BASED
+			InstallerType.SESSION_BASED -> InstallerType.INTENT_BASED
+		}
+		scope.registerPlugin(IntentBasedBackendObserverPlugin::class.java)
+	}
+
+	override fun apply(scope: UninstallPluginScope) {
+		scope.uninstallerType = when (scope.uninstallerType) {
+			UninstallerType.INTENT_BASED -> UninstallerType.PACKAGE_INSTALLER_BASED
+			UninstallerType.PACKAGE_INSTALLER_BASED -> UninstallerType.INTENT_BASED
+		}
+		scope.registerPlugin(IntentBasedBackendObserverPlugin::class.java)
+	}
+}
+
+class IntentBasedBackendObserverPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "observes-backend-type-plugin"
+
+	override fun apply(scope: InstallPluginScope) {
+		if (scope.installerType == InstallerType.INTENT_BASED) {
+			scope.registerPlugin(TestParameterlessPlugin::class.java)
+		}
+	}
+
+	override fun apply(scope: UninstallPluginScope) {
+		if (scope.uninstallerType == UninstallerType.INTENT_BASED) {
+			scope.registerPlugin(TestParameterlessPlugin::class.java)
+		}
+	}
 }
