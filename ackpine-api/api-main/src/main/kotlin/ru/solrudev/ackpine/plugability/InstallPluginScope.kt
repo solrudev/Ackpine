@@ -120,6 +120,20 @@ public class InstallPluginScope private constructor(
 	@JvmSynthetic
 	internal fun getPlugins() = plugins.toMap()
 
+	@JvmSynthetic
+	internal fun resolvePlugins(normalizeInstallerType: (InstallerType) -> InstallerType) {
+		val appliedPlugins = mutableSetOf<Class<out AckpineInstallPlugin<*>>>()
+		do {
+			installerType = normalizeInstallerType(installerType)
+			val pluginsToApply = getPlugins().keys.filterNot(appliedPlugins::contains)
+			for (pluginClass in pluginsToApply) {
+				AckpinePluginCache.get(pluginClass).apply(this)
+				installerType = normalizeInstallerType(installerType)
+				appliedPlugins += pluginClass
+			}
+		} while (pluginsToApply.isNotEmpty())
+	}
+
 	internal companion object {
 		@JvmSynthetic
 		internal fun create() = InstallPluginScope()

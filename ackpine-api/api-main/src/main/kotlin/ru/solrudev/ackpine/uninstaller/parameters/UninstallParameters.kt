@@ -252,10 +252,9 @@ public class UninstallParameters private constructor(
 
 		private fun applyPlugins() {
 			val appliedPlugins = mutableSetOf<Class<out AckpineUninstallPlugin<*>>>()
-			var pluginsToApply: List<Class<out AckpineUninstallPlugin<*>>>
 			do {
 				pluginScope.normalizeUninstallerType()
-				pluginsToApply = pluginScope
+				val pluginsToApply = pluginScope
 					.getPlugins()
 					.keys
 					.filterNot(appliedPlugins::contains)

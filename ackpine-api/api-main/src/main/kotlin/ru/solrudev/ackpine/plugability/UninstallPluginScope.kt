@@ -65,6 +65,20 @@ public class UninstallPluginScope private constructor(
 	@JvmSynthetic
 	internal fun getPlugins() = plugins.toMap()
 
+	@JvmSynthetic
+	internal fun resolvePlugins(normalizeUninstallerType: (UninstallerType) -> UninstallerType) {
+		val appliedPlugins = mutableSetOf<Class<out AckpineUninstallPlugin<*>>>()
+		do {
+			uninstallerType = normalizeUninstallerType(uninstallerType)
+			val pluginsToApply = getPlugins().keys.filterNot(appliedPlugins::contains)
+			for (pluginClass in pluginsToApply) {
+				AckpinePluginCache.get(pluginClass).apply(this)
+				uninstallerType = normalizeUninstallerType(uninstallerType)
+				appliedPlugins += pluginClass
+			}
+		} while (pluginsToApply.isNotEmpty())
+	}
+
 	internal companion object {
 		@JvmSynthetic
 		internal fun create() = UninstallPluginScope()

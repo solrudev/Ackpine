@@ -520,10 +520,9 @@ public class InstallParameters private constructor(
 
 		private fun applyPlugins() {
 			val appliedPlugins = mutableSetOf<Class<out AckpineInstallPlugin<*>>>()
-			var pluginsToApply: List<Class<out AckpineInstallPlugin<*>>>
 			do {
 				pluginScope.normalizeInstallerType()
-				pluginsToApply = pluginScope
+				val pluginsToApply = pluginScope
 					.getPlugins()
 					.keys
 					.filterNot(appliedPlugins::contains)
