@@ -6,6 +6,47 @@ hide:
 Change Log
 ==========
 
+Version 0.22.0 (2026-04-09)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 9.1.0.
+
+### Bug fixes and improvements
+
+- Introduce capabilities API. This API allows querying what features are available for a given session configuration on the current device, accounting for Android API level and plugin-applied restrictions. See documentation for details.
+- Split plugin API by session type. This allows to forbid using installer plugins for uninstall sessions and vice versa, and to implement both installer and uninstaller plugin within one class with different parameters.
+
+    Shizuku plugins were migrated to this new API. Now `ShizukuPlugin` should be used both for install and uninstall sessions. `ShizukuUninstallPlugin` is deprecated.
+
+- Fix `equals()` for `ApkList` and transitively for `InstallParameters`.
+- `InstallParameters.Builder.build()` now creates a snapshot before applying plugins, making the builder safely reusable after `build()`.
+
+### Public API changes
+
+#### New
+
+- Added new `capabilities` package to `ackpine-api` with `InstallerCapabilities`, `UninstallerCapabilities`, `CapabilityStatus` and related types.
+- Added `PackageInstaller.getCapabilities()` and `PackageUninstaller.getCapabilities()` static methods.
+- Added `AckpineInstallPlugin` and `AckpineUninstallPlugin` interfaces.
+- Added `InstallPluginScope` and `UninstallPluginScope` classes. Plugins now receive a scope object that isolates modifications made by plugins from direct builder access.
+- Added `registerPlugin()` methods on `InstallParameters.Builder` and `UninstallParameters.Builder` for typed plugin registration.
+- Added `plugin()` DSL functions on `InstallParametersDsl` and `UninstallParametersDsl` in `ackpine-ktx` for typed plugin registration.
+- `ShizukuPlugin` now implements `AckpineInstallPlugin`, `AckpineUninstallPlugin`, `InstallCapabilityProvider<ShizukuInstallCapabilities>` and `UninstallCapabilityProvider<ShizukuUninstallCapabilities>`.
+- `ShizukuPlugin.Parameters` was renamed to `ShizukuPlugin.InstallParameters`. Added `ShizukuPlugin.UninstallParameters`.
+- Added `shizuku()` DSL functions in `ackpine-shizuku-ktx` as replacements for `useShizuku()`.
+- Added `ShizukuInstallParametersDsl`, `ShizukuUninstallParametersDsl` and related APIs in `ackpine-shizuku-ktx`.
+
+#### Deprecations
+
+- Deprecated with warning `AckpinePlugin.apply(InstallParameters.Builder)` and `AckpinePlugin.apply(UninstallParameters.Builder)`. This will become an error in the next minor version.
+- Deprecated with warning `AckpinePluginRegistry` interface and its `usePlugin()` methods. This will become an error in the next minor version. Use typed `registerPlugin()` methods on `InstallParameters.Builder` or `UninstallParameters.Builder` directly.
+- Deprecated with warning `AckpinePluginRegistryDsl` interface and its `usePlugin()` methods in `ackpine-ktx`. This will become an error in the next minor version. Use typed `plugin()` methods on `InstallParametersDsl` or `UninstallParametersDsl` directly.
+- Deprecated with warning `ShizukuUninstallPlugin`. This will become an error in the next minor version. Use `ShizukuPlugin` for both install and uninstall sessions.
+- Deprecated with warning `ShizukuPluginParametersDsl`, `ShizukuPluginParameters()`, `ShizukuUninstallPluginParametersDsl` and `ShizukuUninstallPluginParameters()` in `shizuku-ktx`. This will become an error in the next minor version. Use `ShizukuInstallParametersDsl`/`ShizukuInstallParameters()` and `ShizukuUninstallParametersDsl`/`ShizukuUninstallParameters()` respectively.
+- Deprecated with warning `useShizuku()` DSL functions in `shizuku-ktx`. This will become an error in the next minor version. Use `shizuku()` instead.
+
 Version 0.21.2 (2026-03-24)
 ---------------------------
 
