@@ -1,0 +1,1 @@
+-keep class ru.solrudev.ackpine.impl.database.AckpineDatabase_Impl { <init>(); }
