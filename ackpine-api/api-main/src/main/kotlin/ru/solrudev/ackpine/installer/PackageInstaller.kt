@@ -18,8 +18,12 @@ package ru.solrudev.ackpine.installer
 
 import android.content.Context
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.capabilities.InstallerCapabilities
+import ru.solrudev.ackpine.capabilities.resolveInstallerCapabilities
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
@@ -89,5 +93,45 @@ public interface PackageInstaller {
 				)
 			}
 		}
+
+		/**
+		 * Returns the capabilities of the installer for the given [installerType] and optional list of [plugins].
+		 *
+		 * The returned [InstallerCapabilities] reflect what is actually available for the configuration on the current
+		 * device, accounting for Android API level and plugin-applied restrictions. The
+		 * [InstallerCapabilities.installerType] field may differ from the requested [installerType] when the requested
+		 * backend is not available on the current Android version or is overridden by a plugin.
+		 *
+		 * **Note:** Install capabilities are not split-aware. The capabilities API does not accept APK count or split
+		 * metadata, so the split-install invariant that forces [InstallerType.SESSION_BASED] is not reflected here.
+		 *
+		 * @param installerType the requested installer backend type.
+		 * @param plugins Java classes of plugins to include in the resolution, implementing [AckpineInstallPlugin].
+		 */
+		@JvmStatic
+		public fun getCapabilities(
+			installerType: InstallerType,
+			plugins: List<Class<out AckpineInstallPlugin<*>>>
+		): InstallerCapabilities = resolveInstallerCapabilities(installerType, plugins)
+
+		/**
+		 * Returns the capabilities of the installer for the given [installerType] and optional list of [plugins].
+		 *
+		 * The returned [InstallerCapabilities] reflect what is actually available for the configuration on the current
+		 * device, accounting for Android API level and plugin-applied restrictions. The
+		 * [InstallerCapabilities.installerType] field may differ from the requested [installerType] when the requested
+		 * backend is not available on the current Android version or is overridden by a plugin.
+		 *
+		 * **Note:** Install capabilities are not split-aware. The capabilities API does not accept APK count or split
+		 * metadata, so the split-install invariant that forces [InstallerType.SESSION_BASED] is not reflected here.
+		 *
+		 * @param installerType the requested installer backend type.
+		 * @param plugins Java classes of plugins to include in the resolution, implementing [AckpineInstallPlugin].
+		 */
+		@JvmStatic
+		public fun getCapabilities(
+			installerType: InstallerType,
+			vararg plugins: Class<out AckpineInstallPlugin<*>>
+		): InstallerCapabilities = resolveInstallerCapabilities(installerType, plugins.asList())
 	}
 }

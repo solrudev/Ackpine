@@ -2,12 +2,22 @@ public final class ru/solrudev/ackpine/DisposableSubscriptionContainerKt {
 	public static final fun plusAssign (Lru/solrudev/ackpine/DisposableSubscriptionContainer;Lru/solrudev/ackpine/DisposableSubscription;)V
 }
 
+public final class ru/solrudev/ackpine/capabilities/InstallerCapabilitiesKt {
+	public static final fun plugin (Lru/solrudev/ackpine/capabilities/InstallerCapabilities;Lkotlin/reflect/KClass;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+}
+
+public final class ru/solrudev/ackpine/capabilities/UninstallerCapabilitiesKt {
+	public static final fun plugin (Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;Lkotlin/reflect/KClass;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+}
+
 public final class ru/solrudev/ackpine/installer/PackageInstallerKt {
 	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;
 	public static final fun createSession (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/ProgressSession;
 	public static synthetic fun createSession$default (Lru/solrudev/ackpine/installer/PackageInstaller;Landroid/net/Uri;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/ProgressSession;
 	public static synthetic fun createSession$default (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/lang/Iterable;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/ProgressSession;
 	public static final fun getActiveSessions (Lru/solrudev/ackpine/installer/PackageInstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getCapabilities (Lru/solrudev/ackpine/installer/PackageInstaller$Companion;Lru/solrudev/ackpine/installer/parameters/InstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
+	public static final fun getCapabilities (Lru/solrudev/ackpine/installer/PackageInstaller$Companion;Lru/solrudev/ackpine/installer/parameters/InstallerType;[Lkotlin/reflect/KClass;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
 	public static final fun getSession (Lru/solrudev/ackpine/installer/PackageInstaller;Ljava/util/UUID;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun getSessions (Lru/solrudev/ackpine/installer/PackageInstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }
@@ -211,6 +221,8 @@ public final class ru/solrudev/ackpine/uninstaller/PackageUninstallerKt {
 	public static final fun createSession (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/session/Session;
 	public static synthetic fun createSession$default (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/session/Session;
 	public static final fun getActiveSessions (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
+	public static final fun getCapabilities (Lru/solrudev/ackpine/uninstaller/PackageUninstaller$Companion;Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
+	public static final fun getCapabilities (Lru/solrudev/ackpine/uninstaller/PackageUninstaller$Companion;Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;[Lkotlin/reflect/KClass;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
 	public static final fun getSession (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Ljava/util/UUID;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 	public static final fun getSessions (Lru/solrudev/ackpine/uninstaller/PackageUninstaller;Lkotlin/coroutines/Continuation;)Ljava/lang/Object;
 }

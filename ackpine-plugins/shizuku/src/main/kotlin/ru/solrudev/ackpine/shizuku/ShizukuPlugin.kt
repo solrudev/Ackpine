@@ -17,9 +17,15 @@
 package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
+import android.os.Build
 import rikka.shizuku.Shizuku
-import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
+import ru.solrudev.ackpine.capabilities.CapabilityStatus
+import ru.solrudev.ackpine.capabilities.InstallCapabilityContext
+import ru.solrudev.ackpine.capabilities.InstallCapabilityProvider
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
 import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
@@ -38,7 +44,9 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
  */
 public class ShizukuPlugin private constructor() :
 	AckpineInstallPlugin<ShizukuPlugin.InstallParameters>,
-	AckpineUninstallPlugin<ShizukuPlugin.UninstallParameters> {
+	AckpineUninstallPlugin<ShizukuPlugin.UninstallParameters>,
+	InstallCapabilityProvider<ShizukuInstallCapabilities>,
+	UninstallCapabilityProvider<ShizukuUninstallCapabilities> {
 
 	override val id: String = PLUGIN_ID
 
@@ -56,6 +64,29 @@ public class ShizukuPlugin private constructor() :
 			return
 		}
 		scope.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
+	}
+
+	override fun getCapabilities(context: InstallCapabilityContext): ShizukuInstallCapabilities {
+		val isSessionBased = context.installerType == InstallerType.SESSION_BASED
+		val isSupported = if (isSessionBased) CapabilityStatus.SUPPORTED else CapabilityStatus.UNSUPPORTED
+		fun isSupportedOnApi(api: Int) = if (isSessionBased && context.sdkInt >= api) {
+			CapabilityStatus.SUPPORTED
+		} else {
+			CapabilityStatus.UNSUPPORTED
+		}
+		return ShizukuInstallCapabilities(
+			bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
+			allowTest = isSupported,
+			replaceExisting = isSupported,
+			requestDowngrade = isSupported,
+			grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
+			allUsers = isSupported,
+			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P)
+		)
+	}
+
+	override fun getCapabilities(context: UninstallCapabilityContext): ShizukuUninstallCapabilities {
+		return getUninstallCapabilities(context.uninstallerType, context.sdkInt)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin
@@ -447,4 +478,17 @@ public class ShizukuPlugin private constructor() :
 		@JvmSynthetic
 		internal const val PLUGIN_ID = "ru.solrudev.ackpine.shizuku.ShizukuPlugin"
 	}
+}
+
+@JvmSynthetic
+internal fun getUninstallCapabilities(
+	uninstallerType: UninstallerType,
+	sdkInt: Int
+): ShizukuUninstallCapabilities {
+	val isSupported = if (uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED && sdkInt >= 27) {
+		CapabilityStatus.SUPPORTED
+	} else {
+		CapabilityStatus.UNSUPPORTED
+	}
+	return ShizukuUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
 }

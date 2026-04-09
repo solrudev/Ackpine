@@ -215,3 +215,55 @@ Flag parameter to indicate that you don't want to delete the package's data dire
 #### `allUsers`
 
 Flag parameter to indicate that you want the package deleted for all users.
+
+Capabilities
+------------
+
+`ShizukuPlugin` implements [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) and [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html), so you can query whether individual Shizuku install/uninstall parameters are supported for a given configuration via `getCapabilities()`. See [Querying capabilities](configuration.md#querying-capabilities) for an overview of the capabilities API.
+
+Each field in [`ShizukuInstallCapabilities`](../api/ackpine-shizuku/ru.solrudev.ackpine.shizuku/-shizuku-install-capabilities/index.html) mirrors the corresponding `ShizukuPlugin.InstallParameters` flag and reports whether it is supported for the resolved configuration. Similarly, [`ShizukuUninstallCapabilities`](../api/ackpine-shizuku/ru.solrudev.ackpine.shizuku/-shizuku-uninstall-capabilities/index.html) mirrors `ShizukuPlugin.UninstallParameters`.
+
+!!! Note
+    Shizuku capability support is determined from Android API level and the effective installer/uninstaller type. Whether Shizuku version is >= 11 and whether it is available for usage by the app at runtime is not taken into account.
+
+=== "Kotlin"
+
+    ```kotlin
+    val capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED, ShizukuPlugin::class)
+    val shizukuCaps = capabilities.plugin(ShizukuPlugin::class) ?: return
+    if (shizukuCaps.bypassLowTargetSdkBlock.isSupported) {
+        // bypassLowTargetSdkBlock is effective on this device
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED, ShizukuPlugin.class);
+    var shizukuCaps = capabilities.plugin(ShizukuPlugin.class);
+    if (shizukuCaps != null && shizukuCaps.getBypassLowTargetSdkBlock().isSupported()) {
+        // bypassLowTargetSdkBlock is effective on this device
+    }
+    ```
+
+For uninstall:
+
+=== "Kotlin"
+
+    ```kotlin
+    val capabilities = PackageUninstaller.getCapabilities(UninstallerType.PACKAGE_INSTALLER_BASED, ShizukuPlugin::class)
+    val shizukuCaps = capabilities.plugin(ShizukuPlugin::class) ?: return
+    if (shizukuCaps.keepData.isSupported) {
+        // keepData is effective on this device
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var capabilities = PackageUninstaller.getCapabilities(UninstallerType.PACKAGE_INSTALLER_BASED, ShizukuPlugin.class);
+    var shizukuCaps = capabilities.plugin(ShizukuPlugin.class);
+    if (shizukuCaps != null && shizukuCaps.getKeepData().isSupported()) {
+        // keepData is effective on this device
+    }
+    ```

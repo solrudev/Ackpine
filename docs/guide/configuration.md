@@ -348,3 +348,76 @@ Plugins
 Ackpine supports [plugins](../architecture.md#plugin-system). They are available for sessions that use Android's `PackageInstaller` API.
 
 At the moment, the [`ShizukuPlugin`](shizuku.md) is the only built-in Ackpine plugin. It supports both install and uninstall sessions. See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
+
+Querying capabilities
+---------------------
+
+Before creating a session you can ask Ackpine what features will be available for a given configuration by calling `PackageInstaller.getCapabilities()` or `PackageUninstaller.getCapabilities()`. This may be useful for conditionally showing UI options or checking that required features are present on the device before attempting to use them.
+
+Each capability field is reported as a [`CapabilityStatus`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-capability-status/index.html) value:
+
+- `SUPPORTED` — fully supported by the observable platform/API contract for the queried configuration;
+- `UNRELIABLE` — will affect operations for the queried configuration, but behavior may be inconsistent across devices or Android versions (e.g. `requireUserAction = false` on API 31–32);
+- `UNSUPPORTED` — not supported for the queried configuration.
+
+!!! Warning
+    `SUPPORTED` status **does not** guarantee that an operation with the capability used will succeed on a concrete device.
+
+`PackageInstaller.getCapabilities()` returns [`InstallerCapabilities`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-installer-capabilities/index.html):
+
+| Field                    | Description                                                                                                       |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `installerType`          | Effective backend after normalization and plugin resolution                                                       |
+| `skipUserAction`         | Whether skipping user confirmation is available                                                                   |
+| `preapproval`            | Whether pre-commit install approval is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only)               |
+| `constraints`            | Whether install constraints are available (`SUPPORTED` on API 34+ with `SESSION_BASED` only)                      |
+| `requestUpdateOwnership` | Whether update ownership enforcement is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only)              |
+| `packageSource`          | Whether setting the package source is available (`SUPPORTED` on API 33+ with `SESSION_BASED` only)                |
+| `dontKillApp`            | Whether `InstallMode.InheritExisting.dontKillApp` is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only) |
+
+`PackageUninstaller.getCapabilities()` returns [`UninstallerCapabilities`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstaller-capabilities/index.html) with a `uninstallerType` field.
+
+=== "Kotlin"
+
+    ```kotlin
+    val capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED)
+    if (capabilities.preapproval.isSupported) {
+        // pre-commit approval is supported; offer the preapproval UI option
+    }
+    if (capabilities.skipUserAction.isAvailable) {
+        // requireUserAction will have some effect on this device
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED);
+    if (capabilities.getPreapproval().isSupported()) {
+        // pre-commit approval is supported; offer the preapproval UI option
+    }
+    if (capabilities.getSkipUserAction().isAvailable()) {
+        // requireUserAction will have some effect on this device
+    }
+    ```
+
+Plugins may be passed to include their effect on the resolved result:
+
+=== "Kotlin"
+
+    ```kotlin
+    // installerType in the result may differ from INTENT_BASED after plugin normalization
+    val capabilities = PackageInstaller.getCapabilities(InstallerType.INTENT_BASED, ShizukuPlugin::class)
+    ```
+
+=== "Java"
+
+    ```java
+    // installerType in the result may differ from INTENT_BASED after plugin normalization
+    var capabilities = PackageInstaller.getCapabilities(InstallerType.INTENT_BASED, ShizukuPlugin.class);
+    ```
+
+Plugins that implement [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) or [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html) also expose plugin-specific capability data accessible via `InstallerCapabilities.plugin()` / `UninstallerCapabilities.plugin()`. See [Shizuku capabilities](shizuku.md#capabilities) for an example.
+
+!!! Note
+    Install capabilities are not split-aware. The split-install invariant that forces `SESSION_BASED` is enforced at session creation time and is not reflected in `getCapabilities()` results.

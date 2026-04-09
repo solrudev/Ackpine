@@ -18,9 +18,13 @@ package ru.solrudev.ackpine.uninstaller
 
 import android.content.Context
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.capabilities.UninstallerCapabilities
+import ru.solrudev.ackpine.capabilities.resolveUninstallerCapabilities
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
+import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
 
 /**
@@ -86,5 +90,39 @@ public interface PackageUninstaller {
 				)
 			}
 		}
+
+		/**
+		 * Returns the capabilities of the uninstaller for the given [uninstallerType] and optional list of [plugins].
+		 *
+		 * The returned [UninstallerCapabilities] reflect what is actually available for the configuration on the
+		 * current device, accounting for Android API level and plugin-applied restrictions. The
+		 * [UninstallerCapabilities.uninstallerType] field may differ from the requested [uninstallerType] when the
+		 * requested backend is not available on the current Android version or is overridden by a plugin.
+		 *
+		 * @param uninstallerType the requested uninstaller backend type.
+		 * @param plugins Java classes of plugins to include in the resolution, implementing [AckpineUninstallPlugin].
+		 */
+		@JvmStatic
+		public fun getCapabilities(
+			uninstallerType: UninstallerType,
+			plugins: List<Class<out AckpineUninstallPlugin<*>>>
+		): UninstallerCapabilities = resolveUninstallerCapabilities(uninstallerType, plugins)
+
+		/**
+		 * Returns the capabilities of the uninstaller for the given [uninstallerType] and optional list of [plugins].
+		 *
+		 * The returned [UninstallerCapabilities] reflect what is actually available for the configuration on the
+		 * current device, accounting for Android API level and plugin-applied restrictions. The
+		 * [UninstallerCapabilities.uninstallerType] field may differ from the requested [uninstallerType] when the
+		 * requested backend is not available on the current Android version or is overridden by a plugin.
+		 *
+		 * @param uninstallerType the requested uninstaller backend type.
+		 * @param plugins Java classes of plugins to include in the resolution, implementing [AckpineUninstallPlugin].
+		 */
+		@JvmStatic
+		public fun getCapabilities(
+			uninstallerType: UninstallerType,
+			vararg plugins: Class<out AckpineUninstallPlugin<*>>
+		): UninstallerCapabilities = resolveUninstallerCapabilities(uninstallerType, plugins.asList())
 	}
 }

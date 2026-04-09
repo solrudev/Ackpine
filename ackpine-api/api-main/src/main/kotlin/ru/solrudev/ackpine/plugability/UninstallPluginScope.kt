@@ -30,7 +30,7 @@ public class UninstallPluginScope private constructor(
 	/**
 	 * Type of the package uninstaller implementation. Default value is [UninstallerType.DEFAULT].
 	 */
-	public var uninstallerType: UninstallerType = UninstallerType.DEFAULT
+	public var uninstallerType: UninstallerType
 ) {
 
 	private val plugins = mutableMapOf<Class<out AckpineUninstallPlugin<*>>, AckpinePlugin.Parameters>()
@@ -79,8 +79,15 @@ public class UninstallPluginScope private constructor(
 		} while (pluginsToApply.isNotEmpty())
 	}
 
+	@JvmSynthetic
+	internal fun registerCapabilityPlugin(pluginClass: Class<out AckpineUninstallPlugin<*>>) {
+		plugins[pluginClass] = AckpinePlugin.Parameters.None
+	}
+
 	internal companion object {
 		@JvmSynthetic
-		internal fun create() = UninstallPluginScope()
+		internal fun create(
+			uninstallerType: UninstallerType = UninstallerType.DEFAULT
+		) = UninstallPluginScope(uninstallerType)
 	}
 }

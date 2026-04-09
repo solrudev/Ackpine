@@ -34,21 +34,32 @@ public class InstallPluginScope private constructor(
 	 *
 	 * Default value is [InstallerType.DEFAULT].
 	 */
-	public var installerType: InstallerType = InstallerType.DEFAULT,
+	public var installerType: InstallerType,
+
+	requireUserAction: Boolean = true,
+	requestUpdateOwnership: Boolean = false,
+	preapproval: InstallPreapproval = InstallPreapproval.NONE,
+	constraints: InstallConstraints = InstallConstraints.NONE
+) {
 
 	/**
 	 * Indicates whether user action should be required when the session is committed. Default value is `true`.
 	 */
-	public var requireUserAction: Boolean = true,
+	public var requireUserAction: Boolean = requireUserAction
+		set(value) {
+			field = value
+			isUserActionForced = value
+		}
 
 	/**
 	 * Indicates whether the package being installed needs the update ownership enforcement. Default value is `false`.
 	 */
-	public var requestUpdateOwnership: Boolean = false,
+	public var requestUpdateOwnership: Boolean = requestUpdateOwnership
+		set(value) {
+			field = value
+			isUpdateOwnershipDisabled = !value
+		}
 
-	preapproval: InstallPreapproval = InstallPreapproval.NONE,
-	constraints: InstallConstraints = InstallConstraints.NONE
-) {
 
 	/**
 	 * Details for requesting the pre-commit install approval. Default value is [InstallPreapproval.NONE].
@@ -70,11 +81,28 @@ public class InstallPluginScope private constructor(
 
 	private val plugins = mutableMapOf<Class<out AckpineInstallPlugin<*>>, AckpinePlugin.Parameters>()
 
+	@get:JvmSynthetic
+	internal var isPreapprovalDisabled = false
+		private set
+
+	@get:JvmSynthetic
+	internal var isConstraintsDisabled = false
+		private set
+
+	@get:JvmSynthetic
+	internal var isUserActionForced = false
+		private set
+
+	@get:JvmSynthetic
+	internal var isUpdateOwnershipDisabled = false
+		private set
+
 	/**
 	 * Resets [preapproval] to [InstallPreapproval.NONE].
 	 */
 	public fun disablePreapproval() {
 		preapproval = InstallPreapproval.NONE
+		isPreapprovalDisabled = true
 	}
 
 	/**
@@ -82,6 +110,7 @@ public class InstallPluginScope private constructor(
 	 */
 	public fun disableConstraints() {
 		constraints = InstallConstraints.NONE
+		isConstraintsDisabled = true
 	}
 
 	/**
@@ -134,8 +163,13 @@ public class InstallPluginScope private constructor(
 		} while (pluginsToApply.isNotEmpty())
 	}
 
+	@JvmSynthetic
+	internal fun registerCapabilityPlugin(pluginClass: Class<out AckpineInstallPlugin<*>>) {
+		plugins[pluginClass] = AckpinePlugin.Parameters.None
+	}
+
 	internal companion object {
 		@JvmSynthetic
-		internal fun create() = InstallPluginScope()
+		internal fun create(installerType: InstallerType = InstallerType.DEFAULT) = InstallPluginScope(installerType)
 	}
 }

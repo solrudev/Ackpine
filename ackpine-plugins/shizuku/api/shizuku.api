@@ -1,7 +1,24 @@
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+public final class ru/solrudev/ackpine/shizuku/ShizukuInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getAllowTest ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getBypassLowTargetSdkBlock ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getGrantAllRequestedPermissions ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getInstallerPackageName ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getReplaceExisting ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getRequestDowngrade ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/capabilities/InstallCapabilityProvider, ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
 	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
 	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuInstallCapabilities;
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities;
 	public fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -81,9 +98,19 @@ public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Build
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion {
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/plugability/AckpinePlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpinePlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
 	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities;
 	public fun getId ()Ljava/lang/String;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;

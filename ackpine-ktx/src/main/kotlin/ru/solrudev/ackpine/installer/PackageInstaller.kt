@@ -20,12 +20,16 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.concurrent.futures.await
+import ru.solrudev.ackpine.capabilities.InstallerCapabilities
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
+import ru.solrudev.ackpine.installer.parameters.InstallerType
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import java.util.UUID
+import kotlin.reflect.KClass
 
 /**
  * Creates an install session. The returned session is in [pending][Session.State.Pending] state.
@@ -86,4 +90,30 @@ public suspend fun PackageInstaller.getSessions(): List<ProgressSession<InstallF
  */
 public suspend fun PackageInstaller.getActiveSessions(): List<ProgressSession<InstallFailure>> {
 	return getActiveSessionsAsync().await()
+}
+
+/**
+ * Kotlin-friendly variant of [PackageInstaller.getCapabilities].
+ * @param installerType the requested installer backend type.
+ * @param plugins Kotlin classes of plugins to include in the resolution, implementing [AckpineInstallPlugin].
+ * @see PackageInstaller.getCapabilities
+ */
+public fun PackageInstaller.Companion.getCapabilities(
+	installerType: InstallerType,
+	plugins: List<KClass<out AckpineInstallPlugin<*>>>
+): InstallerCapabilities {
+	return getCapabilities(installerType, plugins.map { it.java })
+}
+
+/**
+ * Kotlin-friendly variant of [PackageInstaller.getCapabilities].
+ * @param installerType the requested installer backend type.
+ * @param plugins Kotlin classes of plugins to include in the resolution, implementing [AckpineInstallPlugin].
+ * @see PackageInstaller.getCapabilities
+ */
+public fun PackageInstaller.Companion.getCapabilities(
+	installerType: InstallerType,
+	vararg plugins: KClass<out AckpineInstallPlugin<*>>
+): InstallerCapabilities {
+	return getCapabilities(installerType, plugins.map { it.java })
 }

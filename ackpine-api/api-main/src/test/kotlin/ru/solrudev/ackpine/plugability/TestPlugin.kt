@@ -17,6 +17,11 @@
 package ru.solrudev.ackpine.plugability
 
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.capabilities.InstallCapabilityContext
+import ru.solrudev.ackpine.capabilities.InstallCapabilityProvider
+import ru.solrudev.ackpine.capabilities.PluginCapability
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
 import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
@@ -43,6 +48,16 @@ class TestParameterlessPlugin :
 
 	override fun apply(scope: InstallPluginScope) {
 		scope.requireUserAction = false
+		scope.disablePreapproval()
+	}
+}
+
+class ForceUserActionPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "force-user-action-plugin"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.requireUserAction = true
 	}
 }
 
@@ -146,6 +161,76 @@ class BackendFlipperPlugin :
 			UninstallerType.PACKAGE_INSTALLER_BASED -> UninstallerType.INTENT_BASED
 		}
 		scope.registerPlugin(IntentBasedBackendObserverPlugin::class.java)
+	}
+}
+
+data class TestInstallCapability(val installerType: InstallerType) : PluginCapability
+data class TestUninstallCapability(val uninstallerType: UninstallerType) : PluginCapability
+
+class CapabilityAwareInstallPlugin :
+	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
+	InstallCapabilityProvider<TestInstallCapability> {
+
+	override val id = "capability-aware-install-plugin"
+
+	override fun getCapabilities(context: InstallCapabilityContext): TestInstallCapability {
+		return TestInstallCapability(context.installerType)
+	}
+}
+
+class CapabilityAwareUninstallPlugin :
+	AckpineUninstallPlugin<AckpinePlugin.Parameters.None>,
+	UninstallCapabilityProvider<TestUninstallCapability> {
+
+	override val id = "capability-aware-uninstall-plugin"
+
+	override fun getCapabilities(context: UninstallCapabilityContext): TestUninstallCapability {
+		return TestUninstallCapability(context.uninstallerType)
+	}
+}
+
+class DisablePreapprovalPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "preapproval-disabler"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.disablePreapproval()
+	}
+}
+
+class DisableConstraintsPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "constraints-disabler"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.disableConstraints()
+	}
+}
+
+class DisableUpdateOwnershipPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "update-ownership-disabler"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.requestUpdateOwnership = false
+	}
+}
+
+class CapabilityRegistrarPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "capability-registrar-plugin"
+
+	override fun apply(scope: InstallPluginScope) {
+		scope.registerPlugin(CapabilityAwareInstallPlugin::class.java)
+	}
+}
+
+class CapabilityRegistrarUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
+
+	override val id = "capability-registrar-uninstall-plugin"
+
+	override fun apply(scope: UninstallPluginScope) {
+		scope.registerPlugin(CapabilityAwareUninstallPlugin::class.java)
 	}
 }
 

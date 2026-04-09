@@ -17,10 +17,14 @@
 package ru.solrudev.ackpine.uninstaller
 
 import androidx.concurrent.futures.await
+import ru.solrudev.ackpine.capabilities.UninstallerCapabilities
+import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import java.util.UUID
+import kotlin.reflect.KClass
 
 /**
  * Creates an uninstall session. The returned session is in [pending][Session.State.Pending] state.
@@ -59,4 +63,30 @@ public suspend fun PackageUninstaller.getSessions(): List<Session<UninstallFailu
  */
 public suspend fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
 	return getActiveSessionsAsync().await()
+}
+
+/**
+ * Kotlin-friendly variant of [PackageUninstaller.getCapabilities].
+ * @param uninstallerType the requested uninstaller backend type.
+ * @param plugins Kotlin classes of plugins to include in the resolution, implementing [AckpineUninstallPlugin].
+ * @see PackageUninstaller.getCapabilities
+ */
+public fun PackageUninstaller.Companion.getCapabilities(
+	uninstallerType: UninstallerType,
+	plugins: List<KClass<out AckpineUninstallPlugin<*>>>
+): UninstallerCapabilities {
+	return getCapabilities(uninstallerType, plugins.map { it.java })
+}
+
+/**
+ * Kotlin-friendly variant of [PackageUninstaller.getCapabilities].
+ * @param uninstallerType the requested uninstaller backend type.
+ * @param plugins Kotlin classes of plugins to include in the resolution, implementing [AckpineUninstallPlugin].
+ * @see PackageUninstaller.getCapabilities
+ */
+public fun PackageUninstaller.Companion.getCapabilities(
+	uninstallerType: UninstallerType,
+	vararg plugins: KClass<out AckpineUninstallPlugin<*>>
+): UninstallerCapabilities {
+	return getCapabilities(uninstallerType, plugins.map { it.java })
 }

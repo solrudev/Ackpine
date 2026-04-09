@@ -14,6 +14,63 @@ public final class ru/solrudev/ackpine/DisposableSubscriptionContainer : ru/solr
 	public fun isDisposed ()Z
 }
 
+public final class ru/solrudev/ackpine/capabilities/CapabilityStatus : java/lang/Enum {
+	public static final field SUPPORTED Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public static final field UNRELIABLE Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public static final field UNSUPPORTED Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun isAvailable ()Z
+	public final fun isSupported ()Z
+	public final fun isUnavailable ()Z
+	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public static fun values ()[Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+}
+
+public final class ru/solrudev/ackpine/capabilities/InstallCapabilityContext {
+	public fun <init> (ILru/solrudev/ackpine/installer/parameters/InstallerType;)V
+	public final fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
+	public final fun getSdkInt ()I
+}
+
+public abstract interface class ru/solrudev/ackpine/capabilities/InstallCapabilityProvider {
+	public abstract fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+}
+
+public final class ru/solrudev/ackpine/capabilities/InstallerCapabilities {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getConstraints ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getDontKillApp ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getInstallerType ()Lru/solrudev/ackpine/installer/parameters/InstallerType;
+	public final fun getPackageSource ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getPreapproval ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getRequestUpdateOwnership ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getSkipUserAction ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public final fun plugin (Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract interface class ru/solrudev/ackpine/capabilities/PluginCapability {
+}
+
+public final class ru/solrudev/ackpine/capabilities/UninstallCapabilityContext {
+	public fun <init> (ILru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)V
+	public final fun getSdkInt ()I
+	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
+}
+
+public abstract interface class ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider {
+	public abstract fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+}
+
+public final class ru/solrudev/ackpine/capabilities/UninstallerCapabilities {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
+	public fun hashCode ()I
+	public final fun plugin (Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun toString ()Ljava/lang/String;
+}
+
 public final class ru/solrudev/ackpine/exceptions/SplitPackagesNotSupportedException : java/lang/IllegalStateException {
 	public fun <init> ()V
 }
@@ -140,12 +197,16 @@ public abstract interface class ru/solrudev/ackpine/installer/PackageInstaller {
 	public static final field Companion Lru/solrudev/ackpine/installer/PackageInstaller$Companion;
 	public abstract fun createSession (Lru/solrudev/ackpine/installer/parameters/InstallParameters;)Lru/solrudev/ackpine/session/ProgressSession;
 	public abstract fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public static fun getCapabilities (Lru/solrudev/ackpine/installer/parameters/InstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
+	public static fun getCapabilities (Lru/solrudev/ackpine/installer/parameters/InstallerType;[Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
 	public static fun getInstance (Landroid/content/Context;)Lru/solrudev/ackpine/installer/PackageInstaller;
 	public abstract fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public abstract fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
 }
 
 public final class ru/solrudev/ackpine/installer/PackageInstaller$Companion {
+	public final fun getCapabilities (Lru/solrudev/ackpine/installer/parameters/InstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
+	public final fun getCapabilities (Lru/solrudev/ackpine/installer/parameters/InstallerType;[Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/InstallerCapabilities;
 	public final fun getInstance (Landroid/content/Context;)Lru/solrudev/ackpine/installer/PackageInstaller;
 }
 
@@ -457,6 +518,7 @@ public final class ru/solrudev/ackpine/plugability/InstallPluginScope {
 }
 
 public final class ru/solrudev/ackpine/plugability/UninstallPluginScope {
+	public synthetic fun <init> (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
 	public final fun registerPlugin (Ljava/lang/Class;)V
 	public final fun registerPlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)V
@@ -654,12 +716,16 @@ public abstract interface class ru/solrudev/ackpine/uninstaller/PackageUninstall
 	public static final field Companion Lru/solrudev/ackpine/uninstaller/PackageUninstaller$Companion;
 	public abstract fun createSession (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters;)Lru/solrudev/ackpine/session/Session;
 	public abstract fun getActiveSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
+	public static fun getCapabilities (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
+	public static fun getCapabilities (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;[Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
 	public static fun getInstance (Landroid/content/Context;)Lru/solrudev/ackpine/uninstaller/PackageUninstaller;
 	public abstract fun getSessionAsync (Ljava/util/UUID;)Lcom/google/common/util/concurrent/ListenableFuture;
 	public abstract fun getSessionsAsync ()Lcom/google/common/util/concurrent/ListenableFuture;
 }
 
 public final class ru/solrudev/ackpine/uninstaller/PackageUninstaller$Companion {
+	public final fun getCapabilities (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Ljava/util/List;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
+	public final fun getCapabilities (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;[Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/UninstallerCapabilities;
 	public final fun getInstance (Landroid/content/Context;)Lru/solrudev/ackpine/uninstaller/PackageUninstaller;
 }
 

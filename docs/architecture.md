@@ -119,6 +119,8 @@ Ackpine has a plugin system that allows extending session behavior without coupl
 - [`InstallPluginScope`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-install-plugin-scope/index.html) — scope passed to `AckpineInstallPlugin.apply()`. Exposes the install session parameters that plugins may control and a `registerPlugin` method for transitive plugin registration.
 - [`UninstallPluginScope`](/api/ackpine-api/api-main/ru.solrudev.ackpine.plugability/-uninstall-plugin-scope/index.html) — scope passed to `AckpineUninstallPlugin.apply()`. Exposes the uninstall session parameters that plugins may control and a `registerPlugin` method for transitive plugin registration.
 - `InstallParameters.Builder` and `UninstallParameters.Builder` expose typed `registerPlugin(pluginClass, parameters)` methods to apply install or uninstall plugins to a session respectively.
+- [`InstallCapabilityProvider`](/api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) — optional interface for install plugins that want to expose plugin-specific capability information. Queried after the full plugin graph is resolved; result is accessible via `InstallerCapabilities.plugin()`.
+- [`UninstallCapabilityProvider`](/api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html) — optional interface for uninstall plugins that want to expose plugin-specific capability information. Queried after the full plugin graph is resolved; result is accessible via `UninstallerCapabilities.plugin()`.
 
 ### Build-time parameter modification
 
