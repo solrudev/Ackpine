@@ -43,7 +43,7 @@ import ru.solrudev.ackpine.impl.testutil.captureProgress
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.createAckpineFile
 import ru.solrudev.ackpine.impl.testutil.deleteAckpineFiles
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints.TimeoutStrategy
@@ -92,7 +92,7 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val writtenApk = packageInstaller.session.writes["0.apk"]
 		assertNotNull(writtenApk)
@@ -118,7 +118,7 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertContains(states, Session.State.Awaiting)
 		assertEquals(3, packageInstaller.session.writes.size)
@@ -148,9 +148,9 @@ class SessionBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		assertTrue(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		assertFalse(packageInstaller.session.commits.isEmpty())
 		val expectedUpdate = CommitAttemptsUpdate(sessionId.toString(), commitAttemptsCount = 1)
@@ -172,9 +172,9 @@ class SessionBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		assertTrue(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, packageInstaller.commitAfterConstraintsCalls.size)
 	}
@@ -192,7 +192,7 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.complete(Session.State.Failed(InstallFailure.Timeout("timeout")))
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Awaiting, states.last())
 	}
@@ -211,7 +211,7 @@ class SessionBasedInstallSessionTest {
 
 		val expectedFailure = InstallFailure.Timeout("timeout")
 		session.complete(Session.State.Failed(expectedFailure))
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -231,7 +231,7 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.complete(Session.State.Failed(InstallFailure.Timeout("timeout")))
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Awaiting, states.last())
 	}
@@ -250,7 +250,7 @@ class SessionBasedInstallSessionTest {
 
 		val expectedFailure = InstallFailure.Generic("fail")
 		session.complete(Session.State.Failed(expectedFailure))
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -271,7 +271,7 @@ class SessionBasedInstallSessionTest {
 
 		val expectedFailure = InstallFailure.Timeout("timeout")
 		session.complete(Session.State.Failed(expectedFailure))
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -292,7 +292,7 @@ class SessionBasedInstallSessionTest {
 
 		val expectedFailure = InstallFailure.Generic("some error")
 		session.complete(Session.State.Failed(expectedFailure))
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -312,7 +312,7 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.complete(Session.State.Succeeded)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Succeeded, states.last())
 	}
@@ -331,10 +331,10 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		packageInstaller.removeCreatedSessionId(1)
 		assertTrue(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		val state = assertIs<Session.State.Failed<InstallFailure>>(states.last())
 		assertIs<InstallFailure.Exceptional>(state.failure)
@@ -356,10 +356,10 @@ class SessionBasedInstallSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		packageInstaller.removeCreatedSessionId(1)
 		assertTrue(session.commit())
-		idleMainThread()
+		drainMainThread()
 
 		val state = assertIs<Session.State.Failed<InstallFailure>>(states.last())
 		assertIs<InstallFailure.Exceptional>(state.failure)
@@ -373,7 +373,7 @@ class SessionBasedInstallSessionTest {
 			initialState = Session.State.Active,
 			nativeSessionId = 123
 		)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, packageInstaller.registeredCallbacks.size)
 	}
@@ -391,7 +391,7 @@ class SessionBasedInstallSessionTest {
 		val callback = packageInstaller.registeredCallbacks.single()
 		callback.onProgressChanged(999, 0.6f) // wrong native session ID
 		callback.onProgressChanged(123, 0.5f)
-		idleMainThread()
+		drainMainThread()
 
 		val expectedProgressEvents = listOf(Progress(), Progress(50, 100))
 		assertEquals(expectedProgressEvents, progressEvents)
@@ -405,10 +405,10 @@ class SessionBasedInstallSessionTest {
 			initialState = Session.State.Active,
 			nativeSessionId = 123
 		)
-		idleMainThread()
+		drainMainThread()
 
 		session.cancel()
-		idleMainThread()
+		drainMainThread()
 
 		assertContains(packageInstaller.abandonedSessions, 123)
 		assertEquals(1, packageInstaller.unregisteredCallbacks.size)
@@ -423,7 +423,7 @@ class SessionBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val params = packageInstaller.createdSessions.single().params
 		assertEquals(SessionParams.MODE_FULL_INSTALL, params.mode)
@@ -438,7 +438,7 @@ class SessionBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val params = packageInstaller.createdSessions.single().params
 		assertEquals(SessionParams.MODE_INHERIT_EXISTING, params.mode)
@@ -452,7 +452,7 @@ class SessionBasedInstallSessionTest {
 		val session = createSessionBasedSession(packageInstaller = packageInstaller)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val params = packageInstaller.createdSessions.single().params
 		assertEquals(2000, ReflectionHelpers.getField(params, "originatingUid"))
@@ -473,7 +473,7 @@ class SessionBasedInstallSessionTest {
 
 		sessionTrue.launch()
 		sessionFalse.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val paramsTrue = packageInstaller.createdSessions[0].params
 		val paramsFalse = packageInstaller.createdSessions[1].params
@@ -491,7 +491,7 @@ class SessionBasedInstallSessionTest {
 			)
 			session.launch()
 		}
-		idleMainThread()
+		drainMainThread()
 
 		val expectedMapping = mapOf(
 			PackageSource.Unspecified to PackageInstaller.PACKAGE_SOURCE_UNSPECIFIED,
@@ -519,7 +519,7 @@ class SessionBasedInstallSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		val params = packageInstaller.createdSessions.single().params
 		assertTrue(params.installFlags and INSTALL_REQUEST_UPDATE_OWNERSHIP != 0)

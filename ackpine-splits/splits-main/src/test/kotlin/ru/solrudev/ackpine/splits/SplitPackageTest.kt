@@ -17,8 +17,10 @@
 package ru.solrudev.ackpine.splits
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -142,14 +144,16 @@ class SplitPackageTest {
 		val validated = source.validate()
 		val future = validated.toSplitPackage().getAsync()
 
-		withTimeout(2.seconds) {
-			firstEmit.await()
-			assertTrue(future.cancel(false))
-			resourceClosed.await()
+		withContext(Dispatchers.Default.limitedParallelism(1)) {
+			withTimeout(2.seconds) {
+				firstEmit.await()
+				assertTrue(future.cancel(false))
+				resourceClosed.await()
 
-			assertTrue(validated.isClosed)
-			assertTrue(source.isClosed)
-			assertTrue(future.isCancelled)
+				assertTrue(validated.isClosed)
+				assertTrue(source.isClosed)
+				assertTrue(future.isCancelled)
+			}
 		}
 	}
 

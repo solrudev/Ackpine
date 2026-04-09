@@ -23,9 +23,8 @@ import org.gradle.api.provider.Provider
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.setProperty
-import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
-import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import ru.solrudev.ackpine.gradle.testing.AckpineTestingOptions
+import ru.solrudev.ackpine.gradle.validation.InternalPackageFilter
 import javax.inject.Inject
 
 private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
@@ -33,9 +32,9 @@ private val PACKAGE_NAME_REGEX = Regex("^[a-z.]+$")
 /**
  * Extension for Ackpine `library` plugin.
  */
-public abstract class AckpineLibraryExtension @Inject constructor(
+public abstract class AckpineLibraryExtension @Inject internal constructor(
 	libraryExtension: LibraryExtension,
-	private val abiValidationExtension: Lazy<AbiValidationExtension?>,
+	private val internalPackageFilter: InternalPackageFilter,
 	objectFactory: ObjectFactory
 ) : AckpineCommonExtension(
 	libraryExtension,
@@ -54,14 +53,11 @@ public abstract class AckpineLibraryExtension @Inject constructor(
 	/**
 	 * Adds [packageNames] to ignored packages. They will not appear in resulting public API dumps and documentation.
 	 */
-	@OptIn(ExperimentalAbiValidation::class)
 	public fun internalPackages(vararg packageNames: String) {
 		for (packageName in packageNames) {
 			require(packageName.matches(PACKAGE_NAME_REGEX)) { "Illegal package name: $packageName" }
 		}
 		_internalPackages = packageNames.toSet()
-		abiValidationExtension.value?.run {
-			filters.exclude.byNames.addAll(packageNames.map { "$it.**" })
-		}
+		internalPackageFilter.addPackages(packageNames.asIterable())
 	}
 }

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package ru.solrudev.ackpine.installer.parameters
 
 import android.annotation.SuppressLint
@@ -24,10 +26,12 @@ import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
+import ru.solrudev.ackpine.plugability.InstallPluginScope
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -200,15 +204,24 @@ public class InstallParameters private constructor(
 		@SuppressLint("NewApi")
 		public constructor(baseApk: Uri) {
 			_apks = RealMutableApkList(baseApk)
+			pluginScope = InstallPluginScope.create()
 		}
 
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 		public constructor(apks: Iterable<Uri>) {
 			_apks = RealMutableApkList(apks)
+			pluginScope = InstallPluginScope.create()
 		}
 
-		private val _apks: MutableApkList
-		private val plugins = mutableMapOf<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>()
+		private constructor(apks: RealMutableApkList, scope: InstallPluginScope) {
+			_apks = apks
+			pluginScope = scope
+		}
+
+		private val _apks: RealMutableApkList
+
+		@get:JvmSynthetic
+		internal val pluginScope: InstallPluginScope
 
 		/**
 		 * List of APKs [URIs][Uri] to install in one session.
@@ -227,13 +240,10 @@ public class InstallParameters private constructor(
 		 * * When on API level >= 21 and [apks] contain more than one entry, [InstallerType.SESSION_BASED] is always
 		 * returned/set regardless of the current/provided value.
 		 */
-		public var installerType: InstallerType = InstallerType.DEFAULT
-			get() {
-				field = applyInstallerTypeInvariants(field)
-				return field
-			}
+		public var installerType: InstallerType
+			get() = pluginScope.normalizeInstallerType()
 			private set(value) {
-				field = applyInstallerTypeInvariants(value)
+				pluginScope.normalizeInstallerType(value)
 			}
 
 		/**
@@ -269,8 +279,11 @@ public class InstallParameters private constructor(
 		 *
 		 * @see [PackageInstaller.SessionParams.setRequireUserAction]
 		 */
-		public var requireUserAction: Boolean = true
-			private set
+		public var requireUserAction: Boolean
+			get() = pluginScope.requireUserAction
+			private set(value) {
+				pluginScope.requireUserAction = value
+			}
 
 		/**
 		 * Mode for an install session. Takes effect only when using [InstallerType.SESSION_BASED] installer.
@@ -290,8 +303,11 @@ public class InstallParameters private constructor(
 		 *
 		 * @see [PackageInstaller.Session.requestUserPreapproval]
 		 */
-		public var preapproval: InstallPreapproval = InstallPreapproval.NONE
-			private set
+		public var preapproval: InstallPreapproval
+			get() = pluginScope.preapproval
+			private set(value) {
+				pluginScope.preapproval = value
+			}
 
 		/**
 		 * Installation constraints.
@@ -303,8 +319,11 @@ public class InstallParameters private constructor(
 		 *
 		 * @see [PackageInstaller.InstallConstraints]
 		 */
-		public var constraints: InstallConstraints = InstallConstraints.NONE
-			private set
+		public var constraints: InstallConstraints
+			get() = pluginScope.constraints
+			private set(value) {
+				pluginScope.constraints = value
+			}
 
 		/**
 		 * Optionally indicate whether the package being installed needs the update ownership
@@ -318,8 +337,11 @@ public class InstallParameters private constructor(
 		 * Applying this option is best-effort. It takes effect only on API level >=
 		 * [34][Build.VERSION_CODES.UPSIDE_DOWN_CAKE] with [InstallerType.SESSION_BASED] installer type.
 		 */
-		public var requestUpdateOwnership: Boolean = false
-			private set
+		public var requestUpdateOwnership: Boolean
+			get() = pluginScope.requestUpdateOwnership
+			private set(value) {
+				pluginScope.requestUpdateOwnership = value
+			}
 
 		/**
 		 * Indicates the package source of the app being installed. This is informational and may be used as a signal
@@ -424,15 +446,53 @@ public class InstallParameters private constructor(
 			this.packageSource = packageSource
 		}
 
-		override fun <Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<out AckpinePlugin<Params>>,
+		/**
+		 * Registers a [plugin] for the install session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineInstallPlugin].
+		 * @param parameters parameters of the registered plugin for the session being configured.
+		 */
+		public fun <Params : AckpinePlugin.Parameters> registerPlugin(
+			plugin: Class<out AckpineInstallPlugin<Params>>,
 			parameters: Params
 		): Builder = apply {
-			plugins[plugin] = parameters
+			pluginScope.registerPlugin(plugin, parameters)
 		}
 
-		override fun usePlugin(plugin: Class<out AckpinePlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
-			plugins[plugin] = AckpinePlugin.Parameters.None
+		/**
+		 * Registers a [plugin] for the install session.
+		 * @param plugin Java class of a registered plugin, implementing [AckpineInstallPlugin].
+		 */
+		public fun registerPlugin(plugin: Class<out AckpineInstallPlugin<AckpinePlugin.Parameters.None>>): Builder = apply {
+			pluginScope.registerPlugin(plugin)
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun <Params : AckpinePlugin.Parameters> usePlugin(
+			plugin: Class<out AckpinePlugin>,
+			parameters: Params
+		): Builder = apply {
+			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an install plugin: ${plugin.name}")
+			}
+			pluginScope.registerPlugin(plugin as Class<AckpineInstallPlugin<Params>>, parameters)
+		}
+
+		@Deprecated(
+			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+			level = DeprecationLevel.WARNING
+		)
+		@Suppress("UNCHECKED_CAST")
+		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
+			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
+				error("Not an install plugin: ${plugin.name}")
+			}
+			pluginScope.registerPlugin(plugin as Class<AckpineInstallPlugin<AckpinePlugin.Parameters.None>>)
 		}
 
 		/**
@@ -440,33 +500,53 @@ public class InstallParameters private constructor(
 		 */
 		@SuppressLint("NewApi")
 		public fun build(): InstallParameters {
-			applyPlugins()
+			val snapshot = createSnapshot()
+			snapshot.applyPlugins()
 			return InstallParameters(
-				ReadOnlyApkList(apks),
-				installerType,
-				confirmation,
-				notificationData,
-				name,
-				requireUserAction,
-				installMode,
-				preapproval,
-				constraints,
-				requestUpdateOwnership,
-				packageSource,
-				AckpinePluginContainer.from(plugins)
+				ReadOnlyApkList(snapshot._apks),
+				snapshot.installerType,
+				snapshot.confirmation,
+				snapshot.notificationData,
+				snapshot.name,
+				snapshot.requireUserAction,
+				snapshot.installMode,
+				snapshot.preapproval,
+				snapshot.constraints,
+				snapshot.requestUpdateOwnership,
+				snapshot.packageSource,
+				AckpinePluginContainer.from(snapshot.pluginScope.getPlugins())
 			)
 		}
 
 		private fun applyPlugins() {
-			val appliedPlugins = mutableSetOf<Class<out AckpinePlugin<*>>>()
-			var pluginsToApply: List<Class<out AckpinePlugin<*>>>
+			val appliedPlugins = mutableSetOf<Class<out AckpineInstallPlugin<*>>>()
 			do {
-				pluginsToApply = plugins.keys.filterNot(appliedPlugins::contains)
+				pluginScope.normalizeInstallerType()
+				val pluginsToApply = pluginScope
+					.getPlugins()
+					.keys
+					.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {
 					AckpinePluginCache.get(pluginClass).apply(this)
+					pluginScope.normalizeInstallerType()
 					appliedPlugins += pluginClass
 				}
 			} while (pluginsToApply.isNotEmpty())
+		}
+
+		private fun createSnapshot() = Builder(_apks.copy(), pluginScope.copy())
+			.setName(name)
+			.setConfirmation(confirmation)
+			.setNotificationData(notificationData)
+			.setInstallMode(installMode)
+			.setPackageSource(packageSource)
+
+		private fun InstallPluginScope.normalizeInstallerType(
+			value: InstallerType = this.installerType
+		): InstallerType {
+			val installerType = applyInstallerTypeInvariants(value)
+			this.installerType = installerType
+			return installerType
 		}
 
 		private fun applyInstallerTypeInvariants(value: InstallerType) = when {
@@ -516,10 +596,14 @@ private class RealMutableApkList : MutableApkList {
 
 	override fun toList() = apks.toList()
 
+	@SuppressLint("NewApi")
+	fun copy() = RealMutableApkList(apks)
+
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
-		if (other !is RealMutableApkList) return false
-		return apks == other.apks
+		if (other !is ApkList) return false
+		if (other is RealMutableApkList) return apks == other.apks
+		return apks == other.toList()
 	}
 
 	override fun hashCode() = apks.hashCode()
@@ -532,7 +616,7 @@ private class RealMutableApkList : MutableApkList {
 	}
 }
 
-private class ReadOnlyApkList(private val apkList: ApkList) : ApkList by apkList {
+private class ReadOnlyApkList(val apkList: ApkList) : ApkList by apkList {
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true

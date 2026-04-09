@@ -26,7 +26,7 @@ internal typealias IdListener = (id: String) -> Unit
  * Common extension properties for Ackpine `library` and `sample` plugins.
  */
 public abstract class AckpineCommonExtension(
-	private val commonExtension: CommonExtension<*, *, *, *, *, *>,
+	private val commonExtension: CommonExtension,
 	private val packageName: String,
 
 	/**

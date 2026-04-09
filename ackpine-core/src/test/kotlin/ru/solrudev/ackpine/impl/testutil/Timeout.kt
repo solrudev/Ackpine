@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle
+package ru.solrudev.ackpine.impl.testutil
 
-import org.gradle.api.Named
-import org.gradle.api.attributes.Attribute
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.time.Duration
 
-internal interface AbiValidationAttribute : Named {
-	companion object {
-		val ABI_VALIDATION_UPDATE_ATTRIBUTE = Attribute.of(
-			"ru.solrudev.ackpine.gradle.abi-validation.update",
-			AbiValidationAttribute::class.java
-		)
-		val ABI_VALIDATION_CHECK_ATTRIBUTE = Attribute.of(
-			"ru.solrudev.ackpine.gradle.abi-validation.check",
-			AbiValidationAttribute::class.java
-		)
+suspend fun <R> withRealtimeTimeoutOrNull(timeout: Duration, block: suspend CoroutineScope.() -> R): R? {
+	return withContext(Dispatchers.Default.limitedParallelism(1)) {
+		withTimeoutOrNull(timeout, block)
 	}
 }

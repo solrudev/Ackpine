@@ -21,6 +21,7 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -115,6 +116,37 @@ class TestSessionScriptTest {
 
 		assertTrue(copy.nextLaunchStates().isEmpty())
 		assertEquals(Session.State.Cancelled, copy.cancelState)
+	}
+
+	@Test
+	fun equalScriptsAreEqual() {
+		val failure = UninstallFailure.Aborted("")
+		val first = TestSessionScript.empty<UninstallFailure>()
+			.onLaunch(Session.State.Active, Session.State.Awaiting)
+			.onCommit(Session.State.Failed(failure))
+			.onCancel(Session.State.Cancelled)
+		val second = TestSessionScript.empty<UninstallFailure>()
+			.onCancel(Session.State.Cancelled)
+			.onCommit(Session.State.Failed(failure))
+			.onLaunch(Session.State.Active, Session.State.Awaiting)
+		assertEquals(first, second)
+		assertEquals(first, first) // same instance
+	}
+
+	@Test
+	fun differentScriptsAreNotEqual() {
+		assertNotEquals(
+			TestSessionScript.empty<Failure>().onLaunch(Session.State.Active),
+			TestSessionScript.empty<Failure>().onLaunch(Session.State.Awaiting)
+		)
+		assertNotEquals(
+			TestSessionScript.empty<Failure>().onCommit(Session.State.Succeeded),
+			TestSessionScript.empty<Failure>().onCommit(Session.State.Committed)
+		)
+		assertNotEquals(
+			TestSessionScript.empty<Failure>().onCancel(Session.State.Cancelled),
+			TestSessionScript.empty<Failure>().onCancel(null)
+		)
 	}
 
 	@Test

@@ -17,16 +17,16 @@
 package ru.solrudev.ackpine.plugability
 
 /**
- * A container of [AckpinePlugins][AckpinePlugin] applied to a session.
+ * A container of [AckpinePlugins][AckpinePlugin] registered for a session.
  */
 public class AckpinePluginContainer private constructor(
-	private val pluginsMap: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
+	private val pluginsMap: Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters>
 ) {
 
 	/**
 	 * Returns a new copy of plugin entries saved inside of this container.
 	 */
-	public fun getPlugins(): Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters> {
+	public fun getPlugins(): Map<Class<out AckpinePlugin>, AckpinePlugin.Parameters> {
 		return pluginsMap.toMap()
 	}
 
@@ -43,7 +43,7 @@ public class AckpinePluginContainer private constructor(
 
 		@JvmSynthetic
 		internal fun from(
-			plugins: Map<Class<out AckpinePlugin<*>>, AckpinePlugin.Parameters>
+			plugins: Map<out Class<out AckpinePlugin>, AckpinePlugin.Parameters>
 		) = AckpinePluginContainer(plugins.filterNot { it.key.name == AckpinePlugin::class.java.name })
 	}
 }

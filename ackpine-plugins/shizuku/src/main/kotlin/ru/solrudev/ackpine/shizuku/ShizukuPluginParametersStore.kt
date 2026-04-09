@@ -27,44 +27,65 @@ import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuPluginParametersStore(
-	private val shizukuParamsDao: ShizukuParamsDao
+	private val shizukuParamsDao: ShizukuParamsDao,
+	private val shizukuUninstallParamsDao: ShizukuUninstallParamsDao
 ) : PluginParametersStore {
 
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
-		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
-			?: return AckpinePlugin.Parameters.None
-		return ShizukuPlugin.Parameters.Builder()
-			.setBypassLowTargetSdkBlock(shizukuParams.bypassLowTargetSdkBlock)
-			.setAllowTest(shizukuParams.allowTest)
-			.setReplaceExisting(shizukuParams.replaceExisting)
-			.setRequestDowngrade(shizukuParams.requestDowngrade)
-			.setGrantAllRequestedPermissions(shizukuParams.grantAllRequestedPermissions)
-			.setAllUsers(shizukuParams.allUsers)
-			.setInstallerPackageName(shizukuParams.installerPackageName)
-			.build()
+		val id = sessionId.toString()
+		shizukuParamsDao.getBySessionId(id)?.let { shizukuParams ->
+			return ShizukuPlugin.InstallParameters.Builder()
+				.setBypassLowTargetSdkBlock(shizukuParams.bypassLowTargetSdkBlock)
+				.setAllowTest(shizukuParams.allowTest)
+				.setReplaceExisting(shizukuParams.replaceExisting)
+				.setRequestDowngrade(shizukuParams.requestDowngrade)
+				.setGrantAllRequestedPermissions(shizukuParams.grantAllRequestedPermissions)
+				.setAllUsers(shizukuParams.allUsers)
+				.setInstallerPackageName(shizukuParams.installerPackageName)
+				.build()
+		}
+		shizukuUninstallParamsDao.getBySessionId(id)?.let { shizukuParams ->
+			return ShizukuPlugin.UninstallParameters.Builder()
+				.setKeepData(shizukuParams.keepData)
+				.setAllUsers(shizukuParams.allUsers)
+				.build()
+		}
+		return AckpinePlugin.Parameters.None
 	}
 
 	override fun setForSession(
 		sessionId: UUID,
 		params: AckpinePlugin.Parameters
-	) {
-		if (params !is ShizukuPlugin.Parameters) {
-			return
+	) = when (params) {
+		is ShizukuPlugin.InstallParameters -> {
+			val shizukuParams = ShizukuParametersEntity(
+				sessionId = sessionId.toString(),
+				bypassLowTargetSdkBlock = params.bypassLowTargetSdkBlock,
+				allowTest = params.allowTest,
+				replaceExisting = params.replaceExisting,
+				requestDowngrade = params.requestDowngrade,
+				grantAllRequestedPermissions = params.grantAllRequestedPermissions,
+				allUsers = params.allUsers,
+				installerPackageName = params.installerPackageName
+			)
+			shizukuParamsDao.insertParameters(shizukuParams)
 		}
-		val shizukuParams = ShizukuParametersEntity(
-			sessionId = sessionId.toString(),
-			bypassLowTargetSdkBlock = params.bypassLowTargetSdkBlock,
-			allowTest = params.allowTest,
-			replaceExisting = params.replaceExisting,
-			requestDowngrade = params.requestDowngrade,
-			grantAllRequestedPermissions = params.grantAllRequestedPermissions,
-			allUsers = params.allUsers,
-			installerPackageName = params.installerPackageName
-		)
-		shizukuParamsDao.insertParameters(shizukuParams)
+
+		is ShizukuPlugin.UninstallParameters -> {
+			val shizukuParams = ShizukuUninstallParametersEntity(
+				sessionId = sessionId.toString(),
+				keepData = params.keepData,
+				allUsers = params.allUsers
+			)
+			shizukuUninstallParamsDao.insertParameters(shizukuParams)
+		}
+
+		else -> { // ignore
+		}
 	}
 }
 
+@Suppress("DEPRECATION")
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuUninstallPluginParametersStore(
 	private val shizukuParamsDao: ShizukuUninstallParamsDao

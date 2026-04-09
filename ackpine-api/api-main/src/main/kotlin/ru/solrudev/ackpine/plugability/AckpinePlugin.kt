@@ -21,9 +21,11 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
+ *
+ * New plugins should implement [AckpineInstallPlugin] and/or [AckpineUninstallPlugin] instead of overriding the
+ * [apply] methods on this interface directly.
  */
-@Suppress("Unused")
-public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
+public interface AckpinePlugin {
 
 	/**
 	 * Unique ID of the plugin.
@@ -33,22 +35,30 @@ public interface AckpinePlugin<Params : AckpinePlugin.Parameters> {
 	/**
 	 * Applies some settings to install parameters to accommodate the plugin's functionality.
 	 */
+	@Deprecated(
+		message = "Implement AckpineInstallPlugin instead. This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
 	public fun apply(builder: InstallParameters.Builder) { // no-op by default
 	}
 
 	/**
 	 * Applies some settings to uninstall parameters to accommodate the plugin's functionality.
 	 */
+	@Deprecated(
+		message = "Implement AckpineUninstallPlugin instead. This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
 	public fun apply(builder: UninstallParameters.Builder) { // no-op by default
 	}
 
 	/**
-	 * A set of parameters for [AckpinePlugin].
+	 * A set of parameters for an Ackpine plugin.
 	 */
 	public interface Parameters {
 
 		/**
-		 * Empty [AckpinePlugin] parameters for plugins without configuration.
+		 * Empty plugin parameters for plugins without configuration.
 		 */
 		public data object None : Parameters
 	}

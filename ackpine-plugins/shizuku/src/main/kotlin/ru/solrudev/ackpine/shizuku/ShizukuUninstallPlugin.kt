@@ -18,9 +18,11 @@ package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
-import ru.solrudev.ackpine.installer.parameters.InstallParameters
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
+import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
+import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
 
@@ -35,22 +37,28 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
  * **Note:** Shizuku permission and binder lifecycle are not managed by this Ackpine plugin. You must handle these in
  * your app to successfully use Shizuku.
  */
-public class ShizukuUninstallPlugin private constructor() : AckpinePlugin<ShizukuUninstallPlugin.Parameters> {
+@Deprecated(
+	message = "Use ShizukuPlugin for both install and uninstall sessions. " +
+			"This will become an error in the next minor version.",
+	replaceWith = ReplaceWith("ShizukuPlugin", "ru.solrudev.ackpine.shizuku.ShizukuPlugin")
+)
+@Suppress("DEPRECATION")
+public class ShizukuUninstallPlugin private constructor() :
+	AckpinePlugin,
+	AckpineUninstallPlugin<ShizukuUninstallPlugin.Parameters>,
+	UninstallCapabilityProvider<ShizukuUninstallCapabilities> {
 
 	override val id: String = PLUGIN_ID
 
-	override fun apply(builder: InstallParameters.Builder) {
-		error(
-			"ShizukuUninstallPlugin must be applied to uninstall sessions only. " +
-					"Use ShizukuPlugin for install sessions."
-		)
-	}
-
-	override fun apply(builder: UninstallParameters.Builder) {
+	override fun apply(scope: UninstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		builder.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
+		scope.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
+	}
+
+	override fun getCapabilities(context: UninstallCapabilityContext): ShizukuUninstallCapabilities {
+		return getUninstallCapabilities(context.uninstallerType, context.sdkInt)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuUninstallPlugin
@@ -60,76 +68,35 @@ public class ShizukuUninstallPlugin private constructor() : AckpinePlugin<Shizuk
 	/**
 	 * Parameters for [ShizukuUninstallPlugin]. Take effect only on Android 8.1+.
 	 */
+	@Deprecated(
+		message = "Use ShizukuPlugin.UninstallParameters instead. This will become an error in the next minor version.",
+		replaceWith = ReplaceWith(
+			"ShizukuPlugin.UninstallParameters",
+			"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
+		)
+	)
 	public class Parameters private constructor(
-
-		/**
-		 * Flag parameter to indicate that you don't want to delete the package's data directory.
-		 */
-		public val keepData: Boolean,
-
-		/**
-		 * Flag parameter to indicate that you want the package deleted for all users.
-		 */
-		public val allUsers: Boolean
-	) : AckpinePlugin.Parameters {
-
-		override fun equals(other: Any?): Boolean {
-			if (this === other) return true
-			if (javaClass != other?.javaClass) return false
-			other as Parameters
-			if (keepData != other.keepData) return false
-			if (allUsers != other.allUsers) return false
-			return true
-		}
-
-		override fun hashCode(): Int {
-			var result = keepData.hashCode()
-			result = 31 * result + allUsers.hashCode()
-			return result
-		}
-
-		override fun toString(): String {
-			return "Parameters(" +
-					"keepData=$keepData, " +
-					"allUsers=$allUsers" +
-					")"
-		}
+		keepData: Boolean,
+		allUsers: Boolean
+	) : ShizukuPlugin.UninstallParameters(keepData, allUsers) {
 
 		/**
 		 * Builder for [ShizukuUninstallPlugin.Parameters].
 		 */
-		public class Builder {
-
-			/**
-			 * Flag parameter to indicate that you don't want to delete the package's data directory.
-			 */
-			public var keepData: Boolean = false
-				private set
-
-			/**
-			 * Flag parameter to indicate that you want the package deleted for all users.
-			 */
-			public var allUsers: Boolean = false
-				private set
-
-			/**
-			 * Sets [ShizukuUninstallPlugin.Parameters.keepData].
-			 */
-			public fun setKeepData(value: Boolean): Builder = apply {
-				keepData = value
-			}
-
-			/**
-			 * Sets [ShizukuUninstallPlugin.Parameters.allUsers].
-			 */
-			public fun setAllUsers(value: Boolean): Builder = apply {
-				allUsers = value
-			}
+		@Deprecated(
+			message = "Use ShizukuPlugin.UninstallParameters.Builder instead. " +
+					"This will become an error in the next minor version.",
+			replaceWith = ReplaceWith(
+				"ShizukuPlugin.UninstallParameters.Builder",
+				"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
+			)
+		)
+		public class Builder : ShizukuPlugin.UninstallParameters.Builder() {
 
 			/**
 			 * Constructs a new instance of [ShizukuUninstallPlugin.Parameters].
 			 */
-			public fun build(): Parameters = Parameters(
+			override fun build(): Parameters = Parameters(
 				keepData,
 				allUsers
 			)
@@ -142,6 +109,14 @@ public class ShizukuUninstallPlugin private constructor() : AckpinePlugin<Shizuk
 			 *
 			 * All parameters are `false` by default.
 			 */
+			@Deprecated(
+				message = "Use ShizukuPlugin.UninstallParameters.DEFAULT instead. " +
+						"This will become an error in the next minor version.",
+				replaceWith = ReplaceWith(
+					"ShizukuPlugin.UninstallParameters.DEFAULT",
+					"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
+				)
+			)
 			@JvmField
 			public val DEFAULT: Parameters = Parameters(
 				keepData = false,

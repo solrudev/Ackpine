@@ -22,6 +22,12 @@ import kotlin.reflect.KClass
 /**
  * DSL allowing to apply [plugins][AckpinePlugin].
  */
+@Deprecated(
+	message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+			"This will become an error in the next minor version. " +
+			"Using methods of this interface with untyped plugins (implementing AckpinePlugin directly) will throw.",
+	level = DeprecationLevel.WARNING
+)
 public interface AckpinePluginRegistryDsl {
 
 	/**
@@ -29,8 +35,14 @@ public interface AckpinePluginRegistryDsl {
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 * @param parameters parameters of the applied plugin for the session being configured.
 	 */
+	@Deprecated(
+		message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+				"This will become an error in the next minor version. " +
+				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+		level = DeprecationLevel.WARNING
+	)
 	public fun <Params : Parameters> usePlugin(
-		plugin: KClass<out AckpinePlugin<Params>>,
+		plugin: KClass<out AckpinePlugin>,
 		parameters: Params
 	)
 
@@ -38,12 +50,25 @@ public interface AckpinePluginRegistryDsl {
 	 * Applies a [plugin] to a session.
 	 * @param plugin Kotlin class of an applied plugin, implementing [AckpinePlugin].
 	 */
-	public fun usePlugin(plugin: KClass<out AckpinePlugin<Parameters.None>>)
+	@Deprecated(
+		message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+				"This will become an error in the next minor version. " +
+				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+		level = DeprecationLevel.WARNING
+	)
+	public fun usePlugin(plugin: KClass<out AckpinePlugin>)
 }
 
 /**
  * Applies a plugin to a session. [Plugin] is the type of the plugin being applied.
  */
-public inline fun <reified Plugin : AckpinePlugin<Parameters.None>> AckpinePluginRegistryDsl.usePlugin() {
+@Deprecated(
+	message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+			"This will become an error in the next minor version. " +
+			"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
+	level = DeprecationLevel.WARNING
+)
+@Suppress("DEPRECATION")
+public inline fun <reified Plugin : AckpinePlugin> AckpinePluginRegistryDsl.usePlugin() {
 	usePlugin(Plugin::class)
 }

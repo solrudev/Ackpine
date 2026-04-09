@@ -36,6 +36,7 @@ class ShadowBlockingParcelFileDescriptor : ShadowParcelFileDescriptor() {
 	@RealObject
 	private lateinit var realPfd: ParcelFileDescriptor
 
+	var isInvalid = false
 	private var pipe: Pipe = Pipe.None
 
 	companion object {
@@ -56,6 +57,15 @@ class ShadowBlockingParcelFileDescriptor : ShadowParcelFileDescriptor() {
 		@Implementation(methodName = "createReliablePipe")
 		@JvmStatic
 		fun blockingCreateReliablePipe() = blockingCreatePipe()
+
+	}
+
+	@Implementation(methodName = "getFd")
+	override fun getFd(): Int {
+		if (isInvalid) {
+			return -1
+		}
+		return super.getFd()
 	}
 
 	@Implementation(methodName = "getFileDescriptor")

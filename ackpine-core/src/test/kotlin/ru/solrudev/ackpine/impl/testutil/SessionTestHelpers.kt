@@ -25,13 +25,13 @@ import ru.solrudev.ackpine.session.Session
 internal fun <F : Failure> Session<F>.captureStates(): List<Session.State<F>> {
 	val states = mutableListOf<Session.State<F>>()
 	addStateListener(DisposableSubscriptionContainer()) { _, state -> states += state }
-	idleMainThread()
+	drainMainThread()
 	return states
 }
 
 internal fun <F : Failure> ProgressSession<F>.captureProgress(): List<Progress> {
 	val progress = mutableListOf<Progress>()
 	addProgressListener(DisposableSubscriptionContainer()) { _, p -> progress += p }
-	idleMainThread()
+	drainMainThread()
 	return progress
 }

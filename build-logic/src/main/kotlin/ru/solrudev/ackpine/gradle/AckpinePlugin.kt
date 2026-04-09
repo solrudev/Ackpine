@@ -26,13 +26,13 @@ import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.language.base.plugins.LifecycleBasePlugin
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE
 import ru.solrudev.ackpine.gradle.helpers.resolvableAppArtifacts
 import ru.solrudev.ackpine.gradle.helpers.resolvableLibraryArtifacts
 import ru.solrudev.ackpine.gradle.tasks.ReleaseChangelogTask
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpinePlugin : Plugin<Project> {
@@ -53,7 +53,7 @@ public class AckpinePlugin : Plugin<Project> {
 
 	private fun Project.registerBuildAckpineTask(library: Provider<out Configuration>) {
 		val libraryArtifacts = configurations.resolvableLibraryArtifacts("ackpineLibraryArtifacts") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 		}
 		tasks.register("buildAckpine") {
 			group = LifecycleBasePlugin.BUILD_GROUP
@@ -64,13 +64,13 @@ public class AckpinePlugin : Plugin<Project> {
 
 	private fun Project.registerAbiValidationTasks(library: Provider<out Configuration>) {
 		val abiValidationUpdate = configurations.resolvable("abiValidationUpdate") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 			attributes {
 				attribute(ABI_VALIDATION_UPDATE_ATTRIBUTE, objects.named(ABI_UPDATE))
 			}
 		}
 		val abiValidationCheck = configurations.resolvable("abiValidationCheck") {
-			extendsFrom(library.get())
+			extendsFrom(library)
 			attributes {
 				attribute(ABI_VALIDATION_CHECK_ATTRIBUTE, objects.named(ABI_CHECK))
 			}
@@ -91,7 +91,7 @@ public class AckpinePlugin : Plugin<Project> {
 		val releaseDir = layout.projectDirectory.dir("release")
 		val sample = configurations.dependencyScope("sample")
 		val sampleArtifacts = configurations.resolvableAppArtifacts("ackpineSampleArtifacts") {
-			extendsFrom(sample.get())
+			extendsFrom(sample)
 		}
 		return tasks.register<Sync>("buildSamples") {
 			group = LifecycleBasePlugin.BUILD_GROUP

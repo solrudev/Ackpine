@@ -91,10 +91,10 @@ To apply the plugin to an install session, just add this to your install paramet
     ```kotlin
     val session = packageInstaller.createSession(uri) {
         // ...some session configuration...
-        useShizuku()
+        shizuku()
     
         // Or, if you want to configure some parameters for the plugin
-        useShizuku {
+        shizuku {
             bypassLowTargetSdkBlock = true
             allowTest = true
             replaceExisting = true
@@ -111,11 +111,11 @@ To apply the plugin to an install session, just add this to your install paramet
     ```java
     var parameters = new InstallParameters.Builder(uri)
             // ...some session configuration...
-            .usePlugin(ShizukuPlugin.class, ShizukuPlugin.Parameters.DEFAULT)
+            .registerPlugin(ShizukuPlugin.class, ShizukuPlugin.InstallParameters.DEFAULT)
             .build();
     
     // Or, if you want to configure some parameters for the plugin
-    var shizukuParameters = new ShizukuPlugin.Parameters.Builder()
+    var shizukuParameters = new ShizukuPlugin.InstallParameters.Builder()
             .setBypassLowTargetSdkBlock(true)
             .setAllowTest(true)
             .setReplaceExisting(true)
@@ -125,7 +125,7 @@ To apply the plugin to an install session, just add this to your install paramet
             .setInstallerPackageName("com.android.vending")
             .build();
     var parameters = new InstallParameters.Builder(uri)
-            .usePlugin(ShizukuPlugin.class, shizukuParameters)
+            .registerPlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
     ```
 
@@ -136,10 +136,10 @@ Also, you can use Shizuku for uninstall sessions:
     ```kotlin
     val session = packageUninstaller.createSession(packageName) {
         // ...some session configuration...
-        useShizuku()
+        shizuku()
     
         // Or, if you want to configure some parameters for the plugin
-        useShizuku {
+        shizuku {
             keepData = true
             allUsers = true
         }
@@ -151,21 +151,21 @@ Also, you can use Shizuku for uninstall sessions:
     ```java
     var parameters = new UninstallParameters.Builder(packageName)
             // ...some session configuration...
-            .usePlugin(ShizukuUninstallPlugin.class, ShizukuUninstallPlugin.Parameters.DEFAULT)
+            .registerPlugin(ShizukuPlugin.class, ShizukuPlugin.UninstallParameters.DEFAULT)
             .build();
     
     // Or, if you want to configure some parameters for the plugin
-    var shizukuParameters = new ShizukuUninstallPlugin.Parameters.Builder()
+    var shizukuParameters = new ShizukuPlugin.UninstallParameters.Builder()
             .setKeepData(true)
             .setAllUsers(true)
             .build();
     var parameters = new UninstallParameters.Builder(packageName)
-            .usePlugin(ShizukuUninstallPlugin.class, shizukuParameters)
+            .registerPlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
     ```
 
 !!! Note
-    Shizuku versions below 11 are not supported, and with these versions installations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer (if was set).
+    Shizuku versions below 11 are not supported, and with these versions operations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer/uninstaller (if was set).
 
 If Shizuku service is not running, or if Shizuku permission is not granted for your app, session will fail.
 
@@ -215,3 +215,55 @@ Flag parameter to indicate that you don't want to delete the package's data dire
 #### `allUsers`
 
 Flag parameter to indicate that you want the package deleted for all users.
+
+Capabilities
+------------
+
+`ShizukuPlugin` implements [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) and [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html), so you can query whether individual Shizuku install/uninstall parameters are supported for a given configuration via `getCapabilities()`. See [Querying capabilities](configuration.md#querying-capabilities) for an overview of the capabilities API.
+
+Each field in [`ShizukuInstallCapabilities`](../api/ackpine-shizuku/ru.solrudev.ackpine.shizuku/-shizuku-install-capabilities/index.html) mirrors the corresponding `ShizukuPlugin.InstallParameters` flag and reports whether it is supported for the resolved configuration. Similarly, [`ShizukuUninstallCapabilities`](../api/ackpine-shizuku/ru.solrudev.ackpine.shizuku/-shizuku-uninstall-capabilities/index.html) mirrors `ShizukuPlugin.UninstallParameters`.
+
+!!! Note
+    Shizuku capability support is determined from Android API level and the effective installer/uninstaller type. Whether Shizuku version is >= 11 and whether it is available for usage by the app at runtime is not taken into account.
+
+=== "Kotlin"
+
+    ```kotlin
+    val capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED, ShizukuPlugin::class)
+    val shizukuCaps = capabilities.plugin(ShizukuPlugin::class) ?: return
+    if (shizukuCaps.bypassLowTargetSdkBlock.isSupported) {
+        // bypassLowTargetSdkBlock is effective on this device
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var capabilities = PackageInstaller.getCapabilities(InstallerType.SESSION_BASED, ShizukuPlugin.class);
+    var shizukuCaps = capabilities.plugin(ShizukuPlugin.class);
+    if (shizukuCaps != null && shizukuCaps.getBypassLowTargetSdkBlock().isSupported()) {
+        // bypassLowTargetSdkBlock is effective on this device
+    }
+    ```
+
+For uninstall:
+
+=== "Kotlin"
+
+    ```kotlin
+    val capabilities = PackageUninstaller.getCapabilities(UninstallerType.PACKAGE_INSTALLER_BASED, ShizukuPlugin::class)
+    val shizukuCaps = capabilities.plugin(ShizukuPlugin::class) ?: return
+    if (shizukuCaps.keepData.isSupported) {
+        // keepData is effective on this device
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var capabilities = PackageUninstaller.getCapabilities(UninstallerType.PACKAGE_INSTALLER_BASED, ShizukuPlugin.class);
+    var shizukuCaps = capabilities.plugin(ShizukuPlugin.class);
+    if (shizukuCaps != null && shizukuCaps.getKeepData().isSupported()) {
+        // keepData is effective on this device
+    }
+    ```

@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("DEPRECATION")
+
 package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
@@ -22,6 +24,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin.Parameters
 import ru.solrudev.ackpine.plugability.AckpinePluginRegistryDsl
@@ -130,6 +133,22 @@ public interface InstallParametersDsl : ConfirmationDsl, AckpinePluginRegistryDs
 	 * Default value is [PackageSource.Unspecified].
 	 */
 	public var packageSource: PackageSource
+
+	/**
+	 * Registers a [plugin] for the install session.
+	 * @param plugin Kotlin class of a registered plugin, implementing [AckpineInstallPlugin].
+	 * @param parameters parameters of the registered plugin for the session being configured.
+	 */
+	public fun <Params : Parameters> plugin(
+		plugin: KClass<out AckpineInstallPlugin<Params>>,
+		parameters: Params
+	)
+
+	/**
+	 * Registers a [plugin] for the install session.
+	 * @param plugin Kotlin class of a registered plugin, implementing [AckpineInstallPlugin].
+	 */
+	public fun plugin(plugin: KClass<out AckpineInstallPlugin<Parameters.None>>)
 }
 
 @PublishedApi
@@ -210,14 +229,35 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 			builder.setPackageSource(value)
 		}
 
+	override fun <Params : Parameters> plugin(
+		plugin: KClass<out AckpineInstallPlugin<Params>>,
+		parameters: Params
+	) {
+		builder.registerPlugin(plugin.java, parameters)
+	}
+
+	override fun plugin(plugin: KClass<out AckpineInstallPlugin<Parameters.None>>) {
+		builder.registerPlugin(plugin.java)
+	}
+
+	@Deprecated(
+		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+				"This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
 	override fun <Params : Parameters> usePlugin(
-		plugin: KClass<out AckpinePlugin<Params>>,
+		plugin: KClass<out AckpinePlugin>,
 		parameters: Params
 	) {
 		builder.usePlugin(plugin.java, parameters)
 	}
 
-	override fun usePlugin(plugin: KClass<out AckpinePlugin<Parameters.None>>) {
+	@Deprecated(
+		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
+				"This will become an error in the next minor version.",
+		level = DeprecationLevel.WARNING
+	)
+	override fun usePlugin(plugin: KClass<out AckpinePlugin>) {
 		builder.usePlugin(plugin.java)
 	}
 
@@ -330,4 +370,11 @@ public fun InstallParametersDsl.preapproval(
 	icon: Uri
 ) {
 	preapproval = InstallPreapproval(packageName, label, locale, icon)
+}
+
+/**
+ * Registers a plugin for the install session. [Plugin] is the type of the plugin being registered.
+ */
+public inline fun <reified Plugin : AckpineInstallPlugin<Parameters.None>> InstallParametersDsl.plugin() {
+	plugin(Plugin::class)
 }

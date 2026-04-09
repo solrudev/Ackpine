@@ -17,11 +17,18 @@
 package ru.solrudev.ackpine.shizuku
 
 /**
- * Constructs a new instance of [ShizukuPlugin.Parameters].
+ * Constructs a new instance of [ShizukuPlugin.InstallParameters].
  */
-@Suppress("FunctionName")
+@Deprecated(
+	message = "Renamed to ShizukuInstallParameters. This will become an error in the next minor version.",
+	replaceWith = ReplaceWith(
+		"ShizukuInstallParameters(configure)",
+		imports = ["ru.solrudev.ackpine.shizuku.ShizukuInstallParameters"]
+	)
+)
+@Suppress("FunctionName", "DEPRECATION")
 public inline fun ShizukuPluginParameters(
 	configure: ShizukuPluginParametersDsl.() -> Unit = {}
-): ShizukuPlugin.Parameters {
+): ShizukuPlugin.InstallParameters {
 	return ShizukuPluginParametersDslBuilder().apply(configure).build()
 }

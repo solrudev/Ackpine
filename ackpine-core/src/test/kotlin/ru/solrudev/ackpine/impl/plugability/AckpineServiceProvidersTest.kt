@@ -220,8 +220,8 @@ class AckpineServiceProvidersTest {
 		val params1 = PluginOneParams(value = "p1")
 		val params2 = PluginTwoParams(value = "p2")
 		val installParameters = InstallParameters(Uri.EMPTY) {
-			usePlugin(PluginOne::class, params1)
-			usePlugin(PluginTwo::class, params2)
+			plugin(PluginOne::class, params1)
+			plugin(PluginTwo::class, params2)
 		}
 
 		providers.persistPluginParameters(sessionId, installParameters.pluginContainer)

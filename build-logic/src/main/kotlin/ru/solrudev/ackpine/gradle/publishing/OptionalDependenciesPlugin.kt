@@ -50,7 +50,7 @@ public class OptionalDependenciesPlugin : Plugin<Project> {
 		configurations
 			.named { it == "compileOnly" }
 			.configureEach {
-				extendsFrom(optional.get())
+				extendsFrom(optional)
 			}
 		return optional.map { optionalConfiguration ->
 			optionalConfiguration.dependencies.map { dependency ->

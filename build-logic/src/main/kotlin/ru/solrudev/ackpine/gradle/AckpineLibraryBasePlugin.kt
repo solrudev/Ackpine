@@ -29,17 +29,15 @@ import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.the
-import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
-import ru.solrudev.ackpine.gradle.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
-import ru.solrudev.ackpine.gradle.helpers.abiValidation
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
 import ru.solrudev.ackpine.gradle.helpers.libraryElements
 import ru.solrudev.ackpine.gradle.helpers.withReleaseBuildType
 import ru.solrudev.ackpine.gradle.testing.configureTests
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_CHECK_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.validation.AbiValidationAttribute.Companion.ABI_VALIDATION_UPDATE_ATTRIBUTE
+import ru.solrudev.ackpine.gradle.validation.InternalPackageFilter
 import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 
 public class AckpineLibraryBasePlugin : Plugin<Project> {
@@ -47,17 +45,14 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	override fun apply(target: Project): Unit = target.run {
 		group = Constants.PACKAGE_NAME
 		version = ackpineVersion.get().toString()
-		pluginManager.run {
-			apply(LibraryPlugin::class)
-		}
+		pluginManager.apply(LibraryPlugin::class)
 		configureJava()
 		val libraryExtension = the<LibraryExtension>()
-		val abiValidationExtension = lazy { extensions.findByType<KotlinBaseExtension>()?.abiValidation }
 		val extension = extensions.create(
 			"ackpine",
 			AckpineLibraryExtension::class.java,
 			libraryExtension,
-			abiValidationExtension
+			InternalPackageFilter.create(this)
 		)
 		extension.testing.enableHostTests.convention(false)
 		extension.testing.enableDeviceTests.convention(false)
@@ -72,6 +67,8 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 	}
 
 	private fun Project.configureAndroid() = extensions.configure<LibraryExtension> {
+		enableKotlin = false
+
 		defaultConfig {
 			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 			consumerProguardFiles("consumer-rules.pro")

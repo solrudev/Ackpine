@@ -1,6 +1,6 @@
 [versions]
-android-plugin = "8.13.2"
-dokka = "2.1.0"
+android-plugin = "9.1.0"
+dokka = "2.2.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
 jacoco = "0.8.14"
@@ -15,8 +15,10 @@ shizuku = "13.1.5"
 plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-android-settings = { module = "com.android.tools.build:gradle-settings", version.ref = "android-plugin" }
+plugin-bcv = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.18.1" }
 plugin-dokka = { module = "org.jetbrains.dokka:dokka-gradle-plugin", version.ref = "dokka" }
 plugin-kotlin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+plugin-kotlinApi = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin-api", version.ref = "kotlin" }
 plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle.toolchains.foojay-resolver-convention.gradle.plugin:1.0.0"
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
@@ -29,7 +31,7 @@ hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", ver
 hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 junit4 = "junit:junit:4.13.2"
-kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.3.2"

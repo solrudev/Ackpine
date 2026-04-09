@@ -65,6 +65,7 @@ public class DokkaConventionPlugin : Plugin<Project> {
 			footerMessage = "© Ilya Fomichev"
 		}
 		dokkaSourceSets.configureEach {
+			suppress = name != "release"
 			externalDocumentationLinks.register("kotlinx.coroutines") {
 				url = URI("https://kotlinlang.org/api/kotlinx.coroutines/")
 			}

@@ -38,7 +38,7 @@ public class ManagedDevicesConventionPlugin : Plugin<Project> {
 		}
 	}
 
-	private fun CommonExtension<*, *, *, *, *, *>.registerManagedDevices() {
+	private fun CommonExtension.registerManagedDevices() {
 		testOptions.managedDevices {
 			localDevices.register("api27") {
 				device = "Pixel 2"

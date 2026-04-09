@@ -19,12 +19,31 @@ package ru.solrudev.ackpine.shizuku
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
 
 /**
- * Applies [ShizukuUninstallPlugin] to the session.
+ * Applies [ShizukuPlugin] to the session.
  *
  * The plugin's parameters take effect only on Android 8.1+.
  */
+@Deprecated(
+	"Renamed to shizuku(). This will become an error in the next minor version.",
+	replaceWith = ReplaceWith(
+		"shizuku(configure)",
+		imports = ["ru.solrudev.ackpine.shizuku.shizuku"]
+	)
+)
+@Suppress("DEPRECATION")
 public inline fun UninstallParametersDsl.useShizuku(
 	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
 ) {
-	usePlugin(ShizukuUninstallPlugin::class, ShizukuUninstallPluginParameters(configure))
+	plugin(ShizukuPlugin::class, ShizukuUninstallPluginParameters(configure))
+}
+
+/**
+ * Registers [ShizukuPlugin] for the session.
+ *
+ * The plugin's parameters take effect only on Android 8.1+.
+ */
+public inline fun UninstallParametersDsl.shizuku(
+	configure: ShizukuUninstallParametersDsl.() -> Unit = {}
+) {
+	plugin(ShizukuPlugin::class, ShizukuUninstallParameters(configure))
 }

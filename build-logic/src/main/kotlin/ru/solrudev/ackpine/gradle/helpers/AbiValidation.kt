@@ -17,17 +17,9 @@
 package ru.solrudev.ackpine.gradle.helpers
 
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
-
-/**
- * Configures the org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension extension.
- */
-internal fun KotlinBaseExtension.abiValidation(configure: AbiValidationExtension.() -> Unit) {
-	(this as ExtensionAware).extensions.configure<AbiValidationExtension>(configure)
-}
 
 /**
  * Retrieves the org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension extension.

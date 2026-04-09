@@ -87,7 +87,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		reportsDirectory = layout.buildDirectory.dir("jacocoReports")
 	}
 
-	private inline fun <reified E : CommonExtension<*, *, *, *, *, *>> Project.configureAndroid() {
+	private inline fun <reified E : CommonExtension> Project.configureAndroid() {
 		extensions.configure<E> {
 			buildTypes.named("debug") {
 				enableUnitTestCoverage = true
@@ -108,7 +108,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 				  V : Variant,
 				  V : HasHostTests,
 				  V : HasDeviceTests,
-				  C : CommonExtension<*, *, *, *, *, *> {
+				  C : CommonExtension {
 		extensions.configure<E> {
 			onVariants(withDebugBuildType()) { variant ->
 				val jacocoConfig = registerJacocoReportTask(variant) ?: return@onVariants
@@ -120,7 +120,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		}
 	}
 
-	private inline fun <reified C : CommonExtension<*, *, *, *, *, *>> Project.configureManagedDevices(
+	private inline fun <reified C : CommonExtension> Project.configureManagedDevices(
 		component: Component,
 		jacocoConfig: JacocoConfig
 	) = extensions.configure<C> {
@@ -140,7 +140,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		val reportTaskAction = "${testTaskAction}Jacoco"
 		val testTaskName = component.computeTaskName(action = testTaskAction, subject = "androidTest")
 		val reportTask = registerAndroidTestReportTask(component, sources, testTaskName, reportTaskAction)
-		tasks.matching { it.name == testTaskName }.configureEach {
+		tasks.named { it == testTaskName }.configureEach {
 			finalizedBy(reportTask)
 		}
 	}
@@ -151,7 +151,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 	) {
 		val providerFactory = providers
 		val connectedTaskName = component.computeTaskName(action = "connected", subject = "androidTest")
-		tasks.matching { it.name == connectedTaskName }.configureEach {
+		tasks.named { it == connectedTaskName }.configureEach {
 			jacocoConfig.androidTestExecutionData.fromCoverageTask(this, providerFactory)
 			finalizedBy(jacocoConfig.task)
 		}
@@ -269,7 +269,7 @@ public class AckpineJacocoPlugin : Plugin<Project> {
 		include("**/coverage.ec", "**/*.ec", "**/*.exec")
 	}
 
-	private data class JacocoConfig(
+	private class JacocoConfig(
 		val hasAndroidTests: Boolean,
 		val task: TaskProvider<AckpineJacocoReportTask>,
 		val androidTestExecutionData: ConfigurableFileCollection,

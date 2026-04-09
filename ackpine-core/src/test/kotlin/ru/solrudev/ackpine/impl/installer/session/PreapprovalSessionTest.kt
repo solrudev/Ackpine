@@ -32,7 +32,7 @@ import ru.solrudev.ackpine.impl.testutil.RecordingPackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.createAckpineFile
 import ru.solrudev.ackpine.impl.testutil.deleteAckpineFiles
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.session.Session
@@ -71,7 +71,7 @@ class PreapprovalSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, packageInstaller.session.preapprovalRequests.size)
 		assertFalse(sessionId.toString() in preapprovalDao.activatingSessions)
@@ -91,9 +91,9 @@ class PreapprovalSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		session.onPreapprovalSucceeded()
-		idleMainThread()
+		drainMainThread()
 
 		assertContains(preapprovalDao.preapprovedSessions, session.id.toString())
 		assertEquals(Session.State.Awaiting, states.last())
@@ -111,11 +111,11 @@ class PreapprovalSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		session.onPreapprovalSucceeded()
-		idleMainThread()
+		drainMainThread()
 		session.onPreapprovalSucceeded()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, preapprovalDao.consumeCalls.count { it.result == 1 && it.isPreapproved })
 		assertEquals(1, preapprovalDao.preapprovedSessions.count { it == session.id.toString() })
@@ -136,9 +136,9 @@ class PreapprovalSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		session.onPreapprovalSucceeded()
-		idleMainThread()
+		drainMainThread()
 
 		assertFalse(session.isPreapprovalActive())
 		assertEquals(Session.State.Awaiting, states.last())
@@ -195,7 +195,7 @@ class PreapprovalSessionTest {
 		)
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, packageInstaller.createdSessions.size)
 		assertEquals(1, packageInstaller.session.preapprovalRequests.size)
@@ -212,13 +212,13 @@ class PreapprovalSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		val expectedFailure = InstallFailure.Generic("fail")
 		session.onPreapprovalFailed(
 			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE,
 			expectedFailure
 		)
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)
@@ -244,14 +244,14 @@ class PreapprovalSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		val nativeSessionId = assertNotNull(nativeSessionIdDao.nativeSessionIds[sessionId.toString()])
 
 		session.onPreapprovalFailed(
 			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE,
 			InstallFailure.Generic("preapproval not available")
 		)
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(1, packageInstaller.createdSessions.size)
 		assertEquals(nativeSessionId, nativeSessionIdDao.nativeSessionIds[sessionId.toString()])
@@ -277,7 +277,7 @@ class PreapprovalSessionTest {
 		val states = session.captureStates()
 
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		val originalSessionId = assertNotNull(nativeSessionIdDao.nativeSessionIds[sessionId.toString()])
 		packageInstaller.removeCreatedSessionId(originalSessionId)
 
@@ -285,7 +285,7 @@ class PreapprovalSessionTest {
 			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE,
 			InstallFailure.Generic("preapproval not available")
 		)
-		idleMainThread()
+		drainMainThread()
 
 		val recreatedSessionId = assertNotNull(nativeSessionIdDao.nativeSessionIds[sessionId.toString()])
 		assertNotEquals(originalSessionId, recreatedSessionId)
@@ -317,7 +317,7 @@ class PreapprovalSessionTest {
 
 		session.onPreapprovalSucceeded()
 		advanceUntilIdle()
-		idleMainThread()
+		drainMainThread()
 
 		assertEquals(Session.State.Cancelled, states.last())
 		assertTrue(packageInstaller.session.writes.isEmpty())
@@ -335,9 +335,9 @@ class PreapprovalSessionTest {
 
 		val expectedFailure = InstallFailure.Generic("unknown error")
 		session.launch()
-		idleMainThread()
+		drainMainThread()
 		session.onPreapprovalFailed(status = null, expectedFailure)
-		idleMainThread()
+		drainMainThread()
 
 		val state = states.last()
 		assertIs<Session.State.Failed<InstallFailure>>(state)

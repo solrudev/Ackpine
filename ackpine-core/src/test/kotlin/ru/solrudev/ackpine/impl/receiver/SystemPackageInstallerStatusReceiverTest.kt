@@ -24,6 +24,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.concurrent.futures.await
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.test.core.app.ApplicationProvider
@@ -47,7 +48,8 @@ import ru.solrudev.ackpine.impl.installer.session.PackageInstallerStatus
 import ru.solrudev.ackpine.impl.testutil.TestCompletableProgressSession
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
 import ru.solrudev.ackpine.impl.testutil.createInstallSessionEntity
-import ru.solrudev.ackpine.impl.testutil.idleMainThread
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
+import ru.solrudev.ackpine.impl.testutil.withRealtimeTimeoutOrNull
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.session.Session
@@ -56,10 +58,12 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 @RunWith(RobolectricTestRunner::class)
 class SystemPackageInstallerStatusReceiverTest {
@@ -67,7 +71,7 @@ class SystemPackageInstallerStatusReceiverTest {
 	private val context: Context = ApplicationProvider.getApplicationContext()
 
 	@Test
-	fun pendingUserActionWithoutConfirmationIntentCompletesExceptionally() {
+	fun pendingUserActionWithoutConfirmationIntentCompletesExceptionally() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(
 			id = sessionId,
@@ -82,15 +86,16 @@ class SystemPackageInstallerStatusReceiverTest {
 			confirmation = Confirmation.IMMEDIATE
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		assertNotNull(session.completionException)
 		assertIs<Session.State.Failed<InstallFailure>>(session.state)
 		context.unregisterReceiver(receiver)
 	}
 
 	@Test
-	fun immediateConfirmationLaunchesWrapperActivity() {
+	fun immediateConfirmationLaunchesWrapperActivity() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -103,8 +108,9 @@ class SystemPackageInstallerStatusReceiverTest {
 			confirmation = Confirmation.IMMEDIATE
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
 		assertNotNull(started)
 		assertEquals(SessionBasedInstallConfirmationActivity::class.java.name, started.component?.className)
@@ -112,7 +118,7 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	fun deferredConfirmationPostsNotification() {
+	fun deferredConfirmationPostsNotification() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -127,8 +133,9 @@ class SystemPackageInstallerStatusReceiverTest {
 			notificationId = 42
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		val notificationManager = shadowOf(context.getSystemService<NotificationManager>())
 		val notification = notificationManager.getNotification(sessionId.toString(), 42)
 		assertNotNull(notification)
@@ -136,7 +143,7 @@ class SystemPackageInstallerStatusReceiverTest {
 	}
 
 	@Test
-	fun statusSuccessCompletesSessionSucceeded() {
+	fun statusSuccessCompletesSessionSucceeded() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -147,15 +154,16 @@ class SystemPackageInstallerStatusReceiverTest {
 			status = PackageInstaller.STATUS_SUCCESS
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		assertEquals(Session.State.Succeeded, session.completedState)
 		assertNull(session.completionException)
 		context.unregisterReceiver(receiver)
 	}
 
 	@Test
-	fun statusFailureCompletesSessionFailed() {
+	fun statusFailureCompletesSessionFailed() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -166,8 +174,9 @@ class SystemPackageInstallerStatusReceiverTest {
 			status = PackageInstaller.STATUS_FAILURE
 		).putExtra(PackageInstaller.EXTRA_STATUS_MESSAGE, "failure")
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		val completedState = session.completedState
 		assertNotNull(completedState)
 		assertIs<Session.State.Failed<InstallFailure>>(completedState)
@@ -195,14 +204,15 @@ class SystemPackageInstallerStatusReceiverTest {
 			.putExtra(PackageInstaller.EXTRA_STATUS, PackageInstaller.STATUS_SUCCESS)
 		SessionIdIntents.putSessionId(intent, sessionId)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertFalse(shadowOf(receiver).wentAsync())
 		assertEquals(0, receiver.getAckpineSessionCalls)
 		context.unregisterReceiver(receiver)
 	}
 
 	@Test
-	fun preapprovalSuccessNotifiesListener() {
+	fun preapprovalSuccessNotifiesListener() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -214,15 +224,16 @@ class SystemPackageInstallerStatusReceiverTest {
 			preapproval = true
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		assertTrue(session.preapprovalSucceeded)
 		assertNull(session.preapprovalFailure)
 		context.unregisterReceiver(receiver)
 	}
 
 	@Test
-	fun preapprovalFailureNotifiesListener() {
+	fun preapprovalFailureNotifiesListener() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -236,14 +247,15 @@ class SystemPackageInstallerStatusReceiverTest {
 			PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE.legacyStatus
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		assertNotNull(session.preapprovalFailure)
 		context.unregisterReceiver(receiver)
 	}
 
 	@Test
-	fun pendingUserActionPassesPreapprovalFlagToWrapperActivity() {
+	fun pendingUserActionPassesPreapprovalFlagToWrapperActivity() = runTest {
 		val sessionId = UUID.randomUUID()
 		val session = TestCompletableProgressSession<InstallFailure>(sessionId)
 		val receiver = TestInstallStatusReceiver(session)
@@ -257,8 +269,9 @@ class SystemPackageInstallerStatusReceiverTest {
 			preapproval = true
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
+		assertAsyncReceiver(receiver)
 		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
 		assertNotNull(started)
 		assertTrue(started.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false))
@@ -294,7 +307,7 @@ class SystemPackageInstallerStatusReceiverTest {
 			requireUserAction = false
 		)
 		context.sendBroadcast(intent)
-		idleMainThread()
+		drainMainThread()
 
 		val wasConfirmationLaunched = withContext(Dispatchers.IO) {
 			database
@@ -303,10 +316,42 @@ class SystemPackageInstallerStatusReceiverTest {
 				?.wasConfirmationLaunched
 		}
 
+		assertAsyncReceiver(receiver)
 		assertNotNull(wasConfirmationLaunched)
 		assertTrue(wasConfirmationLaunched)
 
 		context.unregisterReceiver(receiver)
+	}
+
+	@Test
+	fun nonexistentSessionIsIgnored() = runTest {
+		val sessionId = UUID.randomUUID()
+		val receiver = TestInstallStatusReceiver(session = null)
+		registerReceiver(receiver)
+		val intent = createStatusIntent(
+			action = receiver.action,
+			sessionId = sessionId,
+			status = PackageInstaller.STATUS_PENDING_USER_ACTION,
+			confirmationIntent = Intent(),
+			confirmation = Confirmation.IMMEDIATE
+		)
+		context.sendBroadcast(intent)
+		drainMainThread()
+
+		assertAsyncReceiver(receiver)
+		val started = Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity
+		assertNull(started)
+		context.unregisterReceiver(receiver)
+	}
+
+	private suspend fun assertAsyncReceiver(receiver: SystemPackageInstallerStatusReceiver<*>) {
+		val shadow = shadowOf(receiver)
+		assertTrue(shadow.wentAsync())
+		val result = withRealtimeTimeoutOrNull(2.seconds) {
+			val pendingResult = shadowOf(shadow.originalPendingResult)
+			pendingResult.future.await()
+		}
+		assertNotNull(result, "PendingResult timed out after 2s")
 	}
 
 	private fun registerReceiver(receiver: TestInstallStatusReceiver) {
