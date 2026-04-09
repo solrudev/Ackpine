@@ -30,6 +30,7 @@ import java.util.UUID
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 @RunWith(RobolectricTestRunner::class)
 class UriHelpersTest {
@@ -64,7 +65,7 @@ class UriHelpersTest {
 			TestDocumentsProvider.AUTHORITY,
 			"primary:Download/app.apk"
 		)
-		val result = context.getFileFromUri(uri)
+		val result = tryGetFileFromExternalDocumentUri(context, uri)
 		assertEquals(File("/storage/primary/Download/app.apk"), result)
 	}
 
@@ -74,7 +75,7 @@ class UriHelpersTest {
 			TestDocumentsProvider.AUTHORITY,
 			"0123-4567:Music/app.apk"
 		)
-		val result = context.getFileFromUri(uri)
+		val result = tryGetFileFromExternalDocumentUri(context, uri)
 		val expected = File("${Environment.getExternalStorageDirectory().absolutePath}/Music/app.apk/")
 		assertEquals(expected, result)
 	}
@@ -85,7 +86,7 @@ class UriHelpersTest {
 			TestDocumentsProvider.AUTHORITY,
 			"0123-4567"
 		)
-		val result = context.getFileFromUri(uri)
+		val result = tryGetFileFromExternalDocumentUri(context, uri)
 		assertEquals(Environment.getExternalStorageDirectory(), result)
 	}
 
@@ -95,8 +96,8 @@ class UriHelpersTest {
 			"com.wrong.documents",
 			"primary:Download/app.apk"
 		)
-		val result = context.getFileFromUri(uri)
-		assertEquals(File(""), result)
+		val result = tryGetFileFromExternalDocumentUri(context, uri)
+		assertNull(result)
 	}
 
 	@Test
@@ -107,7 +108,7 @@ class UriHelpersTest {
 			.appendPath("file")
 			.appendPath("test")
 			.build()
-		val result = context.getFileFromUri(uri)
-		assertEquals(File(""), result)
+		val result = tryGetFileFromExternalDocumentUri(context, uri)
+		assertNull(result)
 	}
 }

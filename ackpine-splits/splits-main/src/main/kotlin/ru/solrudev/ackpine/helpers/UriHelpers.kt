@@ -23,6 +23,7 @@ import android.os.CancellationSignal
 import android.os.Environment
 import android.os.Process
 import android.provider.DocumentsContract
+import androidx.annotation.VisibleForTesting
 import java.io.File
 import java.io.FileNotFoundException
 
@@ -54,7 +55,9 @@ internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null
 	}
 }
 
-private fun tryGetFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
+@JvmSynthetic
+@VisibleForTesting
+internal fun tryGetFileFromExternalDocumentUri(context: Context, uri: Uri): File? {
 	if (!DocumentsContract.isDocumentUri(context, uri)) {
 		return null
 	}
