@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.22.1 (2026-04-09)
+---------------------------
+
+### Bug fixes and improvements
+
+- Hotfix: add ProGuard rule for internal Room database to prevent crashes with `android.r8.strictFullModeForKeepRules` enabled (default in AGP 9).
+
 Version 0.22.0 (2026-04-09)
 ---------------------------
 
