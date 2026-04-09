@@ -16,8 +16,6 @@
 
 package ru.solrudev.ackpine.plugability
 
-import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -44,6 +42,4 @@ class TestCachedPlugin :
 	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
 	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 	override val id: String = "test-cached-plugin"
-	override fun apply(builder: InstallParameters.Builder) {}
-	override fun apply(builder: UninstallParameters.Builder) {}
 }
