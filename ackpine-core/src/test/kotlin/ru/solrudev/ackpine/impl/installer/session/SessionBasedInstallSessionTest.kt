@@ -547,7 +547,7 @@ internal fun createSessionBasedSession(
 	executor: Executor = ImmediateExecutor
 ) = SessionBasedInstallSession(
 	context = ApplicationProvider.getApplicationContext(),
-	packageInstaller, apks, id, initialState, initialProgress,
+	lazyOf(packageInstaller), apks, id, initialState, initialProgress,
 	confirmation = Confirmation.DEFERRED,
 	notificationData = NotificationData.DEFAULT,
 	requireUserAction, installMode, preapproval, constraints, requestUpdateOwnership, packageSource,

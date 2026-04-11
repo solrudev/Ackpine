@@ -73,14 +73,14 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 					.map { parametersStore -> parametersStore.getForSession(sessionId) }
 			}
 		},
-		sessionFactory: (S) -> R
+		sessionFactory: (Lazy<S>) -> R
 	): R {
 		val service = serviceProviders.mapCatching { providers ->
 			if (providers.isEmpty()) {
-				return sessionFactory(defaultService.value)
+				return sessionFactory(defaultService)
 			}
 			providers
-				.firstNotNullOfOrNull { provider -> provider[serviceClass] }
+				.firstNotNullOfOrNull { provider -> provider.getLazy(serviceClass) }
 				?.also { service ->
 					pluginParameters
 						.getOrThrow()
@@ -88,7 +88,7 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 						.forEach { params -> service.applyParameters(sessionId, params) }
 				}
 		}
-		val session = sessionFactory(service.getOrNull() ?: defaultService.value)
+		val session = sessionFactory(service.getOrNull() ?: defaultService)
 		service.onFailure { throwable ->
 			when (throwable) {
 				is Error -> session.completeExceptionally(RuntimeException(throwable))

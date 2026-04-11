@@ -71,7 +71,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -92,7 +92,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(emptyList()),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -147,7 +147,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java, PluginOne::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -177,7 +177,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -235,25 +235,6 @@ class AckpineServiceProvidersTest {
 		assertEquals(2, store1.recorded.size)
 		assertEquals(2, store2.recorded.size)
 	}
-
-	private class RecordingTestService : TestService {
-
-		private val _appliedParameters = mutableListOf<AppliedParameters<TestParams>>()
-		val appliedParameters: List<AppliedParameters<TestParams>> = _appliedParameters
-
-		override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
-			if (parameters is TestParams) {
-				_appliedParameters += AppliedParameters(sessionId, parameters)
-			}
-		}
-	}
-
-	private data class AppliedParameters<out P : AckpinePlugin.Parameters>(
-		val sessionId: UUID,
-		val parameters: P
-	)
-
-	private data class TestParams(val value: String) : AckpinePlugin.Parameters
 
 	private class FakeAckpineServiceProvider(
 		serviceFactories: Set<ServiceFactory<*>> = emptySet(),

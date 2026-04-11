@@ -88,7 +88,7 @@ private const val TAG = "SessionBasedInstallSession"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
 	private val context: Context,
-	private val packageInstaller: PackageInstallerService,
+	packageInstallerService: Lazy<PackageInstallerService>,
 	private val apks: List<Uri>,
 	id: UUID,
 	initialState: Session.State<InstallFailure>,
@@ -123,16 +123,13 @@ internal class SessionBasedInstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ), PreapprovalListener {
 
+	private val packageInstaller by packageInstallerService
+
 	@Volatile
-	private var sessionCallback = if (nativeSessionId != -1) {
-		try {
-			packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
-		} catch (exception: Exception) {
-			completeExceptionally(exception)
-			null
-		}
-	} else {
-		null
+	private var sessionCallback: PackageInstaller.SessionCallback? = null
+
+	init {
+		initProgressCallback()
 	}
 
 	@Volatile
@@ -520,6 +517,20 @@ internal class SessionBasedInstallSession internal constructor(
 		val callback = packageInstallerSessionCallback(nativeSessionId)
 		registerSessionCallback(callback, sessionCallbackHandler)
 		return callback
+	}
+
+	private fun initProgressCallback() {
+		val sessionId = nativeSessionId
+		if (sessionId == -1) {
+			return
+		}
+		executor.execute {
+			try {
+				sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
+			} catch (exception: Exception) {
+				completeExceptionally(exception)
+			}
+		}
 	}
 
 	private fun clearPackageInstallerSessionCallback() {

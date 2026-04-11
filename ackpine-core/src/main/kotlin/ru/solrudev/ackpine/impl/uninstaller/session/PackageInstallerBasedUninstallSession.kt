@@ -43,7 +43,7 @@ import kotlin.random.nextInt
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerBasedUninstallSession internal constructor(
 	private val context: Context,
-	private val packageInstaller: PackageInstallerService,
+	packageInstallerService: Lazy<PackageInstallerService>,
 	private val packageName: String,
 	id: UUID,
 	initialState: Session.State<UninstallFailure>,
@@ -62,6 +62,8 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
 	notificationId, dbWriteSemaphore
 ) {
+
+	private val packageInstaller by packageInstallerService
 
 	override fun prepare() {
 		// no preparation needed

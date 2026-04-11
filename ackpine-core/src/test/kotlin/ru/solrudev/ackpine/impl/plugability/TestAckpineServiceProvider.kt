@@ -28,6 +28,23 @@ internal class TestServiceImpl : TestService {
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {}
 }
 
+internal class RecordingTestService : TestService {
+
+	private val _appliedParameters = mutableListOf<AppliedParameters<TestParams>>()
+	internal val appliedParameters: List<AppliedParameters<TestParams>> = _appliedParameters
+
+	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
+		if (parameters is TestParams) {
+			_appliedParameters += AppliedParameters(sessionId, parameters)
+		}
+	}
+}
+
+internal data class AppliedParameters<out P : AckpinePlugin.Parameters>(
+	val sessionId: UUID,
+	val parameters: P
+)
+
 internal class TestPluginParametersStore : PluginParametersStore {
 	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters = AckpinePlugin.Parameters.None
 	override fun setForSession(sessionId: UUID, params: AckpinePlugin.Parameters) {}
@@ -66,5 +83,6 @@ internal class PluginTwo :
 	override val id: String = TestAckpineServiceProvider.PLUGIN_TWO_ID
 }
 
+internal data class TestParams(val value: String) : AckpinePlugin.Parameters
 internal data class PluginOneParams(val value: String) : AckpinePlugin.Parameters
 internal data class PluginTwoParams(val value: String) : AckpinePlugin.Parameters

@@ -64,7 +64,7 @@ class PackageInstallerBasedUninstallSessionTest {
 		initialState: Session.State<UninstallFailure> = Session.State.Awaiting
 	) = PackageInstallerBasedUninstallSession(
 		context = context,
-		packageInstaller = packageInstaller,
+		packageInstallerService = lazyOf(packageInstaller),
 		packageName = "com.example.app",
 		id = id,
 		initialState = initialState,

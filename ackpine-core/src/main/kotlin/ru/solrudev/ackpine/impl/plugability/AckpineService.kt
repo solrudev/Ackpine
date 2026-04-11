@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.plugability
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
+import java.util.concurrent.ConcurrentLinkedQueue
 
 /**
  * A service provided by an [AckpinePlugin] via [AckpineServiceProvider].
@@ -30,4 +31,35 @@ public interface AckpineService {
 	 * Applies [parameters] of an [AckpinePlugin] to a session with ID equal to [sessionId].
 	 */
 	public fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters)
+}
+
+/**
+ * A lazy instance of [AckpineService], allowing to register parameters before creating it.
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+public class AckpineServiceLazy<T : AckpineService>(factory: () -> T) : Lazy<T>, AckpineService {
+
+	override val value: T
+		get() = service.value
+
+	private val lazyParameters = ConcurrentLinkedQueue<Pair<UUID, AckpinePlugin.Parameters>>()
+
+	private val service = lazy {
+		val service = factory()
+		for ((sessionId, parameters) in lazyParameters) {
+			service.applyParameters(sessionId, parameters)
+		}
+		lazyParameters.clear()
+		service
+	}
+
+	override fun isInitialized(): Boolean = service.isInitialized()
+
+	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
+		if (service.isInitialized()) {
+			service.value.applyParameters(sessionId, parameters)
+			return
+		}
+		lazyParameters += sessionId to parameters
+	}
 }
