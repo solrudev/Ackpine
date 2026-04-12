@@ -41,6 +41,8 @@ dependencies {
 	dokka(projects.ackpineResources)
 	dokka(projects.ackpinePlugins.shizuku)
 	dokka(projects.ackpinePlugins.shizukuKtx)
+	dokka(projects.ackpinePlugins.libsu)
+	dokka(projects.ackpinePlugins.libsuKtx)
 	dokka(projects.ackpineTest)
 }
 

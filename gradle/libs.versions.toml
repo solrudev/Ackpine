@@ -32,6 +32,7 @@ hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-proces
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 junit4 = "junit:junit:4.13.2"
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+libsu-service = "com.github.topjohnwu.libsu:service:6.0.0"
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.3.2"

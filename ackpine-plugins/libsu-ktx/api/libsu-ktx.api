@@ -1,0 +1,72 @@
+public final class ru/solrudev/ackpine/libsu/InstallParametersDslKt {
+	public static final fun libsu (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun libsu$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public abstract interface class ru/solrudev/ackpine/libsu/LibsuInstallParametersDsl {
+	public abstract fun getAllUsers ()Z
+	public abstract fun getAllowTest ()Z
+	public abstract fun getBypassLowTargetSdkBlock ()Z
+	public abstract fun getGrantAllRequestedPermissions ()Z
+	public abstract fun getInstallerPackageName ()Ljava/lang/String;
+	public abstract fun getReplaceExisting ()Z
+	public abstract fun getRequestDowngrade ()Z
+	public abstract fun setAllUsers (Z)V
+	public abstract fun setAllowTest (Z)V
+	public abstract fun setBypassLowTargetSdkBlock (Z)V
+	public abstract fun setGrantAllRequestedPermissions (Z)V
+	public abstract fun setInstallerPackageName (Ljava/lang/String;)V
+	public abstract fun setReplaceExisting (Z)V
+	public abstract fun setRequestDowngrade (Z)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuInstallParametersDslBuilder : ru/solrudev/ackpine/libsu/LibsuInstallParametersDsl {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public fun getAllUsers ()Z
+	public fun getAllowTest ()Z
+	public fun getBypassLowTargetSdkBlock ()Z
+	public fun getGrantAllRequestedPermissions ()Z
+	public fun getInstallerPackageName ()Ljava/lang/String;
+	public fun getReplaceExisting ()Z
+	public fun getRequestDowngrade ()Z
+	public fun setAllUsers (Z)V
+	public fun setAllowTest (Z)V
+	public fun setBypassLowTargetSdkBlock (Z)V
+	public fun setGrantAllRequestedPermissions (Z)V
+	public fun setInstallerPackageName (Ljava/lang/String;)V
+	public fun setReplaceExisting (Z)V
+	public fun setRequestDowngrade (Z)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuInstallParametersKt {
+	public static final fun LibsuInstallParameters (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public static synthetic fun LibsuInstallParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+}
+
+public abstract interface class ru/solrudev/ackpine/libsu/LibsuUninstallParametersDsl {
+	public abstract fun getAllUsers ()Z
+	public abstract fun getKeepData ()Z
+	public abstract fun setAllUsers (Z)V
+	public abstract fun setKeepData (Z)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuUninstallParametersDslBuilder : ru/solrudev/ackpine/libsu/LibsuUninstallParametersDsl {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public fun getAllUsers ()Z
+	public fun getKeepData ()Z
+	public fun setAllUsers (Z)V
+	public fun setKeepData (Z)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuUninstallParametersKt {
+	public static final fun LibsuUninstallParameters (Lkotlin/jvm/functions/Function1;)Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public static synthetic fun LibsuUninstallParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+}
+
+public final class ru/solrudev/ackpine/libsu/UninstallParametersDslKt {
+	public static final fun libsu (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun libsu$default (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParametersDsl;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+

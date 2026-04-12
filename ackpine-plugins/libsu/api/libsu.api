@@ -1,0 +1,96 @@
+public final class ru/solrudev/ackpine/libsu/LibsuInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getAllowTest ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getBypassLowTargetSdkBlock ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getGrantAllRequestedPermissions ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getInstallerPackageName ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getReplaceExisting ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getRequestDowngrade ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin : ru/solrudev/ackpine/capabilities/InstallCapabilityProvider, ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+	public fun <init> ()V
+	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/libsu/LibsuInstallCapabilities;
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/libsu/LibsuUninstallCapabilities;
+	public fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallerPackageName ()Ljava/lang/String;
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallerPackageName ()Ljava/lang/String;
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setAllowTest (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setReplaceExisting (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public synthetic fun <init> (ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Builder {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Builder;
+	public final fun setKeepData (Z)Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuUninstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
