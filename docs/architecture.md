@@ -148,7 +148,7 @@ This design means:
 
 Plugin instances are created reflectively via no-arg constructors and cached as singletons in `AckpinePluginCache`. Because of this, plugin class names are persisted (they are stored as part of session parameters), and plugins must have a no-arg constructor available at runtime. Consumer ProGuard rules for `ackpine-api` keep all `AckpinePlugin` implementations, preventing class renaming or constructor removal that would break reflection.
 
-See the [Shizuku](guide/shizuku.md) page for the currently available plugin and [Configuration](guide/configuration.md#plugins) for usage in parameters.
+See the [Shizuku](guide/shizuku.md) and [libsu](guide/libsu.md) pages for the currently available plugins and [Configuration](guide/configuration.md#plugins) for usage in parameters.
 
 Design decisions
 ----------------
