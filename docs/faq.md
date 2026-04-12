@@ -27,7 +27,7 @@ To fix this, either ensure that your app can post notifications, or change confi
 - **Kotlin coroutines**: add `ackpine-ktx` for `Session.await()` and DSL parameter builders.
 - **Split APKs**: add `ackpine-splits` (and `ackpine-splits-ktx` for Kotlin extensions) for reading and manipulating split APK packages. See [Split APKs](guide/split_apks.md).
 - **APKs from assets**: add `ackpine-assets` for a `ContentProvider` that reads APKs bundled in your app's assets.
-- **Privileged installs**: add `ackpine-shizuku` (and `ackpine-shizuku-ktx` for Kotlin DSL) for Shizuku-backed installs. See [Shizuku](guide/shizuku.md).
+- **Privileged installs**: add `ackpine-shizuku` for Shizuku-backed installs or `ackpine-libsu` for performing installs under root user and their `ktx` counterparts for Kotlin DSLs. See [Shizuku](guide/shizuku.md) and [libsu](guide/libsu.md).
 - **Testing**: add `ackpine-test` as a test dependency for in-memory test doubles. See [Testing](guide/testing.md).
 
 See the [module dependency graph](architecture.md#module-dependency-graph) for a visual overview.
@@ -37,6 +37,7 @@ See the [module dependency graph](architecture.md#module-dependency-graph) for a
 Only in specific scenarios:
 
 - **Via Shizuku plugin**: when your app has root or ADB shell access through [Shizuku](guide/shizuku.md), installs and uninstalls can bypass user confirmation entirely.
+- **Via libsu plugin**: when your app has root access, installs and uninstalls can bypass user confirmation entirely.
 - **Via `requireUserAction = false` (delicate API)**: on API level 31+, if certain conditions are met (e.g. the app is updating itself, or the installer has the appropriate permissions), the system may skip user confirmation. See [User's confirmation](guide/configuration.md#users-confirmation) for details and caveats.
 - **Via being a device owner / affiliated profile owner / system-signed app**: Ackpine uses Android's `PackageInstaller` which will install silently if an app has such privileges.
 

@@ -86,6 +86,9 @@ graph TD
     ackpine-shizuku --> ackpine-core
     ackpine-shizuku-ktx --> ackpine-shizuku
     ackpine-shizuku-ktx --> ackpine-ktx
+    ackpine-libsu --> ackpine-core
+    ackpine-libsu-ktx --> ackpine-libsu
+    ackpine-libsu-ktx --> ackpine-ktx
     ackpine-splits-ktx --> ackpine-splits
     ackpine-assets
 ```
@@ -100,6 +103,8 @@ graph TD
 | `ackpine-assets`      | `ContentProvider` for reading APKs from app's asset files                                              | Standalone                       |
 | `ackpine-shizuku`     | [Shizuku](guide/shizuku.md)-backed `PackageInstallerService` plugin                                    | `ackpine-core`                   |
 | `ackpine-shizuku-ktx` | Kotlin DSL for Shizuku plugin configuration                                                            | `ackpine-shizuku`, `ackpine-ktx` |
+| `ackpine-libsu`       | [libsu](guide/libsu.md)-backed `PackageInstallerService` plugin                                        | `ackpine-core`                   |
+| `ackpine-libsu-ktx`   | Kotlin DSL for libsu plugin configuration                                                              | `ackpine-libsu`, `ackpine-ktx`   |
 | `ackpine-test`        | [Test doubles](guide/testing.md): `TestPackageInstaller`, `TestPackageUninstaller`, scripted sessions  | `ackpine-api`                    |
 | `ackpine-resources`   | Abstractions for persistable Android resources: `ResolvableString`                                     | —                                |
 
