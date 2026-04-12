@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-description = "API stubs for ackpine-shizuku"
+description = "Android hidden API stubs"
 
 plugins {
 	id("ru.solrudev.ackpine.library.base")
 }
 
 ackpine {
-	id = "shizuku-stubs"
+	id = "android-stubs"
 }
 
 dependencies {
