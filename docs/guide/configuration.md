@@ -351,7 +351,7 @@ Ackpine supports [plugins](../architecture.md#plugin-system). They are available
 Built-in Ackpine plugins:
 
 - [`ShizukuPlugin`](shizuku.md) — uses Shizuku to obtain package installer service on behalf of root user or ADB shell.
-- [`LibsuPlugin`](libsu.md) — uses libsu to obtain package installer service under root user.
+- [`LibsuPlugin`](libsu.md) — uses libsu to perform package installer operations under root user.
 
 Both plugins support install and uninstall sessions. See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
 

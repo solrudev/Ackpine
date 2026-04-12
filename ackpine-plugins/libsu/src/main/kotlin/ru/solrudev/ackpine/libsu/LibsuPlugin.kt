@@ -25,7 +25,7 @@ import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
  * Ackpine plugin which enables installation and uninstallation under root user via `libsu` when applied.
  *
  * **Note:** you must ensure that root access is available to successfully use this plugin. On first usage, root access
- * prompt from the root manager app (such as Magisk) will be shown to the user.
+ * prompt from the root manager app (such as Magisk) will be shown to the user if not already granted for your app.
  */
 public class LibsuPlugin : PrivilegedPlugin<
 		LibsuPlugin.InstallParameters,
