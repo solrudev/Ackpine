@@ -98,7 +98,6 @@ public abstract class AbstractAckpineServiceProvider(
 		} as? T
 	}
 
-	@Suppress("UNCHECKED_CAST")
 	override fun <T : AckpineService> getLazy(serviceClass: KClass<T>): AckpineServiceLazy<T>? {
 		if (serviceClass !in factories.keys) {
 			return null
