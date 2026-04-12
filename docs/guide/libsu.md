@@ -56,6 +56,17 @@ Then add an `ackpine-libsu` dependency:
 Using the plugin
 ----------------
 
+!!! warning "Google Play"
+    This plugin uses hidden Android APIs. This may cause your app to fail app review on Google Play. Disable reporting information about SDK dependencies in `build.gradle.kts`:
+    ```
+    android {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
+    }
+    ```
+
 To apply the plugin to an install session, just add this to your install parameters configuration:
 
 === "Kotlin"
