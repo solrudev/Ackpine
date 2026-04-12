@@ -32,6 +32,6 @@ ackpine {
 }
 
 dependencies {
-	api(projects.ackpineKtx)
+	api(projects.ackpinePlugins.privilegedKtx)
 	api(projects.ackpinePlugins.libsu)
 }

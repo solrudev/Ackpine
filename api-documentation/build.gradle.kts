@@ -40,6 +40,7 @@ dependencies {
 	dokka(projects.ackpineAssets)
 	dokka(projects.ackpineResources)
 	dokka(projects.ackpinePlugins.privileged)
+	dokka(projects.ackpinePlugins.privilegedKtx)
 	dokka(projects.ackpinePlugins.shizuku)
 	dokka(projects.ackpinePlugins.shizukuKtx)
 	dokka(projects.ackpinePlugins.libsu)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-description = "Kotlin extensions for Ackpine Shizuku plugin"
+description = "Kotlin extensions for Ackpine privileged plugins"
 
 plugins {
 	id("ru.solrudev.ackpine.library")
@@ -23,15 +23,15 @@ plugins {
 }
 
 ackpine {
-	id = "shizuku-ktx"
-	minSdk = 24
+	id = "privileged-ktx"
+	minSdk = 21
 	artifact {
-		name = "Ackpine Shizuku Plugin KTX"
-		inceptionYear = "2025"
+		name = "Ackpine Privileged KTX"
+		inceptionYear = "2026"
 	}
 }
 
 dependencies {
-	api(projects.ackpinePlugins.privilegedKtx)
-	api(projects.ackpinePlugins.shizuku)
+	api(projects.ackpineKtx)
+	api(projects.ackpinePlugins.privileged)
 }

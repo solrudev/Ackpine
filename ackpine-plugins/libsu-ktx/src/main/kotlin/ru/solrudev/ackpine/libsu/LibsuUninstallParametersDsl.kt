@@ -16,41 +16,21 @@
 
 package ru.solrudev.ackpine.libsu
 
-import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallParametersDsl
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallParametersDslBuilder
 
 /**
  * DSL allowing to configure [uninstall parameters for LibsuPlugin][LibsuPlugin.UninstallParameters].
  */
-@SessionParametersDsl
-public interface LibsuUninstallParametersDsl {
-
-	/**
-	 * Flag parameter to indicate that you don't want to delete the package's data directory.
-	 */
-	public var keepData: Boolean
-
-	/**
-	 * Flag parameter to indicate that you want the package deleted for all users.
-	 */
-	public var allUsers: Boolean
-}
+public interface LibsuUninstallParametersDsl : PrivilegedUninstallParametersDsl
 
 @PublishedApi
-internal class LibsuUninstallParametersDslBuilder : LibsuUninstallParametersDsl {
+internal class LibsuUninstallParametersDslBuilder :
+	PrivilegedUninstallParametersDslBuilder<
+			LibsuPlugin.UninstallParameters,
+			LibsuPlugin.UninstallParameters.Builder
+			>(LibsuPlugin.UninstallParameters.Builder()),
+	LibsuUninstallParametersDsl {
 
-	private val builder = LibsuPlugin.UninstallParameters.Builder()
-
-	override var keepData: Boolean
-		get() = builder.keepData
-		set(value) {
-			builder.setKeepData(value)
-		}
-
-	override var allUsers: Boolean
-		get() = builder.allUsers
-		set(value) {
-			builder.setAllUsers(value)
-		}
-
-	fun build() = builder.build()
+	fun build() = buildParameters()
 }
