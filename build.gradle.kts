@@ -36,6 +36,7 @@ dependencies {
 	library(projects.ackpineTest)
 	library(projects.ackpineRuntime)
 	library(projects.ackpineResources)
+	library(projects.ackpinePlugins.privileged)
 	library(projects.ackpinePlugins.shizuku)
 	library(projects.ackpinePlugins.shizukuKtx)
 	library(projects.ackpinePlugins.libsu)

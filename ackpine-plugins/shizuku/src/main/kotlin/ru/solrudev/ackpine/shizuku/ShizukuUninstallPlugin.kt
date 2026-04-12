@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
+import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
 import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
 import ru.solrudev.ackpine.plugability.AckpinePlugin
@@ -58,7 +59,15 @@ public class ShizukuUninstallPlugin private constructor() :
 	}
 
 	override fun getCapabilities(context: UninstallCapabilityContext): ShizukuUninstallCapabilities {
-		return getUninstallCapabilities(context.uninstallerType, context.sdkInt)
+		val isSupported = if (
+			context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED
+			&& context.sdkInt >= 27
+		) {
+			CapabilityStatus.SUPPORTED
+		} else {
+			CapabilityStatus.UNSUPPORTED
+		}
+		return ShizukuUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuUninstallPlugin

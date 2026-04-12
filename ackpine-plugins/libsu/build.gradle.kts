@@ -41,8 +41,7 @@ room {
 
 dependencies {
 	ksp(androidx.room.compiler)
-	api(projects.ackpineCore)
-	compileOnly(projects.ackpinePlugins.androidStubs)
+	api(projects.ackpinePlugins.privileged)
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.room.runtime)
 	implementation(libs.libsu.service)

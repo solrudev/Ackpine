@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.libsu
+package ru.solrudev.ackpine.privileged
 
 @JvmSynthetic
 internal const val DELETE_KEEP_DATA = 0x00000001

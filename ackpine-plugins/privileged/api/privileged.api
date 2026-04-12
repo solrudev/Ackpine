@@ -1,0 +1,106 @@
+protected final class ru/solrudev/ackpine/privileged/PackageInstallerProxy$Companion {
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getAllowTest ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getBypassLowTargetSdkBlock ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getGrantAllRequestedPermissions ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getInstallerPackageName ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	protected abstract fun getName ()Ljava/lang/String;
+	public final fun getReplaceExisting ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getRequestDowngrade ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	protected fun <init> (ZZZZZZLjava/lang/String;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallerPackageName ()Ljava/lang/String;
+	protected abstract fun getName ()Ljava/lang/String;
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
+	public fun <init> ()V
+	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getAllowTest ()Z
+	public final fun getBypassLowTargetSdkBlock ()Z
+	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallerPackageName ()Ljava/lang/String;
+	public final fun getReplaceExisting ()Z
+	public final fun getRequestDowngrade ()Z
+	public fun setAllUsers (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setAllUsers (Z)V
+	public fun setAllowTest (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setAllowTest (Z)V
+	public fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setBypassLowTargetSdkBlock (Z)V
+	public fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setGrantAllRequestedPermissions (Z)V
+	public fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setInstallerPackageName (Ljava/lang/String;)V
+	public fun setReplaceExisting (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setReplaceExisting (Z)V
+	public fun setRequestDowngrade (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setRequestDowngrade (Z)V
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedPlugin : ru/solrudev/ackpine/capabilities/InstallCapabilityProvider, ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+	protected fun <init> (Ljava/lang/String;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
+	protected abstract fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	protected abstract fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
+	public final fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	protected abstract fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	protected fun <init> (ZZ)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	protected abstract fun getName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
+	public fun <init> ()V
+	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public fun setAllUsers (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
+	protected final fun setAllUsers (Z)V
+	public fun setKeepData (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
+	protected final fun setKeepData (Z)V
+}
+

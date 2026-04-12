@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,25 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.shizuku
+description = "Shared privileged plugin support for Ackpine backends"
 
-@JvmSynthetic
-internal const val DELETE_KEEP_DATA = 0x00000001
+plugins {
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
+	alias(libs.plugins.hiddenApiRefine)
+}
 
-@JvmSynthetic
-internal const val DELETE_ALL_USERS = 0x00000002
+ackpine {
+	id = "privileged"
+	minSdk = 21
+	artifact {
+		name = "Ackpine Privileged"
+		inceptionYear = "2026"
+	}
+}
+
+dependencies {
+	api(projects.ackpineCore)
+	compileOnlyApi(projects.ackpinePlugins.androidStubs)
+}

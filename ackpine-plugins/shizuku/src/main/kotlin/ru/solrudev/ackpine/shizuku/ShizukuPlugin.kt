@@ -17,21 +17,16 @@
 package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
-import android.os.Build
 import rikka.shizuku.Shizuku
 import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.capabilities.InstallCapabilityContext
-import ru.solrudev.ackpine.capabilities.InstallCapabilityProvider
 import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
-import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
-import ru.solrudev.ackpine.installer.parameters.InstallerType
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
-import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
-import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.plugability.InstallPluginScope
 import ru.solrudev.ackpine.plugability.UninstallPluginScope
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
+import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
+import ru.solrudev.ackpine.privileged.PrivilegedPlugin
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
 
 /**
  * Ackpine plugin which enables installation and uninstallation through Shizuku when applied.
@@ -42,243 +37,100 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
  * **Note:** Shizuku permission and binder lifecycle are not managed by this Ackpine plugin. You must handle these in
  * your app to successfully use Shizuku.
  */
-public class ShizukuPlugin private constructor() :
-	AckpineInstallPlugin<ShizukuPlugin.InstallParameters>,
-	AckpineUninstallPlugin<ShizukuPlugin.UninstallParameters>,
-	InstallCapabilityProvider<ShizukuInstallCapabilities>,
-	UninstallCapabilityProvider<ShizukuUninstallCapabilities> {
-
-	override val id: String = PLUGIN_ID
+public class ShizukuPlugin private constructor() : PrivilegedPlugin<
+		ShizukuPlugin.InstallParameters,
+		ShizukuPlugin.UninstallParameters,
+		ShizukuInstallCapabilities,
+		ShizukuUninstallCapabilities
+		>(PLUGIN_ID) {
 
 	override fun apply(scope: InstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		scope.installerType = InstallerType.SESSION_BASED
-		scope.requireUserAction = false
-		scope.disablePreapproval()
+		super.apply(scope)
 	}
 
 	override fun apply(scope: UninstallPluginScope) {
 		if (Shizuku.isPreV11()) {
 			return
 		}
-		scope.uninstallerType = UninstallerType.PACKAGE_INSTALLER_BASED
+		super.apply(scope)
 	}
 
+	@Suppress("RedundantOverride") // binary compatibility
 	override fun getCapabilities(context: InstallCapabilityContext): ShizukuInstallCapabilities {
-		val isSessionBased = context.installerType == InstallerType.SESSION_BASED
-		val isSupported = if (isSessionBased) CapabilityStatus.SUPPORTED else CapabilityStatus.UNSUPPORTED
-		fun isSupportedOnApi(api: Int) = if (isSessionBased && context.sdkInt >= api) {
-			CapabilityStatus.SUPPORTED
-		} else {
-			CapabilityStatus.UNSUPPORTED
-		}
-		return ShizukuInstallCapabilities(
-			bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
-			allowTest = isSupported,
-			replaceExisting = isSupported,
-			requestDowngrade = isSupported,
-			grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
-			allUsers = isSupported,
-			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P)
-		)
+		return super.getCapabilities(context)
 	}
 
+	@Suppress("RedundantOverride") // binary compatibility
 	override fun getCapabilities(context: UninstallCapabilityContext): ShizukuUninstallCapabilities {
-		return getUninstallCapabilities(context.uninstallerType, context.sdkInt)
+		return super.getCapabilities(context)
 	}
 
-	override fun equals(other: Any?): Boolean = this === other || other is ShizukuPlugin
-	override fun hashCode(): Int = id.hashCode()
-	override fun toString(): String = "ShizukuPlugin"
+	override fun createInstallCapabilities(
+		bypassLowTargetSdkBlock: CapabilityStatus,
+		allowTest: CapabilityStatus,
+		replaceExisting: CapabilityStatus,
+		requestDowngrade: CapabilityStatus,
+		grantAllRequestedPermissions: CapabilityStatus,
+		allUsers: CapabilityStatus,
+		installerPackageName: CapabilityStatus
+	): ShizukuInstallCapabilities = ShizukuInstallCapabilities(
+		bypassLowTargetSdkBlock = bypassLowTargetSdkBlock,
+		allowTest = allowTest,
+		replaceExisting = replaceExisting,
+		requestDowngrade = requestDowngrade,
+		grantAllRequestedPermissions = grantAllRequestedPermissions,
+		allUsers = allUsers,
+		installerPackageName = installerPackageName
+	)
+
+	override fun createUninstallCapabilities(
+		keepData: CapabilityStatus,
+		allUsers: CapabilityStatus
+	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers)
 
 	/**
 	 * Install parameters for [ShizukuPlugin].
 	 */
 	public open class InstallParameters internal constructor(
+		bypassLowTargetSdkBlock: Boolean,
+		allowTest: Boolean,
+		replaceExisting: Boolean,
+		requestDowngrade: Boolean,
+		grantAllRequestedPermissions: Boolean,
+		allUsers: Boolean,
+		installerPackageName: String
+	) : PrivilegedInstallParameters(
+		bypassLowTargetSdkBlock,
+		allowTest,
+		replaceExisting,
+		requestDowngrade,
+		grantAllRequestedPermissions,
+		allUsers,
+		installerPackageName
+	) {
 
-		/**
-		 * Flag to bypass the low target SDK version block for this install.
-		 */
-		public val bypassLowTargetSdkBlock: Boolean,
-
-		/**
-		 * Flag to indicate that you want to allow test packages (those that have set android:testOnly in their
-		 * manifest) to be installed.
-		 */
-		public val allowTest: Boolean,
-
-		/**
-		 * Flag to indicate that you want to replace an already installed package, if one exists.
-		 */
-		public val replaceExisting: Boolean,
-
-		/**
-		 * Flag to indicate that an upgrade to a lower version of a package than currently installed has been requested.
-		 */
-		public val requestDowngrade: Boolean,
-
-		/**
-		 * Flag parameter for package install to indicate that all requested permissions should be granted to the
-		 * package. If [allUsers] is set the runtime permissions will be granted to all users, otherwise only to the
-		 * owner.
-		 */
-		public val grantAllRequestedPermissions: Boolean,
-
-		/**
-		 * Flag to indicate that this install should immediately be visible to all users.
-		 */
-		public val allUsers: Boolean,
-
-		/**
-		 * Installer package for the app. Empty by default, so the calling app package name will be used. Works only on
-		 * Android 9+.
-		 */
-		public val installerPackageName: String
-	) : AckpinePlugin.Parameters {
-
-		override fun equals(other: Any?): Boolean {
-			if (this === other) return true
-			if (other !is InstallParameters) return false
-			if (bypassLowTargetSdkBlock != other.bypassLowTargetSdkBlock) return false
-			if (allowTest != other.allowTest) return false
-			if (replaceExisting != other.replaceExisting) return false
-			if (requestDowngrade != other.requestDowngrade) return false
-			if (grantAllRequestedPermissions != other.grantAllRequestedPermissions) return false
-			if (allUsers != other.allUsers) return false
-			if (installerPackageName != other.installerPackageName) return false
-			return true
-		}
-
-		override fun hashCode(): Int {
-			var result = bypassLowTargetSdkBlock.hashCode()
-			result = 31 * result + allowTest.hashCode()
-			result = 31 * result + replaceExisting.hashCode()
-			result = 31 * result + requestDowngrade.hashCode()
-			result = 31 * result + grantAllRequestedPermissions.hashCode()
-			result = 31 * result + allUsers.hashCode()
-			result = 31 * result + installerPackageName.hashCode()
-			return result
-		}
-
-		override fun toString(): String {
-			return "InstallParameters(" +
-					"bypassLowTargetSdkBlock=$bypassLowTargetSdkBlock, " +
-					"allowTest=$allowTest, " +
-					"replaceExisting=$replaceExisting, " +
-					"requestDowngrade=$requestDowngrade, " +
-					"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
-					"allUsers=$allUsers, " +
-					"installerPackageName=$installerPackageName" +
-					")"
-		}
+		override fun getName(): String = "InstallParameters"
 
 		/**
 		 * Builder for [ShizukuPlugin.InstallParameters].
 		 */
-		public open class Builder {
+		@Suppress("RedundantOverride") // binary compatibility
+		public open class Builder : PrivilegedInstallParameters.Builder<InstallParameters, Builder>() {
 
-			/**
-			 * Flag to bypass the low target SDK version block for this install.
-			 */
-			public var bypassLowTargetSdkBlock: Boolean = false
-				private set
+			override fun setBypassLowTargetSdkBlock(value: Boolean): Builder = super.setBypassLowTargetSdkBlock(value)
+			override fun setAllowTest(value: Boolean): Builder = super.setAllowTest(value)
+			override fun setReplaceExisting(value: Boolean): Builder = super.setReplaceExisting(value)
+			override fun setRequestDowngrade(value: Boolean): Builder = super.setRequestDowngrade(value)
+			override fun setGrantAllRequestedPermissions(value: Boolean): Builder =
+				super.setGrantAllRequestedPermissions(value)
 
-			/**
-			 * Flag to indicate that you want to allow test packages (those that have set android:testOnly in their
-			 * manifest) to be installed.
-			 */
-			public var allowTest: Boolean = false
-				private set
+			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
+			override fun setInstallerPackageName(value: String): Builder = super.setInstallerPackageName(value)
 
-			/**
-			 * Flag to indicate that you want to replace an already installed package, if one exists.
-			 */
-			public var replaceExisting: Boolean = false
-				private set
-
-			/**
-			 * Flag to indicate that an upgrade to a lower version of a package than currently installed has been
-			 * requested.
-			 */
-			public var requestDowngrade: Boolean = false
-				private set
-
-			/**
-			 * Flag parameter for package install to indicate that all requested permissions should be granted to the
-			 * package. If [allUsers] is set the runtime permissions will be granted to all users, otherwise only to the
-			 * owner.
-			 */
-			public var grantAllRequestedPermissions: Boolean = false
-				private set
-
-			/**
-			 * Flag to indicate that this install should immediately be visible to all users.
-			 */
-			public var allUsers: Boolean = false
-				private set
-
-			/**
-			 * Installer package for the app. Empty by default, so the calling app package name will be used. Takes
-			 * effect only on Android 9+.
-			 */
-			public var installerPackageName: String = ""
-				private set
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.bypassLowTargetSdkBlock].
-			 */
-			public fun setBypassLowTargetSdkBlock(value: Boolean): Builder = apply {
-				bypassLowTargetSdkBlock = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.allowTest].
-			 */
-			public fun setAllowTest(value: Boolean): Builder = apply {
-				allowTest = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.replaceExisting].
-			 */
-			public fun setReplaceExisting(value: Boolean): Builder = apply {
-				replaceExisting = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.requestDowngrade].
-			 */
-			public fun setRequestDowngrade(value: Boolean): Builder = apply {
-				requestDowngrade = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.grantAllRequestedPermissions].
-			 */
-			public fun setGrantAllRequestedPermissions(value: Boolean): Builder = apply {
-				grantAllRequestedPermissions = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.allUsers].
-			 */
-			public fun setAllUsers(value: Boolean): Builder = apply {
-				allUsers = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.InstallParameters.installerPackageName].
-			 */
-			public fun setInstallerPackageName(value: String): Builder = apply {
-				installerPackageName = value
-			}
-
-			/**
-			 * Constructs a new instance of [ShizukuPlugin.InstallParameters].
-			 */
-			public open fun build(): InstallParameters = InstallParameters(
+			override fun build(): InstallParameters = InstallParameters(
 				bypassLowTargetSdkBlock,
 				allowTest,
 				replaceExisting,
@@ -297,15 +149,7 @@ public class ShizukuPlugin private constructor() :
 			 * All parameters are `false` by default.
 			 */
 			@JvmField
-			public val DEFAULT: InstallParameters = InstallParameters(
-				bypassLowTargetSdkBlock = false,
-				allowTest = false,
-				replaceExisting = false,
-				requestDowngrade = false,
-				grantAllRequestedPermissions = false,
-				allUsers = false,
-				installerPackageName = ""
-			)
+			public val DEFAULT: InstallParameters = Builder().build()
 		}
 	}
 
@@ -345,7 +189,6 @@ public class ShizukuPlugin private constructor() :
 			replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.Builder")
 		)
 		public class Builder : InstallParameters.Builder() {
-
 			override fun build(): Parameters = Parameters(
 				bypassLowTargetSdkBlock,
 				allowTest,
@@ -370,15 +213,7 @@ public class ShizukuPlugin private constructor() :
 				replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.DEFAULT")
 			)
 			@JvmField
-			public val DEFAULT: Parameters = Parameters(
-				bypassLowTargetSdkBlock = false,
-				allowTest = false,
-				replaceExisting = false,
-				requestDowngrade = false,
-				grantAllRequestedPermissions = false,
-				allUsers = false,
-				installerPackageName = ""
-			)
+			public val DEFAULT: Parameters = Builder().build()
 		}
 	}
 
@@ -386,77 +221,20 @@ public class ShizukuPlugin private constructor() :
 	 * Uninstall parameters for [ShizukuPlugin]. Take effect only on Android 8.1+.
 	 */
 	public open class UninstallParameters internal constructor(
+		keepData: Boolean,
+		allUsers: Boolean
+	) : PrivilegedUninstallParameters(keepData, allUsers) {
 
-		/**
-		 * Flag parameter to indicate that you don't want to delete the package's data directory.
-		 */
-		public val keepData: Boolean,
-
-		/**
-		 * Flag parameter to indicate that you want the package deleted for all users.
-		 */
-		public val allUsers: Boolean
-	) : AckpinePlugin.Parameters {
-
-		override fun equals(other: Any?): Boolean {
-			if (this === other) return true
-			if (other !is UninstallParameters) return false
-			if (keepData != other.keepData) return false
-			if (allUsers != other.allUsers) return false
-			return true
-		}
-
-		override fun hashCode(): Int {
-			var result = keepData.hashCode()
-			result = 31 * result + allUsers.hashCode()
-			return result
-		}
-
-		override fun toString(): String {
-			return "UninstallParameters(" +
-					"keepData=$keepData, " +
-					"allUsers=$allUsers" +
-					")"
-		}
+		override fun getName(): String = "UninstallParameters"
 
 		/**
 		 * Builder for [ShizukuPlugin.UninstallParameters].
 		 */
-		public open class Builder {
-
-			/**
-			 * Flag parameter to indicate that you don't want to delete the package's data directory.
-			 */
-			public var keepData: Boolean = false
-				private set
-
-			/**
-			 * Flag parameter to indicate that you want the package deleted for all users.
-			 */
-			public var allUsers: Boolean = false
-				private set
-
-			/**
-			 * Sets [ShizukuPlugin.UninstallParameters.keepData].
-			 */
-			public fun setKeepData(value: Boolean): Builder = apply {
-				keepData = value
-			}
-
-			/**
-			 * Sets [ShizukuPlugin.UninstallParameters.allUsers].
-			 */
-			public fun setAllUsers(value: Boolean): Builder = apply {
-				allUsers = value
-			}
-
-			/**
-			 * Constructs a new instance of [ShizukuPlugin.UninstallParameters].
-			 */
-			public open fun build(): UninstallParameters = UninstallParameters(
-				keepData,
-				allUsers
-			)
+		@Suppress("RedundantOverride") // binary compatibility
+		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
+			override fun setKeepData(value: Boolean): Builder = super.setKeepData(value)
+			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers)
 		}
 
 		public companion object {
@@ -467,10 +245,7 @@ public class ShizukuPlugin private constructor() :
 			 * All parameters are `false` by default.
 			 */
 			@JvmField
-			public val DEFAULT: UninstallParameters = UninstallParameters(
-				keepData = false,
-				allUsers = false
-			)
+			public val DEFAULT: UninstallParameters = Builder().build()
 		}
 	}
 
@@ -478,17 +253,4 @@ public class ShizukuPlugin private constructor() :
 		@JvmSynthetic
 		internal const val PLUGIN_ID = "ru.solrudev.ackpine.shizuku.ShizukuPlugin"
 	}
-}
-
-@JvmSynthetic
-internal fun getUninstallCapabilities(
-	uninstallerType: UninstallerType,
-	sdkInt: Int
-): ShizukuUninstallCapabilities {
-	val isSupported = if (uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED && sdkInt >= 27) {
-		CapabilityStatus.SUPPORTED
-	} else {
-		CapabilityStatus.UNSUPPORTED
-	}
-	return ShizukuUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
 }

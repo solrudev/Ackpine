@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.libsu
+package ru.solrudev.ackpine.privileged
 
 @JvmSynthetic
 internal const val INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK = 0x01000000
