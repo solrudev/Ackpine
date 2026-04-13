@@ -21,7 +21,7 @@ Key features of Ackpine:
 - **Deferred**: Ackpine allows to defer user's intervention via customizable high-priority notification.
 - **Progress and state updates**: it's easy to observe every session's state and progress updates.
 - **Advanced features**: Ackpine allows to benefit from advanced features without juggling complex OS APIs (such as install pre-approval) introduced in later Android versions.
-- **Shizuku**: Shizuku is supported as an installer backend with advanced install flags.
+- **Elevated permissions**: Shizuku and root shell are supported as installer backends with advanced install flags.
 - **100% Java and Kotlin-friendly**: while maintaining full Java compatibility, Ackpine was developed as a Kotlin-first library.
 - **Compatibility**: Ackpine supports Android versions starting from API level 16.
 
@@ -64,6 +64,12 @@ Latest version: ![Maven Central](https://img.shields.io/maven-central/v/ru.solru
     # optional - testing utilities
     ackpine-test = { module = "ru.solrudev.ackpine:ackpine-test", version.ref = "ackpine" }
     
+    # optional - plugin enabling installs/uninstalls under root user
+    ackpine-libsu = { module = "ru.solrudev.ackpine:ackpine-libsu", version.ref = "ackpine" }
+    
+    # optional - Kotlin extensions for libsu plugin
+    ackpine-libsu-ktx = { module = "ru.solrudev.ackpine:ackpine-libsu-ktx", version.ref = "ackpine" }
+    
     [bundles]
     ackpine = [
         "ackpine-core",
@@ -72,7 +78,9 @@ Latest version: ![Maven Central](https://img.shields.io/maven-central/v/ru.solru
         "ackpine-splits-ktx",
         "ackpine-assets",
         "ackpine-shizuku",
-        "ackpine-shizuku-ktx"
+        "ackpine-shizuku-ktx",
+        "ackpine-libsu",
+        "ackpine-libsu-ktx"
     ]
     ```
 
@@ -100,6 +108,12 @@ Latest version: ![Maven Central](https://img.shields.io/maven-central/v/ru.solru
     
         // optional - Kotlin extensions for Shizuku plugin
         implementation("ru.solrudev.ackpine:ackpine-shizuku-ktx:$ackpineVersion")
+    
+        // optional - plugin enabling installs/uninstalls under root user
+        implementation("ru.solrudev.ackpine:ackpine-libsu:$ackpineVersion")
+    
+        // optional - Kotlin extensions for libsu plugin
+        implementation("ru.solrudev.ackpine:ackpine-libsu-ktx:$ackpineVersion")
     
         // optional - testing utilities
         testImplementation("ru.solrudev.ackpine:ackpine-test:$ackpineVersion")
