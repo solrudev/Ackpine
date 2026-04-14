@@ -491,6 +491,7 @@ class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 		installPreapprovalDao = database.installPreapprovalDao(),
 		installConstraintsDao = database.installConstraintsDao(),
 		executor = ImmediateExecutor,
+		parallelism = 1,
 		handler = Handler(Looper.getMainLooper()),
 		sessionCallbackHandler = lazy { Handler(Looper.getMainLooper()) }
 	)

@@ -268,6 +268,7 @@ internal class PackageInstallerImpl internal constructor(
 			val applicationContext = context.applicationContext
 			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
 			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext)
+			val parallelism = AckpineThreadPool.threadCount - 1
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
@@ -285,6 +286,7 @@ internal class PackageInstallerImpl internal constructor(
 					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
 					AckpineThreadPool,
+					parallelism,
 					Handler(context.mainLooper),
 					sessionCallbackHandler()
 				),

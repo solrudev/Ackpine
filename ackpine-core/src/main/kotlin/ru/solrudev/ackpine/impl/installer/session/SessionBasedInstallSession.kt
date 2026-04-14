@@ -78,6 +78,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -108,6 +109,7 @@ internal class SessionBasedInstallSession internal constructor(
 	installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
+	parallelism: Int,
 	handler: Handler,
 	private val sessionCallbackHandler: Handler,
 	@Volatile private var nativeSessionId: Int,
@@ -123,6 +125,7 @@ internal class SessionBasedInstallSession internal constructor(
 	notificationId, dbWriteSemaphore
 ), PreapprovalListener {
 
+	private val parallelism = parallelism.coerceAtLeast(1)
 	private val packageInstaller by packageInstallerService
 
 	@Volatile
@@ -458,57 +461,81 @@ internal class SessionBasedInstallSession internal constructor(
 				}
 				return tag
 			}
-		val countdown = AtomicInteger(apks.size)
+		val filesCount = apks.size
+		val countdown = AtomicInteger(filesCount)
 		val currentProgress = AtomicInteger(0)
-		val progressMax = apks.size * PROGRESS_MAX
+		val progressMax = filesCount * PROGRESS_MAX
+		val nextIndex = AtomicInteger(0)
+		val isCompleted = AtomicBoolean(false)
 		val sharedCancelSignal = CancellationSignal()
 		cancellationSignal.setOnCancelListener {
 			sharedCancelSignal.cancel()
-			completer.setCancelled()
-		}
-		assetFileDescriptors.forEachIndexed { index, afd ->
-			try {
-				executor.execute {
-					try {
-						afd.use {
-							writeApk(afd, index, currentProgress, progressMax, sharedCancelSignal)
-							if (countdown.decrementAndGet() == 0) {
-								completer.set(Unit)
-							}
-						}
-					} catch (_: OperationCanceledException) { // no-op
-					} catch (throwable: Throwable) {
-						sharedCancelSignal.cancel()
-						completer.setException(throwable)
-					}
-				}
-			} catch (exception: Exception) {
-				afd.closeWithException(exception)
-				sharedCancelSignal.cancel()
-				completer.setException(exception)
+			if (isCompleted.compareAndSet(false, true)) {
+				closeAllWithException(assetFileDescriptors, OperationCanceledException())
+				completer.setCancelled()
 			}
 		}
-		return tag
-	}
 
-	private fun PackageInstallerService.Session.writeApk(
-		afd: AssetFileDescriptor,
-		index: Int,
-		currentProgress: AtomicInteger,
-		progressMax: Int,
-		cancellationSignal: CancellationSignal
-	) = afd.createInputStream().use { apkStream ->
-		checkNotNull(apkStream) { "APK $index InputStream was null." }
-		val length = afd.declaredLength
-		val sessionStream = openWrite("$index.apk", 0, length)
-		sessionStream.buffered().use { bufferedSessionStream ->
-			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
-				val current = currentProgress.addAndGet(progress)
-				setStagingProgress(current.toFloat() / progressMax)
-			})
-			bufferedSessionStream.flush()
-			fsync(sessionStream)
+		fun fail(throwable: Throwable) {
+			sharedCancelSignal.cancel()
+			if (isCompleted.compareAndSet(false, true)) {
+				closeAllWithException(assetFileDescriptors, throwable)
+				completer.setException(throwable)
+			}
 		}
+
+		fun writeApk(
+			afd: AssetFileDescriptor,
+			index: Int
+		) = afd.createInputStream().use { apkStream ->
+			checkNotNull(apkStream) { "APK $index InputStream was null." }
+			val length = afd.declaredLength
+			val sessionStream = openWrite("$index.apk", 0, length)
+			sessionStream.buffered().use { bufferedSessionStream ->
+				apkStream.copyTo(bufferedSessionStream, length, sharedCancelSignal, onProgress = { progress ->
+					val current = currentProgress.addAndGet(progress)
+					setStagingProgress(current.toFloat() / progressMax)
+				})
+				bufferedSessionStream.flush()
+				fsync(sessionStream)
+			}
+		}
+
+		fun worker() {
+			while (!sharedCancelSignal.isCanceled && !isCompleted.get()) {
+				val index = nextIndex.getAndIncrement()
+				if (index >= filesCount) {
+					return
+				}
+				val afd = assetFileDescriptors[index]
+				try {
+					afd.use {
+						writeApk(afd, index)
+					}
+					if (countdown.decrementAndGet() == 0 && isCompleted.compareAndSet(false, true)) {
+						completer.set(Unit)
+						return
+					}
+				} catch (_: OperationCanceledException) { // no-op
+					return
+				} catch (throwable: Throwable) {
+					fail(throwable)
+					return
+				}
+			}
+		}
+
+		val workerCount = minOf(filesCount, parallelism)
+		repeat(workerCount - 1) {
+			try {
+				executor.execute(::worker)
+			} catch (exception: Exception) {
+				fail(exception)
+				return tag
+			}
+		}
+		worker()
+		return tag
 	}
 
 	private fun PackageInstallerService.createAndRegisterSessionCallback(

@@ -544,7 +544,8 @@ internal fun createSessionBasedSession(
 	nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
 	preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),
 	constraintsDao: RecordingInstallConstraintsDao = RecordingInstallConstraintsDao(),
-	executor: Executor = ImmediateExecutor
+	executor: Executor = ImmediateExecutor,
+	parallelism: Int = Int.MAX_VALUE
 ) = SessionBasedInstallSession(
 	context = ApplicationProvider.getApplicationContext(),
 	lazyOf(packageInstaller), apks, id, initialState, initialProgress,
@@ -554,7 +555,7 @@ internal fun createSessionBasedSession(
 	sessionDao = RecordingSessionDao(),
 	sessionFailureDao = TestSessionFailureDao(),
 	sessionProgressDao = RecordingSessionProgressDao(),
-	nativeSessionIdDao, preapprovalDao, constraintsDao, executor,
+	nativeSessionIdDao, preapprovalDao, constraintsDao, executor, parallelism,
 	handler = Handler(Looper.getMainLooper()),
 	sessionCallbackHandler = Handler(Looper.getMainLooper()),
 	nativeSessionId,
