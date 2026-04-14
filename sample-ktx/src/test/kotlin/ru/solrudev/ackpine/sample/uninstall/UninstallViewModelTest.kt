@@ -20,11 +20,16 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
+import ru.solrudev.ackpine.libsu.LibsuPlugin
 import ru.solrudev.ackpine.sample.MainDispatcherRule
+import ru.solrudev.ackpine.sample.settings.InstallerBackend
+import ru.solrudev.ackpine.sample.settings.createSettingsRepository
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin
 import ru.solrudev.ackpine.test.TestPackageUninstaller
 import ru.solrudev.ackpine.test.TestSessionScript
 import ru.solrudev.ackpine.test.TestUninstallSession
@@ -47,7 +52,12 @@ class UninstallViewModelTest {
 
 	@Test
 	fun loadApplicationsPopulatesUiState() = runTest(mainDispatcherRule.dispatcher) {
-		val viewModel = UninstallViewModel(TestPackageUninstaller(), SavedStateHandle(), coroutineContext)
+		val viewModel = UninstallViewModel(
+			TestPackageUninstaller(),
+			SavedStateHandle(),
+			coroutineContext,
+			createSettingsRepository()
+		)
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -67,9 +77,9 @@ class UninstallViewModelTest {
 
 	@Test
 	fun uninstallPackageSuccessfulFlow() = runTest(mainDispatcherRule.dispatcher) {
-		val uninstaller = TestPackageUninstaller()
+		val uninstaller = TestPackageUninstaller(TestSessionScript.empty())
 		val savedStateHandle = SavedStateHandle()
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext, createSettingsRepository())
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -78,9 +88,12 @@ class UninstallViewModelTest {
 			awaitItem() // apps loaded
 
 			viewModel.uninstallPackage(app.packageName)
-			assertEquals(uninstaller.sessions.last().id, savedStateHandle[SESSION_ID_KEY])
+			advanceUntilIdle()
+			val session = uninstaller.sessions.last()
+			assertEquals(session.id, savedStateHandle[SESSION_ID_KEY])
 			assertEquals(app.packageName, savedStateHandle[PACKAGE_NAME_KEY])
 
+			session.controller.succeed()
 			assertEquals(UninstallUiState(), awaitItem())
 			assertNull(savedStateHandle[SESSION_ID_KEY])
 			assertNull(savedStateHandle[PACKAGE_NAME_KEY])
@@ -106,7 +119,7 @@ class UninstallViewModelTest {
 		val script: TestSessionScript<UninstallFailure> = TestSessionScript.auto(Session.State.Failed(failure))
 		val uninstaller = TestPackageUninstaller(script)
 		val savedStateHandle = SavedStateHandle()
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext, createSettingsRepository())
 		val app = createApplicationData()
 		viewModel.uiState.test {
 			awaitItem() // initial state
@@ -143,12 +156,48 @@ class UninstallViewModelTest {
 				PACKAGE_NAME_KEY to PACKAGE_NAME
 			)
 		)
-		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext, createSettingsRepository())
 		viewModel.uiState.first() // trigger collection
 		advanceUntilIdle()
 
 		assertNull(savedStateHandle[SESSION_ID_KEY])
 		assertNull(savedStateHandle[PACKAGE_NAME_KEY])
+	}
+
+	@Test
+	fun uninstallPackageRegistersLibsuPluginForRootBackend() = runTest(mainDispatcherRule.dispatcher) {
+		val uninstaller = TestPackageUninstaller(TestSessionScript.empty())
+		val savedStateHandle = SavedStateHandle()
+		val settingsRepository = createSettingsRepository(InstallerBackend.ROOT)
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext, settingsRepository)
+
+		viewModel.uninstallPackage(PACKAGE_NAME)
+		advanceUntilIdle()
+
+		val session = uninstaller.sessions.last()
+		val parameters = uninstaller.createdParameters.getValue(session.id)
+		val pluginParameters = parameters.pluginContainer
+			.getPlugins()
+			.getValue(LibsuPlugin::class.java) as LibsuPlugin.UninstallParameters
+		assertEquals(LibsuPlugin.UninstallParameters.DEFAULT, pluginParameters)
+	}
+
+	@Test
+	fun uninstallPackageRegistersShizukuPluginForShizukuBackend() = runTest(mainDispatcherRule.dispatcher) {
+		val uninstaller = TestPackageUninstaller(TestSessionScript.empty())
+		val savedStateHandle = SavedStateHandle()
+		val settingsRepository = createSettingsRepository(InstallerBackend.SHIZUKU, supportsShizuku = flowOf(true))
+		val viewModel = UninstallViewModel(uninstaller, savedStateHandle, coroutineContext, settingsRepository)
+
+		viewModel.uninstallPackage(PACKAGE_NAME)
+		advanceUntilIdle()
+
+		val session = uninstaller.sessions.last()
+		val parameters = uninstaller.createdParameters.getValue(session.id)
+		val pluginParameters = parameters.pluginContainer
+			.getPlugins()
+			.getValue(ShizukuPlugin::class.java) as ShizukuPlugin.UninstallParameters
+		assertEquals(ShizukuPlugin.UninstallParameters.DEFAULT, pluginParameters)
 	}
 
 	private fun createApplicationData() = ApplicationData("App", PACKAGE_NAME, TestDrawable())

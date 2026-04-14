@@ -33,4 +33,10 @@
 		android:label="@string/screen_title_uninstall"
 		tools:layout="@layout/fragment_uninstall" />
 
+	<fragment
+		android:id="@+id/settings_fragment"
+		android:name="ru.solrudev.ackpine.sample.settings.SettingsFragment"
+		android:label="@string/screen_title_settings"
+		tools:layout="@layout/fragment_settings" />
+
 </navigation>

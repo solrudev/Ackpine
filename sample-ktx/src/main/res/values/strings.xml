@@ -21,9 +21,18 @@
 	<string name="percentage" translatable="false">%d%%</string>
 	<string name="screen_title_install">Install</string>
 	<string name="screen_title_uninstall">Uninstall</string>
+	<string name="screen_title_settings">Settings</string>
 	<string name="cancel">Cancel</string>
 	<string name="fab_install">Install</string>
 	<string name="uninstall">Uninstall</string>
+	<string name="settings_installer_backend">Installer</string>
+	<string name="settings_installer_backend_description">Installer backend used for installing and uninstalling apps</string>
+	<string name="installer_rootless">Rootless (default)</string>
+	<string name="installer_root">Root (requires root access)</string>
+	<string name="installer_shizuku">Shizuku (requires Shizuku 11+)</string>
+	<string name="shizuku_unsupported_android_version">Shizuku is not supported on this Android version</string>
+	<string name="shizuku_not_running">Shizuku is not running</string>
+	<string name="shizuku_permission_denied">Shizuku permission denied</string>
 	<string name="session_error">Error</string>
 	<string name="session_error_with_reason">Error: %s</string>
 	<string name="no_install_sessions">No install sessions</string>

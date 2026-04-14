@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -46,20 +47,26 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
+import ru.solrudev.ackpine.libsu.libsu
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
+import ru.solrudev.ackpine.sample.settings.InstallerBackend
+import ru.solrudev.ackpine.sample.settings.SettingsRepository
+import ru.solrudev.ackpine.sample.settings.preferencesDataStore
 import ru.solrudev.ackpine.session.ProgressSession
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
+import ru.solrudev.ackpine.shizuku.shizuku
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.splits.get
 import java.util.UUID
 
 class InstallViewModel(
 	private val packageInstaller: PackageInstaller,
-	private val sessionDataRepository: SessionDataRepository
+	private val sessionDataRepository: SessionDataRepository,
+	private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
 	private val error = MutableStateFlow(ResolvableString.empty())
@@ -80,6 +87,12 @@ class InstallViewModel(
 		}
 		val session = packageInstaller.createSession(uris) {
 			name = fileName
+			when (settingsRepository.installerBackend.first()) {
+				InstallerBackend.ROOT -> libsu { replaceExisting = true }
+				InstallerBackend.SHIZUKU -> shizuku { replaceExisting = true }
+				InstallerBackend.ROOTLESS -> { // no-op
+				}
+			}
 		}
 		val sessionData = SessionData(session.id, fileName)
 		sessionDataRepository.addSessionData(sessionData)
@@ -189,7 +202,8 @@ class InstallViewModel(
 				val packageInstaller = PackageInstaller.getInstance(application)
 				val savedStateHandle = extras.createSavedStateHandle()
 				val sessionsRepository = SessionDataRepositoryImpl(savedStateHandle)
-				return InstallViewModel(packageInstaller, sessionsRepository) as T
+				val settingsRepository = SettingsRepository(application.preferencesDataStore)
+				return InstallViewModel(packageInstaller, sessionsRepository, settingsRepository) as T
 			}
 		}
 	}

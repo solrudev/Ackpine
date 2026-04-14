@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.sample.uninstall;
 import static androidx.lifecycle.SavedStateHandleSupport.createSavedStateHandle;
 import static androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -42,9 +43,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
+import ru.solrudev.ackpine.libsu.LibsuPlugin;
+import ru.solrudev.ackpine.sample.settings.SettingsRepository;
+import ru.solrudev.ackpine.sample.settings.SharedPreferencesSettingsRepository;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.Session;
 import ru.solrudev.ackpine.session.parameters.Confirmation;
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin;
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller;
 import ru.solrudev.ackpine.uninstaller.UninstallFailure;
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters;
@@ -60,13 +65,16 @@ public final class UninstallViewModel extends ViewModel {
 	private final PackageUninstaller packageUninstaller;
 	private final SavedStateHandle savedStateHandle;
 	private final ExecutorService executor;
+	private final SettingsRepository settingsRepository;
 
 	public UninstallViewModel(@NonNull PackageUninstaller packageUninstaller,
 							  @NonNull SavedStateHandle savedStateHandle,
-							  @NonNull ExecutorService executor) {
+							  @NonNull ExecutorService executor,
+							  @NonNull SettingsRepository settingsRepository) {
 		this.packageUninstaller = packageUninstaller;
 		this.savedStateHandle = savedStateHandle;
 		this.executor = executor;
+		this.settingsRepository = settingsRepository;
 		final var sessionId = getSessionId();
 		if (sessionId != null) {
 			addSessionListener(sessionId);
@@ -112,10 +120,15 @@ public final class UninstallViewModel extends ViewModel {
 	}
 
 	public void uninstallPackage(@NonNull String packageName) {
-		final var session =
-				packageUninstaller.createSession(new UninstallParameters.Builder(packageName)
-						.setConfirmation(Confirmation.IMMEDIATE)
-						.build());
+		final var builder = new UninstallParameters.Builder(packageName)
+				.setConfirmation(Confirmation.IMMEDIATE);
+		switch (settingsRepository.getInstallerBackend()) {
+			case ROOT -> builder.registerPlugin(LibsuPlugin.class, LibsuPlugin.UninstallParameters.DEFAULT);
+			case SHIZUKU -> builder.registerPlugin(ShizukuPlugin.class, ShizukuPlugin.UninstallParameters.DEFAULT);
+			default -> { // no-op
+			}
+		}
+		final var session = packageUninstaller.createSession(builder.build());
 		savedStateHandle.set(SESSION_ID_KEY, session.getId());
 		savedStateHandle.set(PACKAGE_NAME_KEY, packageName);
 		attachSessionStateListener(session);
@@ -222,7 +235,9 @@ public final class UninstallViewModel extends ViewModel {
 				final var packageUninstaller = PackageUninstaller.getInstance(application);
 				final var savedStateHandle = createSavedStateHandle(creationExtras);
 				final var executor = Executors.newFixedThreadPool(8);
-				return new UninstallViewModel(packageUninstaller, savedStateHandle, executor);
+				final var preferences = application.getSharedPreferences("settings", Context.MODE_PRIVATE);
+				final var settingsRepository = new SharedPreferencesSettingsRepository(preferences);
+				return new UninstallViewModel(packageUninstaller, savedStateHandle, executor, settingsRepository);
 			}
 	);
 }

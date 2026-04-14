@@ -2,9 +2,18 @@
 <resources>
 	<string name="screen_title_install">Cài đặt</string>
 	<string name="screen_title_uninstall">Gỡ cài đặt</string>
+	<string name="screen_title_settings">Cài đặt chung</string>
 	<string name="cancel">Huỷ</string>
 	<string name="fab_install">Cài đặt</string>
 	<string name="uninstall">Gỡ cài đặt</string>
+	<string name="settings_installer_backend">Trình cài đặt</string>
+	<string name="settings_installer_backend_description">Phần mềm phụ trợ cài đặt dùng để cài đặt và gỡ cài đặt ứng dụng</string>
+	<string name="installer_rootless">Không root (mặc định)</string>
+	<string name="installer_root">Root (yêu cầu quyền truy cập root)</string>
+	<string name="installer_shizuku">Shizuku (yêu cầu Shizuku 11+)</string>
+	<string name="shizuku_unsupported_android_version">Shizuku không được hỗ trợ trên phiên bản Android này</string>
+	<string name="shizuku_not_running">Shizuku chưa chạy</string>
+	<string name="shizuku_permission_denied">Quyền Shizuku bị từ chối</string>
 	<string name="session_error">Lỗi</string>
 	<string name="session_error_with_reason">Lỗi: %s</string>
 	<string name="no_install_sessions">Không có quá trình cài đặt nào</string>

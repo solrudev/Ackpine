@@ -22,6 +22,8 @@ Feature matrix
 | Preapproval (API 34+)          | ❌                                       | ❌                   | ✅                             |
 | Install constraints (API 34+)  | ❌                                       | ❌                   | ✅                             |
 | Unit tests with `ackpine-test` | ✅                                       | ✅                   | ✅                             |
+| Shizuku installer              | ✅                                       | ✅                   | ❌                             |
+| Root installer                 | ✅                                       | ✅                   | ❌                             |
 
 ### [`sample-java`](https://github.com/solrudev/Ackpine/tree/master/sample-java)
 

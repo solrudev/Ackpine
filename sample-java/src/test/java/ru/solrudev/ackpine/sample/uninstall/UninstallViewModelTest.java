@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.sample.uninstall;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static ru.solrudev.ackpine.sample.settings.TestSettingsRepository.createSettingsRepository;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,7 +38,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 
+import ru.solrudev.ackpine.libsu.LibsuPlugin;
+import ru.solrudev.ackpine.sample.settings.InstallerBackend;
 import ru.solrudev.ackpine.session.Session;
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin;
 import ru.solrudev.ackpine.test.TestPackageUninstaller;
 import ru.solrudev.ackpine.test.TestSession;
 import ru.solrudev.ackpine.test.TestSessionScript;
@@ -57,7 +61,8 @@ public class UninstallViewModelTest {
 	public void loadApplicationsPopulatesUiState() {
 		final var viewModel = new UninstallViewModel(new TestPackageUninstaller(),
 				new SavedStateHandle(),
-				directExecutor);
+				directExecutor,
+				createSettingsRepository());
 		final var app = createApplicationData();
 
 		final var loadingValues = new ArrayList<Boolean>();
@@ -79,7 +84,10 @@ public class UninstallViewModelTest {
 		final var packageNames = new ArrayList<String>();
 		savedStateHandle.<String>getLiveData(PACKAGE_NAME_KEY, null).observeForever(packageNames::add);
 
-		final var viewModel = new UninstallViewModel(uninstaller, savedStateHandle, directExecutor);
+		final var viewModel = new UninstallViewModel(uninstaller,
+				savedStateHandle,
+				directExecutor,
+				createSettingsRepository());
 		final var app = createApplicationData();
 		viewModel.loadApplications(true, () -> List.of(app));
 
@@ -114,7 +122,10 @@ public class UninstallViewModelTest {
 		TestSessionScript<UninstallFailure> script = TestSessionScript.auto(new Session.State.Failed<>(failure));
 		final var uninstaller = new TestPackageUninstaller(script);
 		final var savedStateHandle = new SavedStateHandle();
-		final var viewModel = new UninstallViewModel(uninstaller, savedStateHandle, directExecutor);
+		final var viewModel = new UninstallViewModel(uninstaller,
+				savedStateHandle,
+				directExecutor,
+				createSettingsRepository());
 		final var app = createApplicationData();
 
 		viewModel.loadApplications(true, () -> List.of(app));
@@ -141,10 +152,44 @@ public class UninstallViewModelTest {
 				)
 		);
 
-		new UninstallViewModel(uninstaller, savedStateHandle, directExecutor);
+		new UninstallViewModel(uninstaller, savedStateHandle, directExecutor, createSettingsRepository());
 
 		assertNull(savedStateHandle.get(SESSION_ID_KEY));
 		assertNull(savedStateHandle.get(PACKAGE_NAME_KEY));
+	}
+
+	@Test
+	public void uninstallPackageRegistersLibsuPluginForRootBackend() {
+		final var uninstaller = new TestPackageUninstaller();
+		final var savedStateHandle = new SavedStateHandle();
+		final var viewModel = new UninstallViewModel(uninstaller,
+				savedStateHandle,
+				directExecutor,
+				createSettingsRepository(InstallerBackend.ROOT));
+
+		viewModel.uninstallPackage(PACKAGE_NAME);
+
+		final var session = uninstaller.getSessions().getLast();
+		final var parameters = uninstaller.getCreatedParameters().get(session.getId());
+		assertEquals(LibsuPlugin.UninstallParameters.DEFAULT,
+				parameters.getPluginContainer().getPlugins().get(LibsuPlugin.class));
+	}
+
+	@Test
+	public void uninstallPackageRegistersShizukuPluginForShizukuBackend() {
+		final var uninstaller = new TestPackageUninstaller();
+		final var savedStateHandle = new SavedStateHandle();
+		final var viewModel = new UninstallViewModel(uninstaller,
+				savedStateHandle,
+				directExecutor,
+				createSettingsRepository(InstallerBackend.SHIZUKU, true));
+
+		viewModel.uninstallPackage(PACKAGE_NAME);
+
+		final var session = uninstaller.getSessions().getLast();
+		final var parameters = uninstaller.getCreatedParameters().get(session.getId());
+		assertEquals(ShizukuPlugin.UninstallParameters.DEFAULT,
+				parameters.getPluginContainer().getPlugins().get(ShizukuPlugin.class));
 	}
 
 	@NonNull

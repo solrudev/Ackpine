@@ -24,4 +24,11 @@
 	<dimen name="card_element_margin">16dp</dimen>
 	<dimen name="fab_margin">16dp</dimen>
 	<dimen name="content_padding_horizontal">16dp</dimen>
+	<dimen name="preference_icon_size">24dp</dimen>
+	<dimen name="preference_content_margin">16dp</dimen>
+	<dimen name="preference_description_margin">4dp</dimen>
+	<dimen name="preference_header_margin">12dp</dimen>
+	<dimen name="preference_margin_vertical">24dp</dimen>
+	<dimen name="preference_min_height">56dp</dimen>
+	<dimen name="preference_padding_vertical">12dp</dimen>
 </resources>
