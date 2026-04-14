@@ -39,6 +39,7 @@ import ru.solrudev.ackpine.sample.settings.createSettingsRepository
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.shizuku.ShizukuPlugin
+import ru.solrudev.ackpine.splits.Abi
 import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.test.TestInstallSession
@@ -286,6 +287,34 @@ class InstallViewModelTest {
 	}
 
 	@Test
+	fun installPackageFiltersPreferredApksWhenInstallBestSuitedApksEnabled() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository()
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME)
+		advanceUntilIdle()
+
+		val parameters = installer.createdParameters.getValue(installer.sessions.last().id)
+		assertEquals(1, parameters.apks.size)
+	}
+
+	@Test
+	fun installPackageInstallsAllApksWhenInstallBestSuitedApksDisabled() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository(installBestSuitedApks = false)
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME)
+		advanceUntilIdle()
+
+		val parameters = installer.createdParameters.getValue(installer.sessions.last().id)
+		assertEquals(2, parameters.apks.size)
+	}
+
+	@Test
 	fun installPackageRegistersLibsuPluginForRootBackend() = runTest(mainDispatcherRule.dispatcher) {
 		val installer = TestPackageInstaller(TestSessionScript.empty())
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
@@ -332,6 +361,34 @@ class InstallViewModelTest {
 		val splitPackage = SplitPackage(
 			base = listOf(SplitPackage.Entry(isPreferred = true, apk)),
 			libs = emptyList(),
+			screenDensity = emptyList(),
+			localization = emptyList(),
+			other = emptyList(),
+			dynamicFeatures = emptyList()
+		)
+		return SplitPackage.Provider { ImmediateFuture.success(splitPackage) }
+	}
+
+	private fun createSplitPackageProviderWithNonPreferredSplits(): SplitPackage.Provider {
+		val baseApk = Apk.Base(
+			uri = Uri.EMPTY,
+			name = "base",
+			size = 1024,
+			packageName = "com.example",
+			versionCode = 1,
+			versionName = "1.0"
+		)
+		val libsApk = Apk.Libs(
+			uri = Uri.EMPTY,
+			name = "libs.arm",
+			size = 512,
+			packageName = "com.example",
+			versionCode = 1,
+			abi = Abi.ARMEABI_V7A
+		)
+		val splitPackage = SplitPackage(
+			base = listOf(SplitPackage.Entry(isPreferred = true, baseApk)),
+			libs = listOf(SplitPackage.Entry(isPreferred = false, libsApk)),
 			screenDensity = emptyList(),
 			localization = emptyList(),
 			other = emptyList(),

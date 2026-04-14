@@ -17,5 +17,6 @@
 package ru.solrudev.ackpine.sample.settings
 
 data class SettingsUiState(
-	val installerBackend: InstallerBackend = InstallerBackend.ROOTLESS
+	val installerBackend: InstallerBackend = InstallerBackend.ROOTLESS,
+	val installBestSuitedApks: Boolean = true
 )

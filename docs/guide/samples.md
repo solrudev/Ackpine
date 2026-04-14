@@ -7,6 +7,8 @@ Samples
 
 Sample apps showcasing the usage of Ackpine can be found in the [GitHub repository](https://github.com/solrudev/Ackpine). Each sample demonstrates different aspects of the library and serves as a reference for common integration patterns.
 
+`sample-java` and `sample-ktx` are full-featured local installer apps supporting split APKs with filtering depending on device configuration, uninstalls, root and Shizuku backends for both installs/uninstalls.
+
 Feature matrix
 --------------
 

@@ -59,6 +59,27 @@ class SettingsRepositoryTest {
 	}
 
 	@Test
+	fun installBestSuitedApksDefaultsToTrue() = runTest {
+		val repository = createSettingsRepository()
+		assertTrue(repository.installBestSuitedApks.first())
+	}
+
+	@Test
+	fun toggleInstallBestSuitedApksFlipsValue() = runTest {
+		val repository = createSettingsRepository()
+		repository.toggleInstallBestSuitedApks()
+		assertFalse(repository.installBestSuitedApks.first())
+	}
+
+	@Test
+	fun toggleInstallBestSuitedApksTwiceRestoresValue() = runTest {
+		val repository = createSettingsRepository()
+		repository.toggleInstallBestSuitedApks()
+		repository.toggleInstallBestSuitedApks()
+		assertTrue(repository.installBestSuitedApks.first())
+	}
+
+	@Test
 	fun shizukuSupportFlowReflectsBinderAvailabilityChanges() = runTest {
 		val supportsShizuku = MutableStateFlow(true)
 		val repository = createSettingsRepository(InstallerBackend.SHIZUKU, supportsShizuku)

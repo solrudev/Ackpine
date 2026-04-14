@@ -26,11 +26,15 @@ import kotlinx.coroutines.flow.updateAndGet
 
 suspend fun createSettingsRepository(
 	backend: InstallerBackend = InstallerBackend.ROOTLESS,
-	supportsShizuku: Flow<Boolean> = flowOf(false)
+	supportsShizuku: Flow<Boolean> = flowOf(false),
+	installBestSuitedApks: Boolean = true
 ): SettingsRepository {
 	val dataStore = TestPreferencesDataStore()
 	val repository = SettingsRepository(dataStore, supportsShizuku)
 	repository.setInstallerBackend(backend)
+	if (!installBestSuitedApks) {
+		repository.toggleInstallBestSuitedApks()
+	}
 	return repository
 }
 

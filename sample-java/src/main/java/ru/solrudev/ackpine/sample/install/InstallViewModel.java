@@ -166,7 +166,10 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	private void installPackage(@NonNull SplitPackage splitPackage, @NonNull String fileName) {
-		final var apks = splitPackage.toList();
+		final var splits = settingsRepository.isInstallBestSuitedApks()
+				? splitPackage.filterPreferred()
+				: splitPackage;
+		final var apks = splits.toList();
 		if (apks.isEmpty()) {
 			return;
 		}

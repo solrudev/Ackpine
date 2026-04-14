@@ -38,8 +38,17 @@ public final class SettingsViewModel extends ViewModel {
 		return settingsRepository.getInstallerBackendLiveData();
 	}
 
+	@NonNull
+	public LiveData<Boolean> getInstallBestSuitedApks() {
+		return settingsRepository.getInstallBestSuitedApksLiveData();
+	}
+
 	public void selectBackend(@NonNull InstallerBackend backend) {
 		settingsRepository.setInstallerBackend(backend);
+	}
+
+	public void toggleInstallBestSuitedApks() {
+		settingsRepository.toggleInstallBestSuitedApks();
 	}
 
 	public static final ViewModelInitializer<SettingsViewModel> initializer = new ViewModelInitializer<>(

@@ -23,4 +23,6 @@
 	<string name="error_conflicting_split_name">Botesende gesplete naam: %s</string>
 	<string name="error_conflicting_package_name">Botesende pakket naam. Verwag: %1$s, gevind: %2$s, naam: %3$s</string>
 	<string name="error_conflicting_version_code">Botesende weergawe kode. Verwag: %1$s, gevind: %2$s, naam: %3$s</string>
+	<string name="settings_install_best_suited_apks">Installeer slegs mees geskikte split-APK\'s</string>
+	<string name="settings_install_best_suited_apks_description">Vir split-pakkette, installeer slegs die APK\'s wat die beste by die toestelkonfigurasie pas. As dit gedeaktiveer is, word alle APK\'s in die split-pakket geïnstalleer</string>
 </resources>

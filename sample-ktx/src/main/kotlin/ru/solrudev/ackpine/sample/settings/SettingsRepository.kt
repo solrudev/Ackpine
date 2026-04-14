@@ -20,20 +20,22 @@ import android.content.Context
 import android.os.Build
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import rikka.shizuku.Shizuku
 
 private val INSTALLER_BACKEND_KEY = stringPreferencesKey("installer_backend")
+private val INSTALL_BEST_SUITED_APKS_KEY = booleanPreferencesKey("install_best_suited_apks")
 val Context.preferencesDataStore by preferencesDataStore(name = "settings")
 
 class SettingsRepository(
@@ -55,9 +57,20 @@ class SettingsRepository(
 		}
 	}.distinctUntilChanged()
 
+	val installBestSuitedApks: Flow<Boolean> = dataStore.data
+		.map { preferences -> preferences[INSTALL_BEST_SUITED_APKS_KEY] ?: true }
+		.distinctUntilChanged()
+
 	suspend fun setInstallerBackend(backend: InstallerBackend) {
 		dataStore.edit { preferences ->
 			preferences[INSTALLER_BACKEND_KEY] = backend.name
+		}
+	}
+
+	suspend fun toggleInstallBestSuitedApks() {
+		dataStore.edit { prefs ->
+			val previousValue = prefs[INSTALL_BEST_SUITED_APKS_KEY] ?: true
+			prefs[INSTALL_BEST_SUITED_APKS_KEY] = !previousValue
 		}
 	}
 }

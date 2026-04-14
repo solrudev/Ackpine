@@ -73,6 +73,9 @@ public final class SettingsFragment extends Fragment {
 			viewModel.selectBackend(InstallerBackend.ROOT);
 		});
 		binding.layoutSettingsInstallerShizuku.setOnClickListener(v -> selectShizukuBackend());
+		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener(v -> {
+			viewModel.toggleInstallBestSuitedApks();
+		});
 		Shizuku.addRequestPermissionResultListener(permissionListener);
 		observeViewModel();
 	}
@@ -89,6 +92,9 @@ public final class SettingsFragment extends Fragment {
 			binding.radioButtonSettingsInstallerRootless.setChecked(backend == InstallerBackend.ROOTLESS);
 			binding.radioButtonSettingsInstallerRoot.setChecked(backend == InstallerBackend.ROOT);
 			binding.radioButtonSettingsInstallerShizuku.setChecked(backend == InstallerBackend.SHIZUKU);
+		});
+		viewModel.getInstallBestSuitedApks().observe(getViewLifecycleOwner(), enabled -> {
+			binding.switchSettingsInstallBestSuitedApks.setChecked(enabled);
 		});
 	}
 

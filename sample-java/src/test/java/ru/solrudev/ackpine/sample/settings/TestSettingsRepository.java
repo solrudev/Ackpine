@@ -27,7 +27,12 @@ public class TestSettingsRepository {
 	}
 
 	public static SettingsRepository createSettingsRepository(InstallerBackend backend, boolean supportsShizuku) {
-		final var repository = new InMemorySettingsRepository(backend, () -> supportsShizuku);
+		return createSettingsRepository(backend, supportsShizuku, true);
+	}
+
+	public static SettingsRepository createSettingsRepository(InstallerBackend backend, boolean supportsShizuku,
+			boolean installBestSuitedApks) {
+		final var repository = new InMemorySettingsRepository(backend, () -> supportsShizuku, installBestSuitedApks);
 		repository.setInstallerBackend(backend);
 		return repository;
 	}

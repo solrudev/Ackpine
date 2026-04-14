@@ -39,4 +39,6 @@
 	<string name="error_conflicting_split_name">Конфликтующий APK: %s</string>
 	<string name="error_conflicting_package_name">Несовместимое имя пакета. Ожидаемое имя: %1$s, найдено: %2$s, имя APK: %3$s</string>
 	<string name="error_conflicting_version_code">Несовместимый код версии. Ожидаемый код: %1$s, найден: %2$s, имя APK: %3$s</string>
+	<string name="settings_install_best_suited_apks">Устанавливать только подходящие APK</string>
+	<string name="settings_install_best_suited_apks_description">Для split-пакетов устанавливать только те APK, которые лучше всего соответствуют конфигурации устройства. Если отключено, устанавливаются все APK из пакета</string>
 </resources>

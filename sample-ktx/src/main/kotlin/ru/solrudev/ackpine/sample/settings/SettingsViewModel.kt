@@ -22,17 +22,24 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class SettingsViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
 
-	val uiState = settingsRepository.installerBackend.map(::SettingsUiState)
-		.stateIn(viewModelScope, SharingStarted.Lazily, SettingsUiState())
+	val uiState = combine(
+		settingsRepository.installerBackend,
+		settingsRepository.installBestSuitedApks,
+		::SettingsUiState
+	).stateIn(viewModelScope, SharingStarted.Lazily, SettingsUiState())
 
 	fun selectBackend(backend: InstallerBackend) = viewModelScope.launch {
 		settingsRepository.setInstallerBackend(backend)
+	}
+
+	fun toggleInstallBestSuitedApks() = viewModelScope.launch {
+		settingsRepository.toggleInstallBestSuitedApks()
 	}
 
 	companion object {

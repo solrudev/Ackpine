@@ -212,7 +212,7 @@ public final class InstallFragment extends Fragment {
 			case "apk", APK_MIME_TYPE -> SplitPackage.from(new SingletonApkSequence(uri, context));
 			case "zip", "apks", "xapk", "apkm", ZIP_MIME_TYPE, BINARY_MIME_TYPE -> SplitPackage
 					.from(ApkSplits.validate(ZippedApkSplits.getApksForUri(uri, context)))
-					.filterCompatible(context);
+					.sortedByCompatibility(context);
 			default -> SplitPackage.empty();
 		};
 	}

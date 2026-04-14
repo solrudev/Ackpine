@@ -160,8 +160,11 @@ class InstallViewModel(
 
 	private suspend inline fun getApkUris(splitPackage: SplitPackage.Provider): List<Uri> {
 		try {
-			return splitPackage
-				.get()
+			var splits = splitPackage.get()
+			if (settingsRepository.installBestSuitedApks.first()) {
+				splits = splits.filterPreferred()
+			}
+			return splits
 				.toList()
 				.map { it.apk.uri }
 		} catch (exception: SplitPackageException) {

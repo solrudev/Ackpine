@@ -62,6 +62,9 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		binding.layoutSettingsInstallerShizuku.setOnClickListener {
 			selectShizukuBackend()
 		}
+		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener {
+			viewModel.toggleInstallBestSuitedApks()
+		}
 		Shizuku.addRequestPermissionResultListener(permissionListener)
 		this@SettingsFragment.observeViewModel()
 	}
@@ -75,6 +78,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
 			viewModel.uiState.collect { uiState ->
 				renderInstallerBackend(uiState.installerBackend)
+				binding.switchSettingsInstallBestSuitedApks.isChecked = uiState.installBestSuitedApks
 			}
 		}
 	}

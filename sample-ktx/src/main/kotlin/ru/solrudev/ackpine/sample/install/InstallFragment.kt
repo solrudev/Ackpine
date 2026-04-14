@@ -178,7 +178,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 			ZIP_MIME_TYPE, BINARY_MIME_TYPE -> ZippedApkSplits.getApksForUri(uri, context)
 				.validate()
 				.toSplitPackage()
-				.filterCompatible(context)
+				.sortedByCompatibility(context)
 
 			else -> SplitPackage.empty()
 		}

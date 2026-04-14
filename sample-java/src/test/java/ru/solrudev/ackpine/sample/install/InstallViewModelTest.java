@@ -49,6 +49,7 @@ import ru.solrudev.ackpine.sample.settings.InstallerBackend;
 import ru.solrudev.ackpine.session.Progress;
 import ru.solrudev.ackpine.session.Session;
 import ru.solrudev.ackpine.shizuku.ShizukuPlugin;
+import ru.solrudev.ackpine.splits.Abi;
 import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.SplitPackage;
 import ru.solrudev.ackpine.test.TestPackageInstaller;
@@ -247,6 +248,35 @@ public class InstallViewModelTest {
 	}
 
 	@Test
+	public void installPackageFiltersPreferredApksWhenInstallBestSuitedApksEnabled() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(1, parameters.getApks().getSize());
+	}
+
+	@Test
+	public void installPackageInstallsAllApksWhenInstallBestSuitedApksDisabled() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var settingsRepository = createSettingsRepository(InstallerBackend.ROOTLESS, false, false);
+		final var viewModel = new InstallViewModel(installer, repository, settingsRepository);
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(2, parameters.getApks().getSize());
+	}
+
+	@Test
 	public void installPackageRegistersLibsuPluginForRootBackend() {
 		final var installer = new TestPackageInstaller(TestSessionScript.empty());
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
@@ -282,6 +312,20 @@ public class InstallViewModelTest {
 				.get(ShizukuPlugin.class);
 		assertNotNull(pluginParameters);
 		assertTrue(pluginParameters.getReplaceExisting());
+	}
+
+	private static @NonNull SplitPackage.Provider createSplitPackageProviderWithNonPreferredSplits() {
+		final var baseApk = new Apk.Base(Uri.EMPTY, "base", 1024L, "com.example", 1L, "1.0");
+		final var libsApk = new Apk.Libs(Uri.EMPTY, "libs.arm", 512L, "com.example", 1L, Abi.ARMEABI_V7A);
+		final var splitPackage = new SplitPackage(
+				List.of(new SplitPackage.Entry<>(true, baseApk)),
+				List.of(new SplitPackage.Entry<>(false, libsApk)),
+				emptyList(),
+				emptyList(),
+				emptyList(),
+				emptyList()
+		);
+		return () -> ImmediateFuture.success(splitPackage);
 	}
 
 	private static @NonNull SplitPackage.Provider createSplitPackageProvider() {

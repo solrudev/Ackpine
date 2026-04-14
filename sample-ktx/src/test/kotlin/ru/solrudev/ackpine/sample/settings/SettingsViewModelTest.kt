@@ -41,6 +41,20 @@ class SettingsViewModelTest {
 	}
 
 	@Test
+	fun toggleInstallBestSuitedApksUpdatesUiState() = runTest(mainDispatcherRule.dispatcher) {
+		val viewModel = SettingsViewModel(createSettingsRepository())
+
+		viewModel.uiState.test {
+			assertEquals(SettingsUiState(installBestSuitedApks = true), awaitItem())
+
+			viewModel.toggleInstallBestSuitedApks()
+			advanceUntilIdle()
+
+			assertEquals(SettingsUiState(installBestSuitedApks = false), awaitItem())
+		}
+	}
+
+	@Test
 	fun uiStateReflectsBackendSelectionAndShizukuSupport() = runTest(mainDispatcherRule.dispatcher) {
 		val supportsShizuku = MutableStateFlow(true)
 		val repository = createSettingsRepository(supportsShizuku = supportsShizuku)

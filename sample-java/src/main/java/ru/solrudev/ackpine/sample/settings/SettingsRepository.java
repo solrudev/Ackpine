@@ -28,4 +28,11 @@ public interface SettingsRepository {
 	LiveData<InstallerBackend> getInstallerBackendLiveData();
 
 	void setInstallerBackend(@NonNull InstallerBackend backend);
+
+	boolean isInstallBestSuitedApks();
+
+	@NonNull
+	LiveData<Boolean> getInstallBestSuitedApksLiveData();
+
+	void toggleInstallBestSuitedApks();
 }

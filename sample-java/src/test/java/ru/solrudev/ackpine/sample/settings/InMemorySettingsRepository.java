@@ -25,15 +25,27 @@ public final class InMemorySettingsRepository implements SettingsRepository {
 
 	private final Supplier<Boolean> supportsShizuku;
 	private final MutableLiveData<InstallerBackend> installerBackendLiveData;
+	private final MutableLiveData<Boolean> installBestSuitedApksLiveData;
 	private InstallerBackend backend;
+	private boolean installBestSuitedApks;
 
 	public InMemorySettingsRepository(
 			@NonNull InstallerBackend backend,
 			@NonNull Supplier<Boolean> supportsShizuku
 	) {
+		this(backend, supportsShizuku, true);
+	}
+
+	public InMemorySettingsRepository(
+			@NonNull InstallerBackend backend,
+			@NonNull Supplier<Boolean> supportsShizuku,
+			boolean installBestSuitedApks
+	) {
 		this.supportsShizuku = supportsShizuku;
 		this.backend = sanitize(backend);
 		this.installerBackendLiveData = new MutableLiveData<>(this.backend);
+		this.installBestSuitedApks = installBestSuitedApks;
+		this.installBestSuitedApksLiveData = new MutableLiveData<>(installBestSuitedApks);
 	}
 
 	@NonNull
@@ -52,6 +64,23 @@ public final class InMemorySettingsRepository implements SettingsRepository {
 	@Override
 	public LiveData<InstallerBackend> getInstallerBackendLiveData() {
 		return installerBackendLiveData;
+	}
+
+	@Override
+	public boolean isInstallBestSuitedApks() {
+		return installBestSuitedApks;
+	}
+
+	@NonNull
+	@Override
+	public LiveData<Boolean> getInstallBestSuitedApksLiveData() {
+		return installBestSuitedApksLiveData;
+	}
+
+	@Override
+	public void toggleInstallBestSuitedApks() {
+		installBestSuitedApks = !installBestSuitedApks;
+		installBestSuitedApksLiveData.setValue(installBestSuitedApks);
 	}
 
 	@NonNull
