@@ -21,7 +21,6 @@ import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 
 import rikka.shizuku.Shizuku;
 
@@ -30,37 +29,19 @@ public final class SharedPreferencesSettingsRepository implements SettingsReposi
 	private static final String INSTALLER_BACKEND_KEY = "installer_backend";
 	private static final String INSTALL_BEST_SUITED_APKS_KEY = "install_best_suited_apks";
 	private final SharedPreferences sharedPreferences;
-	private final LiveData<InstallerBackend> installerBackendLiveData;
-	private final MutableLiveData<Boolean> installBestSuitedApksLiveData;
+	private final SharedPreferenceLiveData<InstallerBackend> installerBackendLiveData;
+	private final SharedPreferenceLiveData<Boolean> installBestSuitedApksLiveData;
 
 	public SharedPreferencesSettingsRepository(@NonNull SharedPreferences sharedPreferences) {
 		this.sharedPreferences = sharedPreferences;
-		this.installBestSuitedApksLiveData = new MutableLiveData<>(isInstallBestSuitedApks());
-		final var liveData = new LiveData<InstallerBackend>() {
-			private final SharedPreferences.OnSharedPreferenceChangeListener listener = (preferences, key) -> {
-				if (INSTALLER_BACKEND_KEY.equals(key)) {
-					setValue(getInstallerBackend());
-				}
-			};
-
-			@Override
-			protected void onActive() {
-				sharedPreferences.registerOnSharedPreferenceChangeListener(listener);
-				setValue(getInstallerBackend());
-			}
-
-			@Override
-			protected void onInactive() {
-				sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener);
-			}
-
-			void setBackend(InstallerBackend value) {
-				setValue(value);
-			}
-		};
-		this.installerBackendLiveData = liveData;
-		Shizuku.addBinderReceivedListener(() -> liveData.setBackend(getInstallerBackend()));
-		Shizuku.addBinderDeadListener(() -> liveData.setBackend(getInstallerBackend()));
+		installerBackendLiveData = new SharedPreferenceLiveData<>(sharedPreferences,
+				INSTALLER_BACKEND_KEY,
+				this::getInstallerBackend);
+		installBestSuitedApksLiveData = new SharedPreferenceLiveData<>(sharedPreferences,
+				INSTALL_BEST_SUITED_APKS_KEY,
+				this::isInstallBestSuitedApks);
+		Shizuku.addBinderReceivedListener(installerBackendLiveData::refresh);
+		Shizuku.addBinderDeadListener(installerBackendLiveData::refresh);
 	}
 
 	@NonNull
@@ -99,7 +80,6 @@ public final class SharedPreferencesSettingsRepository implements SettingsReposi
 	public void toggleInstallBestSuitedApks() {
 		final var newValue = !isInstallBestSuitedApks();
 		sharedPreferences.edit().putBoolean(INSTALL_BEST_SUITED_APKS_KEY, newValue).apply();
-		installBestSuitedApksLiveData.setValue(newValue);
 	}
 
 	private boolean isShizukuAvailable() {
