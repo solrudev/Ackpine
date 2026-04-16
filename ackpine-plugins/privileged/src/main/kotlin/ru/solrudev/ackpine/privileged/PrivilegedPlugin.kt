@@ -84,6 +84,9 @@ public abstract class PrivilegedPlugin<
 		return createUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
 	}
 
+	/**
+	 * Creates and returns the concrete [InstallCapabilities] instance from the pre-computed capability statuses.
+	 */
 	protected abstract fun createInstallCapabilities(
 		bypassLowTargetSdkBlock: CapabilityStatus,
 		allowTest: CapabilityStatus,
@@ -94,6 +97,9 @@ public abstract class PrivilegedPlugin<
 		installerPackageName: CapabilityStatus
 	): InstallCapabilities
 
+	/**
+	 * Creates and returns the concrete [UninstallCapabilities] instance from the pre-computed capability statuses.
+	 */
 	protected abstract fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
 		allUsers: CapabilityStatus

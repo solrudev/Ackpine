@@ -63,7 +63,7 @@ public abstract class PrivilegedInstallParameters protected constructor(
 ) : AckpinePlugin.Parameters {
 
 	/**
-	 * Get the simple class name for toString().
+	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
 

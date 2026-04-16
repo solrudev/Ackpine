@@ -57,5 +57,8 @@ public abstract class PrivilegedUninstallParametersDslBuilder<
 			delegate.setAllUsers(value)
 		}
 
+	/**
+	 * Builds and returns a [Params] instance from the current DSL state.
+	 */
 	protected fun buildParameters(): Params = delegate.build()
 }

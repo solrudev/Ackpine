@@ -81,7 +81,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 ) : PluginCapability {
 
 	/**
-	 * Get the simple class name for toString().
+	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
 
@@ -148,7 +148,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 ) : PluginCapability {
 
 	/**
-	 * Get the simple class name for toString().
+	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
 

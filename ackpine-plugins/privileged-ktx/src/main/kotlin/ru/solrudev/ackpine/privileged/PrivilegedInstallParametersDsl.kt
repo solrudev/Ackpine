@@ -116,5 +116,8 @@ public abstract class PrivilegedInstallParametersDslBuilder<
 			delegate.setInstallerPackageName(value)
 		}
 
+	/**
+	 * Builds and returns a [Params] instance from the current DSL state.
+	 */
 	protected fun buildParameters(): Params = delegate.build()
 }
