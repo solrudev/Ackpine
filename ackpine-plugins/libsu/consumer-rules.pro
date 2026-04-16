@@ -5,3 +5,4 @@
 -dontwarn android.content.pm.IPackageManager$Stub
 -dontwarn android.content.pm.IPackageManager
 -dontwarn android.os.ServiceManager
+-keep class ru.solrudev.ackpine.libsu.database.LibsuDatabase_Impl { <init>(); }
