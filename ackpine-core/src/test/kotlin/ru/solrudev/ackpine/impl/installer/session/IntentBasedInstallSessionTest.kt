@@ -44,8 +44,10 @@ import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.getParcelableExtraCompat
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.testutil.DummyLastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionProgressDao
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
@@ -345,8 +347,10 @@ class IntentBasedInstallSessionTest {
 		id: UUID = UUID.randomUUID(),
 		confirmation: Confirmation = Confirmation.DEFERRED,
 		initialState: Session.State<InstallFailure>,
-		progressDao: RecordingSessionProgressDao = RecordingSessionProgressDao()
+		progressDao: RecordingSessionProgressDao = RecordingSessionProgressDao(),
+		logger: RecordingAckpineLogger? = null
 	) = IntentBasedInstallSession(
+		loggerProvider = AckpineLoggerProvider("IntentBasedInstallSession") { logger },
 		context = context,
 		apk = apk,
 		id = id,

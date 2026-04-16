@@ -2,9 +2,18 @@
 <resources>
 	<string name="screen_title_install">Installeer</string>
 	<string name="screen_title_uninstall">Verwyder</string>
+	<string name="screen_title_settings">Instellings</string>
 	<string name="cancel">Kanselleer</string>
 	<string name="fab_install">Installeer</string>
 	<string name="uninstall">Verwyder</string>
+	<string name="settings_installer_backend">Installeerder</string>
+	<string name="settings_installer_backend_description">Installeerder agterkant gebruik vir installering en verwydering van programme</string>
+	<string name="installer_rootless">Sonder root (verstek)</string>
+	<string name="installer_root">Root (vereis root toegang)</string>
+	<string name="installer_shizuku">Shizuku (vereis Shizuku 11+)</string>
+	<string name="shizuku_unsupported_android_version">Shizuku word nie op hierdie Android-weergawe ondersteun nie</string>
+	<string name="shizuku_not_running">Shizuku loop nie</string>
+	<string name="shizuku_permission_denied">Shizuku toestemming geweier</string>
 	<string name="session_error">Fout</string>
 	<string name="session_error_with_reason">Fout: %s</string>
 	<string name="no_install_sessions">Geen installasie sessies nie</string>
@@ -14,4 +23,6 @@
 	<string name="error_conflicting_split_name">Botesende gesplete naam: %s</string>
 	<string name="error_conflicting_package_name">Botesende pakket naam. Verwag: %1$s, gevind: %2$s, naam: %3$s</string>
 	<string name="error_conflicting_version_code">Botesende weergawe kode. Verwag: %1$s, gevind: %2$s, naam: %3$s</string>
+	<string name="settings_install_best_suited_apks">Installeer slegs mees geskikte split-APK\'s</string>
+	<string name="settings_install_best_suited_apks_description">Vir split-pakkette, installeer slegs die APK\'s wat die beste by die toestelkonfigurasie pas. As dit gedeaktiveer is, word alle APK\'s in die split-pakket geïnstalleer</string>
 </resources>

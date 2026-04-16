@@ -16,41 +16,21 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallParametersDsl
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallParametersDslBuilder
 
 /**
  * DSL allowing to configure [uninstall parameters for ShizukuPlugin][ShizukuPlugin.UninstallParameters].
  */
-@SessionParametersDsl
-public interface ShizukuUninstallParametersDsl {
-
-	/**
-	 * Flag parameter to indicate that you don't want to delete the package's data directory.
-	 */
-	public var keepData: Boolean
-
-	/**
-	 * Flag parameter to indicate that you want the package deleted for all users.
-	 */
-	public var allUsers: Boolean
-}
+public interface ShizukuUninstallParametersDsl : PrivilegedUninstallParametersDsl
 
 @PublishedApi
-internal open class ShizukuUninstallParametersDslBuilder : ShizukuUninstallParametersDsl {
+internal open class ShizukuUninstallParametersDslBuilder :
+	PrivilegedUninstallParametersDslBuilder<
+			ShizukuPlugin.UninstallParameters,
+			ShizukuPlugin.UninstallParameters.Builder
+			>(ShizukuPlugin.UninstallParameters.Builder()),
+	ShizukuUninstallParametersDsl {
 
-	private val builder = ShizukuPlugin.UninstallParameters.Builder()
-
-	override var keepData: Boolean
-		get() = builder.keepData
-		set(value) {
-			builder.setKeepData(value)
-		}
-
-	override var allUsers: Boolean
-		get() = builder.allUsers
-		set(value) {
-			builder.setAllUsers(value)
-		}
-
-	fun build() = builder.build()
+	fun build() = buildParameters()
 }

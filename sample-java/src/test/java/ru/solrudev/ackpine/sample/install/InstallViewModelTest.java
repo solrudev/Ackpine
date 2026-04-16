@@ -21,6 +21,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static java.util.Collections.emptyList;
+import static ru.solrudev.ackpine.sample.settings.TestSettingsRepository.createSettingsRepository;
 
 import android.net.Uri;
 
@@ -41,10 +42,14 @@ import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException;
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException;
 import ru.solrudev.ackpine.exceptions.NoBaseApkException;
 import ru.solrudev.ackpine.installer.InstallFailure;
+import ru.solrudev.ackpine.libsu.LibsuPlugin;
 import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
+import ru.solrudev.ackpine.sample.settings.InstallerBackend;
 import ru.solrudev.ackpine.session.Progress;
 import ru.solrudev.ackpine.session.Session;
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin;
+import ru.solrudev.ackpine.splits.Abi;
 import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.SplitPackage;
 import ru.solrudev.ackpine.test.TestPackageInstaller;
@@ -63,7 +68,7 @@ public class InstallViewModelTest {
 	public void installPackageSuccessfulFlow() {
 		final var installer = new TestPackageInstaller(TestSessionScript.empty());
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
@@ -71,6 +76,7 @@ public class InstallViewModelTest {
 		final var parameters = installer.getCreatedParameters().get(session.getId());
 		assertNotNull(parameters);
 		assertEquals(TEST_APK_NAME, parameters.getName());
+		assertTrue(parameters.getPluginContainer().getPlugins().isEmpty());
 
 		final var expectedSessions1 = List.of(new SessionData(session.getId(), TEST_APK_NAME));
 		final var expectedProgress1 = List.of(new SessionProgress(session.getId(), new Progress()));
@@ -113,7 +119,7 @@ public class InstallViewModelTest {
 		TestSessionScript<InstallFailure> script = TestSessionScript.auto(new Session.State.Failed<>(failure));
 		final var installer = new TestPackageInstaller(script);
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
@@ -135,7 +141,7 @@ public class InstallViewModelTest {
 	public void cancelSessionRemovesSession() {
 		final var installer = new TestPackageInstaller(TestSessionScript.empty());
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 
 		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
 
@@ -155,7 +161,7 @@ public class InstallViewModelTest {
 	public void installPackageReportsSplitPackageErrors() {
 		final var installer = new TestPackageInstaller();
 		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 
 		final var errors = Map.of(
 				new NoBaseApkException(),
@@ -215,7 +221,7 @@ public class InstallViewModelTest {
 				new SessionProgress(sessions.getLast().getId(), new Progress())
 		);
 
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 		assertTrue(viewModel.getError().getValue().isEmpty());
 		assertEquals(expectedSessions, viewModel.getSessions().getValue());
 		assertEquals(expectedProgress, viewModel.getSessionsProgress().getValue());
@@ -236,9 +242,90 @@ public class InstallViewModelTest {
 		final var sessionData = new SessionData(sessionId, TEST_APK_NAME);
 		repository.addSessionData(sessionData);
 
-		final var viewModel = new InstallViewModel(installer, repository);
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
 		assertTrue(viewModel.getSessions().getValue().isEmpty());
 		assertTrue(viewModel.getSessionsProgress().getValue().isEmpty());
+	}
+
+	@Test
+	public void installPackageFiltersPreferredApksWhenInstallBestSuitedApksEnabled() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var viewModel = new InstallViewModel(installer, repository, createSettingsRepository());
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(1, parameters.getApks().getSize());
+	}
+
+	@Test
+	public void installPackageInstallsAllApksWhenInstallBestSuitedApksDisabled() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var settingsRepository = createSettingsRepository(InstallerBackend.ROOTLESS, false, false);
+		final var viewModel = new InstallViewModel(installer, repository, settingsRepository);
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		assertNotNull(parameters);
+		assertEquals(2, parameters.getApks().getSize());
+	}
+
+	@Test
+	public void installPackageRegistersLibsuPluginForRootBackend() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var viewModel = new InstallViewModel(installer,
+				repository,
+				createSettingsRepository(InstallerBackend.ROOT));
+
+		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		final var pluginParameters = (LibsuPlugin.InstallParameters) parameters.getPluginContainer()
+				.getPlugins()
+				.get(LibsuPlugin.class);
+		assertNotNull(pluginParameters);
+		assertTrue(pluginParameters.getReplaceExisting());
+	}
+
+	@Test
+	public void installPackageRegistersShizukuPluginForShizukuBackend() {
+		final var installer = new TestPackageInstaller(TestSessionScript.empty());
+		final var repository = new SessionDataRepositoryImpl(new SavedStateHandle());
+		final var viewModel = new InstallViewModel(installer,
+				repository,
+				createSettingsRepository(InstallerBackend.SHIZUKU, true));
+
+		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME);
+
+		final var session = installer.getSessions().getLast();
+		final var parameters = installer.getCreatedParameters().get(session.getId());
+		final var pluginParameters = (ShizukuPlugin.InstallParameters) parameters.getPluginContainer()
+				.getPlugins()
+				.get(ShizukuPlugin.class);
+		assertNotNull(pluginParameters);
+		assertTrue(pluginParameters.getReplaceExisting());
+	}
+
+	private static @NonNull SplitPackage.Provider createSplitPackageProviderWithNonPreferredSplits() {
+		final var baseApk = new Apk.Base(Uri.EMPTY, "base", 1024L, "com.example", 1L, "1.0");
+		final var libsApk = new Apk.Libs(Uri.EMPTY, "libs.arm", 512L, "com.example", 1L, Abi.ARMEABI_V7A);
+		final var splitPackage = new SplitPackage(
+				List.of(new SplitPackage.Entry<>(true, baseApk)),
+				List.of(new SplitPackage.Entry<>(false, libsApk)),
+				emptyList(),
+				emptyList(),
+				emptyList(),
+				emptyList()
+		);
+		return () -> ImmediateFuture.success(splitPackage);
 	}
 
 	private static @NonNull SplitPackage.Provider createSplitPackageProvider() {

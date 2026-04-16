@@ -25,6 +25,7 @@ import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionProgressDao
@@ -215,6 +216,7 @@ class AbstractProgressSessionTest {
 		progressDao: RecordingSessionProgressDao = RecordingSessionProgressDao()
 	) : AbstractProgressSession<TestFailure>(
 		context = context,
+		logger = AckpineLoggerProvider("TestProgressSession") { null },
 		id = UUID.randomUUID(),
 		initialState = initialState,
 		initialProgress = initialProgress,

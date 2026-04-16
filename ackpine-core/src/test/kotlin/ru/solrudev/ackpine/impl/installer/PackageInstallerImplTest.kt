@@ -23,8 +23,10 @@ import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.impl.HasAckpineDatabaseTest
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.TestCompletableProgressSession
 import ru.solrudev.ackpine.impl.testutil.createInstallSessionEntity
 import ru.solrudev.ackpine.impl.testutil.toSessionState
@@ -190,14 +192,19 @@ class PackageInstallerImplTest : HasAckpineDatabaseTest() {
 	}
 
 	private fun createInstaller(
-		factory: FakeInstallSessionFactory = FakeInstallSessionFactory()
+		factory: FakeInstallSessionFactory = FakeInstallSessionFactory(),
+		logger: RecordingAckpineLogger? = null
 	) = PackageInstallerImpl(
 		installSessionDao = database.installSessionDao(),
 		executor = ImmediateExecutor,
-		ackpineServiceProviders = AckpineServiceProviders(lazy { emptySet() }),
+		ackpineServiceProviders = AckpineServiceProviders(
+			lazy { emptySet() },
+			AckpineLoggerProvider("AckpineServiceProviders") { logger }
+		),
 		installSessionFactory = factory,
 		uuidFactory = UUID::randomUUID,
-		notificationIdFactory = { 1 }
+		notificationIdFactory = { 1 },
+		loggerProvider = AckpineLoggerProvider("PackageInstallerImpl") { logger }
 	)
 
 	private fun insertInstallSession(

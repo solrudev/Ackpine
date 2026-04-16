@@ -24,10 +24,13 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.exceptions.AckpineReinitializeException
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -67,5 +70,46 @@ class AckpineTest {
 		Ackpine.deleteNotificationChannel(context)
 		val channel = notificationManager.getNotificationChannel(channelId)
 		assertNull(channel)
+	}
+
+	@Test
+	fun setLoggerNullDisablesLogging() {
+		Ackpine.setLogger(RecordingAckpineLogger())
+		Ackpine.setLogger(null)
+		assertNull(Ackpine.loggerProvider.currentLogger())
+	}
+
+	@Test
+	fun enableLogcatLoggerInstallsBuiltInLogger() {
+		Ackpine.enableLogcatLogger()
+		assertIs<AckpineLogger.Logcat>(Ackpine.loggerProvider.currentLogger())
+	}
+
+	@Test
+	fun setLoggerSwallowsLoggerFailure() {
+		val logger = AckpineLogger { _, _, _, _, _ ->
+			throw IllegalStateException("boom")
+		}
+		val result = runCatching {
+			Ackpine.setLogger(logger)
+		}
+		assertFalse(result.isFailure)
+	}
+
+	@Test
+	fun existingComponentsObserveLoggerChangesLive() {
+		val initialLogger = RecordingAckpineLogger()
+		val updatedLogger = RecordingAckpineLogger()
+		Ackpine.setLogger(initialLogger)
+		val logger = Ackpine.loggerProvider.withTag("TestLogger")
+		val initialEventCount = initialLogger.events.size
+
+		Ackpine.setLogger(updatedLogger)
+		val updatedEventCount = updatedLogger.events.size
+		logger.info("test")
+
+		assertEquals(initialEventCount, initialLogger.events.size)
+		assertEquals(updatedEventCount + 1, updatedLogger.events.size)
+		assertEquals("TestLogger", updatedLogger.lastEvent().tag)
 	}
 }

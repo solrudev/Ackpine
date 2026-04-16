@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 import android.os.Build
 import android.os.Bundle
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
@@ -31,6 +32,8 @@ internal abstract class UninstallActivity protected constructor(
 ) : SessionCommitActivity<UninstallFailure>(
 	tag, abortedStateFailureFactory = UninstallFailure::Aborted
 ) {
+
+	private val logger = Ackpine.loggerProvider.withTag(tag)
 
 	override val ackpineSessionFuture by lazy(LazyThreadSafetyMode.NONE) {
 		ackpinePackageUninstaller.getSessionAsync(ackpineSessionId)
@@ -64,10 +67,12 @@ internal abstract class UninstallActivity protected constructor(
 		if (wasOnTopOnStop) {
 			// Uninstaller activity is removed when stopped AND hidden, and therefore
 			// it sends result (since API 29), so we need to re-launch
+			logger.info("Relaunching uninstall confirmation for session %s after hidden stop", ackpineSessionId)
 			wasOnTopOnStop = false
 			launchUninstallActivity()
 			return
 		}
+		logger.debug("Processing uninstall result for session %s code=%s", ackpineSessionId, resultCode)
 		processResult(resultCode)
 	}
 

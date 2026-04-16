@@ -28,14 +28,20 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import ru.solrudev.ackpine.libsu.libsu
+import ru.solrudev.ackpine.sample.settings.InstallerBackend
+import ru.solrudev.ackpine.sample.settings.SettingsRepository
+import ru.solrudev.ackpine.sample.settings.preferencesDataStore
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.parameters.Confirmation
+import ru.solrudev.ackpine.shizuku.shizuku
 import ru.solrudev.ackpine.uninstaller.PackageUninstaller
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.createSession
@@ -49,7 +55,8 @@ private const val PACKAGE_NAME_KEY = "PACKAGE_NAME"
 class UninstallViewModel(
 	private val packageUninstaller: PackageUninstaller,
 	private val savedStateHandle: SavedStateHandle,
-	private val defaultCoroutineContext: CoroutineContext
+	private val defaultCoroutineContext: CoroutineContext,
+	private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
 	private val _uiState = MutableStateFlow(UninstallUiState())
@@ -69,9 +76,15 @@ class UninstallViewModel(
 		}
 	}
 
-	fun uninstallPackage(packageName: String) {
+	fun uninstallPackage(packageName: String) = viewModelScope.launch {
 		val session = packageUninstaller.createSession(packageName) {
 			confirmation = Confirmation.IMMEDIATE
+			when (settingsRepository.installerBackend.first()) {
+				InstallerBackend.ROOT -> libsu()
+				InstallerBackend.SHIZUKU -> shizuku()
+				InstallerBackend.ROOTLESS -> { // no-op
+				}
+			}
 		}
 		savedStateHandle[SESSION_ID_KEY] = session.id
 		savedStateHandle[PACKAGE_NAME_KEY] = packageName
@@ -126,7 +139,13 @@ class UninstallViewModel(
 				val application = extras[APPLICATION_KEY]!!
 				val packageUninstaller = PackageUninstaller.getInstance(application)
 				val savedStateHandle = extras.createSavedStateHandle()
-				return UninstallViewModel(packageUninstaller, savedStateHandle, Dispatchers.Default) as T
+				val settingsRepository = SettingsRepository(application.preferencesDataStore)
+				return UninstallViewModel(
+					packageUninstaller,
+					savedStateHandle,
+					Dispatchers.Default,
+					settingsRepository
+				) as T
 			}
 		}
 	}

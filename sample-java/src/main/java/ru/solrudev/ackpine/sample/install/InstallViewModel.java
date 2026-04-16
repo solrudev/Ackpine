@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.sample.install;
 import static androidx.lifecycle.SavedStateHandleSupport.createSavedStateHandle;
 import static androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY;
 
+import android.content.Context;
 import android.net.Uri;
 import android.util.Log;
 
@@ -49,11 +50,15 @@ import ru.solrudev.ackpine.exceptions.SplitPackageException;
 import ru.solrudev.ackpine.installer.InstallFailure;
 import ru.solrudev.ackpine.installer.PackageInstaller;
 import ru.solrudev.ackpine.installer.parameters.InstallParameters;
+import ru.solrudev.ackpine.libsu.LibsuPlugin;
 import ru.solrudev.ackpine.resources.ResolvableString;
 import ru.solrudev.ackpine.sample.R;
+import ru.solrudev.ackpine.sample.settings.SettingsRepository;
+import ru.solrudev.ackpine.sample.settings.SharedPreferencesSettingsRepository;
 import ru.solrudev.ackpine.session.Failure;
 import ru.solrudev.ackpine.session.ProgressSession;
 import ru.solrudev.ackpine.session.Session;
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin;
 import ru.solrudev.ackpine.splits.SplitPackage;
 
 public final class InstallViewModel extends ViewModel {
@@ -62,12 +67,15 @@ public final class InstallViewModel extends ViewModel {
 	private final DisposableSubscriptionContainer subscriptions = new DisposableSubscriptionContainer();
 	private final PackageInstaller packageInstaller;
 	private final SessionDataRepository sessionDataRepository;
+	private final SettingsRepository settingsRepository;
 	private final List<ListenableFuture<?>> futures = new ArrayList<>();
 
 	public InstallViewModel(@NonNull PackageInstaller packageInstaller,
-							@NonNull SessionDataRepository sessionDataRepository) {
+							@NonNull SessionDataRepository sessionDataRepository,
+							@NonNull SettingsRepository settingsRepository) {
 		this.packageInstaller = packageInstaller;
 		this.sessionDataRepository = sessionDataRepository;
+		this.settingsRepository = settingsRepository;
 		final var sessions = getSessionsSnapshot();
 		if (sessions != null && !sessions.isEmpty()) {
 			for (final var sessionData : sessions) {
@@ -158,7 +166,10 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	private void installPackage(@NonNull SplitPackage splitPackage, @NonNull String fileName) {
-		final var apks = splitPackage.toList();
+		final var splits = settingsRepository.isInstallBestSuitedApks()
+				? splitPackage.filterPreferred()
+				: splitPackage;
+		final var apks = splits.toList();
 		if (apks.isEmpty()) {
 			return;
 		}
@@ -166,9 +177,16 @@ public final class InstallViewModel extends ViewModel {
 		for (final var entry : apks) {
 			uris.add(entry.getApk().getUri());
 		}
-		final var session = packageInstaller.createSession(new InstallParameters.Builder(uris)
-				.setName(fileName)
-				.build());
+		final var builder = new InstallParameters.Builder(uris).setName(fileName);
+		switch (settingsRepository.getInstallerBackend()) {
+			case ROOT -> builder.registerPlugin(LibsuPlugin.class,
+					new LibsuPlugin.InstallParameters.Builder().setReplaceExisting(true).build());
+			case SHIZUKU -> builder.registerPlugin(ShizukuPlugin.class,
+					new ShizukuPlugin.InstallParameters.Builder().setReplaceExisting(true).build());
+			default -> { // no-op
+			}
+		}
+		final var session = packageInstaller.createSession(builder.build());
 		final var sessionData = new SessionData(session.getId(), fileName);
 		sessionDataRepository.addSessionData(sessionData);
 		addSessionListeners(session);
@@ -243,7 +261,9 @@ public final class InstallViewModel extends ViewModel {
 				final var packageInstaller = PackageInstaller.getInstance(application);
 				final var savedStateHandle = createSavedStateHandle(creationExtras);
 				final var sessionsRepository = new SessionDataRepositoryImpl(savedStateHandle);
-				return new InstallViewModel(packageInstaller, sessionsRepository);
+				final var preferences = application.getSharedPreferences("settings", Context.MODE_PRIVATE);
+				final var settingsRepository = new SharedPreferencesSettingsRepository(preferences);
+				return new InstallViewModel(packageInstaller, sessionsRepository, settingsRepository);
 			}
 	);
 }

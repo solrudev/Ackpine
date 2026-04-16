@@ -35,7 +35,10 @@ import ru.solrudev.ackpine.sample.install.InstallFragment
 class MainActivity : AppCompatActivity(R.layout.nav_host) {
 
 	private val binding by viewBinding(NavHostBinding::bind, R.id.container_nav_host)
-	private val appBarConfiguration = AppBarConfiguration(setOf(R.id.install_fragment, R.id.uninstall_fragment))
+
+	private val appBarConfiguration = AppBarConfiguration(
+		setOf(R.id.install_fragment, R.id.uninstall_fragment, R.id.settings_fragment)
+	)
 
 	private val navController: NavController
 		get() = binding.contentNavHost.getFragment<NavHostFragment>().navController

@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.ProgressSession
@@ -41,6 +42,7 @@ import java.util.concurrent.Executor
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractProgressSession<F : Failure> protected constructor(
 	context: Context,
+	logger: AckpineLoggerProvider,
 	id: UUID,
 	initialState: Session.State<F>,
 	initialProgress: Progress,
@@ -53,7 +55,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	notificationId: Int,
 	dbWriteSemaphore: BinarySemaphore
 ) : AbstractSession<F>(
-	context, id, initialState,
+	context, logger, id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler, exceptionalFailureFactory, notificationId, dbWriteSemaphore
 ), CompletableProgressSession<F> {

@@ -18,9 +18,18 @@
 <resources>
 	<string name="screen_title_install">Установка</string>
 	<string name="screen_title_uninstall">Удаление</string>
+	<string name="screen_title_settings">Настройки</string>
 	<string name="cancel">Отмена</string>
 	<string name="fab_install">Установить</string>
 	<string name="uninstall">Удалить</string>
+	<string name="settings_installer_backend">Установщик</string>
+	<string name="settings_installer_backend_description">Установщик, используемый для установки и удаления приложений</string>
+	<string name="installer_rootless">Без root (по умолчанию)</string>
+	<string name="installer_root">Root (требуется root-доступ)</string>
+	<string name="installer_shizuku">Shizuku (требуется Shizuku 11+)</string>
+	<string name="shizuku_unsupported_android_version">Shizuku не поддерживается на этой версии Android</string>
+	<string name="shizuku_not_running">Shizuku не запущен</string>
+	<string name="shizuku_permission_denied">Разрешение Shizuku отклонено</string>
 	<string name="session_error">Ошибка</string>
 	<string name="session_error_with_reason">Ошибка: %s</string>
 	<string name="no_install_sessions">Нет сессий установки</string>
@@ -30,4 +39,6 @@
 	<string name="error_conflicting_split_name">Конфликтующий APK: %s</string>
 	<string name="error_conflicting_package_name">Несовместимое имя пакета. Ожидаемое имя: %1$s, найдено: %2$s, имя APK: %3$s</string>
 	<string name="error_conflicting_version_code">Несовместимый код версии. Ожидаемый код: %1$s, найден: %2$s, имя APK: %3$s</string>
+	<string name="settings_install_best_suited_apks">Устанавливать только подходящие APK</string>
+	<string name="settings_install_best_suited_apks_description">Для split-пакетов устанавливать только те APK, которые лучше всего соответствуют конфигурации устройства. Если отключено, устанавливаются все APK из пакета</string>
 </resources>

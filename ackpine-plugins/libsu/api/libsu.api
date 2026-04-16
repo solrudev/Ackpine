@@ -1,0 +1,42 @@
+public final class ru/solrudev/ackpine/libsu/LibsuInstallCapabilities : ru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities {
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin : ru/solrudev/ackpine/privileged/PrivilegedPlugin {
+	public fun <init> ()V
+	public synthetic fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	public synthetic fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters {
+	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
+	public fun <init> ()V
+	public fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
+	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters {
+	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public synthetic fun <init> (ZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
+	public fun <init> ()V
+	public fun build ()Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
+	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/libsu/LibsuUninstallCapabilities : ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities {
+}
+

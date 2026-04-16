@@ -37,6 +37,7 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
 import ru.solrudev.ackpine.impl.helpers.executeWithCompleter
 import ru.solrudev.ackpine.impl.helpers.executeWithSemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.services.PackageInstallerWrapper
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
@@ -60,12 +61,14 @@ internal class PackageInstallerImpl internal constructor(
 	private val ackpineServiceProviders: AckpineServiceProviders,
 	private val installSessionFactory: InstallSessionFactory,
 	private val uuidFactory: () -> UUID,
-	private val notificationIdFactory: () -> Int
+	private val notificationIdFactory: () -> Int,
+	private val loggerProvider: AckpineLoggerProvider
 ) : PackageInstaller {
 
 	private val sessions = ConcurrentHashMap<UUID, CompletableProgressSession<InstallFailure>>()
 	private val committedSessionsInitSemaphore = BinarySemaphore()
 	private val sessionLocks = Locks(16)
+	private val logger = loggerProvider.withTag(TAG)
 
 	@Volatile
 	private var isSessionsMapInitialized = false
@@ -85,6 +88,7 @@ internal class PackageInstallerImpl internal constructor(
 		val id = uuidFactory()
 		val notificationId = notificationIdFactory()
 		val dbWriteSemaphore = BinarySemaphore()
+		logger.debug("Creating install session %s with backend=%s", id, parameters.installerType)
 		val session = installSessionFactory.create(parameters, id, notificationId, dbWriteSemaphore)
 		sessions[id] = session
 		persistSession(parameters, id, notificationId, dbWriteSemaphore)
@@ -136,6 +140,7 @@ internal class PackageInstallerImpl internal constructor(
 		// not able to work around the process stop and determine whether installations launched
 		// from them were successful, so they will remain in COMMITTED state. Luckily, it can be
 		// believed that this usage scenario is not very probable.
+		var restoredCount = 0
 		installSessionDao.getCommittedInstallSessions()
 			.groupingBy { it.installerType }
 			.aggregate { type, _: Unit?, session, first ->
@@ -144,7 +149,9 @@ internal class PackageInstallerImpl internal constructor(
 					completeIfSucceeded = type == SESSION_BASED || first && type == INTENT_BASED
 				)
 				sessions[installSession.id] = installSession
+				restoredCount += 1
 			}
+		logger.debug("Eagerly restored %s committed install sessions", restoredCount)
 		areCommittedSessionsInitialized = true
 	}
 
@@ -152,7 +159,13 @@ internal class PackageInstallerImpl internal constructor(
 		val session = sessions.computeIfAbsentCompat(sessionId, sessionLocks) {
 			installSessionDao
 				.getInstallSession(sessionId.toString())
-				?.let(installSessionFactory::create)
+				?.let { installSession ->
+					logger.debug("Restoring install session %s from persisted storage", sessionId)
+					installSessionFactory.create(installSession)
+				}
+		}
+		if (session == null) {
+			logger.debug("Install session %s was not found", sessionId)
 		}
 		completer.set(session)
 	}
@@ -182,6 +195,7 @@ internal class PackageInstallerImpl internal constructor(
 		if (isSessionsMapInitialized) {
 			return sessions.values
 		}
+		var restoredCount = 0
 		installSessionDao.getInstallSessions()
 			.asSequence()
 			.filterNot { session ->
@@ -189,9 +203,14 @@ internal class PackageInstallerImpl internal constructor(
 			}
 			.forEach { session ->
 				val id = UUID.fromString(session.session.id)
-				sessions.computeIfAbsentCompat(id, sessionLocks) { installSessionFactory.create(session) }
+				sessions.computeIfAbsentCompat(id, sessionLocks) {
+					logger.debug("Initializing install session %s into memory", id)
+					restoredCount++
+					installSessionFactory.create(session)
+				}
 			}
 		isSessionsMapInitialized = true
+		logger.debug("Initialized %s install sessions in memory", restoredCount)
 		return sessions.values
 	}
 
@@ -237,6 +256,8 @@ internal class PackageInstallerImpl internal constructor(
 
 	internal companion object {
 
+		private const val TAG = "PackageInstallerImpl"
+
 		private val lock = Any()
 
 		@SuppressLint("StaticFieldLeak")
@@ -267,7 +288,8 @@ internal class PackageInstallerImpl internal constructor(
 		private fun create(context: Context): PackageInstallerImpl {
 			val applicationContext = context.applicationContext
 			val database = AckpineDatabase.getInstance(applicationContext, AckpineThreadPool)
-			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext)
+			val ackpineServiceProviders = AckpineServiceProviders.create(applicationContext, Ackpine.loggerProvider)
+			val parallelism = AckpineThreadPool.threadCount - 1
 			return PackageInstallerImpl(
 				database.installSessionDao(),
 				AckpineThreadPool,
@@ -285,11 +307,14 @@ internal class PackageInstallerImpl internal constructor(
 					database.installPreapprovalDao(),
 					database.installConstraintsDao(),
 					AckpineThreadPool,
+					parallelism,
 					Handler(context.mainLooper),
-					sessionCallbackHandler()
+					sessionCallbackHandler(),
+					Ackpine.loggerProvider
 				),
 				uuidFactory = UUID::randomUUID,
-				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet
+				notificationIdFactory = Ackpine.globalNotificationId::incrementAndGet,
+				loggerProvider = Ackpine.loggerProvider
 			)
 		}
 

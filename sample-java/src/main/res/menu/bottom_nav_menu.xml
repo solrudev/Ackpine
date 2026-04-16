@@ -27,4 +27,9 @@
 		android:icon="@drawable/ic_uninstall"
 		android:title="@string/screen_title_uninstall" />
 
+	<item
+		android:id="@+id/settings_fragment"
+		android:icon="@drawable/ic_settings"
+		android:title="@string/screen_title_settings" />
+
 </menu>

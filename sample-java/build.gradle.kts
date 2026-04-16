@@ -29,6 +29,8 @@ ackpine {
 
 dependencies {
 	implementation(projects.ackpineCore)
+	implementation(projects.ackpinePlugins.libsu)
+	implementation(projects.ackpinePlugins.shizuku)
 	implementation(projects.ackpineSplits.splitsMain)
 	implementation(projects.ackpineResources)
 	implementation(androidx.activity)
@@ -43,6 +45,7 @@ dependencies {
 	implementation(libs.materialComponents)
 	implementation(libs.guava)
 	implementation(libs.insetter)
+	implementation(libs.bundles.shizuku)
 	testImplementation(libs.junit4)
 	testImplementation(projects.ackpineTest)
 	testImplementation(androidx.core.testing)

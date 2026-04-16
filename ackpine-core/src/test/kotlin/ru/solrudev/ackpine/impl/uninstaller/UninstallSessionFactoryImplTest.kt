@@ -30,8 +30,10 @@ import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.impl.HasAckpineDatabaseTest
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.RecordingPackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.createUninstallSessionEntity
@@ -229,13 +231,17 @@ class UninstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 		assertNotNull(context.getSystemService<NotificationManager>())
 	)
 
-	private fun createFactory() = UninstallSessionFactoryImpl(
+	private fun createFactory(logger: RecordingAckpineLogger? = null) = UninstallSessionFactoryImpl(
 		applicationContext = context,
 		defaultPackageInstallerService = lazy { RecordingPackageInstallerService() },
-		ackpineServiceProviders = AckpineServiceProviders(lazy { emptySet() }),
+		ackpineServiceProviders = AckpineServiceProviders(
+			lazy { emptySet() },
+			AckpineLoggerProvider("AckpineServiceProviders") { logger }
+		),
 		sessionDao = database.sessionDao(),
 		sessionFailureDao = database.uninstallSessionDao(),
 		executor = ImmediateExecutor,
-		handler = Handler(Looper.getMainLooper())
+		handler = Handler(Looper.getMainLooper()),
+		loggerProvider = AckpineLoggerProvider("UninstallSessionFactory") { logger }
 	)
 }

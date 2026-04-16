@@ -40,6 +40,17 @@ plugins {
 	id("ru.solrudev.ackpine.settings")
 }
 
+dependencyResolutionManagement {
+	repositories {
+		maven {
+			url = uri("https://jitpack.io")
+			content {
+				includeGroup("com.github.topjohnwu.libsu")
+			}
+		}
+	}
+}
+
 ackpine {
 	includeSubprojects()
 	versionCatalog("androidx")

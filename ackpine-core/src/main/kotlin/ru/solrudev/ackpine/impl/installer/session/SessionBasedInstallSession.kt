@@ -34,7 +34,6 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
-import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
@@ -59,6 +58,7 @@ import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceive
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptorWithSize
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -78,6 +78,7 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.UUID
 import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.random.Random
 import kotlin.random.nextInt
@@ -87,8 +88,9 @@ private const val TAG = "SessionBasedInstallSession"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
+	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
-	private val packageInstaller: PackageInstallerService,
+	packageInstallerService: Lazy<PackageInstallerService>,
 	private val apks: List<Uri>,
 	id: UUID,
 	initialState: Session.State<InstallFailure>,
@@ -108,6 +110,7 @@ internal class SessionBasedInstallSession internal constructor(
 	installPreapprovalDao: InstallPreapprovalDao,
 	private val installConstraintsDao: InstallConstraintsDao,
 	private val executor: Executor,
+	parallelism: Int,
 	handler: Handler,
 	private val sessionCallbackHandler: Handler,
 	@Volatile private var nativeSessionId: Int,
@@ -116,23 +119,21 @@ internal class SessionBasedInstallSession internal constructor(
 	initialPreapprovalState: PreapprovalLifecycle.State,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
-	context, id, initialState, initialProgress,
+	context, loggerProvider.withTag(TAG), id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
 	notificationId, dbWriteSemaphore
 ), PreapprovalListener {
 
+	private val parallelism = parallelism.coerceAtLeast(1)
+	private val packageInstaller by packageInstallerService
+
 	@Volatile
-	private var sessionCallback = if (nativeSessionId != -1) {
-		try {
-			packageInstaller.createAndRegisterSessionCallback(nativeSessionId)
-		} catch (exception: Exception) {
-			completeExceptionally(exception)
-			null
-		}
-	} else {
-		null
+	private var sessionCallback: PackageInstaller.SessionCallback? = null
+
+	init {
+		initProgressCallback()
 	}
 
 	@Volatile
@@ -150,9 +151,11 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun prepare() {
 		val sessionId = getSessionId()
 		if (!shouldRequestPreapproval() || preapprovalLifecycle.isPreapproved()) {
+			logger.debug("Starting APK staging for session %s nativeSessionId=%s", id, sessionId)
 			writeApksToSession(sessionId)
 			return
 		}
+		logger.debug("Requesting preapproval for session %s nativeSessionId=%s", id, sessionId)
 		preapprovalLifecycle.runPreapprovalRequest {
 			val preapprovalDetails = createPackageInstallerPreapprovalDetails()
 			packageInstaller.openSession(sessionId).requestUserPreapproval(
@@ -164,11 +167,17 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun launchConfirmation() {
 		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
+			logger.debug("Committing session %s without install constraints", id)
 			commitPackageInstallerSession()
 		} else try {
+			logger.debug("Committing session %s with install constraints", id)
 			commitPackageInstallerSessionWithConstraints()
 		} catch (exception: SecurityException) {
-			Log.w(TAG, "$id: ${exception.message}")
+			logger.warn(
+				exception,
+				"Falling back to normal commit for session %s after constrained commit failure",
+				id
+			)
 			commitPackageInstallerSession()
 		}
 		val currentAttempt = commitAttempts.incrementAndGet()
@@ -189,6 +198,7 @@ internal class SessionBasedInstallSession internal constructor(
 		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = true)) {
 			return@execute
 		}
+		logger.debug("Preapproval succeeded for session %s", id)
 		preparePostPreapproval()
 	}
 
@@ -199,11 +209,15 @@ internal class SessionBasedInstallSession internal constructor(
 		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = false)) {
 			return@execute
 		}
+		logger.warn(
+			"Preapproval failed for session %s status=%s failure=%s", id, status, publicFailure
+		)
 		if (
 			preapproval.fallbackToOnDemandApproval
 			&& status == PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE
 		) {
 			ignorePreapproval = true
+			logger.info("Retrying session %s with on-demand approval after preapproval failure", id)
 			preparePostPreapproval()
 			return@execute
 		}
@@ -226,7 +240,7 @@ internal class SessionBasedInstallSession internal constructor(
 			val currentAttempt = commitAttempts.get()
 			val shouldRetry = currentAttempt <= timeoutStrategy.retries
 			if (shouldRetry) {
-				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
+				logger.info("Retrying session %s after timeout attempt=%s", id, currentAttempt)
 				notifyAwaiting()
 			}
 			return !shouldRetry
@@ -251,6 +265,7 @@ internal class SessionBasedInstallSession internal constructor(
 			return
 		}
 		try {
+			logger.debug("Continuing session %s after preapproval", id)
 			prepare()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
@@ -301,6 +316,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
+			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
 			return
 		}
@@ -314,6 +330,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
+			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
 			return
 		}
@@ -366,15 +383,22 @@ internal class SessionBasedInstallSession internal constructor(
 			return createSession()
 		}
 		if (packageInstaller.getSessionInfo(sessionId) == null) {
+			logger.warn(
+				"Native session %s disappeared for session %s; recreating",
+				sessionId,
+				id
+			)
 			preapprovalLifecycle.reset()
 			return createSession()
 		}
+		logger.debug("Reusing native session %s for session %s", sessionId, id)
 		return sessionId
 	}
 
 	private fun createSession(): Int {
 		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
+		logger.debug("Created native session %s for session %s", sessionId, id)
 		persistNativeSessionId(sessionId)
 		clearPackageInstallerSessionCallback()
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
@@ -420,6 +444,7 @@ internal class SessionBasedInstallSession internal constructor(
 			block = {
 				try {
 					session.close()
+					logger.debug("Finished APK staging for session %s nativeSessionId=%s", id, sessionId)
 					notifyAwaiting()
 				} catch (exception: Exception) {
 					completeExceptionally(exception)
@@ -461,57 +486,81 @@ internal class SessionBasedInstallSession internal constructor(
 				}
 				return tag
 			}
-		val countdown = AtomicInteger(apks.size)
+		val filesCount = apks.size
+		val countdown = AtomicInteger(filesCount)
 		val currentProgress = AtomicInteger(0)
-		val progressMax = apks.size * PROGRESS_MAX
+		val progressMax = filesCount * PROGRESS_MAX
+		val nextIndex = AtomicInteger(0)
+		val isCompleted = AtomicBoolean(false)
 		val sharedCancelSignal = CancellationSignal()
 		cancellationSignal.setOnCancelListener {
 			sharedCancelSignal.cancel()
-			completer.setCancelled()
-		}
-		assetFileDescriptors.forEachIndexed { index, afd ->
-			try {
-				executor.execute {
-					try {
-						afd.use {
-							writeApk(afd, index, currentProgress, progressMax, sharedCancelSignal)
-							if (countdown.decrementAndGet() == 0) {
-								completer.set(Unit)
-							}
-						}
-					} catch (_: OperationCanceledException) { // no-op
-					} catch (throwable: Throwable) {
-						sharedCancelSignal.cancel()
-						completer.setException(throwable)
-					}
-				}
-			} catch (exception: Exception) {
-				afd.closeWithException(exception)
-				sharedCancelSignal.cancel()
-				completer.setException(exception)
+			if (isCompleted.compareAndSet(false, true)) {
+				closeAllWithException(assetFileDescriptors, OperationCanceledException())
+				completer.setCancelled()
 			}
 		}
-		return tag
-	}
 
-	private fun PackageInstallerService.Session.writeApk(
-		afd: AssetFileDescriptor,
-		index: Int,
-		currentProgress: AtomicInteger,
-		progressMax: Int,
-		cancellationSignal: CancellationSignal
-	) = afd.createInputStream().use { apkStream ->
-		checkNotNull(apkStream) { "APK $index InputStream was null." }
-		val length = afd.declaredLength
-		val sessionStream = openWrite("$index.apk", 0, length)
-		sessionStream.buffered().use { bufferedSessionStream ->
-			apkStream.copyTo(bufferedSessionStream, length, cancellationSignal, onProgress = { progress ->
-				val current = currentProgress.addAndGet(progress)
-				setStagingProgress(current.toFloat() / progressMax)
-			})
-			bufferedSessionStream.flush()
-			fsync(sessionStream)
+		fun fail(throwable: Throwable) {
+			sharedCancelSignal.cancel()
+			if (isCompleted.compareAndSet(false, true)) {
+				closeAllWithException(assetFileDescriptors, throwable)
+				completer.setException(throwable)
+			}
 		}
+
+		fun writeApk(
+			afd: AssetFileDescriptor,
+			index: Int
+		) = afd.createInputStream().use { apkStream ->
+			checkNotNull(apkStream) { "APK $index InputStream was null." }
+			val length = afd.declaredLength
+			val sessionStream = openWrite("$index.apk", 0, length)
+			sessionStream.buffered().use { bufferedSessionStream ->
+				apkStream.copyTo(bufferedSessionStream, length, sharedCancelSignal, onProgress = { progress ->
+					val current = currentProgress.addAndGet(progress)
+					setStagingProgress(current.toFloat() / progressMax)
+				})
+				bufferedSessionStream.flush()
+				fsync(sessionStream)
+			}
+		}
+
+		fun worker() {
+			while (!sharedCancelSignal.isCanceled && !isCompleted.get()) {
+				val index = nextIndex.getAndIncrement()
+				if (index >= filesCount) {
+					return
+				}
+				val afd = assetFileDescriptors[index]
+				try {
+					afd.use {
+						writeApk(afd, index)
+					}
+					if (countdown.decrementAndGet() == 0 && isCompleted.compareAndSet(false, true)) {
+						completer.set(Unit)
+						return
+					}
+				} catch (_: OperationCanceledException) { // no-op
+					return
+				} catch (throwable: Throwable) {
+					fail(throwable)
+					return
+				}
+			}
+		}
+
+		val workerCount = minOf(filesCount, parallelism)
+		repeat(workerCount - 1) {
+			try {
+				executor.execute(::worker)
+			} catch (exception: Exception) {
+				fail(exception)
+				return tag
+			}
+		}
+		worker()
+		return tag
 	}
 
 	private fun PackageInstallerService.createAndRegisterSessionCallback(
@@ -520,6 +569,20 @@ internal class SessionBasedInstallSession internal constructor(
 		val callback = packageInstallerSessionCallback(nativeSessionId)
 		registerSessionCallback(callback, sessionCallbackHandler)
 		return callback
+	}
+
+	private fun initProgressCallback() {
+		val sessionId = nativeSessionId
+		if (sessionId == -1) {
+			return
+		}
+		executor.execute {
+			try {
+				sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
+			} catch (exception: Exception) {
+				completeExceptionally(exception)
+			}
+		}
 	}
 
 	private fun clearPackageInstallerSessionCallback() {

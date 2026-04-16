@@ -20,6 +20,7 @@ import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
@@ -29,11 +30,16 @@ import ru.solrudev.ackpine.exceptions.ConflictingSplitNameException
 import ru.solrudev.ackpine.exceptions.ConflictingVersionCodeException
 import ru.solrudev.ackpine.exceptions.NoBaseApkException
 import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.libsu.LibsuPlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.MainDispatcherRule
 import ru.solrudev.ackpine.sample.R
+import ru.solrudev.ackpine.sample.settings.InstallerBackend
+import ru.solrudev.ackpine.sample.settings.createSettingsRepository
 import ru.solrudev.ackpine.session.Progress
 import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.shizuku.ShizukuPlugin
+import ru.solrudev.ackpine.splits.Abi
 import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.test.TestInstallSession
@@ -58,7 +64,8 @@ class InstallViewModelTest {
 	fun installPackageSuccessfulFlow() = runTest(mainDispatcherRule.dispatcher) {
 		val installer = TestPackageInstaller(TestSessionScript.empty())
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
-		val viewModel = InstallViewModel(installer, repository)
+		val backendRepository = createSettingsRepository()
+		val viewModel = InstallViewModel(installer, repository, backendRepository)
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -68,6 +75,7 @@ class InstallViewModelTest {
 			val session = installer.sessions.last()
 			val parameters = installer.createdParameters.getValue(session.id)
 			assertEquals(TEST_APK_NAME, parameters.name)
+			assertTrue(parameters.pluginContainer.getPlugins().isEmpty())
 
 			val expectedState1 = InstallUiState(
 				error = ResolvableString.empty(),
@@ -122,7 +130,7 @@ class InstallViewModelTest {
 		val script: TestSessionScript<InstallFailure> = TestSessionScript.auto(Session.State.Failed(failure))
 		val installer = TestPackageInstaller(script)
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
-		val viewModel = InstallViewModel(installer, repository)
+		val viewModel = InstallViewModel(installer, repository, createSettingsRepository())
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -155,7 +163,7 @@ class InstallViewModelTest {
 	fun cancelSessionRemovesSession() = runTest(mainDispatcherRule.dispatcher) {
 		val installer = TestPackageInstaller(TestSessionScript.empty())
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
-		val viewModel = InstallViewModel(installer, repository)
+		val viewModel = InstallViewModel(installer, repository, createSettingsRepository())
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -177,7 +185,7 @@ class InstallViewModelTest {
 	fun installPackageReportsSplitPackageErrors() = runTest(mainDispatcherRule.dispatcher) {
 		val installer = TestPackageInstaller()
 		val repository = SessionDataRepositoryImpl(SavedStateHandle())
-		val viewModel = InstallViewModel(installer, repository)
+		val viewModel = InstallViewModel(installer, repository, createSettingsRepository())
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -239,7 +247,7 @@ class InstallViewModelTest {
 			.map { session -> SessionData(session.id, TEST_APK_NAME) }
 			.onEach(repository::addSessionData)
 		val sessionProgress = sessions.map { session -> SessionProgress(session.id, Progress()) }
-		val viewModel = InstallViewModel(installer, repository)
+		val viewModel = InstallViewModel(installer, repository, createSettingsRepository())
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -264,7 +272,7 @@ class InstallViewModelTest {
 		val sessionData = SessionData(sessionId, TEST_APK_NAME)
 		val sessionProgress = SessionProgress(sessionId, Progress())
 		repository.addSessionData(sessionData)
-		val viewModel = InstallViewModel(installer, repository)
+		val viewModel = InstallViewModel(installer, repository, createSettingsRepository())
 		viewModel.uiState.test {
 			awaitItem() // initial state
 
@@ -276,6 +284,69 @@ class InstallViewModelTest {
 
 			assertEquals(InstallUiState(), awaitItem())
 		}
+	}
+
+	@Test
+	fun installPackageFiltersPreferredApksWhenInstallBestSuitedApksEnabled() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository()
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME)
+		advanceUntilIdle()
+
+		val parameters = installer.createdParameters.getValue(installer.sessions.last().id)
+		assertEquals(1, parameters.apks.size)
+	}
+
+	@Test
+	fun installPackageInstallsAllApksWhenInstallBestSuitedApksDisabled() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository(installBestSuitedApks = false)
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProviderWithNonPreferredSplits(), TEST_APK_NAME)
+		advanceUntilIdle()
+
+		val parameters = installer.createdParameters.getValue(installer.sessions.last().id)
+		assertEquals(2, parameters.apks.size)
+	}
+
+	@Test
+	fun installPackageRegistersLibsuPluginForRootBackend() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository(InstallerBackend.ROOT)
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
+
+		advanceUntilIdle()
+		val session = installer.sessions.last()
+		val parameters = installer.createdParameters.getValue(session.id)
+		val pluginParameters = parameters.pluginContainer
+			.getPlugins()
+			.getValue(LibsuPlugin::class.java) as LibsuPlugin.InstallParameters
+		assertTrue(pluginParameters.replaceExisting)
+	}
+
+	@Test
+	fun installPackageRegistersShizukuPluginForShizukuBackend() = runTest(mainDispatcherRule.dispatcher) {
+		val installer = TestPackageInstaller(TestSessionScript.empty())
+		val repository = SessionDataRepositoryImpl(SavedStateHandle())
+		val settingsRepository = createSettingsRepository(InstallerBackend.SHIZUKU, supportsShizuku = flowOf(true))
+		val viewModel = InstallViewModel(installer, repository, settingsRepository)
+
+		viewModel.installPackage(createSplitPackageProvider(), TEST_APK_NAME)
+		advanceUntilIdle()
+		val session = installer.sessions.last()
+		val parameters = installer.createdParameters.getValue(session.id)
+		val pluginParameters = parameters.pluginContainer
+			.getPlugins()
+			.getValue(ShizukuPlugin::class.java) as ShizukuPlugin.InstallParameters
+		assertTrue(pluginParameters.replaceExisting)
 	}
 
 	private fun createSplitPackageProvider(): SplitPackage.Provider {
@@ -290,6 +361,34 @@ class InstallViewModelTest {
 		val splitPackage = SplitPackage(
 			base = listOf(SplitPackage.Entry(isPreferred = true, apk)),
 			libs = emptyList(),
+			screenDensity = emptyList(),
+			localization = emptyList(),
+			other = emptyList(),
+			dynamicFeatures = emptyList()
+		)
+		return SplitPackage.Provider { ImmediateFuture.success(splitPackage) }
+	}
+
+	private fun createSplitPackageProviderWithNonPreferredSplits(): SplitPackage.Provider {
+		val baseApk = Apk.Base(
+			uri = Uri.EMPTY,
+			name = "base",
+			size = 1024,
+			packageName = "com.example",
+			versionCode = 1,
+			versionName = "1.0"
+		)
+		val libsApk = Apk.Libs(
+			uri = Uri.EMPTY,
+			name = "libs.arm",
+			size = 512,
+			packageName = "com.example",
+			versionCode = 1,
+			abi = Abi.ARMEABI_V7A
+		)
+		val splitPackage = SplitPackage(
+			base = listOf(SplitPackage.Entry(isPreferred = true, baseApk)),
+			libs = listOf(SplitPackage.Entry(isPreferred = false, libsApk)),
 			screenDensity = emptyList(),
 			localization = emptyList(),
 			other = emptyList(),

@@ -20,6 +20,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Session
@@ -28,6 +29,8 @@ private const val TAG = "IntentBasedInstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallActivity : InstallActivity(TAG) {
+
+	private val logger = Ackpine.loggerProvider.withTag(TAG)
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -49,6 +52,7 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 			completeSessionExceptionally(IllegalStateException("$TAG: apkUri was null."))
 			return
 		}
+		logger.info("Launching intent-based install UI for session %s", ackpineSessionId)
 		val intent = Intent().apply {
 			action = Intent.ACTION_INSTALL_PACKAGE
 			setDataAndType(apkUri, "application/vnd.android.package-archive")
@@ -61,7 +65,6 @@ internal class IntentBasedInstallActivity : InstallActivity(TAG) {
 	}
 
 	internal companion object {
-
 		@JvmSynthetic
 		internal const val APK_URI_KEY = "ACKPINE_INSTALLER_APK_URI"
 	}

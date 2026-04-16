@@ -32,15 +32,20 @@ hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-proces
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
 junit4 = "junit:junit:4.13.2"
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+libsu-service = "com.github.topjohnwu.libsu:service:6.0.0"
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
 okHttp = "com.squareup.okhttp3:okhttp:5.3.2"
 robolectric = "org.robolectric:robolectric:4.16.1"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
+shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 turbine = "app.cash.turbine:turbine:1.2.1"
 vbpd = "dev.androidbroadcast.vbpd:vbpd:2.0.4"
 xz = "org.tukaani:xz:1.10"
 zstd = "com.github.luben:zstd-jni:1.5.7-4"
+
+[bundles]
+shizuku = ["shizuku-api", "shizuku-provider"]
 
 [plugins]
 hiddenApiRefine = { id = "dev.rikka.tools.refine", version.ref = "hidden-api-refine" }

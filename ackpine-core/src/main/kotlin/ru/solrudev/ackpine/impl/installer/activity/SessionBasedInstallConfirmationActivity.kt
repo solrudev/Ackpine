@@ -30,6 +30,7 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
 import androidx.core.os.ExecutorCompat
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.map
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
@@ -46,9 +47,12 @@ private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
+	private val logger = Ackpine.loggerProvider.withTag(TAG)
+
 	private val sessionId by lazy(LazyThreadSafetyMode.NONE) {
 		val sessionId = intent.extras?.getInt(PackageInstaller.EXTRA_SESSION_ID)
 		if (sessionId == null) {
+			logger.error("Missing native session ID for session %s", ackpineSessionId)
 			completeSessionExceptionally(IllegalStateException("$TAG: sessionId was null."))
 			finish()
 		}
@@ -139,6 +143,13 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		val isInstallPermissionStatusChanged = previousCanInstallPackagesValue != canInstallPackages
 		val sessionInfo = packageInstaller.getSessionInfo(sessionId)
 		val isSessionAlive = sessionInfo != null
+		logger.debug(
+			"Install confirmation finished for session %s resultCode=%s permissionChanged=%s alive=%s",
+			ackpineSessionId,
+			resultCode,
+			isInstallPermissionStatusChanged,
+			isSessionAlive
+		)
 		isSessionStuck(sessionInfo).handleResult(executor) { isSessionStuck ->
 			onInstallConfirmationFinished(
 				isSessionStuck,
@@ -158,9 +169,15 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		// Order of checks is important.
 		when {
 			// Confirmation is a preapproval on API >= 34.
-			isPreapproval -> finish()
+			isPreapproval -> {
+				logger.info("Finishing preapproval flow for session %s", ackpineSessionId)
+				finish()
+			}
 			// User hasn't confirmed installation because confirmation activity didn't appear after permission request.
-			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> launchInstallActivity()
+			isSessionStuck && isInstallPermissionStatusChanged && wasOnTopOnStart -> {
+				logger.info("Relaunching confirmation for stuck session %s after permission change", ackpineSessionId)
+				launchInstallActivity()
+			}
 			// Session proceeded normally.
 			// On API 31-32 in case of requireUserAction = false and if _update_ confirmation was dismissed by clicking
 			// outside of confirmation dialog, session will stay stuck, unfortunately, because session progress doesn't
@@ -168,13 +185,20 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			// and stuck session.
 			isSessionAlive && !isSessionStuck -> finish()
 			// User has cancelled install permission request or hasn't granted permission.
-			!canInstallPackages -> abortSession("Install permission denied")
+			!canInstallPackages -> {
+				logger.warn("Install permission denied for session %s", ackpineSessionId)
+				abortSession("Install permission denied")
+			}
 			// User has dismissed confirmation activity.
-			isSessionAlive && isActivityCancelled -> abortSession()
+			isSessionAlive && isActivityCancelled -> {
+				logger.warn("Install confirmation was dismissed for session %s", ackpineSessionId)
+				abortSession()
+			}
 			// There was some error while installing which is not handled in PackageInstallerStatusReceiver,
 			// or session may have completed too quickly.
 			else -> {
 				// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
+				logger.info("Waiting for delayed dead-session fallback for session %s", ackpineSessionId)
 				setLoading(isLoading = true, delayMillis = 100)
 				handler.postDelayed(deadSessionCompletionRunnable, 1000)
 			}
@@ -183,6 +207,12 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	private fun handlePreapproval(launchConfirmation: Boolean) = withCompletableSession { session ->
 		val canRequestPreapproval = (session as PreapprovalListener).isPreapprovalActive()
+		logger.debug(
+			"Handling preapproval branch for session %s active=%s launch=%s",
+			ackpineSessionId,
+			canRequestPreapproval,
+			launchConfirmation
+		)
 		when {
 			!canRequestPreapproval -> finish()
 			launchConfirmation -> launchInstallActivity()
@@ -191,6 +221,11 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 
 	private fun launchInstallActivity() {
 		canInstallPackages = canInstallPackages()
+		logger.info(
+			"Launching install confirmation intent for session %s canInstallPackages=%s",
+			ackpineSessionId,
+			canInstallPackages
+		)
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let(::startActivityForResult)

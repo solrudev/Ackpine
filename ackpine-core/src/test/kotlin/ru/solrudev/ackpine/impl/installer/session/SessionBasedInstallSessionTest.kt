@@ -29,6 +29,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.util.ReflectionHelpers
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.CommitAttemptsUpdate
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
@@ -544,17 +545,19 @@ internal fun createSessionBasedSession(
 	nativeSessionIdDao: RecordingNativeSessionIdDao = RecordingNativeSessionIdDao(),
 	preapprovalDao: RecordingInstallPreapprovalDao = RecordingInstallPreapprovalDao(),
 	constraintsDao: RecordingInstallConstraintsDao = RecordingInstallConstraintsDao(),
-	executor: Executor = ImmediateExecutor
+	executor: Executor = ImmediateExecutor,
+	parallelism: Int = Int.MAX_VALUE
 ) = SessionBasedInstallSession(
+	loggerProvider = AckpineLoggerProvider("SessionBasedInstallSession") { null },
 	context = ApplicationProvider.getApplicationContext(),
-	packageInstaller, apks, id, initialState, initialProgress,
+	lazyOf(packageInstaller), apks, id, initialState, initialProgress,
 	confirmation = Confirmation.DEFERRED,
 	notificationData = NotificationData.DEFAULT,
 	requireUserAction, installMode, preapproval, constraints, requestUpdateOwnership, packageSource,
 	sessionDao = RecordingSessionDao(),
 	sessionFailureDao = TestSessionFailureDao(),
 	sessionProgressDao = RecordingSessionProgressDao(),
-	nativeSessionIdDao, preapprovalDao, constraintsDao, executor,
+	nativeSessionIdDao, preapprovalDao, constraintsDao, executor, parallelism,
 	handler = Handler(Looper.getMainLooper()),
 	sessionCallbackHandler = Handler(Looper.getMainLooper()),
 	nativeSessionId,

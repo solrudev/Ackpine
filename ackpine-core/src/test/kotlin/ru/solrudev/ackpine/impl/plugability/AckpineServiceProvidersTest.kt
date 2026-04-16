@@ -23,6 +23,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider.PluginEntry
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider.ServiceFactory
 import ru.solrudev.ackpine.impl.session.CompletableSession
@@ -53,14 +54,14 @@ class AckpineServiceProvidersTest {
 
 	@Test
 	fun getAllReturnsAllRegisteredProviders() {
-		val providers = AckpineServiceProviders(lazy { setOf(testProvider) })
+		val providers = createAckpineServiceProviders(setOf(testProvider))
 		val all = providers.getAll()
 		assertEquals(setOf(testProvider), all)
 	}
 
 	@Test
 	fun createSessionWithServiceUsesDefaultWhenNoProviders() {
-		val providers = AckpineServiceProviders(lazy { emptySet() })
+		val providers = createAckpineServiceProviders(emptySet())
 		val defaultService = TestServiceImpl()
 		val sessionId = UUID.randomUUID()
 		var usedService: TestService? = null
@@ -71,7 +72,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -81,7 +82,7 @@ class AckpineServiceProvidersTest {
 
 	@Test
 	fun createSessionWithServiceUsesDefaultWhenNoPluginsApplied() {
-		val providers = AckpineServiceProviders(lazy { setOf(testProvider) })
+		val providers = createAckpineServiceProviders(setOf(testProvider))
 		val defaultService = TestServiceImpl()
 		val sessionId = UUID.randomUUID()
 		var usedService: TestService? = null
@@ -92,7 +93,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(emptyList()),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -102,7 +103,7 @@ class AckpineServiceProvidersTest {
 
 	@Test
 	fun createSessionWithServiceCompletesSessionExceptionallyOnPluginClassesError() {
-		val providers = AckpineServiceProviders(lazy { emptySet() })
+		val providers = createAckpineServiceProviders(emptySet())
 		val sessionId = UUID.randomUUID()
 		val exception = RuntimeException("plugin error")
 
@@ -119,7 +120,7 @@ class AckpineServiceProvidersTest {
 
 	@Test
 	fun getByPluginsReturnsProvidersWithMatchingPluginId() {
-		val providers = AckpineServiceProviders(lazy { setOf(testProvider) })
+		val providers = createAckpineServiceProviders(setOf(testProvider))
 		val result = providers.getByPlugins(listOf(TestPlugin::class.java))
 		assertEquals(listOf(testProvider), result)
 	}
@@ -138,7 +139,7 @@ class AckpineServiceProvidersTest {
 			)
 		)
 		provider.initContext(context)
-		val providers = AckpineServiceProviders(lazy { setOf(provider) })
+		val providers = createAckpineServiceProviders(setOf(provider))
 		var usedService: TestService? = null
 
 		val session = providers.createSessionWithService(
@@ -147,7 +148,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java, PluginOne::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -167,7 +168,7 @@ class AckpineServiceProvidersTest {
 			)
 		)
 		provider.initContext(context)
-		val providers = AckpineServiceProviders(lazy { setOf(provider) })
+		val providers = createAckpineServiceProviders(setOf(provider))
 		val defaultService = TestServiceImpl()
 		var usedService: TestService? = null
 
@@ -177,7 +178,7 @@ class AckpineServiceProvidersTest {
 			sessionId = sessionId,
 			pluginClasses = Result.success(listOf(TestPlugin::class.java)),
 			sessionFactory = { service ->
-				usedService = service
+				usedService = service.value
 				DummyCompletableSession(sessionId)
 			}
 		)
@@ -187,7 +188,7 @@ class AckpineServiceProvidersTest {
 
 	@Test
 	fun createSessionWithServiceWrapsErrorsFromPluginDiscovery() {
-		val providers = AckpineServiceProviders(lazy { emptySet() })
+		val providers = createAckpineServiceProviders(emptySet())
 		val sessionId = UUID.randomUUID()
 
 		val session = providers.createSessionWithService(
@@ -216,7 +217,7 @@ class AckpineServiceProvidersTest {
 			)
 		)
 		provider.initContext(context)
-		val providers = AckpineServiceProviders(lazy { setOf(provider) })
+		val providers = createAckpineServiceProviders(setOf(provider))
 		val params1 = PluginOneParams(value = "p1")
 		val params2 = PluginTwoParams(value = "p2")
 		val installParameters = InstallParameters(Uri.EMPTY) {
@@ -236,24 +237,10 @@ class AckpineServiceProvidersTest {
 		assertEquals(2, store2.recorded.size)
 	}
 
-	private class RecordingTestService : TestService {
-
-		private val _appliedParameters = mutableListOf<AppliedParameters<TestParams>>()
-		val appliedParameters: List<AppliedParameters<TestParams>> = _appliedParameters
-
-		override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
-			if (parameters is TestParams) {
-				_appliedParameters += AppliedParameters(sessionId, parameters)
-			}
-		}
-	}
-
-	private data class AppliedParameters<out P : AckpinePlugin.Parameters>(
-		val sessionId: UUID,
-		val parameters: P
+	private fun createAckpineServiceProviders(providers: Set<AckpineServiceProvider>) = AckpineServiceProviders(
+		lazyOf(providers),
+		AckpineLoggerProvider("AckpineServiceProviders") { null }
 	)
-
-	private data class TestParams(val value: String) : AckpinePlugin.Parameters
 
 	private class FakeAckpineServiceProvider(
 		serviceFactories: Set<ServiceFactory<*>> = emptySet(),

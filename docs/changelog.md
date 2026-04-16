@@ -6,6 +6,32 @@ hide:
 Change Log
 ==========
 
+Version 0.22.2 (2026-04-16)
+---------------------------
+
+### Dependencies
+
+- Extracted `ackpine-privileged` and `ackpine-privileged-ktx` artifacts which are now depended upon by `ackpine-shizuku(-ktx)` and `ackpine-libsu(-ktx)`.
+
+### Bug fixes and improvements
+
+- Introduce `libsu` plugin for root-based package installation and uninstallation backed by [libsu](https://github.com/topjohnwu/libsu).
+- Introduce logging API. Configure a custom `AckpineLogger` via `Ackpine.setLogger()` to receive internal diagnostic logs. `AckpineLogger.Logcat` implementation is provided out of the box and can be set up with `Ackpine.enableLogcatLogger()`.
+- Fix thread pool starvation when a large number of APKs is submitted for writing in a single `SESSION_BASED` install session.
+- Add root and Shizuku support to `sample-java`/`sample-ktx`.
+- Add option to disable APK splits filtering in `sample-java`/`sample-ktx`.
+
+### Public API changes
+
+#### New
+
+- Added `ackpine-libsu` and `ackpine-libsu-ktx` artifacts. See documentation for details.
+- Added `ackpine-privileged` artifact with `PrivilegedPlugin`, `PrivilegedInstallParameters`, `PrivilegedUninstallParameters`, `PrivilegedInstallCapabilities`, `PrivilegedUninstallCapabilities` and related types.
+- Added `ackpine-privileged-ktx` artifact with `PrivilegedInstallParametersDsl`, `PrivilegedUninstallParametersDsl` and related types.
+- `ShizukuPlugin`, `ShizukuPlugin.InstallParameters`, `ShizukuPlugin.UninstallParameters`, `ShizukuInstallCapabilities`, `ShizukuUninstallCapabilities`, `ShizukuInstallParametersDsl` and `ShizukuUninstallParametersDsl` now extend their `Privileged*` counterparts from `ackpine-privileged(-ktx)`.
+- Added `AckpineLogger` interface, `AckpineLogger.Level` enum and `AckpineLogger.Logcat` implementation.
+- Added `Ackpine.setLogger()` and `Ackpine.enableLogcatLogger()` static methods.
+
 Version 0.22.1 (2026-04-09)
 ---------------------------
 

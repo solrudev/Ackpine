@@ -5,40 +5,12 @@ public final class ru/solrudev/ackpine/shizuku/InstallParametersDslKt {
 	public static synthetic fun useShizuku$default (Lru/solrudev/ackpine/installer/parameters/InstallParametersDsl;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
 }
 
-public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDsl {
-	public abstract fun getAllUsers ()Z
-	public abstract fun getAllowTest ()Z
-	public abstract fun getBypassLowTargetSdkBlock ()Z
-	public abstract fun getGrantAllRequestedPermissions ()Z
-	public abstract fun getInstallerPackageName ()Ljava/lang/String;
-	public abstract fun getReplaceExisting ()Z
-	public abstract fun getRequestDowngrade ()Z
-	public abstract fun setAllUsers (Z)V
-	public abstract fun setAllowTest (Z)V
-	public abstract fun setBypassLowTargetSdkBlock (Z)V
-	public abstract fun setGrantAllRequestedPermissions (Z)V
-	public abstract fun setInstallerPackageName (Ljava/lang/String;)V
-	public abstract fun setReplaceExisting (Z)V
-	public abstract fun setRequestDowngrade (Z)V
+public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDsl : ru/solrudev/ackpine/privileged/PrivilegedInstallParametersDsl {
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDslBuilder : ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDsl {
+public class ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDslBuilder : ru/solrudev/ackpine/privileged/PrivilegedInstallParametersDslBuilder, ru/solrudev/ackpine/shizuku/ShizukuInstallParametersDsl {
 	public fun <init> ()V
 	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
-	public fun getAllUsers ()Z
-	public fun getAllowTest ()Z
-	public fun getBypassLowTargetSdkBlock ()Z
-	public fun getGrantAllRequestedPermissions ()Z
-	public fun getInstallerPackageName ()Ljava/lang/String;
-	public fun getReplaceExisting ()Z
-	public fun getRequestDowngrade ()Z
-	public fun setAllUsers (Z)V
-	public fun setAllowTest (Z)V
-	public fun setBypassLowTargetSdkBlock (Z)V
-	public fun setGrantAllRequestedPermissions (Z)V
-	public fun setInstallerPackageName (Ljava/lang/String;)V
-	public fun setReplaceExisting (Z)V
-	public fun setRequestDowngrade (Z)V
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuInstallParametersKt {
@@ -58,20 +30,12 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPluginParametersKt {
 	public static synthetic fun ShizukuPluginParameters$default (Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
 }
 
-public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDsl {
-	public abstract fun getAllUsers ()Z
-	public abstract fun getKeepData ()Z
-	public abstract fun setAllUsers (Z)V
-	public abstract fun setKeepData (Z)V
+public abstract interface class ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDsl : ru/solrudev/ackpine/privileged/PrivilegedUninstallParametersDsl {
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDslBuilder : ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDsl {
+public class ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDslBuilder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParametersDslBuilder, ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersDsl {
 	public fun <init> ()V
 	public final fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
-	public fun getAllUsers ()Z
-	public fun getKeepData ()Z
-	public fun setAllUsers (Z)V
-	public fun setKeepData (Z)V
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallParametersKt {

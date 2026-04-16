@@ -21,10 +21,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
@@ -52,6 +52,8 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 	private val tag: String
 ) : BroadcastReceiver() {
 
+	private val logger = Ackpine.loggerProvider.withTag(tag)
+
 	abstract fun getAckpineSessionAsync(
 		context: Context,
 		ackpineSessionId: UUID
@@ -70,10 +72,11 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 		getAckpineSessionAsync(context, ackpineSessionId).handleResult(
 			onException = { exception ->
 				pendingResult.finish()
-				Log.e(tag, null, exception)
+				logger.error(exception, "Failed to resolve session %s", ackpineSessionId)
 			},
 			block = { session ->
 				if (session == null) {
+					logger.warn("Session %s was not found for receiver callback", ackpineSessionId)
 					pendingResult.finish()
 					return@handleResult
 				}
@@ -97,29 +100,44 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 			val packageInstallerStatus = PackageInstallerStatus.fromLegacyStatus(legacyStatus)
 			val isPreapproval = isPreapproval(intent) || packageInstallerStatus?.isPreapproval == true
 			when {
-				status == PackageInstaller.STATUS_PENDING_USER_ACTION -> {
-					val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
-					if (confirmationIntent == null) {
-						session.completeExceptionally(
-							IllegalStateException("$tag: confirmationIntent was null.")
-						)
-						return
-					}
-					if (Build.VERSION.SDK_INT in 31..32 && !getRequireUserAction(intent)) {
-						setConfirmationLaunched(context, ackpineSessionId)
-					}
-					handleConfirmation(
-						context, intent, confirmationIntent, ackpineSessionId, sessionId, isPreapproval
-					)
-					return
-				}
+				status == PackageInstaller.STATUS_PENDING_USER_ACTION -> handleUserAction(
+					context, session, sessionId, ackpineSessionId, isPreapproval, intent
+				)
 
-				isPreapproval -> handlePreapprovalResult(session, status, packageInstallerStatus, message, intent)
-				else -> handleSessionResult(session, status, message, intent)
+				isPreapproval -> handlePreapprovalResult(
+					session, ackpineSessionId, status, packageInstallerStatus, message, intent
+				)
+				else -> handleSessionResult(session, status, legacyStatus, message, intent)
 			}
 		} finally {
 			pendingResult.finish()
 		}
+	}
+
+	private fun handleUserAction(
+		context: Context,
+		session: CompletableSession<F>,
+		sessionId: Int,
+		ackpineSessionId: UUID,
+		isPreapproval: Boolean,
+		intent: Intent
+	) {
+		logger.debug(
+			"Pending user action for session %s nativeSessionId=%s preapproval=%s",
+			ackpineSessionId,
+			sessionId,
+			isPreapproval
+		)
+		val confirmationIntent = intent.getParcelableExtraCompat<Intent>(Intent.EXTRA_INTENT)
+		if (confirmationIntent == null) {
+			logger.error("Missing confirmation intent for session %s", ackpineSessionId)
+			session.completeExceptionally(IllegalStateException("$tag: confirmationIntent was null."))
+			return
+		}
+		if (Build.VERSION.SDK_INT in 31..32 && !getRequireUserAction(intent)) {
+			setConfirmationLaunched(context, ackpineSessionId)
+		}
+		handleConfirmation(context, intent, confirmationIntent, ackpineSessionId, sessionId, isPreapproval)
 	}
 
 	private fun handleConfirmation(
@@ -155,6 +173,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 	private fun handleSessionResult(
 		session: CompletableSession<F>,
 		status: Int,
+		legacyStatus: Int,
 		message: String?,
 		intent: Intent
 	) {
@@ -162,16 +181,30 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 			PackageInstaller.STATUS_SUCCESS -> Session.State.Succeeded
 			else -> Session.State.Failed(getFailure(intent, status, message))
 		}
+		logger.debug(
+			"Package installer result for session %s status=%s legacyStatus=%s outcome=%s",
+			session.id,
+			status,
+			legacyStatus,
+			result
+		)
 		session.complete(result)
 	}
 
 	private fun handlePreapprovalResult(
 		session: CompletableSession<F>,
+		ackpineSessionId: UUID,
 		status: Int,
 		packageInstallerStatus: PackageInstallerStatus?,
 		message: String?,
 		intent: Intent
 	) {
+		logger.debug(
+			"Handling preapproval result for session %s status=%s legacyStatus=%s",
+			ackpineSessionId,
+			status,
+			packageInstallerStatus
+		)
 		session as PreapprovalListener
 		when (status) {
 			PackageInstaller.STATUS_SUCCESS -> session.onPreapprovalSucceeded()

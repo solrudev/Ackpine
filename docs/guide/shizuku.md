@@ -9,6 +9,9 @@ Shizuku
 
 Kotlin examples below use APIs from `ackpine-shizuku-ktx` artifact. For general plugin usage in session parameters, see [Configuration](configuration.md#plugins).
 
+!!! warning "Attention"
+    Shizuku plugin for Ackpine doesn't manage Shizuku permission and binder lifecycle. You must handle these in your app to successfully use Shizuku. See the [Shizuku-API guide](https://github.com/RikkaApps/Shizuku-API#guide) and their [demo project](https://github.com/RikkaApps/Shizuku-API/tree/master/demo).
+
 Setting up Shizuku
 ------------------
 
@@ -78,11 +81,19 @@ Then add an `ackpine-shizuku` dependency:
     }
     ```
 
-!!! warning "Attention"
-    Shizuku plugin for Ackpine doesn't manage Shizuku permission and binder lifecycle. You must handle these in your app to successfully use Shizuku. See the [Shizuku-API guide](https://github.com/RikkaApps/Shizuku-API#guide) and their [demo project](https://github.com/RikkaApps/Shizuku-API/tree/master/demo).
-
 Using the plugin
 ----------------
+
+!!! warning "Google Play"
+    This plugin uses hidden Android APIs. This may cause your app to fail app review on Google Play. Disable reporting information about SDK dependencies in `build.gradle.kts`:
+    ```
+    android {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
+    }
+    ```
 
 To apply the plugin to an install session, just add this to your install parameters configuration:
 

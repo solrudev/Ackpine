@@ -23,17 +23,23 @@ import java.util.concurrent.ThreadFactory
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.roundToInt
 
+private val ACKPINE_THREAD_POOL_SIZE = (Runtime.getRuntime().availableProcessors() * 1.8).roundToInt()
+
 /**
  * A thread pool shared between all Ackpine modules.
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public object AckpineThreadPool : ExecutorService by Executors.newFixedThreadPool(
-	(Runtime.getRuntime().availableProcessors() * 1.8).roundToInt(),
+	ACKPINE_THREAD_POOL_SIZE,
 	object : ThreadFactory {
-		private val threadCount = AtomicInteger(0)
+		private val threadCounter = AtomicInteger(0)
 
 		override fun newThread(runnable: Runnable?): Thread {
-			return Thread(runnable, "ackpine.pool-${threadCount.incrementAndGet()}")
+			return Thread(runnable, "ackpine.pool-${threadCounter.incrementAndGet()}")
 		}
 	}
-)
+) {
+
+	@get:RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public val threadCount: Int = ACKPINE_THREAD_POOL_SIZE
+}

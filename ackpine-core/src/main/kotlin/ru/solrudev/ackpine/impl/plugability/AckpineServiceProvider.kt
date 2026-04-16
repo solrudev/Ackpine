@@ -51,6 +51,13 @@ public interface AckpineServiceProvider {
 	 * @param serviceClass a Kotlin class of the requested service.
 	 */
 	public operator fun <T : AckpineService> get(serviceClass: KClass<T>): T?
+
+	/**
+	 * Returns a lazy container for [AckpineService] of the given [class][serviceClass]. May return `null` if this
+	 * provider doesn't hold the requested service or if the requested service is not supported.
+	 * @param serviceClass a Kotlin class of the requested service.
+	 */
+	public fun <T : AckpineService> getLazy(serviceClass: KClass<T>): AckpineServiceLazy<T>?
 }
 
 /**
@@ -89,6 +96,13 @@ public abstract class AbstractAckpineServiceProvider(
 		return services.computeIfAbsentCompat(serviceClass, locks) {
 			factories.getValue(serviceClass).invoke(context)
 		} as? T
+	}
+
+	override fun <T : AckpineService> getLazy(serviceClass: KClass<T>): AckpineServiceLazy<T>? {
+		if (serviceClass !in factories.keys) {
+			return null
+		}
+		return AckpineServiceLazy { get(serviceClass)!! }
 	}
 
 	override fun getPluginParametersStores(): List<PluginParametersStore> {

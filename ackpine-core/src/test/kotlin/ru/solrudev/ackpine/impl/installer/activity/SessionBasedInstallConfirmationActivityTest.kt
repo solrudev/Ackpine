@@ -26,10 +26,12 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
 import java.util.UUID
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -39,6 +41,11 @@ import kotlin.test.assertTrue
 class SessionBasedInstallConfirmationActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
+
+	@AfterTest
+	fun tearDown() {
+		Ackpine.setLogger(null)
+	}
 
 	@Test
 	fun regularInstallNotifiesCommitted() {

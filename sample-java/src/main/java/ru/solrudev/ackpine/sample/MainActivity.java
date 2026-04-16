@@ -41,7 +41,9 @@ public final class MainActivity extends AppCompatActivity {
 	private NavHostBinding binding;
 
 	private final AppBarConfiguration appBarConfiguration =
-			new AppBarConfiguration.Builder(R.id.install_fragment, R.id.uninstall_fragment).build();
+			new AppBarConfiguration.Builder(R.id.install_fragment,
+					R.id.uninstall_fragment,
+					R.id.settings_fragment).build();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

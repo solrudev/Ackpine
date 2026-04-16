@@ -23,12 +23,14 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
 import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
 import ru.solrudev.ackpine.impl.testutil.TestCompletableProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import java.util.UUID
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -41,6 +43,11 @@ import kotlin.test.assertNull
 class SessionCommitActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
+
+	@AfterTest
+	fun tearDown() {
+		Ackpine.setLogger(null)
+	}
 
 	@Test
 	fun configChangeDoesNotCallNotifyCommittedAgain() {

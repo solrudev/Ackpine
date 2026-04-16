@@ -23,8 +23,10 @@ import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.RecordingPackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
@@ -61,10 +63,12 @@ class PackageInstallerBasedUninstallSessionTest {
 	private fun createSession(
 		packageInstaller: PackageInstallerService,
 		id: UUID,
-		initialState: Session.State<UninstallFailure> = Session.State.Awaiting
+		initialState: Session.State<UninstallFailure> = Session.State.Awaiting,
+		logger: RecordingAckpineLogger? = null
 	) = PackageInstallerBasedUninstallSession(
+		loggerProvider = AckpineLoggerProvider("PackageInstallerBasedUninstallSession") { logger },
 		context = context,
-		packageInstaller = packageInstaller,
+		packageInstallerService = lazyOf(packageInstaller),
 		packageName = "com.example.app",
 		id = id,
 		initialState = initialState,
