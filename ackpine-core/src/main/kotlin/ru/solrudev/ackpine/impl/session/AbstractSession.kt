@@ -33,6 +33,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.concurrent.SerialExecutor
 import ru.solrudev.ackpine.impl.helpers.concurrent.withPermit
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.Session.State.Active
@@ -54,6 +55,7 @@ import java.util.concurrent.atomic.AtomicReference
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class AbstractSession<F : Failure> protected constructor(
 	private val context: Context,
+	protected val logger: AckpineLoggerProvider,
 	override val id: UUID,
 	initialState: Session.State<F>,
 	private val sessionDao: SessionDao,
@@ -93,6 +95,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				)
 			}
 			if (shouldNotify) {
+				logTerminalState(value)
 				notifyStateListeners(value)
 			}
 		}
@@ -156,7 +159,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			try {
 				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
 				prepare()
-			} catch (_: OperationCanceledException) { // no-op
+			} catch (_: OperationCanceledException) {
+				logger.debug("Launch preparation cancelled for session %s", id)
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -175,6 +179,7 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			try {
 				launchConfirmation()
 			} catch (_: OperationCanceledException) { // no-op
+				logger.debug("Commit cancelled for session %s", id)
 			} catch (exception: Exception) {
 				completeExceptionally(exception)
 			}
@@ -184,8 +189,10 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 
 	final override fun cancel() {
 		if (state.isTerminal || !isCancelling.compareAndSet(false, true)) {
+			logger.debug("Ignored cancel for session %s in state=%s", id, state)
 			return
 		}
+		logger.debug("Cancelling session %s", id)
 		try {
 			cancellationSignal.cancel()
 			state = Cancelled
@@ -232,10 +239,13 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	final override fun complete(state: Completed<F>) {
 		if (onCompleted(state)) {
 			this.state = state
+		} else {
+			logger.debug("Completion for session %s was deferred", id)
 		}
 	}
 
 	final override fun completeExceptionally(exception: Exception) {
+		logger.error(exception, "Completing session %s exceptionally", id)
 		state = Failed(exceptionalFailureFactory(exception))
 	}
 
@@ -253,6 +263,12 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 					registration.listener.onStateChanged(id, value)
 				}
 			}
+		}
+	}
+
+	private fun logTerminalState(state: Session.State<F>) {
+		if (state.isTerminal) {
+			logger.info("Session %s reached terminal state=%s", id, state)
 		}
 	}
 

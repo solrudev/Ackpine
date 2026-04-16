@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.plugability
 import android.content.Context
 import androidx.annotation.RestrictTo
 import androidx.annotation.WorkerThread
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.session.CompletableSession
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
@@ -28,7 +29,10 @@ import java.util.UUID
 import kotlin.reflect.KClass
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<AckpineServiceProvider>>) {
+internal class AckpineServiceProviders(
+	private val serviceProviders: Lazy<Set<AckpineServiceProvider>>,
+	private val logger: AckpineLoggerProvider
+) {
 
 	@JvmSynthetic
 	internal fun getAll() = serviceProviders.value
@@ -77,19 +81,23 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 	): R {
 		val service = serviceProviders.mapCatching { providers ->
 			if (providers.isEmpty()) {
+				logger.debug(
+					"Using default %s for session %s",
+					serviceClass.qualifiedName,
+					sessionId
+				)
 				return sessionFactory(defaultService)
 			}
-			providers
-				.firstNotNullOfOrNull { provider -> provider.getLazy(serviceClass) }
-				?.also { service ->
-					pluginParameters
-						.getOrThrow()
-						.filterNot { params -> params == AckpinePlugin.Parameters.None }
-						.forEach { params -> service.applyParameters(sessionId, params) }
-				}
+			resolveService(providers, serviceClass, sessionId, pluginParameters)
 		}
 		val session = sessionFactory(service.getOrNull() ?: defaultService)
 		service.onFailure { throwable ->
+			logger.error(
+				throwable,
+				"Failed to resolve %s for session %s",
+				serviceClass.qualifiedName,
+				sessionId
+			)
 			when (throwable) {
 				is Error -> session.completeExceptionally(RuntimeException(throwable))
 				is Exception -> session.completeExceptionally(throwable)
@@ -98,21 +106,70 @@ internal class AckpineServiceProviders(private val serviceProviders: Lazy<Set<Ac
 		return session
 	}
 
+	private fun <S : AckpineService> resolveService(
+		providers: List<AckpineServiceProvider>,
+		serviceClass: KClass<S>,
+		sessionId: UUID,
+		pluginParameters: Result<Collection<AckpinePlugin.Parameters>>
+	): AckpineServiceLazy<S>? {
+		val resolvedService = providers.firstNotNullOfOrNull { provider ->
+			provider.getLazy(serviceClass)?.let { service ->
+				ResolvedAckpineService(provider, service)
+			}
+		}
+		if (resolvedService != null) {
+			logger.debug(
+				"Selected service %s for session %s provider=%s",
+				serviceClass.qualifiedName,
+				sessionId,
+				resolvedService.provider::class.java.name
+			)
+			pluginParameters
+				.getOrThrow()
+				.filterNot { params -> params == AckpinePlugin.Parameters.None }
+				.forEach { params -> resolvedService.service.applyParameters(sessionId, params) }
+			return resolvedService.service
+		}
+		logger.debug(
+			"Using default %s for session %s because no provider exposed it",
+			serviceClass.qualifiedName,
+			sessionId
+		)
+		return null
+	}
+
 	internal companion object Factory {
 
+		private const val TAG = "AckpineServiceProviders"
+
 		@JvmSynthetic
-		internal fun create(context: Context) = AckpineServiceProviders(
-			serviceProviders = lazy {
-				ServiceLoader
-					.load(
-						AckpineServiceProvider::class.java,
-						AckpineServiceProvider::class.java.classLoader
-					)
-					.iterator()
-					.asSequence()
-					.onEach { provider -> provider.initContext(context) }
-					.toSet()
-			}
-		)
+		internal fun create(
+			context: Context,
+			loggerProvider: AckpineLoggerProvider
+		): AckpineServiceProviders {
+			val logger = loggerProvider.withTag(TAG)
+			return AckpineServiceProviders(
+				serviceProviders = lazy {
+					ServiceLoader
+						.load(
+							AckpineServiceProvider::class.java,
+							AckpineServiceProvider::class.java.classLoader
+						)
+						.iterator()
+						.asSequence()
+						.onEach { provider -> provider.initContext(context) }
+						.toSet()
+						.also { providers ->
+							logger.debug("Discovered service providers=%s", providers.map { it::class.java.name })
+						}
+				},
+				logger
+			)
+		}
 	}
 }
+
+private class ResolvedAckpineService<S : AckpineService>(
+	val provider: AckpineServiceProvider,
+	val service: AckpineServiceLazy<S>
+)

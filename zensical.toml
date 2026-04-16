@@ -17,6 +17,7 @@ nav = [
         { "Shizuku" = "guide/shizuku.md" },
         { "Root permissions" = "guide/libsu.md" },
         { "Testing" = "guide/testing.md" },
+        { "Logging" = "guide/logging.md" },
         { "Samples" = "guide/samples.md" }
     ]},
     { "Permissions" = "permissions.md" },

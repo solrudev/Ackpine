@@ -29,7 +29,9 @@ import org.robolectric.shadow.api.Shadow
 import org.robolectric.shadows.ShadowContextWrapper
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.TestSessionFailureDao
 import ru.solrudev.ackpine.impl.testutil.drainMainThread
@@ -87,8 +89,10 @@ class IntentBasedUninstallSessionTest {
 	private fun createSession(
 		id: UUID,
 		confirmation: Confirmation,
-		initialState: Session.State<UninstallFailure> = Session.State.Awaiting
+		initialState: Session.State<UninstallFailure> = Session.State.Awaiting,
+		logger: RecordingAckpineLogger? = null
 	) = IntentBasedUninstallSession(
+		loggerProvider = AckpineLoggerProvider("IntentBasedUninstallSession") { logger },
 		context = context,
 		packageName = "com.example.app",
 		id = id,

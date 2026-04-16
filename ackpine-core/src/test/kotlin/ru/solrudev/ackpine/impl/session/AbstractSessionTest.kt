@@ -30,6 +30,7 @@ import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.DummyDisposableSubscription
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
 import ru.solrudev.ackpine.impl.testutil.RecordingSessionDao
 import ru.solrudev.ackpine.impl.testutil.SessionStateUpdate
@@ -467,18 +468,12 @@ class AbstractSessionTest {
 		failureDao: TestSessionFailureDao<TestFailure> = TestSessionFailureDao(),
 		initialState: Session.State<TestFailure>,
 		notificationId: Int = 1,
-		executor: Executor = ImmediateExecutor
+		executor: Executor = ImmediateExecutor,
+		logger: AckpineLoggerProvider = AckpineLoggerProvider("TestSession") { null }
 	) : AbstractSession<TestFailure>(
-		context = context,
-		id = id,
-		initialState = initialState,
-		sessionDao = sessionDao,
-		sessionFailureDao = failureDao,
-		executor = executor,
-		handler = handler,
+		context, logger, id, initialState, sessionDao, failureDao, executor, handler,
 		exceptionalFailureFactory = TestFailure::Exceptional,
-		notificationId = notificationId,
-		dbWriteSemaphore = dbWriteSemaphore
+		notificationId, dbWriteSemaphore
 	) {
 
 		var prepareCalls = 0

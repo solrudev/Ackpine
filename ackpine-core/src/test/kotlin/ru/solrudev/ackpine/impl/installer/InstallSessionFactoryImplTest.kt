@@ -36,8 +36,10 @@ import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.RecordingPackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.captureStates
 import ru.solrudev.ackpine.impl.testutil.createInstallSessionEntity
@@ -479,10 +481,13 @@ class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 		assertNotNull(context.getSystemService<NotificationManager>())
 	)
 
-	private fun createFactory() = InstallSessionFactoryImpl(
+	private fun createFactory(logger: RecordingAckpineLogger? = null) = InstallSessionFactoryImpl(
 		applicationContext = context,
 		defaultPackageInstallerService = lazy { RecordingPackageInstallerService() },
-		ackpineServiceProviders = AckpineServiceProviders(lazy { emptySet() }),
+		ackpineServiceProviders = AckpineServiceProviders(
+			lazy { emptySet() },
+			AckpineLoggerProvider("AckpineServiceProviders") { logger }
+		),
 		lastUpdateTimestampDao = database.lastUpdateTimestampDao(),
 		installSessionDao = database.installSessionDao(),
 		sessionDao = database.sessionDao(),
@@ -493,6 +498,7 @@ class InstallSessionFactoryImplTest : HasAckpineDatabaseTest() {
 		executor = ImmediateExecutor,
 		parallelism = 1,
 		handler = Handler(Looper.getMainLooper()),
-		sessionCallbackHandler = lazy { Handler(Looper.getMainLooper()) }
+		sessionCallbackHandler = lazy { Handler(Looper.getMainLooper()) },
+		loggerProvider = AckpineLoggerProvider("InstallSessionFactory") { logger }
 	)
 }

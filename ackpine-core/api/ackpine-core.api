@@ -1,6 +1,8 @@
 public final class ru/solrudev/ackpine/Ackpine {
 	public static final field INSTANCE Lru/solrudev/ackpine/Ackpine;
 	public static final fun deleteNotificationChannel (Landroid/content/Context;)V
+	public static final fun enableLogcatLogger ()V
+	public static final fun setLogger (Lru/solrudev/ackpine/AckpineLogger;)V
 }
 
 public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Initializer {
@@ -8,6 +10,36 @@ public final class ru/solrudev/ackpine/AckpineInitializer : androidx/startup/Ini
 	public synthetic fun create (Landroid/content/Context;)Ljava/lang/Object;
 	public fun create (Landroid/content/Context;)Lru/solrudev/ackpine/Ackpine;
 	public fun dependencies ()Ljava/util/List;
+}
+
+public abstract interface class ru/solrudev/ackpine/AckpineLogger {
+	public fun debug (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun debug (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun error (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun error (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun info (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun info (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;[Ljava/lang/Object;)V
+	public abstract fun log (Lru/solrudev/ackpine/AckpineLogger$Level;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;[Ljava/lang/Object;)V
+	public fun verbose (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun verbose (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun warn (Ljava/lang/String;Ljava/lang/String;[Ljava/lang/Object;)V
+	public fun warn (Ljava/lang/String;Ljava/lang/Throwable;Ljava/lang/String;[Ljava/lang/Object;)V
+}
+
+public final class ru/solrudev/ackpine/AckpineLogger$Level : java/lang/Enum {
+	public static final field DEBUG Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static final field ERROR Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static final field INFO Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static final field VERBOSE Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static final field WARN Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/AckpineLogger$Level;
+	public static fun values ()[Lru/solrudev/ackpine/AckpineLogger$Level;
+}
+
+public final class ru/solrudev/ackpine/AckpineLogger$Logcat : ru/solrudev/ackpine/AckpineLogger {
+	public fun <init> ()V
+	public fun log (Lru/solrudev/ackpine/AckpineLogger$Level;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Throwable;[Ljava/lang/Object;)V
 }
 
 public final class ru/solrudev/ackpine/exceptions/AckpineReinitializeException : java/lang/Exception {

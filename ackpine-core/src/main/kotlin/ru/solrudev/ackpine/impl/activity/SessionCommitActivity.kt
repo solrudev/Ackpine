@@ -33,6 +33,7 @@ import androidx.core.content.getSystemService
 import androidx.core.view.WindowCompat
 import androidx.core.view.isVisible
 import com.google.common.util.concurrent.ListenableFuture
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.DisposableSubscriptionContainer
 import ru.solrudev.ackpine.core.R
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -52,6 +53,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private val tag: String,
 	private val abortedStateFailureFactory: (String) -> F
 ) : Activity() {
+
+	private val logger = Ackpine.loggerProvider.withTag(tag)
 
 	protected abstract val ackpineSessionFuture: ListenableFuture<out CompletableSession<F>?>
 
@@ -110,6 +113,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		isOnActivityResultCalled = true
 		if (requestCode != this.requestCode) {
+			logger.debug("Ignoring activity result for session %s requestCode=%s", ackpineSessionId, requestCode)
 			return
 		}
 		onActivityResult(resultCode)
@@ -145,6 +149,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	}
 
 	protected fun abortSession(message: String? = null) = withCompletableSession { session ->
+		logger.warn("Aborting session %s from activity with message=%s", ackpineSessionId, message)
 		session?.complete(
 			Session.State.Failed(
 				abortedStateFailureFactory(message ?: "$tag was finished by user")
@@ -180,6 +185,12 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
 			setLoading(isLoading)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
+			logger.debug(
+				"Restoring activity state for session %s configChange=%s loading=%s",
+				ackpineSessionId,
+				isConfigChangeRecreation,
+				isLoading
+			)
 			if (!isConfigChangeRecreation) {
 				notifySessionCommitted()
 			}
@@ -202,6 +213,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			onBackInvokedDispatcher.registerOnBackInvokedCallback(1000) {
 				if (!isOnActivityResultCalled) {
+					logger.warn("Back invoked before result for session %s", ackpineSessionId)
 					abortSession()
 				}
 				finish()
@@ -212,6 +224,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private fun finishActivityOnTerminalSessionState() = ackpineSessionFuture.handleResult { session ->
 		session?.addStateListener(subscriptions) { _, state ->
 			if (state.isTerminal) {
+				logger.debug("Finishing activity for terminal session %s state=%s", ackpineSessionId, state)
 				finishActivity(requestCode)
 				finish()
 			}

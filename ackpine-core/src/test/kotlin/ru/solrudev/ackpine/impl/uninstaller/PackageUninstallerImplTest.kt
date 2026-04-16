@@ -22,8 +22,10 @@ import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.impl.HasAckpineDatabaseTest
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
+import ru.solrudev.ackpine.impl.testutil.RecordingAckpineLogger
 import ru.solrudev.ackpine.impl.testutil.TestCompletableSession
 import ru.solrudev.ackpine.impl.testutil.createUninstallSessionEntity
 import ru.solrudev.ackpine.impl.testutil.toSessionState
@@ -157,14 +159,19 @@ class PackageUninstallerImplTest : HasAckpineDatabaseTest() {
 	}
 
 	private fun createUninstaller(
-		factory: UninstallSessionFactory = FakeUninstallSessionFactory()
+		factory: UninstallSessionFactory = FakeUninstallSessionFactory(),
+		logger: RecordingAckpineLogger? = null
 	) = PackageUninstallerImpl(
 		uninstallSessionDao = database.uninstallSessionDao(),
 		executor = ImmediateExecutor,
-		ackpineServiceProviders = AckpineServiceProviders(lazy { emptySet() }),
+		ackpineServiceProviders = AckpineServiceProviders(
+			lazy { emptySet() },
+			AckpineLoggerProvider("AckpineServiceProviders") { logger }
+		),
 		uninstallSessionFactory = factory,
 		uuidFactory = UUID::randomUUID,
-		notificationIdFactory = { 1 }
+		notificationIdFactory = { 1 },
+		loggerProvider = AckpineLoggerProvider("PackageUninstallerImpl") { logger }
 	)
 
 	private fun insertUninstallSession(

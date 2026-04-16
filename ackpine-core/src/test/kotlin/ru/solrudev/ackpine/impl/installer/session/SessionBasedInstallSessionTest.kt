@@ -29,6 +29,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.util.ReflectionHelpers
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.testutil.CommitAttemptsUpdate
 import ru.solrudev.ackpine.impl.testutil.ImmediateExecutor
@@ -547,6 +548,7 @@ internal fun createSessionBasedSession(
 	executor: Executor = ImmediateExecutor,
 	parallelism: Int = Int.MAX_VALUE
 ) = SessionBasedInstallSession(
+	loggerProvider = AckpineLoggerProvider("SessionBasedInstallSession") { null },
 	context = ApplicationProvider.getApplicationContext(),
 	lazyOf(packageInstaller), apks, id, initialState, initialProgress,
 	confirmation = Confirmation.DEFERRED,

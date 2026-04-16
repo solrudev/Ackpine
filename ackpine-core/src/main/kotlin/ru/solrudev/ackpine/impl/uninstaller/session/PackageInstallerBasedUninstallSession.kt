@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.helpers.createPackageInstallerStatusIntentSender
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractSession
 import ru.solrudev.ackpine.impl.uninstaller.UninstallStatusReceiver
@@ -39,9 +40,12 @@ import java.util.concurrent.Executor
 import kotlin.random.Random
 import kotlin.random.nextInt
 
+private const val TAG = "PackageInstallerBasedUninstallSession"
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerBasedUninstallSession internal constructor(
+	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
 	packageInstallerService: Lazy<PackageInstallerService>,
 	private val packageName: String,
@@ -56,7 +60,7 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	notificationId: Int,
 	dbWriteSemaphore: BinarySemaphore
 ) : AbstractSession<UninstallFailure>(
-	context, id, initialState,
+	context, loggerProvider.withTag(TAG), id, initialState,
 	sessionDao, sessionFailureDao,
 	executor, handler,
 	exceptionalFailureFactory = UninstallFailure::Exceptional,
@@ -71,6 +75,11 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
+		logger.debug(
+			"Launching package installer uninstall for session %s packageName=%s",
+			id,
+			packageName
+		)
 		packageInstaller.uninstall(
 			packageName,
 			statusReceiver = createPackageInstallerStatusIntentSender(),

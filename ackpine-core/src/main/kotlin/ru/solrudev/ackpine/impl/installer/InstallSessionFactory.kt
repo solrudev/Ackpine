@@ -43,6 +43,7 @@ import ru.solrudev.ackpine.impl.installer.session.IntentBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalLifecycle
 import ru.solrudev.ackpine.impl.installer.session.SessionBasedInstallSession
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.CompletableProgressSession
@@ -79,6 +80,8 @@ internal interface InstallSessionFactory {
 	fun resolveNotificationData(notificationData: NotificationData, name: String): NotificationData
 }
 
+private const val TAG = "InstallSessionFactory"
+
 @SuppressLint("NewApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class InstallSessionFactoryImpl internal constructor(
@@ -95,8 +98,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 	private val executor: Executor,
 	private val parallelism: Int,
 	private val handler: Handler,
-	private val sessionCallbackHandler: Lazy<Handler>
+	private val sessionCallbackHandler: Lazy<Handler>,
+	private val loggerProvider: AckpineLoggerProvider
 ) : InstallSessionFactory {
+
+	private val logger = loggerProvider.withTag(TAG)
 
 	override fun create(
 		parameters: InstallParameters,
@@ -105,6 +111,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore
 	): CompletableProgressSession<InstallFailure> = when (parameters.installerType) {
 		InstallerType.INTENT_BASED -> IntentBasedInstallSession(
+			loggerProvider,
 			applicationContext,
 			apk = parameters.apks.toList().singleOrNull() ?: throw SplitPackagesNotSupportedException(),
 			id,
@@ -127,6 +134,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 				pluginParameters = plugins.map { it.values }
 			) { packageInstallerService ->
 				SessionBasedInstallSession(
+					loggerProvider,
 					applicationContext,
 					packageInstallerService,
 					apks = parameters.apks.toList(),
@@ -183,9 +191,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 		completeIfSucceeded: Boolean
 	): IntentBasedInstallSession {
 		val id = UUID.fromString(installSession.session.id)
+		logger.debug("Restoring intent-based install session %s completeIfSucceeded=%s", id, completeIfSucceeded)
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val session = IntentBasedInstallSession(
+			loggerProvider,
 			applicationContext,
 			apk = installSession.uris.singleOrNull()?.toUri() ?: throw SplitPackagesNotSupportedException(),
 			id, initialState, initialProgress,
@@ -214,6 +224,12 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val lastUpdateTimestamp = installSession.lastUpdateTimestamp ?: Long.MAX_VALUE
 		val isSelfUpdate = initialState is Committed && applicationContext.packageName == packageName
 		val isLastUpdateTimestampUpdated = getLastSelfUpdateTimestamp() > lastUpdateTimestamp
+		logger.debug(
+			"Intent-based restore heuristic for session %s selfUpdate=%s timestampUpdated=%s",
+			id,
+			isSelfUpdate,
+			isLastUpdateTimestampUpdated
+		)
 		if (isSelfUpdate && isLastUpdateTimestampUpdated) {
 			session.complete(Succeeded)
 			lastUpdateTimestampDao.setLastUpdateTimestamp(id.toString(), getLastSelfUpdateTimestamp())
@@ -226,6 +242,12 @@ internal class InstallSessionFactoryImpl internal constructor(
 		completeIfSucceeded: Boolean
 	): SessionBasedInstallSession {
 		val sessionId = UUID.fromString(installSession.session.id)
+		logger.debug(
+			"Restoring session-based install session %s nativeSessionId=%s completeIfSucceeded=%s",
+			sessionId,
+			installSession.nativeSessionId,
+			completeIfSucceeded
+		)
 		val initialState = installSession.getState(installSessionDao)
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
@@ -237,6 +259,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 			pluginClasses = plugins
 		) { packageInstallerService ->
 			SessionBasedInstallSession(
+				loggerProvider,
 				applicationContext,
 				packageInstallerService,
 				apks = installSession.uris.map(String::toUri),
@@ -273,6 +296,12 @@ internal class InstallSessionFactoryImpl internal constructor(
 				|| Build.VERSION.SDK_INT !in 31..32
 				|| installSession.wasConfirmationLaunched != true
 		if (shouldBlockCommitIfIsOngoing && isInstallationOngoingOrCompleted) {
+			logger.debug(
+				"Blocking commit for restored session %s due to progress=%s threshold=%s",
+				sessionId,
+				initialProgress.progress,
+				progressThreshold
+			)
 			session.notifyCommitted() // block clients from committing
 		}
 		// If app is killed while installing but system installer activity remains visible,
@@ -282,6 +311,11 @@ internal class InstallSessionFactoryImpl internal constructor(
 		// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
 		val packageInstaller = applicationContext.packageManager.packageInstaller
 		if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
+			logger.info(
+				"Scheduling success fallback for dead native session %s of session %s",
+				nativeSessionId,
+				sessionId
+			)
 			handler.postDelayed({ session.complete(Succeeded) }, 2000)
 		}
 		return session

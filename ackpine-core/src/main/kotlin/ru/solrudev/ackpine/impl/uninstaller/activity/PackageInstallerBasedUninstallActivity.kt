@@ -23,6 +23,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 
@@ -32,16 +33,19 @@ private const val TAG = "PackageInstallerBasedUninstallActivity"
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 
+	private val logger = Ackpine.loggerProvider.withTag(TAG)
 	private val handler = Handler(Looper.getMainLooper())
 
 	private val abortedSessionRunnable = Runnable {
-		val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
+		val packageName = getUninstalledPackageName()
 		if (packageName == null) {
+			logger.error("Missing package name for session %s", ackpineSessionId)
 			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
 			finish()
 			return@Runnable
 		}
 		if (isPackageInstalled(packageName)) {
+			logger.warn("Package installer uninstall appears aborted for session %s", ackpineSessionId)
 			abortSession("Aborted by user")
 		}
 	}
@@ -62,13 +66,25 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 
 	override fun processResult(resultCode: Int) {
 		// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
+		logger.debug(
+			"Processing package installer uninstall result for session %s code=%s",
+			ackpineSessionId,
+			resultCode
+		)
 		setLoading(isLoading = true, delayMillis = 200)
 		handler.postDelayed(abortedSessionRunnable, 400)
 	}
 
 	override fun launchUninstallActivity() {
+		logger.info(
+			"Launching uninstall confirmation intent for session %s packageName=%s",
+			ackpineSessionId,
+			getUninstalledPackageName()
+		)
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let(::startActivityForResult)
 	}
+
+	private fun getUninstalledPackageName() = intent.getStringExtra(EXTRA_PACKAGE_NAME)
 }

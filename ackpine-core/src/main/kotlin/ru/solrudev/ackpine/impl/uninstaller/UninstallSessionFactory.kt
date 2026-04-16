@@ -31,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.getPlugins
 import ru.solrudev.ackpine.impl.database.getState
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineServiceProviders
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.CompletableSession
@@ -64,6 +65,8 @@ internal interface UninstallSessionFactory {
 	fun resolveNotificationData(notificationData: NotificationData, packageName: String): NotificationData
 }
 
+private const val TAG = "UninstallSessionFactory"
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @SuppressLint("NewApi")
 internal class UninstallSessionFactoryImpl internal constructor(
@@ -73,8 +76,11 @@ internal class UninstallSessionFactoryImpl internal constructor(
 	private val sessionDao: SessionDao,
 	private val sessionFailureDao: SessionFailureDao<UninstallFailure>,
 	private val executor: Executor,
-	private val handler: Handler
+	private val handler: Handler,
+	private val loggerProvider: AckpineLoggerProvider
 ) : UninstallSessionFactory {
+
+	private val logger = loggerProvider.withTag(TAG)
 
 	override fun create(
 		parameters: UninstallParameters,
@@ -84,6 +90,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		dbWriteSemaphore: BinarySemaphore
 	) = when (parameters.uninstallerType) {
 		UninstallerType.INTENT_BASED -> IntentBasedUninstallSession(
+			loggerProvider,
 			applicationContext,
 			parameters.packageName,
 			id, initialState,
@@ -94,6 +101,11 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		)
 
 		UninstallerType.PACKAGE_INSTALLER_BASED -> {
+			logger.debug(
+				"Creating package installer uninstall session %s for packageName=%s",
+				id,
+				parameters.packageName
+			)
 			val plugins = runCatching { parameters.pluginContainer.getPlugins() }
 			ackpineServiceProviders.createSessionWithService(
 				serviceClass = PackageInstallerService::class,
@@ -103,6 +115,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 				pluginParameters = plugins.map { it.values }
 			) { packageInstallerService ->
 				PackageInstallerBasedUninstallSession(
+					loggerProvider,
 					applicationContext,
 					packageInstallerService,
 					parameters.packageName,
@@ -118,6 +131,12 @@ internal class UninstallSessionFactoryImpl internal constructor(
 
 	override fun create(uninstallSession: SessionEntity.UninstallSession): CompletableSession<UninstallFailure> {
 		val sessionId = UUID.fromString(uninstallSession.session.id)
+		logger.debug(
+			"Restoring uninstall session %s backend=%s packageName=%s",
+			sessionId,
+			uninstallSession.uninstallerType,
+			uninstallSession.packageName
+		)
 		val packageName = uninstallSession.packageName
 		val initialState = uninstallSession.getState(sessionFailureDao)
 		val confirmation = uninstallSession.session.confirmation
@@ -125,6 +144,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 		val notificationId = uninstallSession.notificationId!!
 		val session = when (uninstallSession.uninstallerType) {
 			UninstallerType.INTENT_BASED -> IntentBasedUninstallSession(
+				loggerProvider,
 				applicationContext,
 				packageName,
 				sessionId, initialState,
@@ -143,6 +163,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 					pluginClasses = plugins
 				) { packageInstallerService ->
 					PackageInstallerBasedUninstallSession(
+						loggerProvider,
 						applicationContext,
 						packageInstallerService,
 						packageName,

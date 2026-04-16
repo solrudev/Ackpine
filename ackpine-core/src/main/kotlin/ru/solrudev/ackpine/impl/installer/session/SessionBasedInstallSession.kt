@@ -34,7 +34,6 @@ import android.os.Build
 import android.os.CancellationSignal
 import android.os.Handler
 import android.os.OperationCanceledException
-import android.util.Log
 import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
@@ -59,6 +58,7 @@ import ru.solrudev.ackpine.impl.installer.receiver.PackageInstallerStatusReceive
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptorWithSize
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.receiver.SystemPackageInstallerStatusReceiver
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
@@ -88,6 +88,7 @@ private const val TAG = "SessionBasedInstallSession"
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class SessionBasedInstallSession internal constructor(
+	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
 	packageInstallerService: Lazy<PackageInstallerService>,
 	private val apks: List<Uri>,
@@ -118,7 +119,7 @@ internal class SessionBasedInstallSession internal constructor(
 	initialPreapprovalState: PreapprovalLifecycle.State,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
-	context, id, initialState, initialProgress,
+	context, loggerProvider.withTag(TAG), id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
@@ -150,9 +151,11 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun prepare() {
 		val sessionId = getSessionId()
 		if (!shouldRequestPreapproval() || preapprovalLifecycle.isPreapproved()) {
+			logger.debug("Starting APK staging for session %s nativeSessionId=%s", id, sessionId)
 			writeApksToSession(sessionId)
 			return
 		}
+		logger.debug("Requesting preapproval for session %s nativeSessionId=%s", id, sessionId)
 		preapprovalLifecycle.runPreapprovalRequest {
 			val preapprovalDetails = createPackageInstallerPreapprovalDetails()
 			packageInstaller.openSession(sessionId).requestUserPreapproval(
@@ -164,11 +167,17 @@ internal class SessionBasedInstallSession internal constructor(
 
 	override fun launchConfirmation() {
 		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
+			logger.debug("Committing session %s without install constraints", id)
 			commitPackageInstallerSession()
 		} else try {
+			logger.debug("Committing session %s with install constraints", id)
 			commitPackageInstallerSessionWithConstraints()
 		} catch (exception: SecurityException) {
-			Log.w(TAG, "$id: ${exception.message}")
+			logger.warn(
+				exception,
+				"Falling back to normal commit for session %s after constrained commit failure",
+				id
+			)
 			commitPackageInstallerSession()
 		}
 		val currentAttempt = commitAttempts.incrementAndGet()
@@ -189,6 +198,7 @@ internal class SessionBasedInstallSession internal constructor(
 		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = true)) {
 			return@execute
 		}
+		logger.debug("Preapproval succeeded for session %s", id)
 		preparePostPreapproval()
 	}
 
@@ -199,11 +209,15 @@ internal class SessionBasedInstallSession internal constructor(
 		if (state.isTerminal || !preapprovalLifecycle.consumeActive(isPreapproved = false)) {
 			return@execute
 		}
+		logger.warn(
+			"Preapproval failed for session %s status=%s failure=%s", id, status, publicFailure
+		)
 		if (
 			preapproval.fallbackToOnDemandApproval
 			&& status == PackageInstallerStatus.INSTALL_FAILED_PRE_APPROVAL_NOT_AVAILABLE
 		) {
 			ignorePreapproval = true
+			logger.info("Retrying session %s with on-demand approval after preapproval failure", id)
 			preparePostPreapproval()
 			return@execute
 		}
@@ -226,7 +240,7 @@ internal class SessionBasedInstallSession internal constructor(
 			val currentAttempt = commitAttempts.get()
 			val shouldRetry = currentAttempt <= timeoutStrategy.retries
 			if (shouldRetry) {
-				Log.i(TAG, "Retrying $id: attempt #$currentAttempt")
+				logger.info("Retrying session %s after timeout attempt=%s", id, currentAttempt)
 				notifyAwaiting()
 			}
 			return !shouldRetry
@@ -251,6 +265,7 @@ internal class SessionBasedInstallSession internal constructor(
 			return
 		}
 		try {
+			logger.debug("Continuing session %s after preapproval", id)
 			prepare()
 		} catch (exception: Exception) {
 			completeExceptionally(exception)
@@ -301,6 +316,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
+			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
 			return
 		}
@@ -314,6 +330,7 @@ internal class SessionBasedInstallSession internal constructor(
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
+			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
 			return
 		}
@@ -366,15 +383,22 @@ internal class SessionBasedInstallSession internal constructor(
 			return createSession()
 		}
 		if (packageInstaller.getSessionInfo(sessionId) == null) {
+			logger.warn(
+				"Native session %s disappeared for session %s; recreating",
+				sessionId,
+				id
+			)
 			preapprovalLifecycle.reset()
 			return createSession()
 		}
+		logger.debug("Reusing native session %s for session %s", sessionId, id)
 		return sessionId
 	}
 
 	private fun createSession(): Int {
 		val sessionId = packageInstaller.createSession(createSessionParams(), id)
 		nativeSessionId = sessionId
+		logger.debug("Created native session %s for session %s", sessionId, id)
 		persistNativeSessionId(sessionId)
 		clearPackageInstallerSessionCallback()
 		sessionCallback = packageInstaller.createAndRegisterSessionCallback(sessionId)
@@ -420,6 +444,7 @@ internal class SessionBasedInstallSession internal constructor(
 			block = {
 				try {
 					session.close()
+					logger.debug("Finished APK staging for session %s nativeSessionId=%s", id, sessionId)
 					notifyAwaiting()
 				} catch (exception: Exception) {
 					completeExceptionally(exception)

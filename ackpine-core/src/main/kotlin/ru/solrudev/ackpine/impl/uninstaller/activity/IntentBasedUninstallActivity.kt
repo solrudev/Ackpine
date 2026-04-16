@@ -20,6 +20,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 
@@ -27,6 +28,8 @@ private const val TAG = "IntentBasedUninstallActivity"
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
+
+	private val logger = Ackpine.loggerProvider.withTag(TAG)
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -36,6 +39,7 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	override fun processResult(resultCode: Int) {
+		logger.debug("Intent-based uninstall result for session %s code=%s", ackpineSessionId, resultCode)
 		val result = when (resultCode) {
 			RESULT_OK -> Session.State.Succeeded
 			RESULT_CANCELED -> Session.State.Failed(UninstallFailure.Aborted("Session was cancelled"))
@@ -47,6 +51,7 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 	@Suppress("DEPRECATION")
 	override fun launchUninstallActivity() {
 		val packageName = getPackageNameToUninstall() ?: return
+		logger.info("Launching intent-based uninstall UI for session %s packageName=%s", ackpineSessionId, packageName)
 		val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
 			.setData(Uri.parse("package:$packageName"))
 			.putExtra(Intent.EXTRA_RETURN_RESULT, true)
@@ -57,6 +62,7 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 		val packageNameToUninstall = intent.extras?.getString(EXTRA_PACKAGE_NAME)
 			?: intent.extras?.getString("ACKPINE_UNINSTALLER_PACKAGE_NAME")
 		if (packageNameToUninstall == null) {
+			logger.error("Missing package name for session %s", ackpineSessionId)
 			completeSessionExceptionally(IllegalStateException("$TAG: packageNameToUninstall was null."))
 			finish()
 		}

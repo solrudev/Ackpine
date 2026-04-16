@@ -40,6 +40,7 @@ import ru.solrudev.ackpine.impl.installer.activity.IntentBasedInstallActivity
 import ru.solrudev.ackpine.impl.installer.session.helpers.PROGRESS_MAX
 import ru.solrudev.ackpine.impl.installer.session.helpers.copyTo
 import ru.solrudev.ackpine.impl.installer.session.helpers.openAssetFileDescriptorWithSize
+import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
 import ru.solrudev.ackpine.impl.session.AbstractProgressSession
 import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.session.Progress
@@ -55,8 +56,11 @@ import kotlin.math.roundToInt
 import kotlin.random.Random
 import kotlin.random.nextInt
 
+private const val TAG = "IntentBasedInstallSession"
+
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class IntentBasedInstallSession internal constructor(
+	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
 	private val apk: Uri,
 	id: UUID,
@@ -73,7 +77,7 @@ internal class IntentBasedInstallSession internal constructor(
 	notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
 ) : AbstractProgressSession<InstallFailure>(
-	context, id, initialState, initialProgress,
+	context, loggerProvider.withTag(TAG), id, initialState, initialProgress,
 	sessionDao, sessionFailureDao, sessionProgressDao,
 	executor, handler,
 	exceptionalFailureFactory = InstallFailure::Exceptional,
@@ -84,12 +88,15 @@ internal class IntentBasedInstallSession internal constructor(
 	private var apkFile: File? = null
 
 	override fun prepare() {
+		logger.debug("Starting APK copy for session %s", id)
 		createApkCopy()
+		logger.debug("Finished APK copy for session %s", id)
 		val apkPackageName = context.packageManager
 			.getPackageArchiveInfo(requireApkFile().absolutePath, 0)
 			?.packageName
 			.orEmpty()
 		if (context.packageName == apkPackageName) {
+			logger.debug("Recording self-update timestamp for session %s packageName=%s", id, apkPackageName)
 			dbWriteSemaphore.withPermit {
 				lastUpdateTimestampDao.setLastUpdateTimestamp(
 					id.toString(),
@@ -102,6 +109,7 @@ internal class IntentBasedInstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
+		logger.debug("Launching install confirmation for session %s", id)
 		context.launchConfirmation<IntentBasedInstallActivity>(
 			confirmation, notificationData,
 			sessionId = id,
@@ -114,6 +122,7 @@ internal class IntentBasedInstallSession internal constructor(
 	override fun doCleanup() {
 		val file = apkFile ?: getApkOrNull()
 		file?.delete()
+		logger.debug("Cleaned APK copy for session %s file=%s", id, file?.name)
 	}
 
 	override fun onCommitted() {
