@@ -72,7 +72,7 @@ internal class IntentBasedInstallSession internal constructor(
 	sessionDao: SessionDao,
 	sessionFailureDao: SessionFailureDao<InstallFailure>,
 	sessionProgressDao: SessionProgressDao,
-	private val executor: Executor,
+	executor: Executor,
 	handler: Handler,
 	notificationId: Int,
 	private val dbWriteSemaphore: BinarySemaphore
@@ -121,8 +121,10 @@ internal class IntentBasedInstallSession internal constructor(
 
 	override fun doCleanup() {
 		val file = apkFile ?: getApkOrNull()
-		file?.delete()
-		logger.debug("Cleaned APK copy for session %s file=%s", id, file?.name)
+		if (file != null) {
+			file.delete()
+			logger.debug("Cleaned APK copy for session %s", id)
+		}
 	}
 
 	override fun onCommitted() {
