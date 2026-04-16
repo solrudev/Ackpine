@@ -4,3 +4,4 @@
 -dontwarn android.content.pm.IPackageInstallerSession
 -dontwarn android.content.pm.IPackageManager$Stub
 -dontwarn android.content.pm.IPackageManager
+-keep class ru.solrudev.ackpine.shizuku.database.ShizukuDatabase_Impl { <init>(); }
