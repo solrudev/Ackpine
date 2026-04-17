@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "9.1.0"
+android-plugin = "9.1.1"
 bundletool = "1.18.3"
 dokka = "2.2.0"
 hidden-api-refine = "4.4.0"

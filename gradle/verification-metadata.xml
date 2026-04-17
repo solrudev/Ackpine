@@ -33,6 +33,7 @@
             <trusting group="androidx.constraintlayout"/>
             <trusting group="androidx.coordinatorlayout" name="coordinatorlayout"/>
             <trusting group="androidx.core" name="core-viewtree"/>
+            <trusting group="androidx.databinding"/>
             <trusting group="androidx.datastore"/>
             <trusting group="androidx.documentfile" name="documentfile"/>
             <trusting group="androidx.dynamicanimation" name="dynamicanimation"/>
@@ -42,6 +43,7 @@
             <trusting group="androidx.room" name="room-gradle-plugin"/>
             <trusting group="androidx.savedstate"/>
             <trusting group="^androidx[.]test($|([.].*))" regex="true"/>
+            <trusting group="^com[.]android($|([.].*))" regex="true"/>
          </trusted-key>
          <trusted-key id="0F07D1201BDDAB67CFB84EB479752DB6C966F0B8" group="com.google.android" name="annotations"/>
          <trusted-key id="10F3C7A02ECA55E502BADCF3991EFB94DB91127D" group="org.ow2" name="ow2"/>
