@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runInterruptible
+import ru.solrudev.ackpine.libsu.NoRootException
 import ru.solrudev.ackpine.libsu.libsu
 import ru.solrudev.ackpine.sample.settings.InstallerBackend
 import ru.solrudev.ackpine.sample.settings.SettingsRepository
@@ -121,6 +123,9 @@ class UninstallViewModel(
 				Session.State.Succeeded -> savedStateHandle.get<String>(PACKAGE_NAME_KEY)?.let(::removeApplication)
 				is Session.State.Failed -> _uiState.update { it.copy(failure = result.failure.message) }
 			}
+		} catch (exception: NoRootException) {
+			_uiState.update { it.copy(failure = exception.message) }
+			Shell.getCachedShell()?.close()
 		} catch (exception: CancellationException) {
 			throw exception
 		} catch (exception: Exception) {

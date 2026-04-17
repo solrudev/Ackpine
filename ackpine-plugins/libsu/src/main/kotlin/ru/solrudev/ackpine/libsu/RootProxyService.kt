@@ -47,8 +47,7 @@ internal class RootProxyService : RootService() {
 		@JvmSynthetic
 		internal fun bind(context: Context): IBinder {
 			if (!Shell.getShell().isRoot) {
-				Shell.getCachedShell()?.close()
-				error("Can't open root shell")
+				throw NoRootException()
 			}
 			val intent = Intent(context, RootProxyService::class.java)
 			val connection = RootServiceConnection()

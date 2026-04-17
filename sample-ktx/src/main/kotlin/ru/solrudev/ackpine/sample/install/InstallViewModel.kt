@@ -24,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.AP
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -47,6 +48,7 @@ import ru.solrudev.ackpine.installer.InstallFailure
 import ru.solrudev.ackpine.installer.PackageInstaller
 import ru.solrudev.ackpine.installer.createSession
 import ru.solrudev.ackpine.installer.getSession
+import ru.solrudev.ackpine.libsu.NoRootException
 import ru.solrudev.ackpine.libsu.libsu
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.sample.R
@@ -140,6 +142,9 @@ class InstallViewModel(
 				Session.State.Succeeded -> sessionDataRepository.removeSessionData(session.id)
 				is Session.State.Failed -> handleSessionError(result.failure.message, session.id)
 			}
+		} catch (exception: NoRootException) {
+			handleSessionError(exception.message, session.id)
+			Shell.getCachedShell()?.close()
 		} catch (exception: CancellationException) {
 			sessionDataRepository.removeSessionData(session.id)
 			throw exception

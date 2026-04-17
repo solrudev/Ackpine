@@ -6,6 +6,17 @@ hide:
 Change Log
 ==========
 
+Version 0.22.4 (2026-04-17)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 9.1.1.
+
+### Bug fixes and improvements
+
+- Don't close cached shell in `libsu` plugin if root access is not available to avoid interfering with other shell operations.
+
 Version 0.22.3 (2026-04-16)
 ---------------------------
 
