@@ -40,3 +40,7 @@ public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Com
 public final class ru/solrudev/ackpine/libsu/LibsuUninstallCapabilities : ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities {
 }
 
+public final class ru/solrudev/ackpine/libsu/NoRootException : java/lang/RuntimeException {
+	public fun <init> ()V
+}
+

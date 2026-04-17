@@ -44,6 +44,7 @@ import java.util.concurrent.Executors;
 
 import ru.solrudev.ackpine.DisposableSubscriptionContainer;
 import ru.solrudev.ackpine.libsu.LibsuPlugin;
+import ru.solrudev.ackpine.sample.FailureHelpers;
 import ru.solrudev.ackpine.sample.settings.SettingsRepository;
 import ru.solrudev.ackpine.sample.settings.SharedPreferencesSettingsRepository;
 import ru.solrudev.ackpine.session.Failure;
@@ -194,6 +195,7 @@ public final class UninstallViewModel extends ViewModel {
 					} else {
 						UninstallViewModel.this.failure.setValue(failure.getMessage());
 					}
+					FailureHelpers.closeShellOnNoRootException(failure);
 				});
 	}
 

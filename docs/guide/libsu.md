@@ -147,7 +147,15 @@ Also, you can use libsu for uninstall sessions:
             .build();
     ```
 
-If root access is not available, session will fail.
+
+!!! Note
+    Plugin obtains root shell by a call to `Shell.getShell()` on first root operation. You should keep this in mind when working with `libsu` if you are constructing `Shell` yourself.
+    
+    If root access is not available, session will fail with `NoRootException`.
+
+    To avoid stale root access status when it was granted after unsuccessful attempt, close cached shell when you get this exception: `Shell.getCachedShell()?.close()`. You need to have direct `libsu:core` dependency in your project to be able to use this `libsu` API.
+    
+    Plugin doesn't close the cached shell by itself to avoid interfering with other possible in-flight shell operations.
 
 Plugin parameters
 -----------------

@@ -52,6 +52,7 @@ import ru.solrudev.ackpine.installer.PackageInstaller;
 import ru.solrudev.ackpine.installer.parameters.InstallParameters;
 import ru.solrudev.ackpine.libsu.LibsuPlugin;
 import ru.solrudev.ackpine.resources.ResolvableString;
+import ru.solrudev.ackpine.sample.FailureHelpers;
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.settings.SettingsRepository;
 import ru.solrudev.ackpine.sample.settings.SharedPreferencesSettingsRepository;
@@ -236,6 +237,7 @@ public final class InstallViewModel extends ViewModel {
 						message = f.getException().getMessage();
 						Log.e("InstallViewModel", null, f.getException());
 					}
+					FailureHelpers.closeShellOnNoRootException(failure);
 					final var error = message != null
 							? ResolvableString.transientResource(R.string.session_error_with_reason, message)
 							: ResolvableString.transientResource(R.string.session_error);

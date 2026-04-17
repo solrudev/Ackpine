@@ -49,6 +49,7 @@ dependencies {
 	implementation(libs.vbpd)
 	implementation(libs.insetter)
 	implementation(libs.bundles.shizuku)
+	implementation(libs.libsu.core)
 	testImplementation(projects.ackpineTest)
 	testImplementation(libs.kotlin.test)
 	testImplementation(kotlinx.coroutines.test)

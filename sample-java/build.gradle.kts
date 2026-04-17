@@ -46,6 +46,7 @@ dependencies {
 	implementation(libs.guava)
 	implementation(libs.insetter)
 	implementation(libs.bundles.shizuku)
+	implementation(libs.libsu.core)
 	testImplementation(libs.junit4)
 	testImplementation(projects.ackpineTest)
 	testImplementation(androidx.core.testing)
