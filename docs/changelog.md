@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.22.5 (2026-04-18)
+---------------------------
+
+### Dependencies
+
+- Don't leak `android-stubs` to consumers from `ackpine-privileged`.
+
 Version 0.22.4 (2026-04-17)
 ---------------------------
 
