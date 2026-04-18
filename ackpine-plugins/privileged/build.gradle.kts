@@ -34,5 +34,5 @@ ackpine {
 
 dependencies {
 	api(projects.ackpineCore)
-	compileOnlyApi(projects.ackpinePlugins.androidStubs)
+	compileOnly(projects.ackpinePlugins.androidStubs)
 }
