@@ -79,8 +79,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 			window.attributes.layoutInDisplayCutoutMode = LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
 		}
 		window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-		initializeState(savedInstanceState)
 		setContentView(R.layout.ackpine_activity_session_commit)
+		initializeState(savedInstanceState)
 		registerOnBackInvokedCallback()
 		finishActivityOnTerminalSessionState()
 	}
