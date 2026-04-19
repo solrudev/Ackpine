@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.uninstaller.session
 import android.content.Context
 import android.os.Handler
 import androidx.annotation.RestrictTo
+import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.UPDATE_CURRENT_FLAGS
@@ -34,8 +35,6 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 private const val TAG = "IntentBasedUninstallSession"
 
@@ -73,10 +72,11 @@ internal class IntentBasedUninstallSession internal constructor(
 			confirmation, notificationData,
 			sessionId = id,
 			notificationId,
-			generateRequestCode(),
+			id.hashCode() and Int.MAX_VALUE,
 			UPDATE_CURRENT_FLAGS
-		) { intent -> intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName) }
+		) { intent ->
+			intent.data = "ackpine://session/$id/confirmation".toUri()
+			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
+		}
 	}
-
-	private fun generateRequestCode() = Random.nextInt(3000000..4000000)
 }

@@ -23,6 +23,7 @@ import android.content.pm.PackageInstaller
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import androidx.core.net.toUri
 import com.google.common.util.concurrent.ListenableFuture
 import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.AckpineThreadPool
@@ -42,8 +43,6 @@ import ru.solrudev.ackpine.session.Failure
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import java.util.UUID
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -154,6 +153,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 		val wrapperIntent = Intent(context, confirmationWrapperActivityClass)
 			.putExtra(Intent.EXTRA_INTENT, confirmationIntent)
 			.putExtra(PackageInstaller.EXTRA_SESSION_ID, sessionId)
+			.setData("ackpine://session/$ackpineSessionId/confirmation".toUri())
 			.let { wrapperIntent -> modifyConfirmationWrapperIntent(intent, wrapperIntent) }
 		SessionIdIntents.putSessionId(wrapperIntent, ackpineSessionId)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -227,7 +227,7 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 			confirmationIntent,
 			notificationData,
 			ackpineSessionId, notificationId,
-			generateRequestCode(),
+			ackpineSessionId.hashCode() and Int.MAX_VALUE,
 			CANCEL_CURRENT_FLAGS
 		)
 	}
@@ -252,8 +252,6 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 		val storagePath = intent.getStringExtra(PackageInstaller.EXTRA_STORAGE_PATH)
 		return getFailure(status, message, otherPackageName, storagePath)
 	}
-
-	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal companion object {

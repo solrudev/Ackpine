@@ -38,6 +38,7 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.closeAllWithException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -80,8 +81,6 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 private const val TAG = "SessionBasedInstallSession"
 
@@ -354,8 +353,9 @@ internal class SessionBasedInstallSession internal constructor(
 			context,
 			action = PackageInstallerStatusReceiver.getAction(context),
 			sessionId = id,
-			confirmation, notificationId, notificationData, generateRequestCode()
+			confirmation, notificationId, notificationData, id.hashCode() and Int.MAX_VALUE
 		) { intent ->
+			intent.data = "ackpine://session/$id/status".toUri()
 			intent.putExtra(SystemPackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
 		}
 	}
@@ -623,8 +623,6 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withPermit {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
-
-	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

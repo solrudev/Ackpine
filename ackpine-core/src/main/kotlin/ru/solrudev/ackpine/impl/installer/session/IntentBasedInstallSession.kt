@@ -54,8 +54,6 @@ import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executor
 import kotlin.math.roundToInt
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 private const val TAG = "IntentBasedInstallSession"
 
@@ -115,9 +113,12 @@ internal class IntentBasedInstallSession internal constructor(
 			confirmation, notificationData,
 			sessionId = id,
 			notificationId,
-			generateRequestCode(),
+			id.hashCode() and Int.MAX_VALUE,
 			CANCEL_CURRENT_FLAGS
-		) { intent -> intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, getApkUri()) }
+		) { intent ->
+			intent.data = "ackpine://session/$id/confirmation".toUri()
+			intent.putExtra(IntentBasedInstallActivity.APK_URI_KEY, getApkUri())
+		}
 	}
 
 	override fun doCleanup() {
@@ -213,6 +214,4 @@ internal class IntentBasedInstallSession internal constructor(
 	private fun getLastSelfUpdateTimestamp(): Long {
 		return context.packageManager.getPackageInfo(context.packageName, 0).lastUpdateTime
 	}
-
-	private fun generateRequestCode() = Random.nextInt(2000000..3000000)
 }
