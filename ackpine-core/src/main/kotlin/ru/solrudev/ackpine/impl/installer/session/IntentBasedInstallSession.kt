@@ -28,6 +28,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.AckpineFileProvider
+import ru.solrudev.ackpine.helpers.use
 import ru.solrudev.ackpine.impl.database.dao.LastUpdateTimestampDao
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
@@ -155,16 +156,22 @@ internal class IntentBasedInstallSession internal constructor(
 		file.createNewFile()
 		val afd = context.openAssetFileDescriptorWithSize(apk, cancellationSignal)
 			?: throw NullPointerException("AssetFileDescriptor was null: $apk")
-		afd.createInputStream().buffered().use { apkStream ->
-			val outputStream = file.outputStream()
-			outputStream.buffered().use { bufferedOutputStream ->
-				var currentProgress = 0
-				apkStream.copyTo(bufferedOutputStream, afd.declaredLength, cancellationSignal, onProgress = { delta ->
-					currentProgress += delta
-					setProgress((currentProgress * 0.8).roundToInt())
-				})
-				bufferedOutputStream.flush()
-				outputStream.fd.sync()
+		afd.use {
+			afd.createInputStream().buffered().use { apkStream ->
+				val outputStream = file.outputStream()
+				outputStream.buffered().use { bufferedOutputStream ->
+					var currentProgress = 0
+					apkStream.copyTo(
+						bufferedOutputStream,
+						afd.declaredLength,
+						cancellationSignal,
+						onProgress = { delta ->
+							currentProgress += delta
+							setProgress((currentProgress * 0.8).roundToInt())
+						})
+					bufferedOutputStream.flush()
+					outputStream.fd.sync()
+				}
 			}
 		}
 	}
