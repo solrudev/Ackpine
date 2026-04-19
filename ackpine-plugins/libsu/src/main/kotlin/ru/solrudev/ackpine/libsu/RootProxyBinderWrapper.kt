@@ -35,11 +35,10 @@ internal class RootProxyBinderWrapper(
 			wrappedData.writeInt(code)
 			wrappedData.writeInt(flags)
 			wrappedData.appendFrom(data, 0, data.dataSize())
-			rootService.transact(IBinder.FIRST_CALL_TRANSACTION, wrappedData, reply, 0)
+			return rootService.transact(IBinder.FIRST_CALL_TRANSACTION, wrappedData, reply, 0)
 		} finally {
 			wrappedData.recycle()
 		}
-		return true
 	}
 
 	override fun getInterfaceDescriptor() = original.interfaceDescriptor
