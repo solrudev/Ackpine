@@ -37,5 +37,5 @@ internal class ImmediateListenableFuture<V>(private val value: V) : ListenableFu
 	override fun isDone() = true
 	override fun get() = value
 	override fun get(timeout: Long, unit: TimeUnit?) = value
-	override fun addListener(listener: Runnable, executor: Executor) = listener.run()
+	override fun addListener(listener: Runnable, executor: Executor) = executor.execute(listener)
 }
