@@ -168,17 +168,23 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun launchConfirmation() {
 		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
 			logger.debug("Committing session %s without install constraints", id)
-			commitPackageInstallerSession()
+			if (!commitPackageInstallerSession()) {
+				return
+			}
 		} else try {
 			logger.debug("Committing session %s with install constraints", id)
-			commitPackageInstallerSessionWithConstraints()
+			if (!commitPackageInstallerSessionWithConstraints()) {
+				return
+			}
 		} catch (exception: SecurityException) {
 			logger.warn(
 				exception,
 				"Falling back to normal commit for session %s after constrained commit failure",
 				id
 			)
-			commitPackageInstallerSession()
+			if (!commitPackageInstallerSession()) {
+				return
+			}
 		}
 		val currentAttempt = commitAttempts.incrementAndGet()
 		notifyCommitted()
@@ -311,34 +317,36 @@ internal class SessionBasedInstallSession internal constructor(
 				&& commitAttempts.get() == 1
 	}
 
-	private fun commitPackageInstallerSession() {
+	private fun commitPackageInstallerSession(): Boolean {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
 			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
-			return
+			return false
 		}
 		writeCommitProgressIfAbsent(progress)
 		packageInstaller.openSession(sessionId).commit(statusReceiver)
+		return true
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	private fun commitPackageInstallerSessionWithConstraints() {
+	private fun commitPackageInstallerSessionWithConstraints(): Boolean {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
 			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
-			return
+			return false
 		}
 		val installConstraints = createPackageInstallerInstallConstraints()
 		writeCommitProgressIfAbsent(progress)
 		packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 			sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 		)
+		return true
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
