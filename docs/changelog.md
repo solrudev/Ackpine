@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.22.6 (2026-04-22)
+---------------------------
+
+### Bug fixes and improvements
+
+- Provide additional log statement for stuck session heuristics.
+- Fix crash after returning from settings screen on Android < 7 in samples.
+
 Version 0.22.5 (2026-04-18)
 ---------------------------
 
