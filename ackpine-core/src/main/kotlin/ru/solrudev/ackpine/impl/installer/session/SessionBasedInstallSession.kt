@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-@file:SuppressLint("LongLogTag")
-
 package ru.solrudev.ackpine.impl.installer.session
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
