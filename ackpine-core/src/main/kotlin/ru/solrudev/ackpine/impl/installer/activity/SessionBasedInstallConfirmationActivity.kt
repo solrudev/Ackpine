@@ -235,7 +235,15 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		sessionInfo: PackageInstaller.SessionInfo? = packageInstaller.getSessionInfo(sessionId)
 	) = CommitProgressValueHolder
 		.getAsync(this)
-		.map { value -> sessionInfo != null && sessionInfo.progress < value }
+		.map { value ->
+			logger.debug(
+				"isSessionStuck check for session %s progress=%s threshold=%s",
+				ackpineSessionId,
+				sessionInfo?.progress,
+				value
+			)
+			sessionInfo != null && sessionInfo.progress < value
+		}
 
 	private fun canInstallPackages() = Build.VERSION.SDK_INT < Build.VERSION_CODES.O
 			|| packageManager.canRequestPackageInstalls()
