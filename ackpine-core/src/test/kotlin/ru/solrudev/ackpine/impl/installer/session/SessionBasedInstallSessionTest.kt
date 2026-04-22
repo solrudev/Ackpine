@@ -320,6 +320,7 @@ class SessionBasedInstallSessionTest {
 
 	@Test
 	fun commitFailsWhenNativeSessionIsLost() {
+		val constraintsDao = RecordingInstallConstraintsDao()
 		val sessionId = UUID.randomUUID()
 		val apkFile = context.createAckpineFile("test/lost-commit-$sessionId.apk") { writeText("apk") }
 		val packageInstaller = RecordingPackageInstallerService()
@@ -327,6 +328,7 @@ class SessionBasedInstallSessionTest {
 			packageInstaller = packageInstaller,
 			apks = listOf(apkFile.toUri()),
 			id = sessionId,
+			constraintsDao = constraintsDao,
 			initialState = Session.State.Pending
 		)
 		val states = session.captureStates()
@@ -339,11 +341,14 @@ class SessionBasedInstallSessionTest {
 
 		val state = assertIs<Session.State.Failed<InstallFailure>>(states.last())
 		assertIs<InstallFailure.Exceptional>(state.failure)
+		assertTrue(packageInstaller.session.commits.isEmpty())
+		assertTrue(constraintsDao.commitAttemptsUpdates.isEmpty())
 	}
 
 	@Test
 	fun commitWithConstraintsFailsWhenNativeSessionIsLost() {
 		val constraints = InstallConstraints.gentleUpdate(1.seconds)
+		val constraintsDao = RecordingInstallConstraintsDao()
 		val sessionId = UUID.randomUUID()
 		val apkFile = context.createAckpineFile("test/lost-commit-constraints-$sessionId.apk") { writeText("apk") }
 		val packageInstaller = RecordingPackageInstallerService()
@@ -352,6 +357,7 @@ class SessionBasedInstallSessionTest {
 			apks = listOf(apkFile.toUri()),
 			id = sessionId,
 			constraints = constraints,
+			constraintsDao = constraintsDao,
 			initialState = Session.State.Pending
 		)
 		val states = session.captureStates()
@@ -364,6 +370,8 @@ class SessionBasedInstallSessionTest {
 
 		val state = assertIs<Session.State.Failed<InstallFailure>>(states.last())
 		assertIs<InstallFailure.Exceptional>(state.failure)
+		assertTrue(packageInstaller.commitAfterConstraintsCalls.isEmpty())
+		assertTrue(constraintsDao.commitAttemptsUpdates.isEmpty())
 	}
 
 	@Test

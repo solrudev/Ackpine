@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-@file:SuppressLint("LongLogTag")
-
 package ru.solrudev.ackpine.impl.installer.session
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
@@ -38,6 +35,7 @@ import androidx.annotation.ChecksSdkIntAtLeast
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.concurrent.futures.CallbackToFutureAdapter
+import androidx.core.net.toUri
 import ru.solrudev.ackpine.helpers.closeAllWithException
 import ru.solrudev.ackpine.helpers.closeWithException
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
@@ -80,8 +78,6 @@ import java.util.concurrent.CancellationException
 import java.util.concurrent.Executor
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 private const val TAG = "SessionBasedInstallSession"
 
@@ -168,17 +164,23 @@ internal class SessionBasedInstallSession internal constructor(
 	override fun launchConfirmation() {
 		if (!shouldApplyInstallConstraints() || shouldCommitNormallyAfterTimeout()) {
 			logger.debug("Committing session %s without install constraints", id)
-			commitPackageInstallerSession()
+			if (!commitPackageInstallerSession()) {
+				return
+			}
 		} else try {
 			logger.debug("Committing session %s with install constraints", id)
-			commitPackageInstallerSessionWithConstraints()
+			if (!commitPackageInstallerSessionWithConstraints()) {
+				return
+			}
 		} catch (exception: SecurityException) {
 			logger.warn(
 				exception,
 				"Falling back to normal commit for session %s after constrained commit failure",
 				id
 			)
-			commitPackageInstallerSession()
+			if (!commitPackageInstallerSession()) {
+				return
+			}
 		}
 		val currentAttempt = commitAttempts.incrementAndGet()
 		notifyCommitted()
@@ -311,34 +313,36 @@ internal class SessionBasedInstallSession internal constructor(
 				&& commitAttempts.get() == 1
 	}
 
-	private fun commitPackageInstallerSession() {
+	private fun commitPackageInstallerSession(): Boolean {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
 			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
-			return
+			return false
 		}
 		writeCommitProgressIfAbsent(progress)
 		packageInstaller.openSession(sessionId).commit(statusReceiver)
+		return true
 	}
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
-	private fun commitPackageInstallerSessionWithConstraints() {
+	private fun commitPackageInstallerSessionWithConstraints(): Boolean {
 		val statusReceiver = createPackageInstallerStatusIntentSender()
 		val sessionId = nativeSessionId
 		val progress = packageInstaller.getSessionInfo(sessionId)?.progress
 		if (progress == null) {
 			logger.error("Native session %s for session %s was not found", sessionId, id)
 			completeExceptionally(IllegalStateException("Session $sessionId was not found"))
-			return
+			return false
 		}
 		val installConstraints = createPackageInstallerInstallConstraints()
 		writeCommitProgressIfAbsent(progress)
 		packageInstaller.commitSessionAfterInstallConstraintsAreMet(
 			sessionId, statusReceiver, installConstraints, constraints.timeoutMillis
 		)
+		return true
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
@@ -346,8 +350,9 @@ internal class SessionBasedInstallSession internal constructor(
 			context,
 			action = PackageInstallerStatusReceiver.getAction(context),
 			sessionId = id,
-			confirmation, notificationId, notificationData, generateRequestCode()
+			confirmation, notificationId, notificationData, id.hashCode() and Int.MAX_VALUE
 		) { intent ->
+			intent.data = "ackpine://session/$id/status".toUri()
 			intent.putExtra(SystemPackageInstallerStatusReceiver.EXTRA_REQUIRE_USER_ACTION, requireUserAction)
 		}
 	}
@@ -615,8 +620,6 @@ internal class SessionBasedInstallSession internal constructor(
 	private fun persistNativeSessionId(nativeSessionId: Int) = dbWriteSemaphore.withPermit {
 		nativeSessionIdDao.setNativeSessionId(id.toString(), nativeSessionId)
 	}
-
-	private fun generateRequestCode() = Random.nextInt(10000..1000000)
 }
 
 @RequiresApi(Build.VERSION_CODES.TIRAMISU)

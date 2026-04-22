@@ -76,13 +76,18 @@ public final class SettingsFragment extends Fragment {
 		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener(v -> {
 			viewModel.toggleInstallBestSuitedApks();
 		});
-		Shizuku.addRequestPermissionResultListener(permissionListener);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			Shizuku.addRequestPermissionResultListener(permissionListener);
+		}
 		observeViewModel();
 	}
 
 	@Override
 	public void onDestroyView() {
-		Shizuku.removeRequestPermissionResultListener(permissionListener);
+		try {
+			Shizuku.removeRequestPermissionResultListener(permissionListener);
+		} catch (NoClassDefFoundError ignore) { // ignore
+		}
 		binding = null;
 		super.onDestroyView();
 	}

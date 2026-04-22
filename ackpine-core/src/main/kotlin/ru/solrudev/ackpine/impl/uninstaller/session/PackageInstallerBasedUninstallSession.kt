@@ -22,6 +22,7 @@ import android.os.Build
 import android.os.Handler
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
@@ -37,8 +38,6 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import java.util.UUID
 import java.util.concurrent.Executor
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 private const val TAG = "PackageInstallerBasedUninstallSession"
 
@@ -92,11 +91,10 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 			context,
 			action = UninstallStatusReceiver.getAction(context),
 			sessionId = id,
-			confirmation, notificationId, notificationData, generateRequestCode()
+			confirmation, notificationId, notificationData, id.hashCode() and Int.MAX_VALUE
 		) { intent ->
+			intent.data = "ackpine://session/$id/status".toUri()
 			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
 		}
 	}
-
-	private fun generateRequestCode() = Random.nextInt(4000000..5000000)
 }

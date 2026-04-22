@@ -65,12 +65,17 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener {
 			viewModel.toggleInstallBestSuitedApks()
 		}
-		Shizuku.addRequestPermissionResultListener(permissionListener)
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			Shizuku.addRequestPermissionResultListener(permissionListener)
+		}
 		this@SettingsFragment.observeViewModel()
 	}
 
 	override fun onDestroyView() {
-		Shizuku.removeRequestPermissionResultListener(permissionListener)
+		try {
+			Shizuku.removeRequestPermissionResultListener(permissionListener)
+		} catch (_: NoClassDefFoundError) { // ignore
+		}
 		super.onDestroyView()
 	}
 
