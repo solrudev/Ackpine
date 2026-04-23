@@ -74,11 +74,18 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		get() = packageManager.packageInstaller
 
 	private val deadSessionCompletionRunnable = Runnable {
-		completeSession(
-			Session.State.Failed(
-				InstallFailure.Generic(message = "Session $sessionId is dead.")
+		isSessionStuck().handleResult(executor) { isSessionStuck ->
+			if (!isSessionStuck) {
+				// Session proceeded normally after timeout.
+				finish()
+				return@handleResult
+			}
+			completeSession(
+				Session.State.Failed(
+					InstallFailure.Generic(message = "Session $sessionId is dead.")
+				)
 			)
-		)
+		}
 	}
 
 	override fun shouldNotifyWhenCommitted() = !isPreapproval
@@ -195,9 +202,10 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				abortSession()
 			}
 			// There was some error while installing which is not handled in PackageInstallerStatusReceiver,
-			// or session may have completed too quickly.
+			// or session's progress may have been delayed by Play Protect, or session may have completed
+			// too quickly.
 			else -> {
-				// Wait for possible result from PackageInstallerStatusReceiver before completing with failure.
+				// Wait for possible progress/result from PackageInstallerStatusReceiver before completing with failure.
 				logger.info("Waiting for delayed dead-session fallback for session %s", ackpineSessionId)
 				setLoading(isLoading = true, delayMillis = 100)
 				handler.postDelayed(deadSessionCompletionRunnable, 1000)
@@ -237,7 +245,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		.getAsync(this)
 		.map { value ->
 			logger.debug(
-				"isSessionStuck check for session %s progress=%s threshold=%s",
+				"Stuck session heuristics for session %s progress=%s threshold=%s",
 				ackpineSessionId,
 				sessionInfo?.progress,
 				value
