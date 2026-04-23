@@ -104,6 +104,7 @@ internal abstract class AbstractProgressSession<F : Failure> protected construct
 	}
 
 	private fun persistSessionProgress(value: Progress) = serialExecutor.execute {
+		logger.verbose("Session %s progress=%s/%s", id, value.progress, value.max)
 		sessionProgressDao.updateProgress(id.toString(), value.progress, value.max)
 	}
 }
