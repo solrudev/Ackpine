@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.22.7 (2026-04-24)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix "Session X is dead." error on Pixel devices running API 36+ (#206).
+- Add verbose logging for session progress.
+
 Version 0.22.6 (2026-04-22)
 ---------------------------
 

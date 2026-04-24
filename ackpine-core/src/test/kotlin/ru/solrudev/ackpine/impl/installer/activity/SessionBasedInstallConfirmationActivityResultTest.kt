@@ -118,25 +118,55 @@ class SessionBasedInstallConfirmationActivityResultTest {
 
 	@Test
 	@Config(sdk = [Build.VERSION_CODES.N]) // Use API < 26 so canInstallPackages() returns true
-	fun deadSessionCompletesWithFailureAfterTimeout() {
+	fun sessionStuckBelowThresholdCompletesWithFailureAfterTimeout() {
 		ensureSessionIsNotStuck()
 		val sessionId = UUID.randomUUID()
 		val session = TestPreapprovalSession(sessionId)
 		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
-		// Use a session ID that doesn't exist in the PackageInstaller (simulating dead session)
+		val packageInstaller = context.packageManager.packageInstaller
+		val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		val nativeSessionId = packageInstaller.createSession(params)
+		shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 0.5f)
 		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
 			.putExtra(Intent.EXTRA_INTENT, Intent())
-			.putExtra(PackageInstaller.EXTRA_SESSION_ID, 999) // Non-existent session
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
 		SessionIdIntents.putSessionId(intent, sessionId)
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
-			// Advance time to trigger the deadSessionCompletionRunnable (1000ms delay)
 			runScheduledMainThreadTasks()
 			val completedState = session.completedState
 			assertNotNull(completedState)
 			assertIs<Session.State.Failed<InstallFailure>>(completedState)
 			assertIs<InstallFailure.Generic>(completedState.failure)
-			assertEquals("Session 999 is dead.", completedState.failure.message)
+			assertEquals("Session $nativeSessionId is dead.", completedState.failure.message)
+			packageInstaller.abandonSession(nativeSessionId)
+		}
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.N]) // Use API < 26 so canInstallPackages() returns true
+	fun sessionProgressingBeforeDelayedFallbackFinishesActivity() {
+		ensureSessionIsNotStuck()
+		val sessionId = UUID.randomUUID()
+		val session = TestPreapprovalSession(sessionId)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val packageInstaller = context.packageManager.packageInstaller
+		val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		val nativeSessionId = packageInstaller.createSession(params)
+		shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 0.5f)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent())
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
+			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
+			shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 1f)
+			runScheduledMainThreadTasks()
+			scenario.onActivity {
+				assertTrue(it.isFinishing)
+				assertNull(session.completedState)
+			}
+			packageInstaller.abandonSession(nativeSessionId)
 		}
 	}
 
