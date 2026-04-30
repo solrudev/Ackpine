@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.22.8 (2026-05-01)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix "SessionBasedInstallConfirmationActivity was finished by user" install error on some devices.
+
 Version 0.22.7 (2026-04-24)
 ---------------------------
 

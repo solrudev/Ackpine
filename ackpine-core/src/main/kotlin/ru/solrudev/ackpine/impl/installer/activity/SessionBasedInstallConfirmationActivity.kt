@@ -196,15 +196,14 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				logger.warn("Install permission denied for session %s", ackpineSessionId)
 				abortSession("Install permission denied")
 			}
-			// User has dismissed confirmation activity.
-			isSessionAlive && isActivityCancelled -> {
-				logger.warn("Install confirmation was dismissed for session %s", ackpineSessionId)
-				abortSession()
-			}
 			// There was some error while installing which is not handled in PackageInstallerStatusReceiver,
 			// or session's progress may have been delayed by Play Protect, or session may have completed
 			// too quickly.
 			else -> {
+				if (isSessionAlive && isActivityCancelled) {
+					// User may have dismissed confirmation activity.
+					logger.warn("Install confirmation dismiss heuristics for session %s", ackpineSessionId)
+				}
 				// Wait for possible progress/result from PackageInstallerStatusReceiver before completing with failure.
 				logger.info("Waiting for delayed dead-session fallback for session %s", ackpineSessionId)
 				setLoading(isLoading = true, delayMillis = 100)

@@ -55,26 +55,6 @@ class SessionBasedInstallConfirmationActivityResultTest {
 	}
 
 	@Test
-	fun activityCancelledAbortsSession() {
-		ensureCommitProgressValueCached()
-		val sessionId = UUID.randomUUID()
-		val session = TestPreapprovalSession(sessionId)
-		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
-		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
-			.putExtra(Intent.EXTRA_INTENT, Intent())
-			.putExtra(PackageInstaller.EXTRA_SESSION_ID, 1)
-		SessionIdIntents.putSessionId(intent, sessionId)
-		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
-			scenario.onActivity { it.onActivityResult(Activity.RESULT_CANCELED) }
-			drainMainThread()
-			val completedState = session.completedState
-			assertNotNull(completedState)
-			assertIs<Session.State.Failed<InstallFailure>>(completedState)
-			assertIs<InstallFailure.Aborted>(completedState.failure)
-		}
-	}
-
-	@Test
 	fun preapprovalResultDoesNotAbortSession() {
 		ensureCommitProgressValueCached()
 		val sessionId = UUID.randomUUID()
