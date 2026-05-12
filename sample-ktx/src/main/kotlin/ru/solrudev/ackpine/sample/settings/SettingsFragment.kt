@@ -68,7 +68,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			Shizuku.addRequestPermissionResultListener(permissionListener)
 		}
-		this@SettingsFragment.observeViewModel()
+		observeViewModel()
 	}
 
 	override fun onDestroyView() {
