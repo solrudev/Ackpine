@@ -19,8 +19,6 @@ package ru.solrudev.ackpine.impl.uninstaller.activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.Ackpine
@@ -28,39 +26,18 @@ import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 
 private const val TAG = "PackageInstallerBasedUninstallActivity"
+private const val ACTION_ABORT_IF_PACKAGE_STILL_INSTALLED = 1
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 
 	private val logger = Ackpine.loggerProvider.withTag(TAG)
-	private val handler = Handler(Looper.getMainLooper())
-
-	private val abortedSessionRunnable = Runnable {
-		val packageName = getUninstalledPackageName()
-		if (packageName == null) {
-			logger.error("Missing package name for session %s", ackpineSessionId)
-			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
-			finish()
-			return@Runnable
-		}
-		if (isPackageInstalled(packageName)) {
-			logger.warn("Package installer uninstall appears aborted for session %s", ackpineSessionId)
-			abortSession("Aborted by user")
-		}
-	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		if (savedInstanceState == null) {
 			launchUninstallActivity()
-		}
-	}
-
-	override fun onDestroy() {
-		super.onDestroy()
-		if (isFinishing) {
-			handler.removeCallbacks(abortedSessionRunnable)
 		}
 	}
 
@@ -72,7 +49,13 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 			resultCode
 		)
 		setLoading(isLoading = true, delayMillis = 200)
-		handler.postDelayed(abortedSessionRunnable, 400)
+		runOnWindowFocused(ACTION_ABORT_IF_PACKAGE_STILL_INSTALLED, delayMillis = 400)
+	}
+
+	override fun onWindowFocusAction(action: Int) {
+		if (action == ACTION_ABORT_IF_PACKAGE_STILL_INSTALLED) {
+			abortIfPackageStillInstalled()
+		}
 	}
 
 	override fun launchUninstallActivity() {
@@ -84,6 +67,20 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 		intent.extras
 			?.getParcelableCompat<Intent>(Intent.EXTRA_INTENT)
 			?.let(::startActivityForResult)
+	}
+
+	private fun abortIfPackageStillInstalled() {
+		val packageName = getUninstalledPackageName()
+		if (packageName == null) {
+			logger.error("Missing package name for session %s", ackpineSessionId)
+			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
+			finish()
+			return
+		}
+		if (isPackageInstalled(packageName)) {
+			logger.warn("Package installer uninstall appears aborted for session %s", ackpineSessionId)
+			abortSession("Aborted by user")
+		}
 	}
 
 	private fun getUninstalledPackageName() = intent.getStringExtra(EXTRA_PACKAGE_NAME)

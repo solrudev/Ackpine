@@ -24,12 +24,9 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.ContextCompat
-import androidx.core.os.ExecutorCompat
 import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.helpers.concurrent.handleResult
 import ru.solrudev.ackpine.helpers.concurrent.map
@@ -43,6 +40,12 @@ private const val TAG = "SessionBasedInstallConfirmationActivity"
 private const val CAN_INSTALL_PACKAGES_KEY = "CAN_INSTALL_PACKAGES"
 private const val IS_FIRST_RESUME_KEY = "IS_FIRST_RESUME"
 private const val WAS_ON_TOP_ON_START_KEY = "WAS_ON_TOP_ON_START"
+private const val IS_ON_ACTIVITY_RESULT_CALLED_KEY = "IS_ON_ACTIVITY_RESULT_CALLED"
+private const val PENDING_RESULT_CODE_KEY = "PENDING_RESULT_CODE"
+private const val NO_PENDING_RESULT_CODE = Int.MIN_VALUE
+private const val ACTION_PROCESS_CONFIRMATION_RESULT = 1
+private const val ACTION_CHECK_DISMISSAL = 2
+private const val ACTION_DEAD_SESSION_FALLBACK = 3
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
@@ -63,30 +66,18 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 				&& intent.getBooleanExtra(PackageInstaller.EXTRA_PRE_APPROVAL, false)
 
-	private val handler = Handler(Looper.getMainLooper())
-	private val executor = ExecutorCompat.create(handler)
+	private val executor by lazy(LazyThreadSafetyMode.NONE) {
+		ContextCompat.getMainExecutor(this)
+	}
+
 	private var canInstallPackages = false
 	private var isFirstResume = true
 	private var wasOnTopOnStart = false
 	private var isOnActivityResultCalled = false
+	private var pendingResultCode = NO_PENDING_RESULT_CODE
 
 	private val packageInstaller: PackageInstaller
 		get() = packageManager.packageInstaller
-
-	private val deadSessionCompletionRunnable = Runnable {
-		isSessionStuck().handleResult(executor) { isSessionStuck ->
-			if (!isSessionStuck) {
-				// Session proceeded normally after timeout.
-				finish()
-				return@handleResult
-			}
-			completeSession(
-				Session.State.Failed(
-					InstallFailure.Generic(message = "Session $sessionId is dead.")
-				)
-			)
-		}
-	}
 
 	override fun shouldNotifyWhenCommitted() = !isPreapproval
 
@@ -97,6 +88,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			canInstallPackages = savedInstanceState.getBoolean(CAN_INSTALL_PACKAGES_KEY)
 			isFirstResume = savedInstanceState.getBoolean(IS_FIRST_RESUME_KEY)
 			wasOnTopOnStart = savedInstanceState.getBoolean(WAS_ON_TOP_ON_START_KEY)
+			isOnActivityResultCalled = savedInstanceState.getBoolean(IS_ON_ACTIVITY_RESULT_CALLED_KEY)
+			pendingResultCode = savedInstanceState.getInt(PENDING_RESULT_CODE_KEY, NO_PENDING_RESULT_CODE)
 		}
 		if (isPreapproval) {
 			handlePreapproval(launchConfirmation = isFirstCreate)
@@ -120,18 +113,8 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 			return
 		}
 		val isConfirmationDismissed = !isOnActivityResultCalled && wasOnTopOnStart
-		isSessionStuck().handleResult(executor) { isSessionStuck ->
-			if (isConfirmationDismissed && isSessionStuck) {
-				// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
-				abortSession()
-			}
-		}
-	}
-
-	override fun onDestroy() {
-		super.onDestroy()
-		if (isFinishing) {
-			handler.removeCallbacks(deadSessionCompletionRunnable)
+		if (isConfirmationDismissed) {
+			runOnWindowFocused(ACTION_CHECK_DISMISSAL)
 		}
 	}
 
@@ -140,10 +123,32 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 		outState.putBoolean(CAN_INSTALL_PACKAGES_KEY, canInstallPackages)
 		outState.putBoolean(IS_FIRST_RESUME_KEY, isFirstResume)
 		outState.putBoolean(WAS_ON_TOP_ON_START_KEY, wasOnTopOnStart)
+		outState.putBoolean(IS_ON_ACTIVITY_RESULT_CALLED_KEY, isOnActivityResultCalled)
+		outState.putInt(PENDING_RESULT_CODE_KEY, pendingResultCode)
 	}
 
 	override fun onActivityResult(resultCode: Int) {
 		isOnActivityResultCalled = true
+		pendingResultCode = resultCode
+		runOnWindowFocused(ACTION_PROCESS_CONFIRMATION_RESULT)
+	}
+
+	override fun onWindowFocusAction(action: Int) {
+		when (action) {
+			ACTION_PROCESS_CONFIRMATION_RESULT -> {
+				val resultCode = pendingResultCode
+				if (resultCode != NO_PENDING_RESULT_CODE) {
+					pendingResultCode = NO_PENDING_RESULT_CODE
+					processConfirmationResult(resultCode)
+				}
+			}
+
+			ACTION_CHECK_DISMISSAL -> checkDismissal()
+			ACTION_DEAD_SESSION_FALLBACK -> processDeadSessionFallback()
+		}
+	}
+
+	private fun processConfirmationResult(resultCode: Int) {
 		val isActivityCancelled = resultCode == RESULT_CANCELED
 		val previousCanInstallPackagesValue = canInstallPackages
 		canInstallPackages = canInstallPackages()
@@ -165,6 +170,32 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				isActivityCancelled
 			)
 		}
+	}
+
+	private fun checkDismissal() {
+		val isConfirmationDismissed = !isOnActivityResultCalled && wasOnTopOnStart
+		if (!isConfirmationDismissed) {
+			return
+		}
+		isSessionStuck().handleResult(executor) { isSessionStuck ->
+			if (isSessionStuck) {
+				// Activity was recreated and brought to top, but install confirmation from OS was dismissed.
+				abortSession()
+			}
+		}
+	}
+
+	private fun processDeadSessionFallback() = isSessionStuck().handleResult(executor) { isSessionStuck ->
+		if (!isSessionStuck) {
+			// Session proceeded normally after timeout.
+			finish()
+			return@handleResult
+		}
+		completeSession(
+			Session.State.Failed(
+				InstallFailure.Generic(message = "Session $sessionId is dead.")
+			)
+		)
 	}
 
 	private fun onInstallConfirmationFinished(
@@ -207,7 +238,7 @@ internal class SessionBasedInstallConfirmationActivity : InstallActivity(TAG) {
 				// Wait for possible progress/result from PackageInstallerStatusReceiver before completing with failure.
 				logger.info("Waiting for delayed dead-session fallback for session %s", ackpineSessionId)
 				setLoading(isLoading = true, delayMillis = 100)
-				handler.postDelayed(deadSessionCompletionRunnable, 1000)
+				runOnWindowFocused(ACTION_DEAD_SESSION_FALLBACK, delayMillis = 1000)
 			}
 		}
 	}

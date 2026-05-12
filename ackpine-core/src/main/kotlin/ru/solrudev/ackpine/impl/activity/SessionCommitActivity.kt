@@ -47,6 +47,9 @@ import kotlin.random.nextInt
 private const val REQUEST_CODE_KEY = "SESSION_COMMIT_ACTIVITY_REQUEST_CODE"
 private const val IS_LOADING_KEY = "SESSION_COMMIT_ACTIVITY_IS_LOADING"
 private const val IS_CONFIG_CHANGE_RECREATION_KEY = "SESSION_COMMIT_ACTIVITY_IS_CONFIG_CHANGE_RECREATION"
+private const val PENDING_WINDOW_FOCUS_ACTION_KEY = "SESSION_COMMIT_ACTIVITY_PENDING_WINDOW_FOCUS_ACTION"
+private const val PENDING_WINDOW_FOCUS_ACTION_DELAY_KEY = "SESSION_COMMIT_ACTIVITY_PENDING_WINDOW_FOCUS_ACTION_DELAY"
+private const val NO_PENDING_WINDOW_FOCUS_ACTION = 0
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal abstract class SessionCommitActivity<F : Failure> protected constructor(
@@ -68,6 +71,16 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	private var requestCode = -1
 	private var isLoading = false
 	private var isOnActivityResultCalled = false
+	private var pendingWindowFocusAction = NO_PENDING_WINDOW_FOCUS_ACTION
+	private var pendingWindowFocusActionDelayMillis = 0L
+
+	private val pendingWindowFocusActionRunnable = Runnable {
+		if (!window.decorView.hasWindowFocus()) {
+			return@Runnable
+		}
+		pendingWindowFocusActionDelayMillis = 0L
+		runPendingWindowFocusAction()
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -88,10 +101,18 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	override fun onDestroy() {
 		super.onDestroy()
 		subscriptions.clear()
+		handler.removeCallbacks(pendingWindowFocusActionRunnable)
 		for (callback in handlerCallbacks) {
 			handler.removeCallbacks(callback)
 		}
 		handlerCallbacks.clear()
+	}
+
+	override fun onWindowFocusChanged(hasFocus: Boolean) {
+		super.onWindowFocusChanged(hasFocus)
+		if (hasFocus) {
+			runPendingWindowFocusAction()
+		}
 	}
 
 	@Deprecated("Deprecated in Java")
@@ -108,6 +129,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		outState.putInt(REQUEST_CODE_KEY, requestCode)
 		outState.putBoolean(IS_CONFIG_CHANGE_RECREATION_KEY, isChangingConfigurations)
 		outState.putBoolean(IS_LOADING_KEY, isLoading)
+		outState.putInt(PENDING_WINDOW_FOCUS_ACTION_KEY, pendingWindowFocusAction)
+		outState.putLong(PENDING_WINDOW_FOCUS_ACTION_DELAY_KEY, pendingWindowFocusActionDelayMillis)
 	}
 
 	final override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -148,6 +171,17 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		}
 	}
 
+	protected fun runOnWindowFocused(action: Int, delayMillis: Long = 0L) {
+		pendingWindowFocusAction = action
+		pendingWindowFocusActionDelayMillis = delayMillis
+		handler.removeCallbacks(pendingWindowFocusActionRunnable)
+		runPendingWindowFocusAction()
+	}
+
+	protected open fun onWindowFocusAction(action: Int) {
+		// no-op by default
+	}
+
 	protected fun abortSession(message: String? = null) = withCompletableSession { session ->
 		logger.warn("Aborting session %s from activity with message=%s", ackpineSessionId, message)
 		session?.complete(
@@ -183,6 +217,8 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		if (savedInstanceState != null) {
 			requestCode = savedInstanceState.getInt(REQUEST_CODE_KEY)
 			isLoading = savedInstanceState.getBoolean(IS_LOADING_KEY)
+			pendingWindowFocusAction = savedInstanceState.getInt(PENDING_WINDOW_FOCUS_ACTION_KEY)
+			pendingWindowFocusActionDelayMillis = savedInstanceState.getLong(PENDING_WINDOW_FOCUS_ACTION_DELAY_KEY)
 			setLoading(isLoading)
 			val isConfigChangeRecreation = savedInstanceState.getBoolean(IS_CONFIG_CHANGE_RECREATION_KEY)
 			logger.debug(
@@ -198,6 +234,20 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 			notifySessionCommitted()
 			requestCode = Random.nextInt(1000..1000000)
 		}
+	}
+
+	private fun runPendingWindowFocusAction() {
+		val action = pendingWindowFocusAction
+		if (action == NO_PENDING_WINDOW_FOCUS_ACTION || !window.decorView.hasWindowFocus()) {
+			return
+		}
+		if (pendingWindowFocusActionDelayMillis > 0L) {
+			handler.removeCallbacks(pendingWindowFocusActionRunnable)
+			handler.postDelayed(pendingWindowFocusActionRunnable, pendingWindowFocusActionDelayMillis)
+			return
+		}
+		pendingWindowFocusAction = NO_PENDING_WINDOW_FOCUS_ACTION
+		onWindowFocusAction(action)
 	}
 
 	private fun displayLoading(isLoading: Boolean) {

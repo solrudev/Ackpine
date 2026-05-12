@@ -23,6 +23,7 @@ import android.content.pm.PackageInfo
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
@@ -76,5 +77,73 @@ class PackageInstallerBasedUninstallActivityTest {
 			runScheduledMainThreadTasks()
 			assertNull(session.completedState)
 		}
+	}
+
+	@Test
+	fun resultWhileWindowIsNotFocusedDoesNotAbortImmediately() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		val packageManager = shadowOf(context.packageManager)
+		packageManager.installPackage(PackageInfo().apply { packageName = "com.example.app" })
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, PackageInstallerBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_OK)
+				runScheduledMainThreadTasks()
+				assertNull(session.completedState)
+			}
+	}
+
+	@Test
+	fun focusReturnAbortsAfterDelayIfPackageIsStillInstalled() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		val packageManager = shadowOf(context.packageManager)
+		packageManager.installPackage(PackageInfo().apply { packageName = "com.example.app" })
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, PackageInstallerBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_OK)
+				runScheduledMainThreadTasks()
+				assertNull(session.completedState)
+				controller.windowFocusChanged(true)
+				assertNull(session.completedState)
+				runScheduledMainThreadTasks()
+				val result = session.completedState
+				assertIs<Session.State.Failed<UninstallFailure>>(result)
+				assertIs<UninstallFailure.Aborted>(result.failure)
+			}
+	}
+
+	@Test
+	fun packageRemovedBeforeFocusReturnDoesNotAbort() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, PackageInstallerBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_OK)
+				controller.windowFocusChanged(true)
+				runScheduledMainThreadTasks()
+				assertNull(session.completedState)
+			}
 	}
 }
