@@ -110,6 +110,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 
 	override fun onWindowFocusChanged(hasFocus: Boolean) {
 		super.onWindowFocusChanged(hasFocus)
+		logger.debug("onWindowFocusChanged hasFocus=%s", hasFocus)
 		if (hasFocus) {
 			runPendingWindowFocusAction()
 		}
@@ -178,8 +179,7 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		runPendingWindowFocusAction()
 	}
 
-	protected open fun onWindowFocusAction(action: Int) {
-		// no-op by default
+	protected open fun onWindowFocusAction(action: Int) { // no-op by default
 	}
 
 	protected fun abortSession(message: String? = null) = withCompletableSession { session ->
@@ -238,16 +238,26 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 
 	private fun runPendingWindowFocusAction() {
 		val action = pendingWindowFocusAction
-		if (action == NO_PENDING_WINDOW_FOCUS_ACTION || !window.decorView.hasWindowFocus()) {
-			return
+		val delayMillis = pendingWindowFocusActionDelayMillis
+		when {
+			action == NO_PENDING_WINDOW_FOCUS_ACTION -> logger.debug("No pending window focus action found, ignoring")
+			!window.decorView.hasWindowFocus() -> logger.debug(
+				"Window does not have focus, ignoring pending action=%s",
+				action
+			)
+
+			delayMillis > 0L -> {
+				logger.debug("Posting window focus action=%s with delay of %sms", action, delayMillis)
+				handler.removeCallbacks(pendingWindowFocusActionRunnable)
+				handler.postDelayed(pendingWindowFocusActionRunnable, delayMillis)
+			}
+
+			else -> {
+				logger.debug("Executing window focus action=%s", action)
+				pendingWindowFocusAction = NO_PENDING_WINDOW_FOCUS_ACTION
+				onWindowFocusAction(action)
+			}
 		}
-		if (pendingWindowFocusActionDelayMillis > 0L) {
-			handler.removeCallbacks(pendingWindowFocusActionRunnable)
-			handler.postDelayed(pendingWindowFocusActionRunnable, pendingWindowFocusActionDelayMillis)
-			return
-		}
-		pendingWindowFocusAction = NO_PENDING_WINDOW_FOCUS_ACTION
-		onWindowFocusAction(action)
 	}
 
 	private fun displayLoading(isLoading: Boolean) {
