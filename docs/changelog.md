@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.22.9 (2026-05-13)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix "Session X is dead" error on some Xiaomi devices (#210).
+- Add logs export feature to sample apps.
+
 Version 0.22.8 (2026-05-01)
 ---------------------------
 

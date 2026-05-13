@@ -25,4 +25,11 @@
 	<string name="error_conflicting_version_code">Mã phiên bản bị xung đột. Mong đợi: %1$s, nhưng tìm thấy: %2$s (tên: %3$s)</string>
 	<string name="settings_install_best_suited_apks">Chỉ cài split APK phù hợp nhất</string>
 	<string name="settings_install_best_suited_apks_description">Với split APK, chỉ cài đặt các APK phù hợp nhất với cấu hình thiết bị. Khi tắt, tất cả APK trong gói split sẽ được cài đặt</string>
+	<string name="settings_export_logs">Xuất nhật ký</string>
+	<string name="settings_export_logs_description">Ghi lại logcat của ứng dụng này và chia sẻ</string>
+	<string name="export_logs_chooser_title">Chia sẻ nhật ký</string>
+	<string name="export_logs_subject">Nhật ký Ackpine</string>
+	<string name="export_logs_text">Bản xuất logcat của Ackpine</string>
+	<string name="export_logs_failed">Không thể thu thập nhật ký</string>
+	<string name="export_logs_no_app">Không có ứng dụng để chia sẻ nhật ký</string>
 </resources>

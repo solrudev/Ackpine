@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.sample.settings
+package ru.solrudev.ackpine.sample.settings;
 
-import android.net.Uri
+import android.net.Uri;
 
-data class SettingsUiState(
-	val installerBackend: InstallerBackend = InstallerBackend.ROOTLESS,
-	val installBestSuitedApks: Boolean = true,
-	val logcatExportEvent: LogcatExportEvent? = null
-)
+import androidx.annotation.NonNull;
 
-sealed interface LogcatExportEvent {
-	data class Success(val uri: Uri) : LogcatExportEvent
-	data object Failure : LogcatExportEvent
+import com.google.common.util.concurrent.ListenableFuture;
+
+@FunctionalInterface
+public interface LogcatExporter {
+
+	@NonNull
+	ListenableFuture<Uri> export();
 }

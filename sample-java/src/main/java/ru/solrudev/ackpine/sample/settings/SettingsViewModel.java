@@ -19,18 +19,36 @@ package ru.solrudev.ackpine.sample.settings;
 import static androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY;
 
 import android.content.Context;
+import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.viewmodel.ViewModelInitializer;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+
 public final class SettingsViewModel extends ViewModel {
 
-	private final SettingsRepository settingsRepository;
+	private static final String TAG = "SettingsViewModel";
 
-	public SettingsViewModel(@NonNull SettingsRepository settingsRepository) {
+	private final SettingsRepository settingsRepository;
+	private final LogcatExporter logcatExporter;
+	private final MutableLiveData<LogcatExportEvent> logcatExportEvent = new MutableLiveData<>(null);
+	private final List<ListenableFuture<?>> futures = new ArrayList<>();
+
+	public SettingsViewModel(@NonNull SettingsRepository settingsRepository, @NonNull LogcatExporter logcatExporter) {
 		this.settingsRepository = settingsRepository;
+		this.logcatExporter = logcatExporter;
 	}
 
 	@NonNull
@@ -43,6 +61,11 @@ public final class SettingsViewModel extends ViewModel {
 		return settingsRepository.getInstallBestSuitedApksLiveData();
 	}
 
+	@NonNull
+	public LiveData<LogcatExportEvent> getLogcatExportEvent() {
+		return logcatExportEvent;
+	}
+
 	public void selectBackend(@NonNull InstallerBackend backend) {
 		settingsRepository.setInstallerBackend(backend);
 	}
@@ -51,13 +74,48 @@ public final class SettingsViewModel extends ViewModel {
 		settingsRepository.toggleInstallBestSuitedApks();
 	}
 
+	public void exportLogs() {
+		final var future = logcatExporter.export();
+		future.addListener(() -> futures.remove(future), MoreExecutors.directExecutor());
+		futures.add(future);
+		Futures.addCallback(future, new FutureCallback<>() {
+			@Override
+			public void onSuccess(Uri uri) {
+				logcatExportEvent.postValue(new LogcatExportEvent.Success(uri));
+			}
+
+			@Override
+			public void onFailure(@NonNull Throwable exception) {
+				if (exception instanceof CancellationException) {
+					return;
+				}
+				Log.e(TAG, "Failed to export logs", exception);
+				logcatExportEvent.postValue(LogcatExportEvent.Failure.INSTANCE);
+			}
+		}, MoreExecutors.directExecutor());
+	}
+
+	public void consumeLogcatExportEvent() {
+		logcatExportEvent.setValue(null);
+	}
+
+	@Override
+	protected void onCleared() {
+		for (final var future : futures) {
+			future.cancel(true);
+		}
+		futures.clear();
+	}
+
 	public static final ViewModelInitializer<SettingsViewModel> initializer = new ViewModelInitializer<>(
 			SettingsViewModel.class,
 			creationExtras -> {
 				final var application = creationExtras.get(APPLICATION_KEY);
 				assert application != null;
 				final var preferences = application.getSharedPreferences("settings", Context.MODE_PRIVATE);
-				return new SettingsViewModel(new SharedPreferencesSettingsRepository(preferences));
+				final var repository = new SharedPreferencesSettingsRepository(preferences);
+				final var exporter = new DefaultLogcatExporter(application);
+				return new SettingsViewModel(repository, exporter);
 			}
 	);
 }

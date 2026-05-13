@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.sample.settings
+package ru.solrudev.ackpine.sample
 
-import android.net.Uri
+import android.app.Application
+import ru.solrudev.ackpine.Ackpine
 
-data class SettingsUiState(
-	val installerBackend: InstallerBackend = InstallerBackend.ROOTLESS,
-	val installBestSuitedApks: Boolean = true,
-	val logcatExportEvent: LogcatExportEvent? = null
-)
-
-sealed interface LogcatExportEvent {
-	data class Success(val uri: Uri) : LogcatExportEvent
-	data object Failure : LogcatExportEvent
+class App : Application() {
+	override fun onCreate() {
+		super.onCreate()
+		Ackpine.enableLogcatLogger()
+	}
 }

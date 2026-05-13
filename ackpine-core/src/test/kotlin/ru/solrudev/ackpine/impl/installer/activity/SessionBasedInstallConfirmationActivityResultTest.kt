@@ -24,6 +24,7 @@ import android.os.Build
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
@@ -38,6 +39,7 @@ import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
@@ -114,13 +116,103 @@ class SessionBasedInstallConfirmationActivityResultTest {
 		ActivityScenario.launch<SessionBasedInstallConfirmationActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
 			runScheduledMainThreadTasks()
-			val completedState = session.completedState
-			assertNotNull(completedState)
+			val completedState = assertNotNull(session.completedState)
 			assertIs<Session.State.Failed<InstallFailure>>(completedState)
 			assertIs<InstallFailure.Generic>(completedState.failure)
-			assertEquals("Session $nativeSessionId is dead.", completedState.failure.message)
+			val message = assertNotNull(completedState.failure.message)
+			assertContains(message, "dead")
 			packageInstaller.abandonSession(nativeSessionId)
 		}
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.N])
+	fun activityResultWhileWindowIsNotFocusedDoesNotCompleteSession() {
+		ensureSessionIsNotStuck()
+		val sessionId = UUID.randomUUID()
+		val session = TestPreapprovalSession(sessionId)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val packageInstaller = context.packageManager.packageInstaller
+		val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		val nativeSessionId = packageInstaller.createSession(params)
+		shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 0.5f)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent())
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(SessionBasedInstallConfirmationActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_CANCELED)
+				runScheduledMainThreadTasks()
+				assertNull(session.completedState)
+				packageInstaller.abandonSession(nativeSessionId)
+			}
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.N])
+	fun focusReturnRunsDeadSessionFallbackOnlyAfterDelay() {
+		ensureSessionIsNotStuck()
+		val sessionId = UUID.randomUUID()
+		val session = TestPreapprovalSession(sessionId)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val packageInstaller = context.packageManager.packageInstaller
+		val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		val nativeSessionId = packageInstaller.createSession(params)
+		shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 0.5f)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent())
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(SessionBasedInstallConfirmationActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_OK)
+				runScheduledMainThreadTasks()
+				assertNull(session.completedState)
+				controller.windowFocusChanged(true)
+				drainMainThread()
+				assertNull(session.completedState)
+				runScheduledMainThreadTasks()
+				val completedState = assertNotNull(session.completedState)
+				assertIs<Session.State.Failed<InstallFailure>>(completedState)
+				assertIs<InstallFailure.Generic>(completedState.failure)
+				val message = assertNotNull(completedState.failure.message)
+				assertContains(message, "dead")
+				packageInstaller.abandonSession(nativeSessionId)
+			}
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.N])
+	fun progressReachesThresholdBeforeFocusReturnFinishesActivityWithoutFailure() {
+		ensureSessionIsNotStuck()
+		val sessionId = UUID.randomUUID()
+		val session = TestPreapprovalSession(sessionId)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val packageInstaller = context.packageManager.packageInstaller
+		val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+		val nativeSessionId = packageInstaller.createSession(params)
+		shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 0.5f)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent())
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, nativeSessionId)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		Robolectric.buildActivity(SessionBasedInstallConfirmationActivity::class.java, intent)
+			.setup()
+			.use { controller ->
+				controller.windowFocusChanged(false)
+				controller.get().onActivityResult(Activity.RESULT_OK)
+				shadowOf(packageInstaller).setSessionProgress(nativeSessionId, 1f)
+				controller.windowFocusChanged(true)
+				drainMainThread()
+				assertTrue(controller.get().isFinishing)
+				assertNull(session.completedState)
+				packageInstaller.abandonSession(nativeSessionId)
+			}
 	}
 
 	@Test

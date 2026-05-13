@@ -44,4 +44,11 @@
 	<string name="error_conflicting_version_code">Conflicting version code. Expected: %1$s, found: %2$s, name: %3$s</string>
 	<string name="settings_install_best_suited_apks">Install only best-suited APKs</string>
 	<string name="settings_install_best_suited_apks_description">For split APKs, only install splits matching the device configuration best. When disabled, all APKs in the split package are installed</string>
+	<string name="settings_export_logs">Export logs</string>
+	<string name="settings_export_logs_description">Capture this app\'s logcat output and share it</string>
+	<string name="export_logs_chooser_title">Share logs</string>
+	<string name="export_logs_subject">Ackpine logcat</string>
+	<string name="export_logs_text">Ackpine logcat export</string>
+	<string name="export_logs_failed">Failed to capture logs</string>
+	<string name="export_logs_no_app">No app available to share logs</string>
 </resources>

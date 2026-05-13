@@ -25,4 +25,11 @@
 	<string name="error_conflicting_version_code">Botesende weergawe kode. Verwag: %1$s, gevind: %2$s, naam: %3$s</string>
 	<string name="settings_install_best_suited_apks">Installeer slegs mees geskikte split-APK\'s</string>
 	<string name="settings_install_best_suited_apks_description">Vir split-pakkette, installeer slegs die APK\'s wat die beste by die toestelkonfigurasie pas. As dit gedeaktiveer is, word alle APK\'s in die split-pakket geïnstalleer</string>
+	<string name="settings_export_logs">Voer logs uit</string>
+	<string name="settings_export_logs_description">Vang hierdie toepassing se logcat-afvoer vas en deel dit</string>
+	<string name="export_logs_chooser_title">Deel logs</string>
+	<string name="export_logs_subject">Ackpine logcat</string>
+	<string name="export_logs_text">Ackpine logcat-uitvoer</string>
+	<string name="export_logs_failed">Kon nie logs vasvang nie</string>
+	<string name="export_logs_no_app">Geen toepassing beskikbaar om logs te deel nie</string>
 </resources>

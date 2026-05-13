@@ -41,4 +41,11 @@
 	<string name="error_conflicting_version_code">Несовместимый код версии. Ожидаемый код: %1$s, найден: %2$s, имя APK: %3$s</string>
 	<string name="settings_install_best_suited_apks">Устанавливать только подходящие APK</string>
 	<string name="settings_install_best_suited_apks_description">Для split-пакетов устанавливать только те APK, которые лучше всего соответствуют конфигурации устройства. Если отключено, устанавливаются все APK из пакета</string>
+	<string name="settings_export_logs">Экспорт логов</string>
+	<string name="settings_export_logs_description">Сохранить вывод logcat этого приложения и поделиться им</string>
+	<string name="export_logs_chooser_title">Поделиться логами</string>
+	<string name="export_logs_subject">Логи Ackpine</string>
+	<string name="export_logs_text">Экспорт логов Ackpine</string>
+	<string name="export_logs_failed">Не удалось получить логи</string>
+	<string name="export_logs_no_app">Нет приложения для отправки логов</string>
 </resources>
