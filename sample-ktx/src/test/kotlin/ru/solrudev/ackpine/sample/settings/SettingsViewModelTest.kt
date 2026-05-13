@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.sample.settings
 
+import android.net.Uri
 import app.cash.turbine.test
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,6 +24,7 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Rule
 import ru.solrudev.ackpine.sample.MainDispatcherRule
+import java.io.IOException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -36,13 +38,13 @@ class SettingsViewModelTest {
 	@Test
 	fun uiStateDefaultsToRootlessWithoutShizukuSupport() = runTest(mainDispatcherRule.dispatcher) {
 		val repository = createSettingsRepository()
-		val viewModel = SettingsViewModel(repository)
+		val viewModel = SettingsViewModel(repository, succeedingExporter())
 		assertEquals(SettingsUiState(), viewModel.uiState.value)
 	}
 
 	@Test
 	fun toggleInstallBestSuitedApksUpdatesUiState() = runTest(mainDispatcherRule.dispatcher) {
-		val viewModel = SettingsViewModel(createSettingsRepository())
+		val viewModel = SettingsViewModel(createSettingsRepository(), succeedingExporter())
 
 		viewModel.uiState.test {
 			assertEquals(SettingsUiState(installBestSuitedApks = true), awaitItem())
@@ -58,7 +60,7 @@ class SettingsViewModelTest {
 	fun uiStateReflectsBackendSelectionAndShizukuSupport() = runTest(mainDispatcherRule.dispatcher) {
 		val supportsShizuku = MutableStateFlow(true)
 		val repository = createSettingsRepository(supportsShizuku = supportsShizuku)
-		val viewModel = SettingsViewModel(repository)
+		val viewModel = SettingsViewModel(repository, succeedingExporter())
 
 		viewModel.uiState.test {
 			assertEquals(SettingsUiState(installerBackend = InstallerBackend.ROOTLESS), awaitItem())
@@ -74,4 +76,64 @@ class SettingsViewModelTest {
 			assertEquals(SettingsUiState(), awaitItem())
 		}
 	}
+
+	@Test
+	fun exportLogsExposesSuccessEventOnUiState() = runTest(mainDispatcherRule.dispatcher) {
+		val exportedUri = Uri.EMPTY
+		val viewModel = SettingsViewModel(createSettingsRepository(), LogcatExporter { exportedUri })
+
+		viewModel.uiState.test {
+			assertEquals(SettingsUiState(), awaitItem())
+
+			viewModel.exportLogs()
+			advanceUntilIdle()
+
+			assertEquals(
+				SettingsUiState(logcatExportEvent = LogcatExportEvent.Success(exportedUri)),
+				awaitItem()
+			)
+		}
+	}
+
+	@Test
+	fun exportLogsExposesFailureEventOnUiStateWhenExporterThrows() = runTest(mainDispatcherRule.dispatcher) {
+		val viewModel = SettingsViewModel(
+			createSettingsRepository(),
+			logcatExporter = { throw IOException("boom") }
+		)
+
+		viewModel.uiState.test {
+			assertEquals(SettingsUiState(), awaitItem())
+
+			viewModel.exportLogs()
+			advanceUntilIdle()
+
+			assertEquals(
+				SettingsUiState(logcatExportEvent = LogcatExportEvent.Failure),
+				awaitItem()
+			)
+		}
+	}
+
+	@Test
+	fun consumeLogcatExportEventClearsItFromUiState() = runTest(mainDispatcherRule.dispatcher) {
+		val viewModel = SettingsViewModel(createSettingsRepository(), succeedingExporter())
+
+		viewModel.uiState.test {
+			assertEquals(SettingsUiState(), awaitItem())
+
+			viewModel.exportLogs()
+			advanceUntilIdle()
+			assertEquals(
+				SettingsUiState(logcatExportEvent = LogcatExportEvent.Success(Uri.EMPTY)),
+				awaitItem()
+			)
+
+			viewModel.consumeLogcatExportEvent()
+			advanceUntilIdle()
+			assertEquals(SettingsUiState(), awaitItem())
+		}
+	}
+
+	private fun succeedingExporter() = LogcatExporter { Uri.EMPTY }
 }

@@ -16,21 +16,30 @@
 
 package ru.solrudev.ackpine.sample.settings
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.CreationExtras
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-class SettingsViewModel(private val settingsRepository: SettingsRepository) : ViewModel() {
+class SettingsViewModel(
+	private val settingsRepository: SettingsRepository,
+	private val logcatExporter: LogcatExporter
+) : ViewModel() {
+
+	private val logcatExportEvent = MutableStateFlow<LogcatExportEvent?>(null)
 
 	val uiState = combine(
 		settingsRepository.installerBackend,
 		settingsRepository.installBestSuitedApks,
+		logcatExportEvent,
 		::SettingsUiState
 	).stateIn(viewModelScope, SharingStarted.Lazily, SettingsUiState())
 
@@ -42,6 +51,21 @@ class SettingsViewModel(private val settingsRepository: SettingsRepository) : Vi
 		settingsRepository.toggleInstallBestSuitedApks()
 	}
 
+	fun exportLogs() = viewModelScope.launch {
+		logcatExportEvent.value = try {
+			LogcatExportEvent.Success(logcatExporter.export())
+		} catch (cancellation: CancellationException) {
+			throw cancellation
+		} catch (exception: Exception) {
+			Log.e("SettingsViewModel", "Failed to export logs", exception)
+			LogcatExportEvent.Failure
+		}
+	}
+
+	fun consumeLogcatExportEvent() {
+		logcatExportEvent.value = null
+	}
+
 	companion object {
 
 		val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
@@ -49,7 +73,8 @@ class SettingsViewModel(private val settingsRepository: SettingsRepository) : Vi
 			override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
 				val application = extras[APPLICATION_KEY]!!
 				val repository = SettingsRepository(application.preferencesDataStore)
-				return SettingsViewModel(repository) as T
+				val exporter = DefaultLogcatExporter(application)
+				return SettingsViewModel(repository, exporter) as T
 			}
 		}
 	}

@@ -16,7 +16,11 @@
 
 package ru.solrudev.ackpine.sample.settings
 
+import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -65,6 +69,9 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener {
 			viewModel.toggleInstallBestSuitedApks()
 		}
+		binding.layoutSettingsExportLogs.setOnClickListener {
+			viewModel.exportLogs()
+		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			Shizuku.addRequestPermissionResultListener(permissionListener)
 		}
@@ -84,6 +91,7 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 			viewModel.uiState.collect { uiState ->
 				renderInstallerBackend(uiState.installerBackend)
 				binding.switchSettingsInstallBestSuitedApks.isChecked = uiState.installBestSuitedApks
+				uiState.logcatExportEvent?.let(::handleLogcatExportEvent)
 			}
 		}
 	}
@@ -92,6 +100,14 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 		binding.radioButtonSettingsInstallerRootless.isChecked = backend == InstallerBackend.ROOTLESS
 		binding.radioButtonSettingsInstallerRoot.isChecked = backend == InstallerBackend.ROOT
 		binding.radioButtonSettingsInstallerShizuku.isChecked = backend == InstallerBackend.SHIZUKU
+	}
+
+	private fun handleLogcatExportEvent(event: LogcatExportEvent) {
+		when (event) {
+			is LogcatExportEvent.Success -> shareLogs(event.uri)
+			LogcatExportEvent.Failure -> showToast(R.string.export_logs_failed)
+		}
+		viewModel.consumeLogcatExportEvent()
 	}
 
 	private fun selectShizukuBackend() {
@@ -111,6 +127,28 @@ class SettingsFragment : Fragment(R.layout.fragment_settings) {
 			Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE)
 		} catch (_: IllegalStateException) {
 			showToast(R.string.shizuku_not_running)
+		}
+	}
+
+	private fun shareLogs(uri: Uri) {
+		val intent = Intent(Intent.ACTION_SEND)
+			.setType("text/plain")
+			.putExtra(Intent.EXTRA_STREAM, uri)
+			.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.export_logs_subject))
+			.putExtra(Intent.EXTRA_TEXT, getString(R.string.export_logs_text))
+			.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+			.apply {
+				clipData = ClipData.newUri(
+					requireContext().contentResolver,
+					getString(R.string.export_logs_subject),
+					uri
+				)
+			}
+		val chooser = Intent.createChooser(intent, getString(R.string.export_logs_chooser_title))
+		try {
+			startActivity(chooser)
+		} catch (_: ActivityNotFoundException) {
+			showToast(R.string.export_logs_no_app)
 		}
 	}
 
