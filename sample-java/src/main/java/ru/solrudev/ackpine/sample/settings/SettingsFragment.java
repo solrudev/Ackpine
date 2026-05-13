@@ -16,7 +16,11 @@
 
 package ru.solrudev.ackpine.sample.settings;
 
+import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -76,6 +80,7 @@ public final class SettingsFragment extends Fragment {
 		binding.layoutSettingsInstallBestSuitedApks.setOnClickListener(v -> {
 			viewModel.toggleInstallBestSuitedApks();
 		});
+		binding.layoutSettingsExportLogs.setOnClickListener(v -> viewModel.exportLogs());
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
 			Shizuku.addRequestPermissionResultListener(permissionListener);
 		}
@@ -101,6 +106,17 @@ public final class SettingsFragment extends Fragment {
 		viewModel.getInstallBestSuitedApks().observe(getViewLifecycleOwner(), enabled -> {
 			binding.switchSettingsInstallBestSuitedApks.setChecked(enabled);
 		});
+		viewModel.getLogcatExportEvent().observe(getViewLifecycleOwner(), event -> {
+			if (event == null) {
+				return;
+			}
+			if (event instanceof LogcatExportEvent.Success success) {
+				shareLogs(success.uri());
+			} else if (event == LogcatExportEvent.Failure.INSTANCE) {
+				showToast(R.string.export_logs_failed);
+			}
+			viewModel.consumeLogcatExportEvent();
+		});
 	}
 
 	private void selectShizukuBackend() {
@@ -120,6 +136,23 @@ public final class SettingsFragment extends Fragment {
 			Shizuku.requestPermission(SHIZUKU_PERMISSION_REQUEST_CODE);
 		} catch (IllegalStateException ignored) {
 			showToast(R.string.shizuku_not_running);
+		}
+	}
+
+	private void shareLogs(@NonNull Uri uri) {
+		final var subject = getString(R.string.export_logs_subject);
+		final var intent = new Intent(Intent.ACTION_SEND)
+				.setType("text/plain")
+				.putExtra(Intent.EXTRA_STREAM, uri)
+				.putExtra(Intent.EXTRA_SUBJECT, subject)
+				.putExtra(Intent.EXTRA_TEXT, getString(R.string.export_logs_text))
+				.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+		intent.setClipData(ClipData.newUri(requireContext().getContentResolver(), subject, uri));
+		final var chooser = Intent.createChooser(intent, getString(R.string.export_logs_chooser_title));
+		try {
+			startActivity(chooser);
+		} catch (ActivityNotFoundException ignored) {
+			showToast(R.string.export_logs_no_app);
 		}
 	}
 

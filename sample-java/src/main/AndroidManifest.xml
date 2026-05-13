@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (C) 2023 Ilya Fomichev
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,11 +39,12 @@
 		tools:ignore="QueryAllPackagesPermission" />
 
 	<application
+		android:name=".App"
+		android:enableOnBackInvokedCallback="true"
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
-		android:enableOnBackInvokedCallback="true"
 		android:theme="@style/Theme.Ackpine"
 		tools:targetApi="35">
 
@@ -128,6 +128,16 @@
 			android:exported="true"
 			android:multiprocess="false"
 			android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
+
+		<provider
+			android:name="androidx.core.content.FileProvider"
+			android:authorities="${applicationId}.fileprovider"
+			android:exported="false"
+			android:grantUriPermissions="true">
+			<meta-data
+				android:name="android.support.FILE_PROVIDER_PATHS"
+				android:resource="@xml/file_paths" />
+		</provider>
 
 	</application>
 </manifest>
