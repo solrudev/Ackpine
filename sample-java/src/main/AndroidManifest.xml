@@ -67,7 +67,6 @@
 				<category android:name="android.intent.category.BROWSABLE" />
 
 				<data android:scheme="content" />
-				<data android:scheme="file" />
 				<data android:host="*" />
 				<data android:mimeType="*/*" />
 
@@ -114,7 +113,6 @@
 				<category android:name="android.intent.category.BROWSABLE" />
 
 				<data android:scheme="content" />
-				<data android:scheme="file" />
 				<data android:host="*" />
 				<data android:mimeType="application/vnd.android.package-archive" />
 			</intent-filter>
