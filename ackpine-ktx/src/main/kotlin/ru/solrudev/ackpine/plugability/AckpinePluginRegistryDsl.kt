@@ -24,9 +24,9 @@ import kotlin.reflect.KClass
  */
 @Deprecated(
 	message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-			"This will become an error in the next minor version. " +
+			"This will be removed in the next minor version. " +
 			"Using methods of this interface with untyped plugins (implementing AckpinePlugin directly) will throw.",
-	level = DeprecationLevel.WARNING
+	level = DeprecationLevel.ERROR
 )
 public interface AckpinePluginRegistryDsl {
 
@@ -37,9 +37,9 @@ public interface AckpinePluginRegistryDsl {
 	 */
 	@Deprecated(
 		message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will become an error in the next minor version. " +
+				"This will be removed in the next minor version. " +
 				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-		level = DeprecationLevel.WARNING
+		level = DeprecationLevel.ERROR
 	)
 	public fun <Params : Parameters> usePlugin(
 		plugin: KClass<out AckpinePlugin>,
@@ -52,9 +52,9 @@ public interface AckpinePluginRegistryDsl {
 	 */
 	@Deprecated(
 		message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will become an error in the next minor version. " +
+				"This will be removed in the next minor version. " +
 				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-		level = DeprecationLevel.WARNING
+		level = DeprecationLevel.ERROR
 	)
 	public fun usePlugin(plugin: KClass<out AckpinePlugin>)
 }
@@ -64,11 +64,11 @@ public interface AckpinePluginRegistryDsl {
  */
 @Deprecated(
 	message = "Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-			"This will become an error in the next minor version. " +
+			"This will be removed in the next minor version. " +
 			"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-	level = DeprecationLevel.WARNING
+	level = DeprecationLevel.ERROR
 )
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public inline fun <reified Plugin : AckpinePlugin> AckpinePluginRegistryDsl.usePlugin() {
 	usePlugin(Plugin::class)
 }

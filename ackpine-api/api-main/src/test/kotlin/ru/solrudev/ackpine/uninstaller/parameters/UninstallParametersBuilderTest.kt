@@ -72,7 +72,7 @@ class UninstallParametersBuilderTest {
 		assertEquals(UninstallerType.INTENT_BASED, parameters.uninstallerType)
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginIsAppliedDuringBuild() {
 		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
@@ -89,7 +89,7 @@ class UninstallParametersBuilderTest {
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun parameterlessPluginIsAppliedDuringBuild() {
 		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
@@ -106,7 +106,7 @@ class UninstallParametersBuilderTest {
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
@@ -125,7 +125,7 @@ class UninstallParametersBuilderTest {
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginParametersArePreserved() {
 		val parameters = UninstallParameters.Builder("com.example")
@@ -153,7 +153,7 @@ class UninstallParametersBuilderTest {
 	}
 
 	@Test
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	fun legacyPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(LegacyUninstallPlugin::class.java)
@@ -162,7 +162,7 @@ class UninstallParametersBuilderTest {
 	}
 
 	@Test
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	fun legacyChainedPluginIsAppliedDuringBuild() {
 		val parameters = UninstallParameters.Builder("com.example")
 			.registerPlugin(LegacyChainedUninstallPlugin::class.java)
@@ -190,7 +190,7 @@ class UninstallParametersBuilderTest {
 	}
 
 	@Test
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	fun deprecatedUsePluginWithInstallPluginThrows() {
 		assertFailsWith<IllegalStateException> {
 			UninstallParameters.Builder("com.example")

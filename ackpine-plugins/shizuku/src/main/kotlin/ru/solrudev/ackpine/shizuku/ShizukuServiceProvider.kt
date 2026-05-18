@@ -38,7 +38,7 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 				database.shizukuUninstallParamsDao()
 			)
 		},
-		@Suppress("DEPRECATION")
+		@Suppress("DEPRECATION_ERROR")
 		PluginEntry(ShizukuUninstallPlugin.PLUGIN_ID) { context ->
 			ShizukuUninstallPluginParametersStore(
 				ShizukuDatabase

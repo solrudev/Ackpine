@@ -21,11 +21,11 @@ package ru.solrudev.ackpine.plugability
  */
 @Deprecated(
 	message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
-			"directly. This will become an error in the next minor version. " +
+			"directly. This will be removed in the next minor version. " +
 			"Using methods of this interface with untyped plugins (implementing AckpinePlugin directly) will throw.",
-	level = DeprecationLevel.WARNING
+	level = DeprecationLevel.ERROR
 )
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 
 	/**
@@ -35,9 +35,9 @@ public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 	 */
 	@Deprecated(
 		message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
-				"directly. This will become an error in the next minor version. " +
+				"directly. This will be removed in the next minor version. " +
 				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-		level = DeprecationLevel.WARNING
+		level = DeprecationLevel.ERROR
 	)
 	public fun <Params : AckpinePlugin.Parameters> usePlugin(
 		plugin: Class<out AckpinePlugin>,
@@ -50,9 +50,9 @@ public interface AckpinePluginRegistry<Self : AckpinePluginRegistry<Self>> {
 	 */
 	@Deprecated(
 		message = "Use typed registerPlugin methods on InstallParameters.Builder or UninstallParameters.Builder " +
-				"directly. This will become an error in the next minor version. " +
+				"directly. This will be removed in the next minor version. " +
 				"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-		level = DeprecationLevel.WARNING
+		level = DeprecationLevel.ERROR
 	)
 	public fun usePlugin(plugin: Class<out AckpinePlugin>): Self
 }

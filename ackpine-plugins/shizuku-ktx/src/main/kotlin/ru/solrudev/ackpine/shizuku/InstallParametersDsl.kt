@@ -22,13 +22,14 @@ import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
  * Applies [ShizukuPlugin] to the session.
  */
 @Deprecated(
-	"Renamed to shizuku(). This will become an error in the next minor version.",
+	"Renamed to shizuku(). This will be removed in the next minor version.",
 	replaceWith = ReplaceWith(
 		"shizuku(configure)",
 		imports = ["ru.solrudev.ackpine.shizuku.shizuku"]
-	)
+	),
+	level = DeprecationLevel.ERROR
 )
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public inline fun InstallParametersDsl.useShizuku(
 	configure: ShizukuPluginParametersDsl.() -> Unit = {}
 ) {

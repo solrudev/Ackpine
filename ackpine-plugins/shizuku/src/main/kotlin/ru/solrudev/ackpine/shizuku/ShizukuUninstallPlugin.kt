@@ -40,10 +40,11 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType.INTENT_BASED
  */
 @Deprecated(
 	message = "Use ShizukuPlugin for both install and uninstall sessions. " +
-			"This will become an error in the next minor version.",
-	replaceWith = ReplaceWith("ShizukuPlugin", "ru.solrudev.ackpine.shizuku.ShizukuPlugin")
+			"This will be removed in the next minor version.",
+	replaceWith = ReplaceWith("ShizukuPlugin", "ru.solrudev.ackpine.shizuku.ShizukuPlugin"),
+	level = DeprecationLevel.ERROR
 )
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public class ShizukuUninstallPlugin private constructor() :
 	AckpinePlugin,
 	AckpineUninstallPlugin<ShizukuUninstallPlugin.Parameters>,
@@ -78,11 +79,12 @@ public class ShizukuUninstallPlugin private constructor() :
 	 * Parameters for [ShizukuUninstallPlugin]. Take effect only on Android 8.1+.
 	 */
 	@Deprecated(
-		message = "Use ShizukuPlugin.UninstallParameters instead. This will become an error in the next minor version.",
+		message = "Use ShizukuPlugin.UninstallParameters instead. This will be removed in the next minor version.",
 		replaceWith = ReplaceWith(
 			"ShizukuPlugin.UninstallParameters",
 			"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
-		)
+		),
+		level = DeprecationLevel.ERROR
 	)
 	public class Parameters private constructor(
 		keepData: Boolean,
@@ -94,11 +96,12 @@ public class ShizukuUninstallPlugin private constructor() :
 		 */
 		@Deprecated(
 			message = "Use ShizukuPlugin.UninstallParameters.Builder instead. " +
-					"This will become an error in the next minor version.",
+					"This will be removed in the next minor version.",
 			replaceWith = ReplaceWith(
 				"ShizukuPlugin.UninstallParameters.Builder",
 				"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
-			)
+			),
+			level = DeprecationLevel.ERROR
 		)
 		public class Builder : ShizukuPlugin.UninstallParameters.Builder() {
 
@@ -120,11 +123,12 @@ public class ShizukuUninstallPlugin private constructor() :
 			 */
 			@Deprecated(
 				message = "Use ShizukuPlugin.UninstallParameters.DEFAULT instead. " +
-						"This will become an error in the next minor version.",
+						"This will be removed in the next minor version.",
 				replaceWith = ReplaceWith(
 					"ShizukuPlugin.UninstallParameters.DEFAULT",
 					"ru.solrudev.ackpine.shizuku.ShizukuPlugin"
-				)
+				),
+				level = DeprecationLevel.ERROR
 			)
 			@JvmField
 			public val DEFAULT: Parameters = Parameters(

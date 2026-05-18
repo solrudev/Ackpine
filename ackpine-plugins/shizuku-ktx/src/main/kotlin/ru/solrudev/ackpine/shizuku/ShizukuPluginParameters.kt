@@ -20,13 +20,14 @@ package ru.solrudev.ackpine.shizuku
  * Constructs a new instance of [ShizukuPlugin.InstallParameters].
  */
 @Deprecated(
-	message = "Renamed to ShizukuInstallParameters. This will become an error in the next minor version.",
+	message = "Renamed to ShizukuInstallParameters. This will be removed in the next minor version.",
 	replaceWith = ReplaceWith(
 		"ShizukuInstallParameters(configure)",
 		imports = ["ru.solrudev.ackpine.shizuku.ShizukuInstallParameters"]
-	)
+	),
+	level = DeprecationLevel.ERROR
 )
-@Suppress("FunctionName", "DEPRECATION")
+@Suppress("FunctionName", "DEPRECATION_ERROR")
 public inline fun ShizukuPluginParameters(
 	configure: ShizukuPluginParametersDsl.() -> Unit = {}
 ): ShizukuPlugin.InstallParameters {

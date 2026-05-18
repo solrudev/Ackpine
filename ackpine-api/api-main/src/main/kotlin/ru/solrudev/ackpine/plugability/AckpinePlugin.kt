@@ -36,8 +36,8 @@ public interface AckpinePlugin {
 	 * Applies some settings to install parameters to accommodate the plugin's functionality.
 	 */
 	@Deprecated(
-		message = "Implement AckpineInstallPlugin instead. This will become an error in the next minor version.",
-		level = DeprecationLevel.WARNING
+		message = "Implement AckpineInstallPlugin instead. This will be removed in the next minor version.",
+		level = DeprecationLevel.ERROR
 	)
 	public fun apply(builder: InstallParameters.Builder) { // no-op by default
 	}
@@ -46,8 +46,8 @@ public interface AckpinePlugin {
 	 * Applies some settings to uninstall parameters to accommodate the plugin's functionality.
 	 */
 	@Deprecated(
-		message = "Implement AckpineUninstallPlugin instead. This will become an error in the next minor version.",
-		level = DeprecationLevel.WARNING
+		message = "Implement AckpineUninstallPlugin instead. This will be removed in the next minor version.",
+		level = DeprecationLevel.ERROR
 	)
 	public fun apply(builder: UninstallParameters.Builder) { // no-op by default
 	}
