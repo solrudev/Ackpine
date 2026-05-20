@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -99,7 +99,7 @@ class TestUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None
 	override val id = "test-uninstall-plugin"
 }
 
-@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
 class LegacyInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "legacy-install-plugin"
@@ -111,7 +111,7 @@ class LegacyInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> 
 	}
 }
 
-@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
 class LegacyUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "legacy-uninstall-plugin"
@@ -121,7 +121,7 @@ class LegacyUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.No
 	}
 }
 
-@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
 class LegacyChainedInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "legacy-chained-install-plugin"
@@ -131,7 +131,7 @@ class LegacyChainedInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters
 	}
 }
 
-@Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
+@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
 class LegacyChainedUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 
 	override val id = "legacy-chained-uninstall-plugin"

@@ -22,16 +22,17 @@ import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
  * DSL allowing to configure [parameters for ShizukuUninstallPlugin][ShizukuUninstallPlugin.Parameters].
  */
 @Deprecated(
-	message = "Use ShizukuUninstallParametersDsl instead. This will become an error in the next minor version.",
+	message = "Use ShizukuUninstallParametersDsl instead. This will be removed in the next minor version.",
 	replaceWith = ReplaceWith(
 		"ShizukuUninstallParametersDsl",
 		"ru.solrudev.ackpine.shizuku.ShizukuUninstallParametersDsl"
-	)
+	),
+	level = DeprecationLevel.ERROR
 )
 @SessionParametersDsl
 public interface ShizukuUninstallPluginParametersDsl : ShizukuUninstallParametersDsl
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @PublishedApi
 internal class ShizukuUninstallPluginParametersDslBuilder :
 	ShizukuUninstallParametersDslBuilder(),

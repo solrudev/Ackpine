@@ -30,9 +30,9 @@ public interface AckpineInstallPlugin<Params : AckpinePlugin.Parameters> : Ackpi
 	}
 
 	@Deprecated(
-		"Implement AckpineInstallPlugin instead. This will become an error in the next minor version. " +
+		"Implement AckpineInstallPlugin instead. This will be removed in the next minor version. " +
 				"If overridden, this overload will be prioritized over AckpineInstallPlugin.apply(scope).",
-		level = DeprecationLevel.WARNING
+		level = DeprecationLevel.ERROR
 	)
 	override fun apply(builder: InstallParameters.Builder) {
 		apply(builder.pluginScope)

@@ -158,10 +158,11 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	 */
 	@Deprecated(
 		message = "Renamed to ShizukuPlugin.InstallParameters. " +
-				"This will become an error in the next minor version.",
-		replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters")
+				"This will be removed in the next minor version.",
+		replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters"),
+		level = DeprecationLevel.ERROR
 	)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	public class Parameters private constructor(
 		bypassLowTargetSdkBlock: Boolean,
 		allowTest: Boolean,
@@ -185,8 +186,9 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		 */
 		@Deprecated(
 			message = "Use ShizukuPlugin.InstallParameters.Builder instead. " +
-					"This will become an error in the next minor version.",
-			replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.Builder")
+					"This will be removed in the next minor version.",
+			replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.Builder"),
+			level = DeprecationLevel.ERROR
 		)
 		public class Builder : InstallParameters.Builder() {
 			override fun build(): Parameters = Parameters(
@@ -209,8 +211,9 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 			 */
 			@Deprecated(
 				message = "Use ShizukuPlugin.InstallParameters.DEFAULT instead. " +
-						"This will become an error in the next minor version.",
-				replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.DEFAULT")
+						"This will be removed in the next minor version.",
+				replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.DEFAULT"),
+				level = DeprecationLevel.ERROR
 			)
 			@JvmField
 			public val DEFAULT: Parameters = Builder().build()

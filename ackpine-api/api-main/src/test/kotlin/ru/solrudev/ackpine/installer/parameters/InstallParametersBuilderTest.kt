@@ -159,7 +159,7 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -176,7 +176,7 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun parameterlessPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -193,7 +193,7 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -216,7 +216,7 @@ class InstallParametersBuilderTest {
 		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginParametersArePreserved() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -244,7 +244,7 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun legacyPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -256,7 +256,7 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun legacyChainedPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -285,7 +285,7 @@ class InstallParametersBuilderTest {
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION")
+	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun deprecatedUsePluginWithUninstallPluginThrows() {
 		assertFailsWith<IllegalStateException> {

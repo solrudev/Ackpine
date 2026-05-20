@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
 
 package ru.solrudev.ackpine.installer.parameters
 
@@ -242,8 +242,8 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 	@Deprecated(
 		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will become an error in the next minor version.",
-		level = DeprecationLevel.WARNING
+				"This will be removed in the next minor version.",
+		level = DeprecationLevel.ERROR
 	)
 	override fun <Params : Parameters> usePlugin(
 		plugin: KClass<out AckpinePlugin>,
@@ -254,8 +254,8 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 	@Deprecated(
 		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will become an error in the next minor version.",
-		level = DeprecationLevel.WARNING
+				"This will be removed in the next minor version.",
+		level = DeprecationLevel.ERROR
 	)
 	override fun usePlugin(plugin: KClass<out AckpinePlugin>) {
 		builder.usePlugin(plugin.java)

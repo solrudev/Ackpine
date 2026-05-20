@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION")
+@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
 
 package ru.solrudev.ackpine.installer.parameters
 
@@ -467,9 +467,9 @@ public class InstallParameters private constructor(
 		}
 
 		@Deprecated(
-			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
 					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.WARNING
+			level = DeprecationLevel.ERROR
 		)
 		@Suppress("UNCHECKED_CAST")
 		override fun <Params : AckpinePlugin.Parameters> usePlugin(
@@ -483,9 +483,9 @@ public class InstallParameters private constructor(
 		}
 
 		@Deprecated(
-			"Use typed registerPlugin methods. This will become an error in the next minor version. " +
+			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
 					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.WARNING
+			level = DeprecationLevel.ERROR
 		)
 		@Suppress("UNCHECKED_CAST")
 		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {

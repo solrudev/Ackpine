@@ -24,13 +24,14 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallParametersDsl
  * The plugin's parameters take effect only on Android 8.1+.
  */
 @Deprecated(
-	"Renamed to shizuku(). This will become an error in the next minor version.",
+	"Renamed to shizuku(). This will be removed in the next minor version.",
 	replaceWith = ReplaceWith(
 		"shizuku(configure)",
 		imports = ["ru.solrudev.ackpine.shizuku.shizuku"]
-	)
+	),
+	level = DeprecationLevel.ERROR
 )
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 public inline fun UninstallParametersDsl.useShizuku(
 	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
 ) {

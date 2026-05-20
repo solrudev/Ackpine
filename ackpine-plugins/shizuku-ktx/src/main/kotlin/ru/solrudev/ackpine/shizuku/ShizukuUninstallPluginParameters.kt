@@ -20,13 +20,14 @@ package ru.solrudev.ackpine.shizuku
  * Constructs a new instance of [ShizukuPlugin.UninstallParameters].
  */
 @Deprecated(
-	message = "Use ShizukuUninstallParameters instead. This will become an error in the next minor version.",
+	message = "Use ShizukuUninstallParameters instead. This will be removed in the next minor version.",
 	replaceWith = ReplaceWith(
 		"ShizukuUninstallParameters(configure)",
 		"ru.solrudev.ackpine.shizuku.ShizukuUninstallParameters"
-	)
+	),
+	level = DeprecationLevel.ERROR
 )
-@Suppress("FunctionName", "DEPRECATION")
+@Suppress("FunctionName", "DEPRECATION_ERROR")
 public inline fun ShizukuUninstallPluginParameters(
 	configure: ShizukuUninstallPluginParametersDsl.() -> Unit = {}
 ): ShizukuPlugin.UninstallParameters {

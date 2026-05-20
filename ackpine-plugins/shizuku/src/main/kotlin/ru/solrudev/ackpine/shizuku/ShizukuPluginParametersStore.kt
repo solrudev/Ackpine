@@ -85,7 +85,7 @@ internal class ShizukuPluginParametersStore(
 	}
 }
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION_ERROR")
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuUninstallPluginParametersStore(
 	private val shizukuParamsDao: ShizukuUninstallParamsDao
