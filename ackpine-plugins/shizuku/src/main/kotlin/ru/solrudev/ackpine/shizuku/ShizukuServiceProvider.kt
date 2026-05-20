@@ -21,6 +21,7 @@ import rikka.shizuku.Shizuku
 import ru.solrudev.ackpine.AckpineThreadPool
 import ru.solrudev.ackpine.impl.plugability.AbstractAckpineServiceProvider
 import ru.solrudev.ackpine.impl.plugability.AckpineService
+import ru.solrudev.ackpine.impl.plugability.AckpineServiceLazy
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.shizuku.database.ShizukuDatabase
 import kotlin.reflect.KClass
@@ -48,10 +49,18 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 		}
 	)
 ) {
+
 	override fun <T : AckpineService> get(serviceClass: KClass<T>): T? {
 		if (Shizuku.isPreV11()) {
 			return null
 		}
 		return super.get(serviceClass)
+	}
+
+	override fun <T : AckpineService> getLazy(serviceClass: KClass<T>): AckpineServiceLazy<T>? {
+		if (Shizuku.isPreV11()) {
+			return null
+		}
+		return super.getLazy(serviceClass)
 	}
 }
