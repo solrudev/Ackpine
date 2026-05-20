@@ -6,6 +6,25 @@ hide:
 Change Log
 ==========
 
+Version 0.23.0 (2026-05-20)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix `NullPointerException` when using Shizuku on devices with Shizuku pre-v11 installed.
+- Raise deprecations introduced in 0.22.0 to error.
+
+### Public API changes
+
+#### Deprecations
+
+- Deprecated with error `AckpinePlugin.apply(InstallParameters.Builder)` and `AckpinePlugin.apply(UninstallParameters.Builder)`.
+- Deprecated with error `AckpinePluginRegistry` interface and its `usePlugin()` methods. Use typed `registerPlugin()` methods on `InstallParameters.Builder` or `UninstallParameters.Builder` directly.
+- Deprecated with error `AckpinePluginRegistryDsl` interface and its `usePlugin()` methods in `ackpine-ktx`. Use typed `plugin()` methods on `InstallParametersDsl` or `UninstallParametersDsl` directly.
+- Deprecated with error `ShizukuUninstallPlugin`. Use `ShizukuPlugin` for both install and uninstall sessions.
+- Deprecated with error `ShizukuPluginParametersDsl`, `ShizukuPluginParameters()`, `ShizukuUninstallPluginParametersDsl` and `ShizukuUninstallPluginParameters()` in `shizuku-ktx`. Use `ShizukuInstallParametersDsl`/`ShizukuInstallParameters()` and `ShizukuUninstallParametersDsl`/`ShizukuUninstallParameters()` respectively.
+- Deprecated with error `useShizuku()` DSL functions in `shizuku-ktx`. Use `shizuku()` instead.
+
 Version 0.22.9 (2026-05-13)
 ---------------------------
 
