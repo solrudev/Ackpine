@@ -33,6 +33,7 @@ internal inline fun InputStream.copyTo(
 	signal: CancellationSignal,
 	onProgress: (Int) -> Unit = {}
 ) {
+	val isLengthKnown = size > 0
 	val progressRatio = (size.toDouble() / (BUFFER_LENGTH * PROGRESS_MAX)).roundToInt().coerceAtLeast(1)
 	val buffer = ByteArray(BUFFER_LENGTH)
 	var currentProgress = 0
@@ -48,11 +49,13 @@ internal inline fun InputStream.copyTo(
 		out.write(buffer, 0, bytesRead)
 		if (accumulatedBytesRead == BUFFER_LENGTH) {
 			accumulatedBytesRead = 0
-			val progress = ++currentProgress / progressRatio
-			val shouldEmitProgress = currentProgress - (progress * progressRatio) == 0
-			if (shouldEmitProgress && progress <= PROGRESS_MAX) {
-				progressEmitCounter++
-				onProgress(1)
+			if (isLengthKnown) {
+				val progress = ++currentProgress / progressRatio
+				val shouldEmitProgress = currentProgress - (progress * progressRatio) == 0
+				if (shouldEmitProgress && progress <= PROGRESS_MAX) {
+					progressEmitCounter++
+					onProgress(1)
+				}
 			}
 		}
 	}
