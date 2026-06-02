@@ -203,16 +203,16 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 		val activityManager = getSystemService<ActivityManager>() ?: return false
 		val taskId = taskId
 		val appTask = activityManager.appTasks.firstOrNull { it.taskId == taskId } ?: return false
-		return this::class.java.name == appTask.taskInfo.topActivity?.className
+		return this::class.java.name == appTask.taskInfo?.topActivity?.className
 	}
 
 	@Suppress("DEPRECATION")
 	private val ActivityManager.AppTask.taskId
 		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 		get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			taskInfo.taskId
+			taskInfo?.taskId
 		} else {
-			taskInfo.persistentId
+			taskInfo?.persistentId
 		}
 
 	private fun notifySessionCommitted() {
