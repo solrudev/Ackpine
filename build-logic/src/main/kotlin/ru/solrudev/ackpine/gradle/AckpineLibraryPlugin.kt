@@ -35,8 +35,8 @@ public class AckpineLibraryPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(AckpineLibraryBasePlugin::class)
-		AbiValidationSupport.enable(this)
 		the<LibraryExtension>().enableKotlin = true
+		AbiValidationSupport.enable(this)
 		configureKotlin()
 	}
 

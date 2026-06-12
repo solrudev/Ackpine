@@ -21,7 +21,6 @@ import kotlinx.validation.BinaryCompatibilityValidatorPlugin
 import kotlinx.validation.KotlinApiBuildTask
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.getByType
 import org.gradle.kotlin.dsl.named
@@ -31,7 +30,6 @@ import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_CHECK_CONFIGURATION
 import ru.solrudev.ackpine.gradle.AckpineLibraryBasePlugin.Companion.ABI_UPDATE_CONFIGURATION
-import ru.solrudev.ackpine.gradle.helpers.abiValidation
 
 internal object AbiValidationSupport {
 
@@ -84,15 +82,14 @@ internal object AbiValidationSupport {
 			.getByType<KotlinAndroidExtension>()
 			.abiValidation
 			.apply {
-				enabled = true
 				filters.exclude.annotatedWith.add("androidx.annotation.RestrictTo")
 			}
 		configurations.named(ABI_UPDATE_CONFIGURATION) {
-			outgoing.artifact(abiValidation.legacyDump.legacyUpdateTaskProvider)
+			outgoing.artifact(abiValidation.updateTaskProvider)
 		}
 		configurations.named(ABI_CHECK_CONFIGURATION) {
 			outgoing.artifact(layout.buildDirectory.dir("abiCheck")) {
-				builtBy(abiValidation.legacyDump.legacyCheckTaskProvider)
+				builtBy(abiValidation.checkTaskProvider)
 			}
 		}
 	}
