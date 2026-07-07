@@ -36,7 +36,7 @@
 		tools:node="remove" />
 	<uses-permission
 		android:name="android.permission.QUERY_ALL_PACKAGES"
-		tools:ignore="QueryAllPackagesPermission" />
+		tools:ignore="PackageVisibilityPolicy" />
 
 	<application
 		android:name=".App"
@@ -46,7 +46,7 @@
 		android:roundIcon="@mipmap/ic_launcher_round"
 		android:supportsRtl="true"
 		android:theme="@style/Theme.Ackpine"
-		tools:targetApi="35">
+		tools:targetApi="36">
 
 		<activity
 			android:name=".MainActivity"

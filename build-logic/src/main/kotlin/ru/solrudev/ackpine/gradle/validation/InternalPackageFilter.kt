@@ -22,13 +22,13 @@ import org.gradle.kotlin.dsl.findByType
 import org.jetbrains.kotlin.gradle.dsl.KotlinBaseExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.AbiValidationExtension
 import org.jetbrains.kotlin.gradle.dsl.abi.ExperimentalAbiValidation
-import ru.solrudev.ackpine.gradle.helpers.abiValidation
 
 internal sealed interface InternalPackageFilter {
 
 	fun addPackages(packageNames: Iterable<String>)
 
 	companion object {
+		@OptIn(ExperimentalAbiValidation::class)
 		internal fun create(project: Project) = when (AbiValidation.resolve(project)) {
 			AbiValidation.BCV -> Bcv(lazy { project.extensions.findByType<ApiValidationExtension>() })
 			AbiValidation.KGP -> Kgp(lazy { project.extensions.findByType<KotlinBaseExtension>()?.abiValidation })
@@ -43,8 +43,8 @@ internal sealed interface InternalPackageFilter {
 		}
 	}
 
+	@OptIn(ExperimentalAbiValidation::class)
 	private class Kgp(private val abiValidationExtension: Lazy<AbiValidationExtension?>) : InternalPackageFilter {
-		@OptIn(ExperimentalAbiValidation::class)
 		override fun addPackages(packageNames: Iterable<String>) {
 			abiValidationExtension.value?.run {
 				filters.exclude.byNames.addAll(packageNames.map { "$it.**" })

@@ -28,6 +28,7 @@ import android.view.WindowManager
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
 import android.view.WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
 import android.widget.ProgressBar
+import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.content.getSystemService
 import androidx.core.view.WindowCompat
@@ -200,9 +201,19 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 			return false
 		}
 		val activityManager = getSystemService<ActivityManager>() ?: return false
-		val appTask = activityManager.appTasks.firstOrNull() ?: return false
-		return this::class.java.name == appTask.taskInfo.topActivity?.className
+		val taskId = taskId
+		val appTask = activityManager.appTasks.firstOrNull { it.taskId == taskId } ?: return false
+		return this::class.java.name == appTask.taskInfo?.topActivity?.className
 	}
+
+	@Suppress("DEPRECATION")
+	private val ActivityManager.AppTask.taskId
+		@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+		get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			taskInfo?.taskId
+		} else {
+			taskInfo?.persistentId
+		}
 
 	private fun notifySessionCommitted() {
 		if (!shouldNotifyWhenCommitted()) {

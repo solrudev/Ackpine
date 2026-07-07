@@ -19,7 +19,7 @@ package ru.solrudev.ackpine.gradle
 import org.gradle.api.JavaVersion
 
 public object Constants {
-	public const val TARGET_SDK: Int = 35
+	public const val TARGET_SDK: Int = 36
 	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine"
 	public const val JDK_VERSION: Int = 21
 }

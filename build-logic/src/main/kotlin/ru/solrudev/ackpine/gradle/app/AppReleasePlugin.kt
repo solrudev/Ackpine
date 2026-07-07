@@ -29,9 +29,7 @@ import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.problems.ProblemGroup
 import org.gradle.api.problems.ProblemId
 import org.gradle.api.problems.Problems
-import org.gradle.api.problems.Severity
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.Delete
 import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.assign
@@ -39,7 +37,6 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.findByType
 import org.gradle.kotlin.dsl.get
-import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.the
 import ru.solrudev.ackpine.gradle.helpers.addOutgoingArtifact
@@ -222,7 +219,6 @@ public class AppReleasePlugin @Inject public constructor(private val problems: P
 			""".trimMargin()
 			)
 			solution("Add 'com.android.tools.build:bundletool' to 'libs' version catalog.")
-			severity(Severity.WARNING)
 		}
 	}
 

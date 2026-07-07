@@ -126,7 +126,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * Release any held resources after session's completion or cancellation.
 	 */
 	@WorkerThread
-	protected open fun doCleanup() { /* optional */ }
+	protected open fun doCleanup() { /* optional */
+	}
 
 	/**
 	 * Notifies that preparations are done and sets session's state to [Awaiting].
@@ -139,7 +140,8 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 	 * This callback method is invoked when the session's been committed. Processing in this method should be
 	 * lightweight.
 	 */
-	protected open fun onCommitted() { /* optional */ }
+	protected open fun onCommitted() { /* optional */
+	}
 
 	/**
 	 * This callback method is invoked when the session's been [completed][Session.isCompleted]. Processing in
@@ -157,7 +159,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 				return@execute
 			}
 			try {
-				sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
+				dbWriteSemaphore.withPermit {
+					sessionDao.updateLastLaunchTimestamp(id.toString(), System.currentTimeMillis())
+				}
 				prepare()
 			} catch (_: OperationCanceledException) {
 				logger.debug("Launch preparation cancelled for session %s", id)
@@ -232,7 +236,9 @@ internal abstract class AbstractSession<F : Failure> protected constructor(
 			notifyStateListeners(Committed)
 		}
 		serialExecutor.execute {
-			sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
+			dbWriteSemaphore.withPermit {
+				sessionDao.updateLastCommitTimestamp(id.toString(), System.currentTimeMillis())
+			}
 		}
 	}
 
