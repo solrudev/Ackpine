@@ -28,6 +28,7 @@
          </trusted-key>
          <trusted-key id="0F06FF86BEEAF4E71866EE5232EE5355A6BC6E42">
             <trusting group="androidx.activity"/>
+            <trusting group="androidx.annotation"/>
             <trusting group="androidx.appcompat"/>
             <trusting group="androidx.concurrent"/>
             <trusting group="androidx.constraintlayout"/>
@@ -132,8 +133,6 @@
          <trusted-key id="7F36E793AE3252E5D9E9B98FEE9E7DC9D92FC896" group="com.google.errorprone"/>
          <trusted-key id="8461EFA0E74ABAE010DE66994EB27DB2A3B88B8B">
             <trusting group="androidx.annotation"/>
-            <trusting group="androidx.annotation" name="annotation"/>
-            <trusting group="androidx.annotation" name="annotation-experimental"/>
             <trusting group="androidx.core"/>
             <trusting group="androidx.fragment"/>
             <trusting group="androidx.lifecycle"/>
