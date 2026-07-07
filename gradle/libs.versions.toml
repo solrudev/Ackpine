@@ -13,7 +13,7 @@ libsu = "6.0.0"
 shizuku = "13.1.5"
 
 [libraries]
-plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.36.0"
+plugin-gradleMavenPublish = "com.vanniktech:gradle-maven-publish-plugin:0.37.0"
 plugin-agp = { module = "com.android.tools.build:gradle", version.ref = "android-plugin" }
 plugin-android-settings = { module = "com.android.tools.build:gradle-settings", version.ref = "android-plugin" }
 plugin-bcv = { module = "org.jetbrains.kotlinx:binary-compatibility-validator", version = "0.18.1" }

@@ -93,10 +93,7 @@
          <trusted-key id="41CD49B4EF5876F9E9F691DABAC30622339994C4" group="org.jspecify" name="jspecify"/>
          <trusted-key id="44FBDBBC1A00FE414F1C1873586654072EAD6677" group="org.sonatype.oss" name="oss-parent"/>
          <trusted-key id="47504B76CF89C15C0512D9AFE16AB52D79FD224F" group="com.google.api.grpc" name="proto-google-common-protos"/>
-         <trusted-key id="475F3B8E59E6E63AA78067482C7B12F2A511E325">
-            <trusting group="org.slf4j" name="slf4j-api"/>
-            <trusting group="org.slf4j" name="slf4j-parent"/>
-         </trusted-key>
+         <trusted-key id="475F3B8E59E6E63AA78067482C7B12F2A511E325" group="org.slf4j"/>
          <trusted-key id="4BF79B8259007B566D2FCE82296CD27F60EED12C" group="com.google.crypto.tink" name="tink"/>
          <trusted-key id="4DB1A49729B053CAF015CEE9A6ADFC93EF34893E">
             <trusting group="org.hamcrest" name="hamcrest-core"/>
@@ -109,6 +106,7 @@
          <trusted-key id="5767F9CDE920750621875079A40E24B5B408DBD5" group="org.robolectric"/>
          <trusted-key id="5897253BEA3046AEEA95A067E93671C7272B7B3F" group="org.jdom" name="jdom2"/>
          <trusted-key id="600EA202B1EC682F4A788E5AAC7A514BC9F9BB70" group="io.opencensus" name="opencensus-api"/>
+         <trusted-key id="60200AC4AE761F1614D6C46766D68DAA073BE985" group="org.slf4j"/>
          <trusted-key id="6214760097DC5CFAD0175AC2C9FBAA83A8753994">
             <trusting group="com.fasterxml" name="oss-parent"/>
             <trusting group="org.codehaus.woodstox" name="stax2-api"/>
