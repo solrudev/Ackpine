@@ -17,6 +17,7 @@ Version 0.23.1 (2026-07-07)
 
 ### Bug fixes and improvements
 
+- Raise compile SDK level to 36.
 - Reliably match the app task hosting the session confirmation activity when multiple app tasks are present.
 - Don't report installation progress for APKs read from a source with unknown length to avoid emitting inaccurate progress.
 
