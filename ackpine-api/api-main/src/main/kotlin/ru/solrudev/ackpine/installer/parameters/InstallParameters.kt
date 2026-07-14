@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
-
 package ru.solrudev.ackpine.installer.parameters
 
 import android.annotation.SuppressLint
@@ -30,7 +28,6 @@ import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
-import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
 import ru.solrudev.ackpine.plugability.InstallPluginScope
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationAware
@@ -199,7 +196,7 @@ public class InstallParameters private constructor(
 	/**
 	 * Builder for [InstallParameters].
 	 */
-	public class Builder : ConfirmationAware, AckpinePluginRegistry<Builder> {
+	public class Builder : ConfirmationAware {
 
 		@SuppressLint("NewApi")
 		public constructor(baseApk: Uri) {
@@ -466,35 +463,6 @@ public class InstallParameters private constructor(
 			pluginScope.registerPlugin(plugin)
 		}
 
-		@Deprecated(
-			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
-					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.ERROR
-		)
-		@Suppress("UNCHECKED_CAST")
-		override fun <Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<out AckpinePlugin>,
-			parameters: Params
-		): Builder = apply {
-			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
-				error("Not an install plugin: ${plugin.name}")
-			}
-			pluginScope.registerPlugin(plugin as Class<AckpineInstallPlugin<Params>>, parameters)
-		}
-
-		@Deprecated(
-			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
-					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.ERROR
-		)
-		@Suppress("UNCHECKED_CAST")
-		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
-			if (!AckpineInstallPlugin::class.java.isAssignableFrom(plugin)) {
-				error("Not an install plugin: ${plugin.name}")
-			}
-			pluginScope.registerPlugin(plugin as Class<AckpineInstallPlugin<AckpinePlugin.Parameters.None>>)
-		}
-
 		/**
 		 * Constructs a new instance of [InstallParameters].
 		 */
@@ -527,7 +495,7 @@ public class InstallParameters private constructor(
 					.keys
 					.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {
-					AckpinePluginCache.get(pluginClass).apply(this)
+					AckpinePluginCache.get(pluginClass).apply(pluginScope)
 					pluginScope.normalizeInstallerType()
 					appliedPlugins += pluginClass
 				}

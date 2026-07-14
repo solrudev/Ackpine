@@ -16,8 +16,6 @@
 
 package ru.solrudev.ackpine.plugability
 
-import ru.solrudev.ackpine.installer.parameters.InstallParameters
-
 /**
  * A plugin for Ackpine which extends install session functionality.
  */
@@ -27,14 +25,5 @@ public interface AckpineInstallPlugin<Params : AckpinePlugin.Parameters> : Ackpi
 	 * Applies some settings to install session scope to accommodate the plugin's functionality.
 	 */
 	public fun apply(scope: InstallPluginScope) { // no-op by default
-	}
-
-	@Deprecated(
-		"Implement AckpineInstallPlugin instead. This will be removed in the next minor version. " +
-				"If overridden, this overload will be prioritized over AckpineInstallPlugin.apply(scope).",
-		level = DeprecationLevel.ERROR
-	)
-	override fun apply(builder: InstallParameters.Builder) {
-		apply(builder.pluginScope)
 	}
 }

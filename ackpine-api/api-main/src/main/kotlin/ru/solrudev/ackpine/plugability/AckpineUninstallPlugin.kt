@@ -16,8 +16,6 @@
 
 package ru.solrudev.ackpine.plugability
 
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
-
 /**
  * A plugin for Ackpine which extends uninstall session functionality.
  */
@@ -27,14 +25,5 @@ public interface AckpineUninstallPlugin<Params : AckpinePlugin.Parameters> : Ack
 	 * Applies some settings to uninstall session scope to accommodate the plugin's functionality.
 	 */
 	public fun apply(scope: UninstallPluginScope) { // no-op by default
-	}
-
-	@Deprecated(
-		"Implement AckpineUninstallPlugin instead. This will be removed in the next minor version. " +
-				"If overridden, this overload will be prioritized over AckpineUninstallPlugin.apply(scope).",
-		level = DeprecationLevel.ERROR
-	)
-	override fun apply(builder: UninstallParameters.Builder) {
-		apply(builder.pluginScope)
 	}
 }

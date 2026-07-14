@@ -38,14 +38,6 @@ internal class ShizukuServiceProvider : AbstractAckpineServiceProvider(
 				database.shizukuParamsDao(),
 				database.shizukuUninstallParamsDao()
 			)
-		},
-		@Suppress("DEPRECATION_ERROR")
-		PluginEntry(ShizukuUninstallPlugin.PLUGIN_ID) { context ->
-			ShizukuUninstallPluginParametersStore(
-				ShizukuDatabase
-					.getInstance(context, AckpineThreadPool)
-					.shizukuUninstallParamsDao()
-			)
 		}
 	)
 ) {

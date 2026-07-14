@@ -14,12 +14,9 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
-
 package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.plugability.AckpinePlugin
-import ru.solrudev.ackpine.plugability.AckpinePluginRegistryDsl
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
@@ -31,7 +28,7 @@ import kotlin.reflect.KClass
  * DSL allowing to configure [parameters for creating uninstall session][UninstallParameters].
  */
 @SessionParametersDsl
-public interface UninstallParametersDsl : ConfirmationDsl, AckpinePluginRegistryDsl {
+public interface UninstallParametersDsl : ConfirmationDsl {
 
 	/**
 	 * Name of the package to be uninstalled.
@@ -103,25 +100,6 @@ internal class UninstallParametersDslBuilder(packageName: String) : UninstallPar
 
 	override fun plugin(plugin: KClass<out AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>) {
 		builder.registerPlugin(plugin.java)
-	}
-
-	@Deprecated(
-		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	override fun <Params : AckpinePlugin.Parameters> usePlugin(
-		plugin: KClass<out AckpinePlugin>,
-		parameters: Params
-	) {
-		builder.usePlugin(plugin.java, parameters)
-	}
-
-	@Deprecated(
-		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	override fun usePlugin(plugin: KClass<out AckpinePlugin>) {
-		builder.usePlugin(plugin.java)
 	}
 
 	fun build() = builder.build()

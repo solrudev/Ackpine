@@ -43,22 +43,6 @@ public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Companion {
 }
 
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters : ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters {
-	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion;
-	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
-	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Builder : ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder {
-	public fun <init> ()V
-	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
-	public synthetic fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
-	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters;
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$Parameters$Companion {
-}
-
 public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
@@ -81,31 +65,5 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities : ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities {
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin : ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpinePlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
-	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
-	public fun equals (Ljava/lang/Object;)Z
-	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
-	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities;
-	public fun getId ()Ljava/lang/String;
-	public fun hashCode ()I
-	public fun toString ()Ljava/lang/String;
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters : ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters {
-	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Companion;
-	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
-	public synthetic fun <init> (ZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Builder : ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder {
-	public fun <init> ()V
-	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
-	public synthetic fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
-	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters;
-}
-
-public final class ru/solrudev/ackpine/shizuku/ShizukuUninstallPlugin$Parameters$Companion {
 }
 

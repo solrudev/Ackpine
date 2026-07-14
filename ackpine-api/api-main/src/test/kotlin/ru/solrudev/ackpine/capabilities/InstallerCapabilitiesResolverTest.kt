@@ -27,7 +27,6 @@ import ru.solrudev.ackpine.plugability.DisableConstraintsPlugin
 import ru.solrudev.ackpine.plugability.DisablePreapprovalPlugin
 import ru.solrudev.ackpine.plugability.DisableUpdateOwnershipPlugin
 import ru.solrudev.ackpine.plugability.ForceUserActionPlugin
-import ru.solrudev.ackpine.plugability.LegacyInstallPlugin
 import ru.solrudev.ackpine.plugability.TestInstallCapability
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import kotlin.test.AfterTest
@@ -216,14 +215,6 @@ class InstallerCapabilitiesResolverTest {
 		// TestParameterlessPlugin does not implement InstallCapabilityProvider
 		val caps = resolve(InstallerType.SESSION_BASED, TestParameterlessPlugin::class.java)
 		assertNull(caps.plugin(CapabilityAwareInstallPlugin::class.java))
-	}
-
-	@Test
-	fun legacyPluginIgnoredByCapabilityResolver() {
-		SdkInt.set(34)
-		// LegacyInstallPlugin overrides apply(builder) only
-		val caps = resolve(InstallerType.SESSION_BASED, LegacyInstallPlugin::class.java)
-		assertEquals(CapabilityStatus.UNRELIABLE, caps.skipUserAction)
 	}
 
 	private fun resolve(

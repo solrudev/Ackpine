@@ -97,19 +97,7 @@ public open class SplitPackage(
 		 * A list of all [unknown APKs][Apk.Other] needed for the dynamic feature.
 		 */
 		public val other: List<Entry<Apk.Other>> = emptyList()
-	) {
-
-		/**
-		 * Preserved for binary compatibility.
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(
-			feature: Apk.Feature = this.feature,
-			libs: List<Entry<Apk.Libs>> = this.libs,
-			screenDensity: List<Entry<Apk.ScreenDensity>> = this.screenDensity,
-			localization: List<Entry<Apk.Localization>> = this.localization
-		): DynamicFeature = DynamicFeature(feature, libs, screenDensity, localization, other)
-	}
+	)
 
 	/**
 	 * A [SplitPackage] entry.

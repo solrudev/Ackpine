@@ -16,14 +16,10 @@
 
 package ru.solrudev.ackpine.plugability
 
-import ru.solrudev.ackpine.installer.parameters.InstallParameters
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
-
 /**
  * A plugin for Ackpine. Allows to extend Ackpine's functionality.
  *
- * New plugins should implement [AckpineInstallPlugin] and/or [AckpineUninstallPlugin] instead of overriding the
- * [apply] methods on this interface directly.
+ * Install plugins implement [AckpineInstallPlugin], and uninstall plugins implement [AckpineUninstallPlugin].
  */
 public interface AckpinePlugin {
 
@@ -31,26 +27,6 @@ public interface AckpinePlugin {
 	 * Unique ID of the plugin.
 	 */
 	public val id: String
-
-	/**
-	 * Applies some settings to install parameters to accommodate the plugin's functionality.
-	 */
-	@Deprecated(
-		message = "Implement AckpineInstallPlugin instead. This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	public fun apply(builder: InstallParameters.Builder) { // no-op by default
-	}
-
-	/**
-	 * Applies some settings to uninstall parameters to accommodate the plugin's functionality.
-	 */
-	@Deprecated(
-		message = "Implement AckpineUninstallPlugin instead. This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	public fun apply(builder: UninstallParameters.Builder) { // no-op by default
-	}
 
 	/**
 	 * A set of parameters for an Ackpine plugin.

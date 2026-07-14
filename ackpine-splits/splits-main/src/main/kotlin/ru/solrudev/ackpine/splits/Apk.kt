@@ -206,20 +206,7 @@ public sealed class Apk(
 		override val versionCode: Long,
 		override val configForSplit: String = ""
 	) : Apk(uri, name, size, packageName, versionCode, description = name), ConfigSplit {
-
 		override fun isCompatible(context: Context): Boolean = true
-
-		/**
-		 * Preserved for binary compatibility.
-		 */
-		@Deprecated(message = "Binary compatibility", level = DeprecationLevel.HIDDEN)
-		public fun copy(
-			uri: Uri = this.uri,
-			name: String = this.name,
-			size: Long = this.size,
-			packageName: String = this.packageName,
-			versionCode: Long = this.versionCode
-		): Other = Other(uri, name, size, packageName, versionCode, configForSplit)
 	}
 
 	/**
