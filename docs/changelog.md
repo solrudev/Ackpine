@@ -6,6 +6,29 @@ hide:
 Change Log
 ==========
 
+Version 0.24.0 (2026-07-15)
+---------------------------
+
+### Bug fixes and improvements
+
+- Introduce `systemApp` flag for privileged uninstall sessions (Shizuku and root). It marks a system app as uninstalled for the current user without removing it from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for the current user.
+
+### Public API changes
+
+#### New
+
+- Added `PrivilegedUninstallParameters.systemApp` property, `PrivilegedUninstallParameters.Builder.setSystemApp()` and the `systemApp` DSL property in `PrivilegedUninstallParametersDsl`.
+- Added `PrivilegedUninstallCapabilities.systemApp` property.
+
+#### Removals
+
+- `AckpinePlugin.apply(InstallParameters.Builder)` and `AckpinePlugin.apply(UninstallParameters.Builder)`.
+- `AckpinePluginRegistry` interface and its `usePlugin()` methods. Use typed `registerPlugin()` methods on `InstallParameters.Builder` or `UninstallParameters.Builder` directly.
+- `AckpinePluginRegistryDsl` interface and its `usePlugin()` methods in `ackpine-ktx`. Use typed `plugin()` methods on `InstallParametersDsl` or `UninstallParametersDsl` directly.
+- `ShizukuUninstallPlugin`. Use `ShizukuPlugin` for both install and uninstall sessions.
+- `ShizukuPluginParametersDsl`, `ShizukuPluginParameters()`, `ShizukuUninstallPluginParametersDsl` and `ShizukuUninstallPluginParameters()` in `shizuku-ktx`. Use `ShizukuInstallParametersDsl`/`ShizukuInstallParameters()` and `ShizukuUninstallParametersDsl`/`ShizukuUninstallParameters()` respectively.
+- `useShizuku()` DSL functions in `shizuku-ktx`. Use `shizuku()` instead.
+
 Version 0.23.1 (2026-07-07)
 ---------------------------
 
