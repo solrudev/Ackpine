@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.libsu.database
 
+import androidx.room.AutoMigration
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
@@ -32,7 +33,8 @@ private const val DATABASE_NAME = "ackpine_libsu.paramsdb"
 @Database(
 	entities = [LibsuInstallParametersEntity::class, LibsuUninstallParametersEntity::class],
 	exportSchema = true,
-	version = 1
+	autoMigrations = [AutoMigration(from = 1, to = 2)],
+	version = 2
 )
 internal abstract class LibsuDatabase : RoomDatabase() {
 
@@ -105,5 +107,8 @@ internal class LibsuUninstallParametersEntity(
 	val keepData: Boolean,
 	@JvmField
 	@ColumnInfo(name = "all_users")
-	val allUsers: Boolean
+	val allUsers: Boolean,
+	@JvmField
+	@ColumnInfo(name = "system_app", defaultValue = "false")
+	val systemApp: Boolean
 )

@@ -68,7 +68,11 @@ public class ShizukuUninstallPlugin private constructor() :
 		} else {
 			CapabilityStatus.UNSUPPORTED
 		}
-		return ShizukuUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
+		return ShizukuUninstallCapabilities(
+			keepData = isSupported,
+			allUsers = isSupported,
+			systemApp = isSupported
+		)
 	}
 
 	override fun equals(other: Any?): Boolean = this === other || other is ShizukuUninstallPlugin
@@ -88,8 +92,9 @@ public class ShizukuUninstallPlugin private constructor() :
 	)
 	public class Parameters private constructor(
 		keepData: Boolean,
-		allUsers: Boolean
-	) : ShizukuPlugin.UninstallParameters(keepData, allUsers) {
+		allUsers: Boolean,
+		systemApp: Boolean
+	) : ShizukuPlugin.UninstallParameters(keepData, allUsers, systemApp) {
 
 		/**
 		 * Builder for [ShizukuUninstallPlugin.Parameters].
@@ -108,10 +113,7 @@ public class ShizukuUninstallPlugin private constructor() :
 			/**
 			 * Constructs a new instance of [ShizukuUninstallPlugin.Parameters].
 			 */
-			override fun build(): Parameters = Parameters(
-				keepData,
-				allUsers
-			)
+			override fun build(): Parameters = Parameters(keepData, allUsers, systemApp)
 		}
 
 		public companion object {
@@ -133,7 +135,8 @@ public class ShizukuUninstallPlugin private constructor() :
 			@JvmField
 			public val DEFAULT: Parameters = Parameters(
 				keepData = false,
-				allUsers = false
+				allUsers = false,
+				systemApp = false
 			)
 		}
 	}

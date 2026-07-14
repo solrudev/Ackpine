@@ -36,8 +36,9 @@ private const val DATABASE_NAME = "ackpine_shizuku.paramsdb"
 	autoMigrations = [
 		AutoMigration(from = 1, to = 2),
 		AutoMigration(from = 2, to = 3),
+		AutoMigration(from = 3, to = 4),
 	],
-	version = 3
+	version = 4
 )
 internal abstract class ShizukuDatabase : RoomDatabase() {
 
@@ -110,5 +111,8 @@ internal class ShizukuUninstallParametersEntity(
 	val keepData: Boolean,
 	@JvmField
 	@ColumnInfo(name = "all_users")
-	val allUsers: Boolean
+	val allUsers: Boolean,
+	@JvmField
+	@ColumnInfo(name = "system_app", defaultValue = "false")
+	val systemApp: Boolean
 )

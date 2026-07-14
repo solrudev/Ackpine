@@ -48,6 +48,7 @@ internal class ShizukuPluginParametersStore(
 			return ShizukuPlugin.UninstallParameters.Builder()
 				.setKeepData(shizukuParams.keepData)
 				.setAllUsers(shizukuParams.allUsers)
+				.setSystemApp(shizukuParams.systemApp)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -75,7 +76,8 @@ internal class ShizukuPluginParametersStore(
 			val shizukuParams = ShizukuUninstallParametersEntity(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
-				allUsers = params.allUsers
+				allUsers = params.allUsers,
+				systemApp = params.systemApp
 			)
 			shizukuUninstallParamsDao.insertParameters(shizukuParams)
 		}
@@ -97,6 +99,7 @@ internal class ShizukuUninstallPluginParametersStore(
 		return ShizukuUninstallPlugin.Parameters.Builder()
 			.setKeepData(shizukuParams.keepData)
 			.setAllUsers(shizukuParams.allUsers)
+			.setSystemApp(shizukuParams.systemApp)
 			.build()
 	}
 
@@ -110,7 +113,8 @@ internal class ShizukuUninstallPluginParametersStore(
 		val shizukuParams = ShizukuUninstallParametersEntity(
 			sessionId = sessionId.toString(),
 			keepData = params.keepData,
-			allUsers = params.allUsers
+			allUsers = params.allUsers,
+			systemApp = params.systemApp
 		)
 		shizukuParamsDao.insertParameters(shizukuParams)
 	}

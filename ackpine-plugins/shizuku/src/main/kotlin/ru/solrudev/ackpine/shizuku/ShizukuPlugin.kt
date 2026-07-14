@@ -88,8 +88,9 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 
 	override fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus
-	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers)
+		allUsers: CapabilityStatus,
+		systemApp: CapabilityStatus
+	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers, systemApp)
 
 	/**
 	 * Install parameters for [ShizukuPlugin].
@@ -225,8 +226,9 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	 */
 	public open class UninstallParameters internal constructor(
 		keepData: Boolean,
-		allUsers: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers) {
+		allUsers: Boolean,
+		systemApp: Boolean
+	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -237,7 +239,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
 			override fun setKeepData(value: Boolean): Builder = super.setKeepData(value)
 			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers)
+			override fun setSystemApp(value: Boolean): Builder = super.setSystemApp(value)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
 		}
 
 		public companion object {

@@ -56,7 +56,8 @@ public class LibsuInstallCapabilities internal constructor(
  */
 public class LibsuUninstallCapabilities internal constructor(
 	keepData: CapabilityStatus,
-	allUsers: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers) {
+	allUsers: CapabilityStatus,
+	systemApp: CapabilityStatus
+) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp) {
 	override fun getName(): String = "LibsuUninstallCapabilities"
 }

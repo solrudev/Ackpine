@@ -144,7 +144,14 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val allUsers: CapabilityStatus
+	public val allUsers: CapabilityStatus,
+
+	/**
+	 * Whether [PrivilegedUninstallParameters.systemApp] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
+	 */
+	public val systemApp: CapabilityStatus
 ) : PluginCapability {
 
 	/**
@@ -158,17 +165,20 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 		other as PrivilegedUninstallCapabilities
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
+		if (systemApp != other.systemApp) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
+		result = 31 * result + systemApp.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "${getName()}(" +
 			"keepData=$keepData, " +
-			"allUsers=$allUsers" +
+			"allUsers=$allUsers, " +
+			"systemApp=$systemApp" +
 			")"
 }
