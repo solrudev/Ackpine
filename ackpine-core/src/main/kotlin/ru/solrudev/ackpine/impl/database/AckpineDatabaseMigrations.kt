@@ -76,6 +76,19 @@ internal object Migration_12_13 : Migration(12, 13) {
 	}
 }
 
+@RestrictTo(RestrictTo.Scope.LIBRARY)
+internal object Migration_15_16 : Migration(15, 16) {
+	override fun migrate(db: SupportSQLiteDatabase) = db.migrate {
+		execSQL(
+			"""
+			UPDATE sessions_plugins
+			SET plugin_class_name = 'ru.solrudev.ackpine.shizuku.ShizukuPlugin'
+			WHERE plugin_class_name = 'ru.solrudev.ackpine.shizuku.ShizukuUninstallPlugin'
+			""".trimIndent()
+		)
+	}
+}
+
 private inline fun SupportSQLiteDatabase.migrate(actions: SupportSQLiteDatabase.() -> Unit) {
 	val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= 21
 	try {

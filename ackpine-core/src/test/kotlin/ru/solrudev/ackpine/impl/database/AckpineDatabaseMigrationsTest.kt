@@ -248,4 +248,51 @@ class AckpineDatabaseMigrationsTest {
 			}
 		}
 	}
+
+	@Test
+	fun migration15To16MigratesShizukuUninstallPlugin() {
+		migrationTestHelper.createDatabase(TEST_DB_NAME, 15).use { db ->
+			for (i in 1..3) {
+				db.execSQL(
+					"""
+					INSERT INTO sessions (id, type, state, confirmation, notification_title, notification_text,
+					                       notification_icon, require_user_action, last_launch_timestamp,
+					                       last_commit_timestamp)
+					VALUES ('session-$i', 'UNINSTALL', 'PENDING', 'DEFERRED', X'00', X'00', X'00', 1, 0, 0)
+					""".trimIndent()
+				)
+			}
+			db.execSQL(
+				"""INSERT INTO sessions_plugins (session_id, plugin_class_name)
+				          VALUES ('session-1', 'ru.solrudev.ackpine.shizuku.ShizukuUninstallPlugin')""".trimIndent()
+			)
+			db.execSQL(
+				"""INSERT INTO sessions_plugins (session_id, plugin_class_name)
+				          VALUES ('session-2', 'ru.solrudev.ackpine.shizuku.ShizukuPlugin')""".trimIndent()
+			)
+			db.execSQL(
+				"""INSERT INTO sessions_plugins (session_id, plugin_class_name)
+				          VALUES ('session-3', 'com.example.Plugin')""".trimIndent()
+			)
+		}
+
+		migrationTestHelper.runMigrationsAndValidate(TEST_DB_NAME, 16, true, Migration_15_16).use { db ->
+			db.query("SELECT session_id, plugin_class_name FROM sessions_plugins ORDER BY session_id").use { cursor ->
+				assertEquals(3, cursor.count)
+				cursor.moveToFirst()
+				assertEquals("session-1", cursor.getString(0))
+				assertEquals("ru.solrudev.ackpine.shizuku.ShizukuPlugin", cursor.getString(1))
+				cursor.moveToNext()
+				assertEquals("session-2", cursor.getString(0))
+				assertEquals("ru.solrudev.ackpine.shizuku.ShizukuPlugin", cursor.getString(1))
+				cursor.moveToNext()
+				assertEquals("session-3", cursor.getString(0))
+				assertEquals("com.example.Plugin", cursor.getString(1))
+			}
+			db.query("SELECT COUNT(*) FROM sessions").use { cursor ->
+				cursor.moveToFirst()
+				assertEquals(3, cursor.getInt(0))
+			}
+		}
+	}
 }
