@@ -21,3 +21,6 @@ internal const val DELETE_KEEP_DATA = 0x00000001
 
 @JvmSynthetic
 internal const val DELETE_ALL_USERS = 0x00000002
+
+@JvmSynthetic
+internal const val DELETE_SYSTEM_APP = 0x00000004

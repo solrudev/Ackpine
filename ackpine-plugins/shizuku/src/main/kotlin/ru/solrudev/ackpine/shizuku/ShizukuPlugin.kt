@@ -88,8 +88,9 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 
 	override fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus
-	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers)
+		allUsers: CapabilityStatus,
+		systemApp: CapabilityStatus
+	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers, systemApp)
 
 	/**
 	 * Install parameters for [ShizukuPlugin].
@@ -154,79 +155,13 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	}
 
 	/**
-	 * Install parameters for [ShizukuPlugin].
-	 */
-	@Deprecated(
-		message = "Renamed to ShizukuPlugin.InstallParameters. " +
-				"This will be removed in the next minor version.",
-		replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters"),
-		level = DeprecationLevel.ERROR
-	)
-	@Suppress("DEPRECATION_ERROR")
-	public class Parameters private constructor(
-		bypassLowTargetSdkBlock: Boolean,
-		allowTest: Boolean,
-		replaceExisting: Boolean,
-		requestDowngrade: Boolean,
-		grantAllRequestedPermissions: Boolean,
-		allUsers: Boolean,
-		installerPackageName: String
-	) : InstallParameters(
-		bypassLowTargetSdkBlock,
-		allowTest,
-		replaceExisting,
-		requestDowngrade,
-		grantAllRequestedPermissions,
-		allUsers,
-		installerPackageName
-	) {
-
-		/**
-		 * Builder for [ShizukuPlugin.Parameters].
-		 */
-		@Deprecated(
-			message = "Use ShizukuPlugin.InstallParameters.Builder instead. " +
-					"This will be removed in the next minor version.",
-			replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.Builder"),
-			level = DeprecationLevel.ERROR
-		)
-		public class Builder : InstallParameters.Builder() {
-			override fun build(): Parameters = Parameters(
-				bypassLowTargetSdkBlock,
-				allowTest,
-				replaceExisting,
-				requestDowngrade,
-				grantAllRequestedPermissions,
-				allUsers,
-				installerPackageName
-			)
-		}
-
-		public companion object {
-
-			/**
-			 * Default [ShizukuPlugin] parameters.
-			 *
-			 * All parameters are `false` by default.
-			 */
-			@Deprecated(
-				message = "Use ShizukuPlugin.InstallParameters.DEFAULT instead. " +
-						"This will be removed in the next minor version.",
-				replaceWith = ReplaceWith("ShizukuPlugin.InstallParameters.DEFAULT"),
-				level = DeprecationLevel.ERROR
-			)
-			@JvmField
-			public val DEFAULT: Parameters = Builder().build()
-		}
-	}
-
-	/**
 	 * Uninstall parameters for [ShizukuPlugin]. Take effect only on Android 8.1+.
 	 */
 	public open class UninstallParameters internal constructor(
 		keepData: Boolean,
-		allUsers: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers) {
+		allUsers: Boolean,
+		systemApp: Boolean
+	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -237,7 +172,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
 			override fun setKeepData(value: Boolean): Builder = super.setKeepData(value)
 			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers)
+			override fun setSystemApp(value: Boolean): Builder = super.setSystemApp(value)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
 		}
 
 		public companion object {

@@ -31,7 +31,15 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 	/**
 	 * Flag parameter to indicate that you want the package deleted for all users.
 	 */
-	public val allUsers: Boolean
+	public val allUsers: Boolean,
+
+	/**
+	 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+	 *
+	 * This does not remove the app from the system partition. For an updated system app, it prevents the update from
+	 * being rolled back globally when uninstalling it for current user.
+	 */
+	public val systemApp: Boolean
 ) : AckpinePlugin.Parameters {
 
 	/**
@@ -45,18 +53,21 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		other as PrivilegedUninstallParameters
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
+		if (systemApp != other.systemApp) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
+		result = 31 * result + systemApp.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "${getName()}(" +
 			"keepData=$keepData, " +
-			"allUsers=$allUsers" +
+			"allUsers=$allUsers, " +
+			"systemApp=$systemApp" +
 			")"
 
 	/**
@@ -77,6 +88,15 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 			protected set
 
 		/**
+		 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+		 *
+		 * This does not remove the app from the system partition. For an updated system app, it prevents the update
+		 * from being rolled back globally when uninstalling it for current user.
+		 */
+		public var systemApp: Boolean = false
+			protected set
+
+		/**
 		 * Sets [PrivilegedUninstallParameters.keepData].
 		 */
 		public open fun setKeepData(value: Boolean): Self = self().apply {
@@ -88,6 +108,13 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		 */
 		public open fun setAllUsers(value: Boolean): Self = self().apply {
 			allUsers = value
+		}
+
+		/**
+		 * Sets [PrivilegedUninstallParameters.systemApp].
+		 */
+		public open fun setSystemApp(value: Boolean): Self = self().apply {
+			systemApp = value
 		}
 
 		/**

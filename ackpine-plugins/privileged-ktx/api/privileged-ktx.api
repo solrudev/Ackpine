@@ -37,8 +37,10 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters
 public abstract interface class ru/solrudev/ackpine/privileged/PrivilegedUninstallParametersDsl {
 	public abstract fun getAllUsers ()Z
 	public abstract fun getKeepData ()Z
+	public abstract fun getSystemApp ()Z
 	public abstract fun setAllUsers (Z)V
 	public abstract fun setKeepData (Z)V
+	public abstract fun setSystemApp (Z)V
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParametersDslBuilder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParametersDsl {
@@ -46,7 +48,9 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParamete
 	protected final fun buildParameters ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
 	public fun getAllUsers ()Z
 	public fun getKeepData ()Z
+	public fun getSystemApp ()Z
 	public fun setAllUsers (Z)V
 	public fun setKeepData (Z)V
+	public fun setSystemApp (Z)V
 }
 

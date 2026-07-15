@@ -108,6 +108,7 @@ public abstract class PackageInstallerProxy protected constructor(
 		if (privilegedParameters != null) {
 			flags = applyFlag(flags, privilegedParameters.keepData, DELETE_KEEP_DATA)
 			flags = applyFlag(flags, privilegedParameters.allUsers, DELETE_ALL_USERS)
+			flags = applyFlag(flags, privilegedParameters.systemApp, DELETE_SYSTEM_APP)
 		}
 		@Suppress("CAST_NEVER_SUCCEEDS")
 		(packageInstaller as PackageInstallerHidden).uninstall(packageName, flags, statusReceiver)

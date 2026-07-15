@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
-
 package ru.solrudev.ackpine.installer.parameters
 
 import android.content.pm.PackageInstaller
@@ -25,9 +23,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
-import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin.Parameters
-import ru.solrudev.ackpine.plugability.AckpinePluginRegistryDsl
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.ConfirmationDsl
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -40,7 +36,7 @@ import kotlin.time.Duration
  * DSL allowing to configure [parameters for creating install session][InstallParameters].
  */
 @SessionParametersDsl
-public interface InstallParametersDsl : ConfirmationDsl, AckpinePluginRegistryDsl {
+public interface InstallParametersDsl : ConfirmationDsl {
 
 	/**
 	 * Mutable list of APKs [URIs][Uri] to install in one session.
@@ -238,27 +234,6 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 	override fun plugin(plugin: KClass<out AckpineInstallPlugin<Parameters.None>>) {
 		builder.registerPlugin(plugin.java)
-	}
-
-	@Deprecated(
-		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	override fun <Params : Parameters> usePlugin(
-		plugin: KClass<out AckpinePlugin>,
-		parameters: Params
-	) {
-		builder.usePlugin(plugin.java, parameters)
-	}
-
-	@Deprecated(
-		"Use typed plugin() methods on InstallParametersDsl or UninstallParametersDsl directly. " +
-				"This will be removed in the next minor version.",
-		level = DeprecationLevel.ERROR
-	)
-	override fun usePlugin(plugin: KClass<out AckpinePlugin>) {
-		builder.usePlugin(plugin.java)
 	}
 
 	fun build() = builder.build()

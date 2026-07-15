@@ -25,11 +25,8 @@ import ru.solrudev.ackpine.plugability.BackendFlipperPlugin
 import ru.solrudev.ackpine.plugability.ChainedPlugin
 import ru.solrudev.ackpine.plugability.ChainedTestPlugin
 import ru.solrudev.ackpine.plugability.IntentBasedBackendObserverPlugin
-import ru.solrudev.ackpine.plugability.LegacyChainedInstallPlugin
-import ru.solrudev.ackpine.plugability.LegacyInstallPlugin
 import ru.solrudev.ackpine.plugability.TestParameterlessPlugin
 import ru.solrudev.ackpine.plugability.TestPlugin
-import ru.solrudev.ackpine.plugability.TestUninstallPlugin
 import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
@@ -159,7 +156,6 @@ class InstallParametersBuilderTest {
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -167,16 +163,9 @@ class InstallParametersBuilderTest {
 			.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
 			.build()
 		assertFalse(parameters.requireUserAction)
-
-		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
-			.setRequireUserAction(true)
-			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
-			.build()
-		assertFalse(deprecatedParameters.requireUserAction)
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun parameterlessPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -184,16 +173,9 @@ class InstallParametersBuilderTest {
 			.registerPlugin(TestParameterlessPlugin::class.java)
 			.build()
 		assertFalse(parameters.requireUserAction)
-
-		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
-			.setRequireUserAction(true)
-			.usePlugin(TestParameterlessPlugin::class.java)
-			.build()
-		assertFalse(deprecatedParameters.requireUserAction)
 	}
 
 	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun chainedPluginIsAppliedDuringBuild() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -207,16 +189,8 @@ class InstallParametersBuilderTest {
 		)
 		assertFalse(parameters.requireUserAction)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
-
-		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
-			.setRequireUserAction(true)
-			.usePlugin(ChainedTestPlugin::class.java)
-			.build()
-		assertFalse(deprecatedParameters.requireUserAction)
-		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
-	@Suppress("DEPRECATION_ERROR")
 	@Test
 	fun pluginParametersArePreserved() {
 		val parameters = InstallParameters.Builder(Uri.EMPTY)
@@ -226,49 +200,15 @@ class InstallParametersBuilderTest {
 			TestPlugin::class.java to TestPlugin.Parameters("value")
 		)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
-
-		val deprecatedParameters = InstallParameters.Builder(Uri.EMPTY)
-			.usePlugin(TestPlugin::class.java, TestPlugin.Parameters("value"))
-			.build()
-		assertEquals(expectedPlugins, deprecatedParameters.pluginContainer.getPlugins())
 	}
 
 	@Test
 	fun buildIsIdempotent() {
 		val builder = InstallParameters.Builder(Uri.EMPTY)
 			.registerPlugin(ChainedTestPlugin::class.java)
-			.registerPlugin(LegacyInstallPlugin::class.java)
 		val first = builder.build()
 		val second = builder.build()
 		assertEquals(first, second)
-	}
-
-	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION_ERROR")
-	@Test
-	fun legacyPluginIsAppliedDuringBuild() {
-		val parameters = InstallParameters.Builder(Uri.EMPTY)
-			.setRequireUserAction(true)
-			.registerPlugin(LegacyInstallPlugin::class.java)
-			.build()
-		assertFalse(parameters.requireUserAction)
-		assertEquals("legacy", parameters.name)
-	}
-
-	@OptIn(DelicateAckpineApi::class)
-	@Suppress("DEPRECATION_ERROR")
-	@Test
-	fun legacyChainedPluginIsAppliedDuringBuild() {
-		val parameters = InstallParameters.Builder(Uri.EMPTY)
-			.setRequireUserAction(true)
-			.registerPlugin(LegacyChainedInstallPlugin::class.java)
-			.build()
-		val expectedPlugins = mapOf<Class<out AckpinePlugin>, AckpinePlugin.Parameters>(
-			LegacyChainedInstallPlugin::class.java to AckpinePlugin.Parameters.None,
-			TestParameterlessPlugin::class.java to AckpinePlugin.Parameters.None
-		)
-		assertFalse(parameters.requireUserAction)
-		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
 	}
 
 	@Test
@@ -283,18 +223,5 @@ class InstallParametersBuilderTest {
 		)
 		assertEquals(InstallerType.SESSION_BASED, parameters.installerType)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
-	}
-
-	@Suppress("DEPRECATION_ERROR")
-	@Test
-	fun deprecatedUsePluginWithUninstallPluginThrows() {
-		assertFailsWith<IllegalStateException> {
-			InstallParameters.Builder(Uri.EMPTY)
-				.usePlugin(TestUninstallPlugin::class.java)
-		}
-		assertFailsWith<IllegalStateException> {
-			InstallParameters.Builder(Uri.EMPTY)
-				.usePlugin(TestUninstallPlugin::class.java, AckpinePlugin.Parameters.None)
-		}
 	}
 }

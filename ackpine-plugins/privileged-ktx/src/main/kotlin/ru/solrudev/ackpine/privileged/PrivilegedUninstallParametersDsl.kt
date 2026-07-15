@@ -33,6 +33,14 @@ public interface PrivilegedUninstallParametersDsl {
 	 * Flag parameter to indicate that you want the package deleted for all users.
 	 */
 	public var allUsers: Boolean
+
+	/**
+	 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+	 *
+	 * This does not remove the app from the system partition. For an updated system app, it prevents the update from
+	 * being rolled back globally when uninstalling it for current user.
+	 */
+	public var systemApp: Boolean
 }
 
 /**
@@ -55,6 +63,12 @@ public abstract class PrivilegedUninstallParametersDslBuilder<
 		get() = delegate.allUsers
 		set(value) {
 			delegate.setAllUsers(value)
+		}
+
+	override var systemApp: Boolean
+		get() = delegate.systemApp
+		set(value) {
+			delegate.setSystemApp(value)
 		}
 
 	/**

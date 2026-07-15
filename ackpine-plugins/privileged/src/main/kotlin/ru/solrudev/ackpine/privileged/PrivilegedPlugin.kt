@@ -81,7 +81,11 @@ public abstract class PrivilegedPlugin<
 		} else {
 			CapabilityStatus.UNSUPPORTED
 		}
-		return createUninstallCapabilities(keepData = isSupported, allUsers = isSupported)
+		return createUninstallCapabilities(
+			keepData = isSupported,
+			allUsers = isSupported,
+			systemApp = isSupported
+		)
 	}
 
 	/**
@@ -102,7 +106,8 @@ public abstract class PrivilegedPlugin<
 	 */
 	protected abstract fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus
+		allUsers: CapabilityStatus,
+		systemApp: CapabilityStatus
 	): UninstallCapabilities
 
 	override fun equals(other: Any?): Boolean = this === other || other?.javaClass == javaClass

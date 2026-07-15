@@ -101,7 +101,7 @@ private const val PURGE_SQL = "DELETE FROM sessions WHERE state IN $TERMINAL_STA
 		AutoMigration(from = 13, to = 14),
 		AutoMigration(from = 14, to = 15)
 	],
-	version = 15,
+	version = 16,
 	exportSchema = true
 )
 @TypeConverters(
@@ -133,7 +133,7 @@ internal abstract class AckpineDatabase : RoomDatabase() {
 		databaseName = ACKPINE_DATABASE_NAME
 	) {
 		override fun Builder<AckpineDatabase>.configureDatabase() = addCallback(PurgeCallback)
-			.addMigrations(Migration_4_5, Migration_7_8, Migration_12_13)
+			.addMigrations(Migration_4_5, Migration_7_8, Migration_12_13, Migration_15_16)
 	}
 }
 

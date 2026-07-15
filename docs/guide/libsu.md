@@ -204,6 +204,12 @@ Flag parameter to indicate that you don't want to delete the package's data dire
 
 Flag parameter to indicate that you want the package deleted for all users.
 
+#### `systemApp`
+
+Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+
+This does not remove the app from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for current user.
+
 Capabilities
 ------------
 

@@ -16,15 +16,12 @@
 
 package ru.solrudev.ackpine.plugability
 
-import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.capabilities.InstallCapabilityContext
 import ru.solrudev.ackpine.capabilities.InstallCapabilityProvider
 import ru.solrudev.ackpine.capabilities.PluginCapability
 import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
 import ru.solrudev.ackpine.capabilities.UninstallCapabilityProvider
-import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallerType
-import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 
 class TestPlugin :
@@ -97,48 +94,6 @@ class TestInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
 
 class TestUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
 	override val id = "test-uninstall-plugin"
-}
-
-@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
-class LegacyInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
-
-	override val id = "legacy-install-plugin"
-
-	@OptIn(DelicateAckpineApi::class)
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.setRequireUserAction(false)
-		builder.setName("legacy")
-	}
-}
-
-@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
-class LegacyUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
-
-	override val id = "legacy-uninstall-plugin"
-
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.setPackageName("com.legacy")
-	}
-}
-
-@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
-class LegacyChainedInstallPlugin : AckpineInstallPlugin<AckpinePlugin.Parameters.None> {
-
-	override val id = "legacy-chained-install-plugin"
-
-	override fun apply(builder: InstallParameters.Builder) {
-		builder.registerPlugin(TestParameterlessPlugin::class.java)
-	}
-}
-
-@Suppress("DEPRECATION_ERROR", "OVERRIDE_DEPRECATION")
-class LegacyChainedUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
-
-	override val id = "legacy-chained-uninstall-plugin"
-
-	override fun apply(builder: UninstallParameters.Builder) {
-		builder.registerPlugin(TestPlugin::class.java, TestPlugin.Parameters(""))
-	}
 }
 
 class BackendFlipperPlugin :

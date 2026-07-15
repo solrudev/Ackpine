@@ -21,7 +21,6 @@ import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.plugability.BackendFlipperPlugin
 import ru.solrudev.ackpine.plugability.CapabilityAwareUninstallPlugin
 import ru.solrudev.ackpine.plugability.CapabilityRegistrarUninstallPlugin
-import ru.solrudev.ackpine.plugability.LegacyUninstallPlugin
 import ru.solrudev.ackpine.plugability.TestUninstallCapability
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import kotlin.test.AfterTest
@@ -88,14 +87,6 @@ class UninstallerCapabilitiesResolverTest {
 		SdkInt.set(34)
 		val caps = resolve(UninstallerType.PACKAGE_INSTALLER_BASED)
 		assertNull(caps.plugin(CapabilityAwareUninstallPlugin::class.java))
-	}
-
-	@Test
-	fun legacyPluginIgnoredByCapabilities() {
-		SdkInt.set(34)
-		// LegacyUninstallPlugin overrides apply(builder) only
-		val caps = resolve(UninstallerType.PACKAGE_INSTALLER_BASED, LegacyUninstallPlugin::class.java)
-		assertEquals(UninstallerType.PACKAGE_INSTALLER_BASED, caps.uninstallerType)
 	}
 
 	private fun resolve(

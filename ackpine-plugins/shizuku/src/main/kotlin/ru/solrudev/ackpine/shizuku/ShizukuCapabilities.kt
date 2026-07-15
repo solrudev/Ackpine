@@ -49,16 +49,17 @@ public class ShizukuInstallCapabilities internal constructor(
 }
 
 /**
- * Plugin-specific uninstall capabilities reported by [ShizukuPlugin] and [ShizukuUninstallPlugin].
+ * Plugin-specific uninstall capabilities reported by [ShizukuPlugin].
  *
  * Mirrors [ShizukuPlugin.UninstallParameters]: each field indicates whether the corresponding parameter is
- * supported for the resolved configuration. Parameters are only effective when [ShizukuPlugin] or
- * [ShizukuUninstallPlugin] actually applies (i.e., when Shizuku version >= 11 is available at runtime), but support
- * here is determined solely from the Android API level and the effective uninstaller type.
+ * supported for the resolved configuration. Parameters are only effective when [ShizukuPlugin] actually applies
+ * (i.e., when Shizuku version >= 11 is available at runtime), but support here is determined solely from the Android
+ * API level and the effective uninstaller type.
  */
 public class ShizukuUninstallCapabilities internal constructor(
 	keepData: CapabilityStatus,
-	allUsers: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers) {
+	allUsers: CapabilityStatus,
+	systemApp: CapabilityStatus
+) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp) {
 	override fun getName(): String = "ShizukuUninstallCapabilities"
 }

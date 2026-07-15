@@ -54,8 +54,9 @@ public class LibsuPlugin : PrivilegedPlugin<
 
 	override fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus
-	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(keepData, allUsers)
+		allUsers: CapabilityStatus,
+		systemApp: CapabilityStatus
+	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(keepData, allUsers, systemApp)
 
 	/**
 	 * Install parameters for [LibsuPlugin].
@@ -112,8 +113,9 @@ public class LibsuPlugin : PrivilegedPlugin<
 	 */
 	public class UninstallParameters private constructor(
 		keepData: Boolean,
-		allUsers: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers) {
+		allUsers: Boolean,
+		systemApp: Boolean
+	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -121,7 +123,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 		 * Builder for [LibsuPlugin.UninstallParameters].
 		 */
 		public class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
 		}
 
 		public companion object {

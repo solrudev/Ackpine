@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-@file:Suppress("DEPRECATION", "DEPRECATION_ERROR")
-
 package ru.solrudev.ackpine.uninstaller.parameters
 
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
-import ru.solrudev.ackpine.plugability.AckpinePluginRegistry
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -102,7 +99,7 @@ public class UninstallParameters private constructor(
 	/**
 	 * Builder for [UninstallParameters].
 	 */
-	public class Builder : ConfirmationAware, AckpinePluginRegistry<Builder> {
+	public class Builder : ConfirmationAware {
 
 		public constructor(packageName: String) {
 			this.packageName = packageName
@@ -206,35 +203,6 @@ public class UninstallParameters private constructor(
 			pluginScope.registerPlugin(plugin)
 		}
 
-		@Deprecated(
-			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
-					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.ERROR
-		)
-		@Suppress("UNCHECKED_CAST")
-		override fun <Params : AckpinePlugin.Parameters> usePlugin(
-			plugin: Class<out AckpinePlugin>,
-			parameters: Params
-		): Builder = apply {
-			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
-				error("Not an uninstall plugin: ${plugin.name}")
-			}
-			pluginScope.registerPlugin(plugin as Class<AckpineUninstallPlugin<Params>>, parameters)
-		}
-
-		@Deprecated(
-			"Use typed registerPlugin methods. This will be removed in the next minor version. " +
-					"Untyped plugins (implementing AckpinePlugin directly) will throw when used.",
-			level = DeprecationLevel.ERROR
-		)
-		@Suppress("UNCHECKED_CAST")
-		override fun usePlugin(plugin: Class<out AckpinePlugin>): Builder = apply {
-			if (!AckpineUninstallPlugin::class.java.isAssignableFrom(plugin)) {
-				error("Not an uninstall plugin: ${plugin.name}")
-			}
-			pluginScope.registerPlugin(plugin as Class<AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>)
-		}
-
 		/**
 		 * Constructs a new instance of [UninstallParameters].
 		 */
@@ -259,7 +227,7 @@ public class UninstallParameters private constructor(
 					.keys
 					.filterNot(appliedPlugins::contains)
 				for (pluginClass in pluginsToApply) {
-					AckpinePluginCache.get(pluginClass).apply(this)
+					AckpinePluginCache.get(pluginClass).apply(pluginScope)
 					pluginScope.normalizeUninstallerType()
 					appliedPlugins += pluginClass
 				}

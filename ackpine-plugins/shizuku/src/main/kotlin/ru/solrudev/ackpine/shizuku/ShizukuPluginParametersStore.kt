@@ -48,6 +48,7 @@ internal class ShizukuPluginParametersStore(
 			return ShizukuPlugin.UninstallParameters.Builder()
 				.setKeepData(shizukuParams.keepData)
 				.setAllUsers(shizukuParams.allUsers)
+				.setSystemApp(shizukuParams.systemApp)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -75,43 +76,13 @@ internal class ShizukuPluginParametersStore(
 			val shizukuParams = ShizukuUninstallParametersEntity(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
-				allUsers = params.allUsers
+				allUsers = params.allUsers,
+				systemApp = params.systemApp
 			)
 			shizukuUninstallParamsDao.insertParameters(shizukuParams)
 		}
 
 		else -> { // ignore
 		}
-	}
-}
-
-@Suppress("DEPRECATION_ERROR")
-@RestrictTo(RestrictTo.Scope.LIBRARY)
-internal class ShizukuUninstallPluginParametersStore(
-	private val shizukuParamsDao: ShizukuUninstallParamsDao
-) : PluginParametersStore {
-
-	override fun getForSession(sessionId: UUID): AckpinePlugin.Parameters {
-		val shizukuParams = shizukuParamsDao.getBySessionId(sessionId.toString())
-			?: return AckpinePlugin.Parameters.None
-		return ShizukuUninstallPlugin.Parameters.Builder()
-			.setKeepData(shizukuParams.keepData)
-			.setAllUsers(shizukuParams.allUsers)
-			.build()
-	}
-
-	override fun setForSession(
-		sessionId: UUID,
-		params: AckpinePlugin.Parameters
-	) {
-		if (params !is ShizukuUninstallPlugin.Parameters) {
-			return
-		}
-		val shizukuParams = ShizukuUninstallParametersEntity(
-			sessionId = sessionId.toString(),
-			keepData = params.keepData,
-			allUsers = params.allUsers
-		)
-		shizukuParamsDao.insertParameters(shizukuParams)
 	}
 }

@@ -48,6 +48,7 @@ internal class LibsuPluginParametersStore(
 			return LibsuPlugin.UninstallParameters.Builder()
 				.setKeepData(libsuParams.keepData)
 				.setAllUsers(libsuParams.allUsers)
+				.setSystemApp(libsuParams.systemApp)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -72,7 +73,8 @@ internal class LibsuPluginParametersStore(
 			val libsuParams = LibsuUninstallParametersEntity(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
-				allUsers = params.allUsers
+				allUsers = params.allUsers,
+				systemApp = params.systemApp
 			)
 			libsuUninstallParamsDao.insertParameters(libsuParams)
 		}
