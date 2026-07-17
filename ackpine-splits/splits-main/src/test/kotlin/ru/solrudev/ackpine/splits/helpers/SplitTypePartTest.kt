@@ -33,6 +33,11 @@ class SplitTypePartTest {
 	}
 
 	@Test
+	fun returnsPartBeforeNextDot() {
+		assertEquals("arm64_v8a", splitTypePart("config.arm64_v8a.v2"))
+	}
+
+	@Test
 	fun returnsNullForNameWithoutConfigPrefix() {
 		assertNull(splitTypePart("prefix.xxhdpi"))
 	}
@@ -45,6 +50,11 @@ class SplitTypePartTest {
 	@Test
 	fun returnsNullForConfigDotWithEmptyPart() {
 		assertNull(splitTypePart("config."))
+	}
+
+	@Test
+	fun returnsNullForEmptyPartBeforeNextDot() {
+		assertNull(splitTypePart("config..v2"))
 	}
 
 	@Test
