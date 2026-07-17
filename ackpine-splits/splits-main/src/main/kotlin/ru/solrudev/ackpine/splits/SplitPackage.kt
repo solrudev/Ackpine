@@ -203,8 +203,8 @@ public open class SplitPackage(
 		 * Returns a [Provider] giving out only [APK splits][Apk] which are the most compatible with the device by
 		 * applying [sortedByCompatibility] operation and calling [filterPreferred] on the resulting [SplitPackage].
 		 *
-		 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, nearest
-		 * matching split is chosen.
+		 * If exact device's [screen density][Dpi], [ABI][Abi] or [locale][Locale] doesn't appear in the splits, all
+		 * nearest matching splits are chosen. All splits tied for best compatibility are retained.
 		 *
 		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
 		 * split by compatibility, the base-targeted one takes precedence.
@@ -227,7 +227,8 @@ public open class SplitPackage(
 		 * This sort is _stable_ for each APK split type.
 		 *
 		 * The most preferred APK splits will appear first. If exact device's [screen density][Dpi], [ABI][Abi] or
-		 * [locale][Locale] doesn't appear in the splits, nearest matching split is chosen as a preferred one.
+		 * [locale][Locale] doesn't appear in the splits, all nearest matching splits are marked as preferred. All
+		 * splits tied for best compatibility are marked as preferred.
 		 *
 		 * If an unresolved feature-targeted top-level configuration split ties a base-targeted top-level configuration
 		 * split by compatibility, the base-targeted one takes precedence.
@@ -323,10 +324,14 @@ public open class SplitPackage(
 		private inline fun <T : Apk> List<Entry<T>>.sortedByCompatibility(
 			isCompatible: (T) -> Boolean = { true },
 			comparator: Comparator<T>
-		) = sortedWith(compareBy<Entry<T>, T>(comparator) { it.apk })
-			.mapIndexed { index, entry ->
-				Entry(isPreferred = index == 0 && isCompatible(entry.apk), entry.apk)
+		): List<Entry<T>> {
+			val sorted = sortedWith(compareBy(comparator) { it.apk })
+			val mostPreferred = sorted.firstOrNull()?.apk ?: return sorted
+			return sorted.map { entry ->
+				val isMostPreferred = comparator.compare(entry.apk, mostPreferred) == 0
+				Entry(isPreferred = isMostPreferred && isCompatible(entry.apk), entry.apk)
 			}
+		}
 
 		private companion object {
 			private val libsComparator = compareBy<Apk.Libs>(
