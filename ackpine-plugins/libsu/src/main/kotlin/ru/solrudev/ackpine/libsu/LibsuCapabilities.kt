@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.libsu
 
-import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.privileged.PrivilegedInstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
 
@@ -28,24 +27,8 @@ import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
  * here is determined solely from the Android API level and the effective installer type.
  */
 public class LibsuInstallCapabilities internal constructor(
-	bypassLowTargetSdkBlock: CapabilityStatus,
-	allowTest: CapabilityStatus,
-	replaceExisting: CapabilityStatus,
-	requestDowngrade: CapabilityStatus,
-	grantAllRequestedPermissions: CapabilityStatus,
-	allUsers: CapabilityStatus,
-	installerPackageName: CapabilityStatus,
-	targetUser: CapabilityStatus
-) : PrivilegedInstallCapabilities(
-	bypassLowTargetSdkBlock,
-	allowTest,
-	replaceExisting,
-	requestDowngrade,
-	grantAllRequestedPermissions,
-	allUsers,
-	installerPackageName,
-	targetUser
-) {
+	snapshot: Snapshot
+) : PrivilegedInstallCapabilities(snapshot) {
 	override fun getName(): String = "LibsuInstallCapabilities"
 }
 
@@ -57,10 +40,7 @@ public class LibsuInstallCapabilities internal constructor(
  * support here is determined solely from the Android API level and the effective uninstaller type.
  */
 public class LibsuUninstallCapabilities internal constructor(
-	keepData: CapabilityStatus,
-	allUsers: CapabilityStatus,
-	systemApp: CapabilityStatus,
-	targetUser: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp, targetUser) {
+	snapshot: Snapshot
+) : PrivilegedUninstallCapabilities(snapshot) {
 	override fun getName(): String = "LibsuUninstallCapabilities"
 }

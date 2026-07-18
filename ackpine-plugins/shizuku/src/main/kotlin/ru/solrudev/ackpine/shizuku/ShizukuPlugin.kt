@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
+@file:Suppress("UnusedImport")
+
 package ru.solrudev.ackpine.shizuku
 
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
-import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.plugability.InstallPluginScope
 import ru.solrudev.ackpine.plugability.UninstallPluginScope
+import ru.solrudev.ackpine.privileged.PrivilegedInstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
 import ru.solrudev.ackpine.privileged.PrivilegedPlugin
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
-import ru.solrudev.ackpine.privileged.TargetUser
 
 /**
  * Ackpine plugin which enables installation and uninstallation through Shizuku when applied.
@@ -58,71 +60,25 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	}
 
 	override fun createInstallCapabilities(
-		bypassLowTargetSdkBlock: CapabilityStatus,
-		allowTest: CapabilityStatus,
-		replaceExisting: CapabilityStatus,
-		requestDowngrade: CapabilityStatus,
-		grantAllRequestedPermissions: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus,
-		targetUser: CapabilityStatus
-	): ShizukuInstallCapabilities = ShizukuInstallCapabilities(
-		bypassLowTargetSdkBlock = bypassLowTargetSdkBlock,
-		allowTest = allowTest,
-		replaceExisting = replaceExisting,
-		requestDowngrade = requestDowngrade,
-		grantAllRequestedPermissions = grantAllRequestedPermissions,
-		allUsers = allUsers,
-		installerPackageName = installerPackageName,
-		targetUser = targetUser
-	)
+		snapshot: PrivilegedInstallCapabilities.Snapshot
+	): ShizukuInstallCapabilities = ShizukuInstallCapabilities(snapshot)
 
 	override fun createUninstallCapabilities(
-		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus,
-		targetUser: CapabilityStatus
-	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers, systemApp, targetUser)
+		snapshot: PrivilegedUninstallCapabilities.Snapshot
+	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(snapshot)
 
 	/**
 	 * Install parameters for [ShizukuPlugin].
 	 */
-	public open class InstallParameters internal constructor(
-		bypassLowTargetSdkBlock: Boolean,
-		allowTest: Boolean,
-		replaceExisting: Boolean,
-		requestDowngrade: Boolean,
-		grantAllRequestedPermissions: Boolean,
-		allUsers: Boolean,
-		installerPackageName: String,
-		targetUser: TargetUser
-	) : PrivilegedInstallParameters(
-		bypassLowTargetSdkBlock,
-		allowTest,
-		replaceExisting,
-		requestDowngrade,
-		grantAllRequestedPermissions,
-		allUsers,
-		installerPackageName,
-		targetUser
-	) {
+	public class InstallParameters private constructor(snapshot: Snapshot) : PrivilegedInstallParameters(snapshot) {
 
 		override fun getName(): String = "InstallParameters"
 
 		/**
 		 * Builder for [ShizukuPlugin.InstallParameters].
 		 */
-		public open class Builder : PrivilegedInstallParameters.Builder<InstallParameters, Builder>() {
-			override fun build(): InstallParameters = InstallParameters(
-				bypassLowTargetSdkBlock,
-				allowTest,
-				replaceExisting,
-				requestDowngrade,
-				grantAllRequestedPermissions,
-				allUsers,
-				installerPackageName,
-				targetUser
-			)
+		public class Builder : PrivilegedInstallParameters.Builder<InstallParameters, Builder>() {
+			override fun build(): InstallParameters = InstallParameters(buildSnapshot())
 		}
 
 		public companion object {
@@ -140,20 +96,15 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	/**
 	 * Uninstall parameters for [ShizukuPlugin]. Uninstall flags take effect only on Android 8.1+.
 	 */
-	public open class UninstallParameters internal constructor(
-		keepData: Boolean,
-		allUsers: Boolean,
-		systemApp: Boolean,
-		targetUser: TargetUser
-	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp, targetUser) {
+	public class UninstallParameters private constructor(snapshot: Snapshot) : PrivilegedUninstallParameters(snapshot) {
 
 		override fun getName(): String = "UninstallParameters"
 
 		/**
 		 * Builder for [ShizukuPlugin.UninstallParameters].
 		 */
-		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp, targetUser)
+		public class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
+			override fun build(): UninstallParameters = UninstallParameters(buildSnapshot())
 		}
 
 		public companion object {

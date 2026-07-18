@@ -16,22 +16,23 @@
 
 package ru.solrudev.ackpine.privileged
 
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 /**
  * Shared uninstall parameters for privileged Ackpine plugins.
  */
-public abstract class PrivilegedUninstallParameters @JvmOverloads protected constructor(
+public abstract class PrivilegedUninstallParameters protected constructor(snapshot: Snapshot) : AckpinePlugin.Parameters {
 
 	/**
 	 * Flag parameter to indicate that you don't want to delete the package's data directory.
 	 */
-	public val keepData: Boolean,
+	public val keepData: Boolean = snapshot.keepData
 
 	/**
 	 * Flag parameter to indicate that you want the package deleted for all users.
 	 */
-	public val allUsers: Boolean,
+	public val allUsers: Boolean = snapshot.allUsers
 
 	/**
 	 * Flag parameter to indicate that a system app should be marked as uninstalled for the [targetUser].
@@ -39,7 +40,7 @@ public abstract class PrivilegedUninstallParameters @JvmOverloads protected cons
 	 * This does not remove the app from the system partition. For an updated system app, it prevents the update from
 	 * being rolled back globally when uninstalling it for the target user.
 	 */
-	public val systemApp: Boolean,
+	public val systemApp: Boolean = snapshot.systemApp
 
 	/**
 	 * Android user targeted by this uninstall session.
@@ -48,8 +49,7 @@ public abstract class PrivilegedUninstallParameters @JvmOverloads protected cons
 	 *
 	 * By default, equals to [TargetUser.CURRENT].
 	 */
-	public val targetUser: TargetUser = TargetUser.CURRENT
-) : AckpinePlugin.Parameters {
+	public val targetUser: TargetUser = snapshot.targetUser
 
 	/**
 	 * Returns the simple class name used in [toString].
@@ -81,6 +81,33 @@ public abstract class PrivilegedUninstallParameters @JvmOverloads protected cons
 			"systemApp=$systemApp, " +
 			"targetUser=$targetUser" +
 			")"
+
+	/**
+	 * Immutable privileged uninstall parameter values passed to constructors.
+	 */
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public class Snapshot internal constructor(
+
+		/**
+		 * Whether to retain the package data directory.
+		 */
+		public val keepData: Boolean,
+
+		/**
+		 * Whether to uninstall for all users.
+		 */
+		public val allUsers: Boolean,
+
+		/**
+		 * Whether to use the system-app uninstall behavior.
+		 */
+		public val systemApp: Boolean,
+
+		/**
+		 * Android user targeted by the uninstall.
+		 */
+		public val targetUser: TargetUser
+	)
 
 	/**
 	 * Base builder for privileged uninstall parameters.
@@ -145,6 +172,11 @@ public abstract class PrivilegedUninstallParameters @JvmOverloads protected cons
 		public open fun setTargetUser(value: TargetUser): Self = self().apply {
 			targetUser = value
 		}
+
+		/**
+		 * Returns an immutable snapshot of this builder for passing to a [PrivilegedUninstallParameters] constructor.
+		 */
+		protected fun buildSnapshot(): Snapshot = Snapshot(keepData, allUsers, systemApp, targetUser)
 
 		/**
 		 * Constructs a new instance of privileged uninstall parameters.

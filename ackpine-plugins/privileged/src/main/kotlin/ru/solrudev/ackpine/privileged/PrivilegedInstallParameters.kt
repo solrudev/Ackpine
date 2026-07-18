@@ -16,50 +16,51 @@
 
 package ru.solrudev.ackpine.privileged
 
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 /**
  * Shared install parameters for privileged Ackpine plugins.
  */
-public abstract class PrivilegedInstallParameters @JvmOverloads protected constructor(
+public abstract class PrivilegedInstallParameters protected constructor(snapshot: Snapshot) : AckpinePlugin.Parameters {
 
 	/**
 	 * Flag to bypass the low target SDK version block for this install.
 	 */
-	public val bypassLowTargetSdkBlock: Boolean,
+	public val bypassLowTargetSdkBlock: Boolean = snapshot.bypassLowTargetSdkBlock
 
 	/**
 	 * Flag to indicate that you want to allow test packages (those that have set android:testOnly in their
 	 * manifest) to be installed.
 	 */
-	public val allowTest: Boolean,
+	public val allowTest: Boolean = snapshot.allowTest
 
 	/**
 	 * Flag to indicate that you want to replace an already installed package, if one exists.
 	 */
-	public val replaceExisting: Boolean,
+	public val replaceExisting: Boolean = snapshot.replaceExisting
 
 	/**
 	 * Flag to indicate that an upgrade to a lower version of a package than currently installed has been requested.
 	 */
-	public val requestDowngrade: Boolean,
+	public val requestDowngrade: Boolean = snapshot.requestDowngrade
 
 	/**
 	 * Flag parameter for package install to indicate that all requested permissions should be granted to the package.
 	 * If [allUsers] is set the runtime permissions will be granted to all users, otherwise only to the owner.
 	 */
-	public val grantAllRequestedPermissions: Boolean,
+	public val grantAllRequestedPermissions: Boolean = snapshot.grantAllRequestedPermissions
 
 	/**
 	 * Flag to indicate that this install should immediately be visible to all users.
 	 */
-	public val allUsers: Boolean,
+	public val allUsers: Boolean = snapshot.allUsers
 
 	/**
 	 * Installer package for the app. Empty by default, so the calling app package name will be used. Works only on
 	 * Android 9+.
 	 */
-	public val installerPackageName: String,
+	public val installerPackageName: String = snapshot.installerPackageName
 
 	/**
 	 * Android user targeted by this install session.
@@ -68,8 +69,7 @@ public abstract class PrivilegedInstallParameters @JvmOverloads protected constr
 	 *
 	 * By default, equals to [TargetUser.CURRENT].
 	 */
-	public val targetUser: TargetUser = TargetUser.CURRENT
-) : AckpinePlugin.Parameters {
+	public val targetUser: TargetUser = snapshot.targetUser
 
 	/**
 	 * Returns the simple class name used in [toString].
@@ -115,6 +115,53 @@ public abstract class PrivilegedInstallParameters @JvmOverloads protected constr
 				"targetUser=$targetUser" +
 				")"
 	}
+
+	/**
+	 * Immutable privileged install parameter values passed to constructors.
+	 */
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public class Snapshot internal constructor(
+
+		/**
+		 * Whether to bypass the low target SDK version block.
+		 */
+		public val bypassLowTargetSdkBlock: Boolean,
+
+		/**
+		 * Whether to allow test-only packages.
+		 */
+		public val allowTest: Boolean,
+
+		/**
+		 * Whether to replace an existing package.
+		 */
+		public val replaceExisting: Boolean,
+
+		/**
+		 * Whether to request a downgrade.
+		 */
+		public val requestDowngrade: Boolean,
+
+		/**
+		 * Whether to grant all requested permissions.
+		 */
+		public val grantAllRequestedPermissions: Boolean,
+
+		/**
+		 * Whether to install for all users.
+		 */
+		public val allUsers: Boolean,
+
+		/**
+		 * Installer package name, or an empty string to use the calling package.
+		 */
+		public val installerPackageName: String,
+
+		/**
+		 * Android user targeted by the install.
+		 */
+		public val targetUser: TargetUser
+	)
 
 	/**
 	 * Base builder for privileged install parameters.
@@ -231,6 +278,20 @@ public abstract class PrivilegedInstallParameters @JvmOverloads protected constr
 		public open fun setTargetUser(value: TargetUser): Self = self().apply {
 			targetUser = value
 		}
+
+		/**
+		 * Returns an immutable snapshot of this builder for passing to a [PrivilegedInstallParameters] constructor.
+		 */
+		protected fun buildSnapshot(): Snapshot = Snapshot(
+			bypassLowTargetSdkBlock,
+			allowTest,
+			replaceExisting,
+			requestDowngrade,
+			grantAllRequestedPermissions,
+			allUsers,
+			installerPackageName,
+			targetUser
+		)
 
 		/**
 		 * Constructs a new instance of privileged install parameters.

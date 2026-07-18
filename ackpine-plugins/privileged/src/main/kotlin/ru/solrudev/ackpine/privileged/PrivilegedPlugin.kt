@@ -62,14 +62,16 @@ public abstract class PrivilegedPlugin<
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createInstallCapabilities(
-			bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
-			allowTest = isSupported,
-			replaceExisting = isSupported,
-			requestDowngrade = isSupported,
-			grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
-			allUsers = isSupported,
-			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P),
-			targetUser = isSupported
+			PrivilegedInstallCapabilities.Snapshot(
+				bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
+				allowTest = isSupported,
+				replaceExisting = isSupported,
+				requestDowngrade = isSupported,
+				grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
+				allUsers = isSupported,
+				installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P),
+				targetUser = isSupported
+			)
 		)
 	}
 
@@ -84,35 +86,31 @@ public abstract class PrivilegedPlugin<
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createUninstallCapabilities(
-			keepData = flagsStatus,
-			allUsers = flagsStatus,
-			systemApp = flagsStatus,
-			targetUser = if (isPackageInstallerBased) CapabilityStatus.SUPPORTED else CapabilityStatus.UNSUPPORTED
+			PrivilegedUninstallCapabilities.Snapshot(
+				keepData = flagsStatus,
+				allUsers = flagsStatus,
+				systemApp = flagsStatus,
+				targetUser = if (isPackageInstallerBased) {
+					CapabilityStatus.SUPPORTED
+				} else {
+					CapabilityStatus.UNSUPPORTED
+				}
+			)
 		)
 	}
 
 	/**
-	 * Creates and returns the concrete [InstallCapabilities] instance from the pre-computed capability statuses.
+	 * Creates and returns the concrete [InstallCapabilities] instance from the pre-computed [snapshot].
 	 */
 	protected abstract fun createInstallCapabilities(
-		bypassLowTargetSdkBlock: CapabilityStatus,
-		allowTest: CapabilityStatus,
-		replaceExisting: CapabilityStatus,
-		requestDowngrade: CapabilityStatus,
-		grantAllRequestedPermissions: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus,
-		targetUser: CapabilityStatus
+		snapshot: PrivilegedInstallCapabilities.Snapshot
 	): InstallCapabilities
 
 	/**
-	 * Creates and returns the concrete [UninstallCapabilities] instance from the pre-computed capability statuses.
+	 * Creates and returns the concrete [UninstallCapabilities] instance from the pre-computed [snapshot].
 	 */
 	protected abstract fun createUninstallCapabilities(
-		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus,
-		targetUser: CapabilityStatus
+		snapshot: PrivilegedUninstallCapabilities.Snapshot
 	): UninstallCapabilities
 
 	override fun equals(other: Any?): Boolean = this === other || other?.javaClass == javaClass

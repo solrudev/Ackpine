@@ -1,7 +1,5 @@
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
-	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
-	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
-	public synthetic fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities$Snapshot;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getAllowTest ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
@@ -17,9 +15,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallCapabiliti
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
-	protected fun <init> (ZZZZZZLjava/lang/String;)V
-	protected fun <init> (ZZZZZZLjava/lang/String;Lru/solrudev/ackpine/privileged/TargetUser;)V
-	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lru/solrudev/ackpine/privileged/TargetUser;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Snapshot;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Z
 	public final fun getAllowTest ()Z
@@ -37,6 +33,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
 	public fun <init> ()V
 	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
+	protected final fun buildSnapshot ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Snapshot;
 	public final fun getAllUsers ()Z
 	public final fun getAllowTest ()Z
 	public final fun getBypassLowTargetSdkBlock ()Z
@@ -67,8 +64,8 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedPlugin : ru/solru
 	protected fun <init> (Ljava/lang/String;)V
 	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
 	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
-	protected abstract fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
-	protected abstract fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
+	protected abstract fun createInstallCapabilities (Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities$Snapshot;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	protected abstract fun createUninstallCapabilities (Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities$Snapshot;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
 	public fun equals (Ljava/lang/Object;)Z
 	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
 	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
@@ -80,9 +77,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedPlugin : ru/solru
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
-	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
-	protected fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)V
-	public synthetic fun <init> (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities$Snapshot;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
@@ -94,9 +89,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabili
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
-	protected fun <init> (ZZZ)V
-	protected fun <init> (ZZZLru/solrudev/ackpine/privileged/TargetUser;)V
-	public synthetic fun <init> (ZZZLru/solrudev/ackpine/privileged/TargetUser;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	protected fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Snapshot;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Z
 	public final fun getKeepData ()Z
@@ -110,6 +103,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParamete
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
 	public fun <init> ()V
 	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
+	protected final fun buildSnapshot ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Snapshot;
 	public final fun getAllUsers ()Z
 	public final fun getKeepData ()Z
 	public final fun getSystemApp ()Z
