@@ -3,14 +3,14 @@ public final class ru/solrudev/ackpine/libsu/LibsuInstallCapabilities : ru/solru
 
 public final class ru/solrudev/ackpine/libsu/LibsuPlugin : ru/solrudev/ackpine/privileged/PrivilegedPlugin {
 	public fun <init> ()V
-	public synthetic fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
-	public synthetic fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
+	public synthetic fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	public synthetic fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
 }
 
 public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters;
-	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (ZZZZZZLjava/lang/String;Lru/solrudev/ackpine/privileged/TargetUser;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
@@ -25,7 +25,7 @@ public final class ru/solrudev/ackpine/libsu/LibsuPlugin$InstallParameters$Compa
 public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters;
-	public synthetic fun <init> (ZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (ZZZLru/solrudev/ackpine/privileged/TargetUser;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public final class ru/solrudev/ackpine/libsu/LibsuPlugin$UninstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {

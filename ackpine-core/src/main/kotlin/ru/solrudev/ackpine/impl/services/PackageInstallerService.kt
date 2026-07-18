@@ -43,6 +43,11 @@ public interface PackageInstallerService : AckpineService {
 	public val uid: Int
 
 	/**
+	 * Returns a service delegate bound to the Ackpine session with ID equal to [sessionId].
+	 */
+	public fun bind(sessionId: UUID): PackageInstallerService = this
+
+	/**
 	 * @param ackpineSessionId ID of the Ackpine install session.
 	 * @see PackageInstaller.createSession
 	 */

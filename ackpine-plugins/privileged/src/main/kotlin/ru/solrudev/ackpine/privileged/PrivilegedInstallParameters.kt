@@ -21,7 +21,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 /**
  * Shared install parameters for privileged Ackpine plugins.
  */
-public abstract class PrivilegedInstallParameters protected constructor(
+public abstract class PrivilegedInstallParameters @JvmOverloads protected constructor(
 
 	/**
 	 * Flag to bypass the low target SDK version block for this install.
@@ -59,7 +59,16 @@ public abstract class PrivilegedInstallParameters protected constructor(
 	 * Installer package for the app. Empty by default, so the calling app package name will be used. Works only on
 	 * Android 9+.
 	 */
-	public val installerPackageName: String
+	public val installerPackageName: String,
+
+	/**
+	 * Android user targeted by this install session.
+	 *
+	 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+	 *
+	 * By default, equals to [TargetUser.CURRENT].
+	 */
+	public val targetUser: TargetUser = TargetUser.CURRENT
 ) : AckpinePlugin.Parameters {
 
 	/**
@@ -78,6 +87,7 @@ public abstract class PrivilegedInstallParameters protected constructor(
 		if (grantAllRequestedPermissions != other.grantAllRequestedPermissions) return false
 		if (allUsers != other.allUsers) return false
 		if (installerPackageName != other.installerPackageName) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -89,6 +99,7 @@ public abstract class PrivilegedInstallParameters protected constructor(
 		result = 31 * result + grantAllRequestedPermissions.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + installerPackageName.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
@@ -100,7 +111,8 @@ public abstract class PrivilegedInstallParameters protected constructor(
 				"requestDowngrade=$requestDowngrade, " +
 				"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
 				"allUsers=$allUsers, " +
-				"installerPackageName=$installerPackageName" +
+				"installerPackageName=$installerPackageName, " +
+				"targetUser=$targetUser" +
 				")"
 	}
 
@@ -155,6 +167,16 @@ public abstract class PrivilegedInstallParameters protected constructor(
 			protected set
 
 		/**
+		 * Android user targeted by this install session.
+		 *
+		 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+		 *
+		 * By default, equals to [TargetUser.CURRENT].
+		 */
+		public var targetUser: TargetUser = TargetUser.CURRENT
+			protected set
+
+		/**
 		 * Sets [PrivilegedInstallParameters.bypassLowTargetSdkBlock].
 		 */
 		public open fun setBypassLowTargetSdkBlock(value: Boolean): Self = self().apply {
@@ -201,6 +223,13 @@ public abstract class PrivilegedInstallParameters protected constructor(
 		 */
 		public open fun setInstallerPackageName(value: String): Self = self().apply {
 			installerPackageName = value
+		}
+
+		/**
+		 * Sets [PrivilegedInstallParameters.targetUser].
+		 */
+		public open fun setTargetUser(value: TargetUser): Self = self().apply {
+			targetUser = value
 		}
 
 		/**

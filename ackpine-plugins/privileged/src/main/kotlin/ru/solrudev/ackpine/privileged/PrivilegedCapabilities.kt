@@ -28,7 +28,7 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
  * resolved configuration. Parameters are only effective when [PrivilegedPlugin] actually applies, but support here is
  * determined solely from the Android API level and the effective installer type.
  */
-public abstract class PrivilegedInstallCapabilities protected constructor(
+public abstract class PrivilegedInstallCapabilities @JvmOverloads protected constructor(
 
 	/**
 	 * Whether [PrivilegedInstallParameters.bypassLowTargetSdkBlock] is supported.
@@ -77,7 +77,14 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 	 *
 	 * [CapabilityStatus.SUPPORTED] on API level >= 28 with [InstallerType.SESSION_BASED].
 	 */
-	public val installerPackageName: CapabilityStatus
+	public val installerPackageName: CapabilityStatus,
+
+	/**
+	 * Whether [PrivilegedInstallParameters.targetUser] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
+	 */
+	public val targetUser: CapabilityStatus = CapabilityStatus.UNSUPPORTED
 ) : PluginCapability {
 
 	/**
@@ -96,6 +103,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 		if (grantAllRequestedPermissions != other.grantAllRequestedPermissions) return false
 		if (allUsers != other.allUsers) return false
 		if (installerPackageName != other.installerPackageName) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -107,6 +115,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 		result = 31 * result + grantAllRequestedPermissions.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + installerPackageName.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
@@ -118,7 +127,8 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 				"requestDowngrade=$requestDowngrade, " +
 				"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
 				"allUsers=$allUsers, " +
-				"installerPackageName=$installerPackageName" +
+				"installerPackageName=$installerPackageName, " +
+				"targetUser=$targetUser" +
 				")"
 	}
 }
@@ -130,7 +140,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
  * the resolved configuration. Parameters are only effective when [PrivilegedPlugin] or actually applies, but support
  * here is determined solely from the Android API level and the effective uninstaller type.
  */
-public abstract class PrivilegedUninstallCapabilities protected constructor(
+public abstract class PrivilegedUninstallCapabilities @JvmOverloads protected constructor(
 
 	/**
 	 * Whether [PrivilegedUninstallParameters.keepData] is supported.
@@ -151,7 +161,14 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val systemApp: CapabilityStatus
+	public val systemApp: CapabilityStatus,
+
+	/**
+	 * Whether [PrivilegedUninstallParameters.targetUser] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
+	 */
+	public val targetUser: CapabilityStatus = CapabilityStatus.UNSUPPORTED
 ) : PluginCapability {
 
 	/**
@@ -166,6 +183,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -173,12 +191,14 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "${getName()}(" +
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
-			"systemApp=$systemApp" +
+			"systemApp=$systemApp, " +
+			"targetUser=$targetUser" +
 			")"
 }

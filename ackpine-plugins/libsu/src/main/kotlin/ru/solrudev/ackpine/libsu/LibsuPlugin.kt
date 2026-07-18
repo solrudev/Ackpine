@@ -20,6 +20,7 @@ import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
 import ru.solrudev.ackpine.privileged.PrivilegedPlugin
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
+import ru.solrudev.ackpine.privileged.TargetUser
 
 /**
  * Ackpine plugin which enables installation and uninstallation under root user via `libsu` when applied.
@@ -41,7 +42,8 @@ public class LibsuPlugin : PrivilegedPlugin<
 		requestDowngrade: CapabilityStatus,
 		grantAllRequestedPermissions: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus
+		installerPackageName: CapabilityStatus,
+		targetUser: CapabilityStatus
 	): LibsuInstallCapabilities = LibsuInstallCapabilities(
 		bypassLowTargetSdkBlock,
 		allowTest,
@@ -49,14 +51,16 @@ public class LibsuPlugin : PrivilegedPlugin<
 		requestDowngrade,
 		grantAllRequestedPermissions,
 		allUsers,
-		installerPackageName
+		installerPackageName,
+		targetUser
 	)
 
 	override fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus
-	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(keepData, allUsers, systemApp)
+		systemApp: CapabilityStatus,
+		targetUser: CapabilityStatus
+	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(keepData, allUsers, systemApp, targetUser)
 
 	/**
 	 * Install parameters for [LibsuPlugin].
@@ -68,7 +72,8 @@ public class LibsuPlugin : PrivilegedPlugin<
 		requestDowngrade: Boolean,
 		grantAllRequestedPermissions: Boolean,
 		allUsers: Boolean,
-		installerPackageName: String
+		installerPackageName: String,
+		targetUser: TargetUser
 	) : PrivilegedInstallParameters(
 		bypassLowTargetSdkBlock,
 		allowTest,
@@ -76,7 +81,8 @@ public class LibsuPlugin : PrivilegedPlugin<
 		requestDowngrade,
 		grantAllRequestedPermissions,
 		allUsers,
-		installerPackageName
+		installerPackageName,
+		targetUser
 	) {
 
 		override fun getName(): String = "InstallParameters"
@@ -92,7 +98,8 @@ public class LibsuPlugin : PrivilegedPlugin<
 				requestDowngrade,
 				grantAllRequestedPermissions,
 				allUsers,
-				installerPackageName
+				installerPackageName,
+				targetUser
 			)
 		}
 
@@ -101,7 +108,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 			/**
 			 * Default [LibsuPlugin] install parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedInstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: InstallParameters = Builder().build()
@@ -109,13 +116,14 @@ public class LibsuPlugin : PrivilegedPlugin<
 	}
 
 	/**
-	 * Uninstall parameters for [LibsuPlugin]. Take effect only on Android 8.1+.
+	 * Uninstall parameters for [LibsuPlugin]. Uninstall flags take effect only on Android 8.1+.
 	 */
 	public class UninstallParameters private constructor(
 		keepData: Boolean,
 		allUsers: Boolean,
-		systemApp: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
+		systemApp: Boolean,
+		targetUser: TargetUser
+	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp, targetUser) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -123,7 +131,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 		 * Builder for [LibsuPlugin.UninstallParameters].
 		 */
 		public class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp, targetUser)
 		}
 
 		public companion object {
@@ -131,7 +139,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 			/**
 			 * Default [LibsuPlugin] uninstall parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedUninstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: UninstallParameters = Builder().build()

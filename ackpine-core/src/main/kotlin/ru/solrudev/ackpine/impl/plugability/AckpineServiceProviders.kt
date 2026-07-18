@@ -26,6 +26,9 @@ import ru.solrudev.ackpine.plugability.AckpinePluginCache
 import ru.solrudev.ackpine.plugability.AckpinePluginContainer
 import java.util.ServiceLoader
 import java.util.UUID
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.reflect.KClass
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -63,6 +66,7 @@ internal class AckpineServiceProviders(
 			}
 	}
 
+	@OptIn(ExperimentalContracts::class)
 	@JvmSynthetic
 	internal fun <S : AckpineService, R : CompletableSession<*>> createSessionWithService(
 		serviceClass: KClass<S>,
@@ -79,6 +83,9 @@ internal class AckpineServiceProviders(
 		},
 		sessionFactory: (Lazy<S>) -> R
 	): R {
+		contract {
+			callsInPlace(sessionFactory, InvocationKind.EXACTLY_ONCE)
+		}
 		val service = serviceProviders.mapCatching { providers ->
 			if (providers.isEmpty()) {
 				logger.debug(

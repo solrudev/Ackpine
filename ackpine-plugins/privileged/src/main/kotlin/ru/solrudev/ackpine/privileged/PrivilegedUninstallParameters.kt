@@ -21,7 +21,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 /**
  * Shared uninstall parameters for privileged Ackpine plugins.
  */
-public abstract class PrivilegedUninstallParameters protected constructor(
+public abstract class PrivilegedUninstallParameters @JvmOverloads protected constructor(
 
 	/**
 	 * Flag parameter to indicate that you don't want to delete the package's data directory.
@@ -34,12 +34,21 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 	public val allUsers: Boolean,
 
 	/**
-	 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+	 * Flag parameter to indicate that a system app should be marked as uninstalled for the [targetUser].
 	 *
 	 * This does not remove the app from the system partition. For an updated system app, it prevents the update from
-	 * being rolled back globally when uninstalling it for current user.
+	 * being rolled back globally when uninstalling it for the target user.
 	 */
-	public val systemApp: Boolean
+	public val systemApp: Boolean,
+
+	/**
+	 * Android user targeted by this uninstall session.
+	 *
+	 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+	 *
+	 * By default, equals to [TargetUser.CURRENT].
+	 */
+	public val targetUser: TargetUser = TargetUser.CURRENT
 ) : AckpinePlugin.Parameters {
 
 	/**
@@ -54,6 +63,7 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -61,13 +71,15 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "${getName()}(" +
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
-			"systemApp=$systemApp" +
+			"systemApp=$systemApp, " +
+			"targetUser=$targetUser" +
 			")"
 
 	/**
@@ -88,12 +100,22 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 			protected set
 
 		/**
-		 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+		 * Flag parameter to indicate that a system app should be marked as uninstalled for the [targetUser].
 		 *
 		 * This does not remove the app from the system partition. For an updated system app, it prevents the update
-		 * from being rolled back globally when uninstalling it for current user.
+		 * from being rolled back globally when uninstalling it for the target user.
 		 */
 		public var systemApp: Boolean = false
+			protected set
+
+		/**
+		 * Android user targeted by this uninstall session.
+		 *
+		 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+		 *
+		 * By default, equals to [TargetUser.CURRENT].
+		 */
+		public var targetUser: TargetUser = TargetUser.CURRENT
 			protected set
 
 		/**
@@ -115,6 +137,13 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		 */
 		public open fun setSystemApp(value: Boolean): Self = self().apply {
 			systemApp = value
+		}
+
+		/**
+		 * Sets [PrivilegedUninstallParameters.targetUser].
+		 */
+		public open fun setTargetUser(value: TargetUser): Self = self().apply {
+			targetUser = value
 		}
 
 		/**

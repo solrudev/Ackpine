@@ -136,7 +136,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 				SessionBasedInstallSession(
 					loggerProvider,
 					applicationContext,
-					packageInstallerService,
+					packageInstallerService = lazy { packageInstallerService.value.bind(id) },
 					apks = parameters.apks.toList(),
 					id,
 					initialState = Session.State.Pending,
@@ -252,16 +252,18 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val initialProgress = installSession.getProgress(sessionProgressDao)
 		val nativeSessionId = installSession.nativeSessionId ?: -1
 		val plugins = runCatching { installSession.getPlugins() }
+		val boundPackageInstallerService: Lazy<PackageInstallerService>
 		val session = ackpineServiceProviders.createSessionWithService(
 			serviceClass = PackageInstallerService::class,
 			defaultService = defaultPackageInstallerService,
 			sessionId = sessionId,
 			pluginClasses = plugins
 		) { packageInstallerService ->
+			boundPackageInstallerService = lazy { packageInstallerService.value.bind(sessionId) }
 			SessionBasedInstallSession(
 				loggerProvider,
 				applicationContext,
-				packageInstallerService,
+				boundPackageInstallerService,
 				apks = installSession.uris.map(String::toUri),
 				sessionId,
 				initialState, initialProgress,
@@ -309,8 +311,10 @@ internal class InstallSessionFactoryImpl internal constructor(
 		// Fails are guaranteed to be handled by PackageInstallerStatusReceiver (in case of self-update
 		// success is not always handled), so if native session doesn't exist, it can only mean that it succeeded.
 		// There may be latency from the receiver, so we delay this to allow the receiver to kick in.
-		val packageInstaller = applicationContext.packageManager.packageInstaller
-		if (initialState is Committed && packageInstaller.getSessionInfo(nativeSessionId) == null) {
+		if (
+			initialState is Committed
+			&& boundPackageInstallerService.value.getSessionInfo(nativeSessionId) == null
+		) {
 			logger.info(
 				"Scheduling success fallback for dead native session %s of session %s",
 				nativeSessionId,

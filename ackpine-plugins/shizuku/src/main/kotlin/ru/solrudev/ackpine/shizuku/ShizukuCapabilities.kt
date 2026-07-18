@@ -35,7 +35,8 @@ public class ShizukuInstallCapabilities internal constructor(
 	requestDowngrade: CapabilityStatus,
 	grantAllRequestedPermissions: CapabilityStatus,
 	allUsers: CapabilityStatus,
-	installerPackageName: CapabilityStatus
+	installerPackageName: CapabilityStatus,
+	targetUser: CapabilityStatus
 ) : PrivilegedInstallCapabilities(
 	bypassLowTargetSdkBlock,
 	allowTest,
@@ -43,7 +44,8 @@ public class ShizukuInstallCapabilities internal constructor(
 	requestDowngrade,
 	grantAllRequestedPermissions,
 	allUsers,
-	installerPackageName
+	installerPackageName,
+	targetUser
 ) {
 	override fun getName(): String = "ShizukuInstallCapabilities"
 }
@@ -59,7 +61,8 @@ public class ShizukuInstallCapabilities internal constructor(
 public class ShizukuUninstallCapabilities internal constructor(
 	keepData: CapabilityStatus,
 	allUsers: CapabilityStatus,
-	systemApp: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp) {
+	systemApp: CapabilityStatus,
+	targetUser: CapabilityStatus
+) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp, targetUser) {
 	override fun getName(): String = "ShizukuUninstallCapabilities"
 }

@@ -23,6 +23,7 @@ import ru.solrudev.ackpine.shizuku.database.ShizukuParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuParamsDao
 import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParamsDao
+import ru.solrudev.ackpine.privileged.TargetUser
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -42,6 +43,7 @@ internal class ShizukuPluginParametersStore(
 				.setGrantAllRequestedPermissions(shizukuParams.grantAllRequestedPermissions)
 				.setAllUsers(shizukuParams.allUsers)
 				.setInstallerPackageName(shizukuParams.installerPackageName)
+				.setTargetUser(TargetUser(shizukuParams.targetUserId))
 				.build()
 		}
 		shizukuUninstallParamsDao.getBySessionId(id)?.let { shizukuParams ->
@@ -49,6 +51,7 @@ internal class ShizukuPluginParametersStore(
 				.setKeepData(shizukuParams.keepData)
 				.setAllUsers(shizukuParams.allUsers)
 				.setSystemApp(shizukuParams.systemApp)
+				.setTargetUser(TargetUser(shizukuParams.targetUserId))
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -67,7 +70,8 @@ internal class ShizukuPluginParametersStore(
 				requestDowngrade = params.requestDowngrade,
 				grantAllRequestedPermissions = params.grantAllRequestedPermissions,
 				allUsers = params.allUsers,
-				installerPackageName = params.installerPackageName
+				installerPackageName = params.installerPackageName,
+				targetUserId = params.targetUser.userId
 			)
 			shizukuParamsDao.insertParameters(shizukuParams)
 		}
@@ -77,7 +81,8 @@ internal class ShizukuPluginParametersStore(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
 				allUsers = params.allUsers,
-				systemApp = params.systemApp
+				systemApp = params.systemApp,
+				targetUserId = params.targetUser.userId
 			)
 			shizukuUninstallParamsDao.insertParameters(shizukuParams)
 		}

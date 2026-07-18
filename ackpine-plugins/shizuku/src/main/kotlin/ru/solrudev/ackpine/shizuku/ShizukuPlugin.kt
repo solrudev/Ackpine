@@ -25,6 +25,7 @@ import ru.solrudev.ackpine.plugability.UninstallPluginScope
 import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
 import ru.solrudev.ackpine.privileged.PrivilegedPlugin
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
+import ru.solrudev.ackpine.privileged.TargetUser
 
 /**
  * Ackpine plugin which enables installation and uninstallation through Shizuku when applied.
@@ -63,7 +64,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		requestDowngrade: CapabilityStatus,
 		grantAllRequestedPermissions: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus
+		installerPackageName: CapabilityStatus,
+		targetUser: CapabilityStatus
 	): ShizukuInstallCapabilities = ShizukuInstallCapabilities(
 		bypassLowTargetSdkBlock = bypassLowTargetSdkBlock,
 		allowTest = allowTest,
@@ -71,14 +73,16 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		requestDowngrade = requestDowngrade,
 		grantAllRequestedPermissions = grantAllRequestedPermissions,
 		allUsers = allUsers,
-		installerPackageName = installerPackageName
+		installerPackageName = installerPackageName,
+		targetUser = targetUser
 	)
 
 	override fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus
-	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers, systemApp)
+		systemApp: CapabilityStatus,
+		targetUser: CapabilityStatus
+	): ShizukuUninstallCapabilities = ShizukuUninstallCapabilities(keepData, allUsers, systemApp, targetUser)
 
 	/**
 	 * Install parameters for [ShizukuPlugin].
@@ -90,7 +94,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		requestDowngrade: Boolean,
 		grantAllRequestedPermissions: Boolean,
 		allUsers: Boolean,
-		installerPackageName: String
+		installerPackageName: String,
+		targetUser: TargetUser
 	) : PrivilegedInstallParameters(
 		bypassLowTargetSdkBlock,
 		allowTest,
@@ -98,7 +103,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		requestDowngrade,
 		grantAllRequestedPermissions,
 		allUsers,
-		installerPackageName
+		installerPackageName,
+		targetUser
 	) {
 
 		override fun getName(): String = "InstallParameters"
@@ -114,7 +120,8 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 				requestDowngrade,
 				grantAllRequestedPermissions,
 				allUsers,
-				installerPackageName
+				installerPackageName,
+				targetUser
 			)
 		}
 
@@ -123,7 +130,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 			/**
 			 * Default [ShizukuPlugin] install parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedInstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: InstallParameters = Builder().build()
@@ -131,13 +138,14 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	}
 
 	/**
-	 * Uninstall parameters for [ShizukuPlugin]. Take effect only on Android 8.1+.
+	 * Uninstall parameters for [ShizukuPlugin]. Uninstall flags take effect only on Android 8.1+.
 	 */
 	public open class UninstallParameters internal constructor(
 		keepData: Boolean,
 		allUsers: Boolean,
-		systemApp: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
+		systemApp: Boolean,
+		targetUser: TargetUser
+	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp, targetUser) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -145,7 +153,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		 * Builder for [ShizukuPlugin.UninstallParameters].
 		 */
 		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
+			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp, targetUser)
 		}
 
 		public companion object {
@@ -153,7 +161,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 			/**
 			 * Default [ShizukuPlugin] uninstall parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedUninstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: UninstallParameters = Builder().build()

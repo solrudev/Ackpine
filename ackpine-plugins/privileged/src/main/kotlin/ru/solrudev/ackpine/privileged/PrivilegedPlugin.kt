@@ -68,13 +68,15 @@ public abstract class PrivilegedPlugin<
 			requestDowngrade = isSupported,
 			grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
 			allUsers = isSupported,
-			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P)
+			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P),
+			targetUser = isSupported
 		)
 	}
 
 	override fun getCapabilities(context: UninstallCapabilityContext): UninstallCapabilities {
-		val isSupported = if (
-			context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED &&
+		val isPackageInstallerBased = context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED
+		val flagsStatus = if (
+			isPackageInstallerBased &&
 			context.sdkInt >= Build.VERSION_CODES.O_MR1
 		) {
 			CapabilityStatus.SUPPORTED
@@ -82,9 +84,10 @@ public abstract class PrivilegedPlugin<
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createUninstallCapabilities(
-			keepData = isSupported,
-			allUsers = isSupported,
-			systemApp = isSupported
+			keepData = flagsStatus,
+			allUsers = flagsStatus,
+			systemApp = flagsStatus,
+			targetUser = if (isPackageInstallerBased) CapabilityStatus.SUPPORTED else CapabilityStatus.UNSUPPORTED
 		)
 	}
 
@@ -98,7 +101,8 @@ public abstract class PrivilegedPlugin<
 		requestDowngrade: CapabilityStatus,
 		grantAllRequestedPermissions: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus
+		installerPackageName: CapabilityStatus,
+		targetUser: CapabilityStatus
 	): InstallCapabilities
 
 	/**
@@ -107,7 +111,8 @@ public abstract class PrivilegedPlugin<
 	protected abstract fun createUninstallCapabilities(
 		keepData: CapabilityStatus,
 		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus
+		systemApp: CapabilityStatus,
+		targetUser: CapabilityStatus
 	): UninstallCapabilities
 
 	override fun equals(other: Any?): Boolean = this === other || other?.javaClass == javaClass

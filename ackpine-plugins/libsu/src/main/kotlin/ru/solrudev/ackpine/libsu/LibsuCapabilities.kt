@@ -34,7 +34,8 @@ public class LibsuInstallCapabilities internal constructor(
 	requestDowngrade: CapabilityStatus,
 	grantAllRequestedPermissions: CapabilityStatus,
 	allUsers: CapabilityStatus,
-	installerPackageName: CapabilityStatus
+	installerPackageName: CapabilityStatus,
+	targetUser: CapabilityStatus
 ) : PrivilegedInstallCapabilities(
 	bypassLowTargetSdkBlock,
 	allowTest,
@@ -42,7 +43,8 @@ public class LibsuInstallCapabilities internal constructor(
 	requestDowngrade,
 	grantAllRequestedPermissions,
 	allUsers,
-	installerPackageName
+	installerPackageName,
+	targetUser
 ) {
 	override fun getName(): String = "LibsuInstallCapabilities"
 }
@@ -57,7 +59,8 @@ public class LibsuInstallCapabilities internal constructor(
 public class LibsuUninstallCapabilities internal constructor(
 	keepData: CapabilityStatus,
 	allUsers: CapabilityStatus,
-	systemApp: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp) {
+	systemApp: CapabilityStatus,
+	targetUser: CapabilityStatus
+) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp, targetUser) {
 	override fun getName(): String = "LibsuUninstallCapabilities"
 }
