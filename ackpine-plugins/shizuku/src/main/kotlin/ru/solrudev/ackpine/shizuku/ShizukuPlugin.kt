@@ -19,8 +19,6 @@ package ru.solrudev.ackpine.shizuku
 import android.content.pm.PackageInstaller
 import rikka.shizuku.Shizuku
 import ru.solrudev.ackpine.capabilities.CapabilityStatus
-import ru.solrudev.ackpine.capabilities.InstallCapabilityContext
-import ru.solrudev.ackpine.capabilities.UninstallCapabilityContext
 import ru.solrudev.ackpine.installer.parameters.InstallerType.INTENT_BASED
 import ru.solrudev.ackpine.plugability.InstallPluginScope
 import ru.solrudev.ackpine.plugability.UninstallPluginScope
@@ -56,16 +54,6 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 			return
 		}
 		super.apply(scope)
-	}
-
-	@Suppress("RedundantOverride") // binary compatibility
-	override fun getCapabilities(context: InstallCapabilityContext): ShizukuInstallCapabilities {
-		return super.getCapabilities(context)
-	}
-
-	@Suppress("RedundantOverride") // binary compatibility
-	override fun getCapabilities(context: UninstallCapabilityContext): ShizukuUninstallCapabilities {
-		return super.getCapabilities(context)
 	}
 
 	override fun createInstallCapabilities(
@@ -118,19 +106,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		/**
 		 * Builder for [ShizukuPlugin.InstallParameters].
 		 */
-		@Suppress("RedundantOverride") // binary compatibility
 		public open class Builder : PrivilegedInstallParameters.Builder<InstallParameters, Builder>() {
-
-			override fun setBypassLowTargetSdkBlock(value: Boolean): Builder = super.setBypassLowTargetSdkBlock(value)
-			override fun setAllowTest(value: Boolean): Builder = super.setAllowTest(value)
-			override fun setReplaceExisting(value: Boolean): Builder = super.setReplaceExisting(value)
-			override fun setRequestDowngrade(value: Boolean): Builder = super.setRequestDowngrade(value)
-			override fun setGrantAllRequestedPermissions(value: Boolean): Builder =
-				super.setGrantAllRequestedPermissions(value)
-
-			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
-			override fun setInstallerPackageName(value: String): Builder = super.setInstallerPackageName(value)
-
 			override fun build(): InstallParameters = InstallParameters(
 				bypassLowTargetSdkBlock,
 				allowTest,
@@ -168,11 +144,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 		/**
 		 * Builder for [ShizukuPlugin.UninstallParameters].
 		 */
-		@Suppress("RedundantOverride") // binary compatibility
 		public open class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun setKeepData(value: Boolean): Builder = super.setKeepData(value)
-			override fun setAllUsers(value: Boolean): Builder = super.setAllUsers(value)
-			override fun setSystemApp(value: Boolean): Builder = super.setSystemApp(value)
 			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
 		}
 
