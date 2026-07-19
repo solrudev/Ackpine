@@ -22,4 +22,5 @@ private const val CONFIG_PART = "config."
 internal fun splitTypePart(name: String) = name
 	.lowercase()
 	.substringAfterLast(CONFIG_PART, missingDelimiterValue = "")
+	.substringBefore('.')
 	.ifEmpty { null }

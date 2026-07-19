@@ -4,61 +4,35 @@ public final class ru/solrudev/ackpine/shizuku/ShizukuInstallCapabilities : ru/s
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin : ru/solrudev/ackpine/privileged/PrivilegedPlugin {
 	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
 	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
-	public synthetic fun createInstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
-	public synthetic fun createUninstallCapabilities (Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;Lru/solrudev/ackpine/capabilities/CapabilityStatus;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
-	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
-	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
-	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuInstallCapabilities;
-	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
-	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
-	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/shizuku/ShizukuUninstallCapabilities;
+	public synthetic fun createInstallCapabilities (Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities$Snapshot;)Lru/solrudev/ackpine/privileged/PrivilegedInstallCapabilities;
+	public synthetic fun createUninstallCapabilities (Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities$Snapshot;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallCapabilities;
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters {
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
-	protected fun getName ()Ljava/lang/String;
+	public synthetic fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Snapshot;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
 	public fun <init> ()V
 	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
 	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters;
-	public synthetic fun setAllUsers (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setAllowTest (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setAllowTest (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setBypassLowTargetSdkBlock (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setReplaceExisting (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setReplaceExisting (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
-	public synthetic fun setRequestDowngrade (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
-	public fun setRequestDowngrade (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$InstallParameters$Companion {
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters {
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters {
 	public static final field Companion Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
-	protected fun getName ()Ljava/lang/String;
+	public synthetic fun <init> (Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Snapshot;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
-public class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
+public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder : ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
 	public fun <init> ()V
 	public synthetic fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
 	public fun build ()Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters;
-	public synthetic fun setAllUsers (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
-	public fun setAllUsers (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder;
-	public synthetic fun setKeepData (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
-	public fun setKeepData (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder;
-	public synthetic fun setSystemApp (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
-	public fun setSystemApp (Z)Lru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/shizuku/ShizukuPlugin$UninstallParameters$Companion {

@@ -19,11 +19,9 @@ package ru.solrudev.ackpine.libsu
 import android.content.Context
 import android.content.pm.IPackageInstaller
 import android.content.pm.IPackageManager
-import android.content.pm.PackageInstaller
 import android.os.Build
 import android.os.IBinder
 import android.os.ServiceManager
-import android.os.UserHandleHidden
 import androidx.annotation.RestrictTo
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import ru.solrudev.ackpine.plugability.AckpinePlugin
@@ -33,9 +31,9 @@ import java.util.UUID
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class RootPackageInstaller(
 	private val rootService: IBinder,
-	packageInstaller: PackageInstaller,
+	context: Context,
 	remotePackageInstaller: IPackageInstaller
-) : PackageInstallerProxy(packageInstaller, remotePackageInstaller, uid = 0) {
+) : PackageInstallerProxy(context, remotePackageInstaller, context.packageName, uid = 0) {
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
 		when (parameters) {
@@ -69,12 +67,7 @@ internal class RootPackageInstaller(
 			)
 			return RootPackageInstaller(
 				rootService,
-				createPackageInstaller(
-					context,
-					remotePackageInstaller,
-					context.packageName,
-					UserHandleHidden.myUserId()
-				),
+				context,
 				remotePackageInstaller
 			)
 		}

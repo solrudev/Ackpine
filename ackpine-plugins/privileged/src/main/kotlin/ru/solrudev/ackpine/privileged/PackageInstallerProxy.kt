@@ -26,9 +26,12 @@ import android.content.pm.PackageInstallerHidden
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.UserHandleHidden
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.helpers.concurrent.Locks
+import ru.solrudev.ackpine.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.impl.services.PackageInstallerSessionWrapper
 import ru.solrudev.ackpine.plugability.AckpinePlugin
@@ -40,39 +43,39 @@ import java.util.concurrent.ConcurrentHashMap
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 public abstract class PackageInstallerProxy protected constructor(
-	private val packageInstaller: PackageInstaller,
+	private val context: Context,
 	private val remotePackageInstaller: IPackageInstaller,
+	private val installerPackageName: String,
 	final override val uid: Int
 ) : PackageInstallerService {
 
 	private val installParameters = ConcurrentHashMap<UUID, PrivilegedInstallParameters>()
 	private val uninstallParameters = ConcurrentHashMap<UUID, PrivilegedUninstallParameters>()
+	private val packageInstallers = ConcurrentHashMap<Int, PackageInstaller>()
+	private val packageInstallerLocks = Locks(16)
 
-	final override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int {
-		val privilegedParameters = installParameters[ackpineSessionId]
-		if (privilegedParameters != null) {
-			@Suppress("CAST_NEVER_SUCCEEDS")
-			applyInstallFlags(params as PackageInstallerHidden.SessionParams, privilegedParameters)
-			if (privilegedParameters.installerPackageName.isNotEmpty() && Build.VERSION.SDK_INT >= 28) {
-				@Suppress("NewApi") // method is available since API 28, but was hidden before API 34
-				params.setInstallerPackageName(privilegedParameters.installerPackageName)
-			}
+	final override fun bind(sessionId: UUID): PackageInstallerService {
+		val targetUser = installParameters[sessionId]?.targetUser
+			?: uninstallParameters[sessionId]?.targetUser
+			?: TargetUser.CURRENT
+		val resolvedUserId = if (targetUser == TargetUser.CURRENT) {
+			UserHandleHidden.myUserId()
+		} else {
+			targetUser.userId
 		}
-		return packageInstaller.createSession(params)
+		val packageInstaller = packageInstallers.computeIfAbsentCompat(resolvedUserId, packageInstallerLocks) {
+			createPackageInstaller(context, remotePackageInstaller, installerPackageName, resolvedUserId)
+		}
+		return BoundPackageInstaller(packageInstaller!!)
 	}
 
-	final override fun openSession(sessionId: Int): PackageInstallerService.Session {
-		val remoteSession = IPackageInstallerSession.Stub.asInterface(
-			wrapBinder(remotePackageInstaller.openSession(sessionId).asBinder())
-		)
+	final override fun createSession(
+		params: PackageInstaller.SessionParams,
+		ackpineSessionId: UUID
+	): Int = bind(ackpineSessionId).createSession(params, ackpineSessionId)
 
-		@Suppress("CAST_NEVER_SUCCEEDS")
-		val session = PackageInstallerHidden.Session(remoteSession) as PackageInstaller.Session
-		return PackageInstallerSessionWrapper(session)
-	}
-
-	final override fun getSessionInfo(sessionId: Int): PackageInstaller.SessionInfo? =
-		packageInstaller.getSessionInfo(sessionId)
+	final override fun openSession(sessionId: Int): PackageInstallerService.Session = unboundServiceAccess()
+	final override fun getSessionInfo(sessionId: Int): PackageInstaller.SessionInfo = unboundServiceAccess()
 
 	@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
 	final override fun commitSessionAfterInstallConstraintsAreMet(
@@ -80,38 +83,105 @@ public abstract class PackageInstallerProxy protected constructor(
 		statusReceiver: IntentSender,
 		constraints: PackageInstaller.InstallConstraints,
 		timeoutMillis: Long
-	): Unit = packageInstaller.commitSessionAfterInstallConstraintsAreMet(
-		sessionId,
-		statusReceiver,
-		constraints,
-		timeoutMillis
-	)
+	): Unit = unboundServiceAccess()
 
 	final override fun registerSessionCallback(
 		callback: PackageInstaller.SessionCallback,
 		handler: Handler
-	): Unit = packageInstaller.registerSessionCallback(callback, handler)
+	): Unit = unboundServiceAccess()
 
-	final override fun unregisterSessionCallback(callback: PackageInstaller.SessionCallback): Unit =
-		packageInstaller.unregisterSessionCallback(callback)
+	final override fun unregisterSessionCallback(
+		callback: PackageInstaller.SessionCallback
+	): Unit = unboundServiceAccess()
 
-	final override fun abandonSession(sessionId: Int): Unit = remotePackageInstaller.abandonSession(sessionId)
+	final override fun abandonSession(sessionId: Int): Unit = unboundServiceAccess()
 
 	@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
 	final override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
-		if (Build.VERSION.SDK_INT < 27) {
-			packageInstaller.uninstall(packageName, statusReceiver)
-			return
+		bind(ackpineSessionId).uninstall(packageName, statusReceiver, ackpineSessionId)
+	}
+
+	private fun unboundServiceAccess(): Nothing = error(
+		"PackageInstallerService must be bound to an Ackpine session before use"
+	)
+
+	private inner class BoundPackageInstaller(
+		private val packageInstaller: PackageInstaller
+	) : PackageInstallerService {
+
+		override val uid: Int
+			get() = this@PackageInstallerProxy.uid
+
+		override fun bind(sessionId: UUID): PackageInstallerService = this@PackageInstallerProxy.bind(sessionId)
+
+		override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) =
+			this@PackageInstallerProxy.applyParameters(sessionId, parameters)
+
+		override fun createSession(params: PackageInstaller.SessionParams, ackpineSessionId: UUID): Int {
+			val privilegedParameters = installParameters[ackpineSessionId]
+			if (privilegedParameters != null) {
+				@Suppress("CAST_NEVER_SUCCEEDS")
+				applyInstallFlags(params as PackageInstallerHidden.SessionParams, privilegedParameters)
+				if (privilegedParameters.installerPackageName.isNotEmpty() && Build.VERSION.SDK_INT >= 28) {
+					@Suppress("NewApi") // method is available since API 28, but was hidden before API 34
+					params.setInstallerPackageName(privilegedParameters.installerPackageName)
+				}
+			}
+			return packageInstaller.createSession(params)
 		}
-		val privilegedParameters = uninstallParameters[ackpineSessionId]
-		var flags = 0
-		if (privilegedParameters != null) {
-			flags = applyFlag(flags, privilegedParameters.keepData, DELETE_KEEP_DATA)
-			flags = applyFlag(flags, privilegedParameters.allUsers, DELETE_ALL_USERS)
-			flags = applyFlag(flags, privilegedParameters.systemApp, DELETE_SYSTEM_APP)
+
+		override fun openSession(sessionId: Int): PackageInstallerService.Session {
+			val remoteSession = IPackageInstallerSession.Stub.asInterface(
+				wrapBinder(remotePackageInstaller.openSession(sessionId).asBinder())
+			)
+
+			@Suppress("CAST_NEVER_SUCCEEDS")
+			val session = PackageInstallerHidden.Session(remoteSession) as PackageInstaller.Session
+			return PackageInstallerSessionWrapper(session)
 		}
-		@Suppress("CAST_NEVER_SUCCEEDS")
-		(packageInstaller as PackageInstallerHidden).uninstall(packageName, flags, statusReceiver)
+
+		override fun getSessionInfo(sessionId: Int): PackageInstaller.SessionInfo? =
+			packageInstaller.getSessionInfo(sessionId)
+
+		@RequiresApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE)
+		override fun commitSessionAfterInstallConstraintsAreMet(
+			sessionId: Int,
+			statusReceiver: IntentSender,
+			constraints: PackageInstaller.InstallConstraints,
+			timeoutMillis: Long
+		): Unit = packageInstaller.commitSessionAfterInstallConstraintsAreMet(
+			sessionId,
+			statusReceiver,
+			constraints,
+			timeoutMillis
+		)
+
+		override fun registerSessionCallback(
+			callback: PackageInstaller.SessionCallback,
+			handler: Handler
+		): Unit = packageInstaller.registerSessionCallback(callback, handler)
+
+		override fun unregisterSessionCallback(callback: PackageInstaller.SessionCallback): Unit =
+			packageInstaller.unregisterSessionCallback(callback)
+
+		override fun abandonSession(sessionId: Int): Unit = packageInstaller.abandonSession(sessionId)
+
+		@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
+		override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
+			if (Build.VERSION.SDK_INT < 27) {
+				packageInstaller.uninstall(packageName, statusReceiver)
+				return
+			}
+			val privilegedParameters = uninstallParameters[ackpineSessionId]
+			var flags = 0
+			if (privilegedParameters != null) {
+				flags = applyFlag(flags, privilegedParameters.keepData, DELETE_KEEP_DATA)
+				flags = applyFlag(flags, privilegedParameters.allUsers, DELETE_ALL_USERS)
+				flags = applyFlag(flags, privilegedParameters.systemApp, DELETE_SYSTEM_APP)
+			}
+			@Suppress("CAST_NEVER_SUCCEEDS")
+			(packageInstaller as PackageInstallerHidden).uninstall(packageName, flags, statusReceiver)
+		}
 	}
 
 	protected fun applyInstallParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
@@ -128,40 +198,36 @@ public abstract class PackageInstallerProxy protected constructor(
 
 	protected abstract fun wrapBinder(original: IBinder): IBinder
 
-	protected companion object {
+	@Suppress("CAST_NEVER_SUCCEEDS")
+	private fun createPackageInstaller(
+		context: Context,
+		remotePackageInstaller: IPackageInstaller,
+		installerPackageName: String,
+		userId: Int
+	): PackageInstaller = when {
+		Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PackageInstallerHidden(
+			remotePackageInstaller,
+			installerPackageName,
+			context.attributionTag,
+			userId
+		)
 
-		@JvmStatic
-		@Suppress("CAST_NEVER_SUCCEEDS")
-		protected fun createPackageInstaller(
-			context: Context,
-			remotePackageInstaller: IPackageInstaller,
-			installerPackageName: String,
-			userId: Int
-		): PackageInstaller = when {
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> PackageInstallerHidden(
+		Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> PackageInstallerHidden(
+			remotePackageInstaller,
+			installerPackageName,
+			userId
+		)
+
+		else -> context.applicationContext.let { applicationContext ->
+			PackageInstallerHidden(
+				applicationContext,
+				applicationContext.packageManager,
 				remotePackageInstaller,
 				installerPackageName,
-				context.attributionTag,
 				userId
 			)
-
-			Build.VERSION.SDK_INT >= Build.VERSION_CODES.O -> PackageInstallerHidden(
-				remotePackageInstaller,
-				installerPackageName,
-				userId
-			)
-
-			else -> context.applicationContext.let { applicationContext ->
-				PackageInstallerHidden(
-					applicationContext,
-					applicationContext.packageManager,
-					remotePackageInstaller,
-					installerPackageName,
-					userId
-				)
-			}
-		} as PackageInstaller
-	}
+		}
+	} as PackageInstaller
 
 	private fun applyInstallFlags(
 		params: PackageInstallerHidden.SessionParams,

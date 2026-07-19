@@ -6,6 +6,20 @@ hide:
 Change Log
 ==========
 
+Version 0.25.0 (2026-07-19)
+---------------------------
+
+### Bug fixes and improvements
+
+- Prefer all APK splits tied for best compatibility instead of only one. When the device's exact screen density, ABI or locale doesn't appear in the splits, `sortedByCompatibility()` and `filterCompatible()` now mark every nearest-matching split as preferred rather than picking a single one.
+- Fix misclassification of APK splits with a suffix in their split name (such as `config.arm64_v8a.v2`).
+- Allow targeting a specific Android user in privileged (Shizuku and root) install and uninstall sessions via the new `targetUser` parameter. Note that `allUsers` retains Android's native semantics and may make the selected target irrelevant.
+
+### Public API changes
+
+- Added `TargetUser` type in `ackpine-privileged`.
+- Added `targetUser` property to `PrivilegedInstallParameters`, `PrivilegedUninstallParameters`, `PrivilegedInstallParametersDsl`, `PrivilegedUninstallParametersDsl`, `PrivilegedInstallCapabilities` and `PrivilegedUninstallCapabilities`.
+
 Version 0.24.0 (2026-07-15)
 ---------------------------
 

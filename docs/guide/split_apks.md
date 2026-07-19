@@ -171,7 +171,7 @@ The `get()` is cancellable if split package source supports cancellation (such a
 
 Each [entry](../api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-entry/index.html) in APK lists inside of `SplitPackage` (such as `libs`, `localization` etc.) has `isPreferred` and `apk` properties:
 
-- `isPreferred` — indicates whether the APK is the most preferred for the device among all splits of the same type. By default it is `true`. When an operation which checks compatibility is applied, this flag is updated accordingly;
+- `isPreferred` — indicates whether the APK is among the most preferred for the device among all splits of the same type. Multiple entries can be preferred when they are tied for best compatibility. By default it is `true`. When an operation which checks compatibility is applied, this flag is updated accordingly;
 - `apk` — `Apk` object.
 
 `SplitPackage` can be flattened to a plain list of entries by calling `toList()`. Also you can filter out all entries where `isPreferred=false` with `filterPreferred()`:
@@ -192,9 +192,9 @@ Each [entry](../api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split
 
 List of available [`SplitPackage.Provider`](../api/ackpine-splits/splits-main/ru.solrudev.ackpine.splits/-split-package/-provider/index.html) operations:
 
-- `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, nearest matching split is chosen as a preferred one. If an unresolved feature-targeted configuration split ties a base-targeted top-level configuration split by compatibility, the base-targeted one takes precedence.
+- `sortedByCompatibility(Context)` operation returns a provider that gives out APK splits sorted according to their compatibility with the device. The most preferred APK splits will appear first. If exact device's screen density, ABI or locale doesn't appear in the splits, all nearest matching splits are marked as preferred. All splits tied for best compatibility are marked as preferred. If an unresolved feature-targeted configuration split ties a base-targeted top-level configuration split by compatibility, the base-targeted one takes precedence.
 
-- `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device. It acts the same as applying `sortedByCompatibility(context)` to the provider and calling `filterPreferred()` for the resulting `SplitPackage`.
+- `filterCompatible(Context)` operation filters out the splits which are not the most preferred for the device while retaining all splits tied for best compatibility. It acts the same as applying `sortedByCompatibility(context)` to the provider and calling `filterPreferred()` for the resulting `SplitPackage`.
 
 Full example of a pipeline:
 

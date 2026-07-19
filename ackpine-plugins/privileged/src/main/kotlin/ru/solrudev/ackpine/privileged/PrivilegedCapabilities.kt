@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.privileged
 
+import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.capabilities.PluginCapability
 import ru.solrudev.ackpine.installer.parameters.InstallerType
@@ -28,62 +29,115 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
  * resolved configuration. Parameters are only effective when [PrivilegedPlugin] actually applies, but support here is
  * determined solely from the Android API level and the effective installer type.
  */
-public abstract class PrivilegedInstallCapabilities protected constructor(
+public abstract class PrivilegedInstallCapabilities protected constructor(snapshot: Snapshot) : PluginCapability {
 
 	/**
 	 * Whether [PrivilegedInstallParameters.bypassLowTargetSdkBlock] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] on API level >= 34 with [InstallerType.SESSION_BASED].
 	 */
-	public val bypassLowTargetSdkBlock: CapabilityStatus,
+	public val bypassLowTargetSdkBlock: CapabilityStatus = snapshot.bypassLowTargetSdkBlock
 
 	/**
 	 * Whether [PrivilegedInstallParameters.allowTest] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
 	 */
-	public val allowTest: CapabilityStatus,
+	public val allowTest: CapabilityStatus = snapshot.allowTest
 
 	/**
 	 * Whether [PrivilegedInstallParameters.replaceExisting] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
 	 */
-	public val replaceExisting: CapabilityStatus,
+	public val replaceExisting: CapabilityStatus = snapshot.replaceExisting
 
 	/**
 	 * Whether [PrivilegedInstallParameters.requestDowngrade] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
 	 */
-	public val requestDowngrade: CapabilityStatus,
+	public val requestDowngrade: CapabilityStatus = snapshot.requestDowngrade
 
 	/**
 	 * Whether [PrivilegedInstallParameters.grantAllRequestedPermissions] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] on API level >= 23 with [InstallerType.SESSION_BASED].
 	 */
-	public val grantAllRequestedPermissions: CapabilityStatus,
+	public val grantAllRequestedPermissions: CapabilityStatus = snapshot.grantAllRequestedPermissions
 
 	/**
 	 * Whether [PrivilegedInstallParameters.allUsers] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
 	 */
-	public val allUsers: CapabilityStatus,
+	public val allUsers: CapabilityStatus = snapshot.allUsers
 
 	/**
 	 * Whether [PrivilegedInstallParameters.installerPackageName] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] on API level >= 28 with [InstallerType.SESSION_BASED].
 	 */
-	public val installerPackageName: CapabilityStatus
-) : PluginCapability {
+	public val installerPackageName: CapabilityStatus = snapshot.installerPackageName
+
+	/**
+	 * Whether [PrivilegedInstallParameters.targetUser] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] with [InstallerType.SESSION_BASED].
+	 */
+	public val targetUser: CapabilityStatus = snapshot.targetUser
 
 	/**
 	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
+
+	/**
+	 * Immutable capability statuses passed to privileged install capability factories and constructors.
+	 */
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public class Snapshot internal constructor(
+
+		/**
+		 * Whether bypassing the low target SDK block is supported.
+		 */
+		public val bypassLowTargetSdkBlock: CapabilityStatus,
+
+		/**
+		 * Whether installing test-only packages is supported.
+		 */
+		public val allowTest: CapabilityStatus,
+
+		/**
+		 * Whether replacing an existing package is supported.
+		 */
+		public val replaceExisting: CapabilityStatus,
+
+		/**
+		 * Whether requesting a downgrade is supported.
+		 */
+		public val requestDowngrade: CapabilityStatus,
+
+		/**
+		 * Whether granting all requested permissions is supported.
+		 */
+		public val grantAllRequestedPermissions: CapabilityStatus,
+
+		/**
+		 * Whether installing for all users is supported.
+		 */
+		public val allUsers: CapabilityStatus,
+
+		/**
+		 * Whether setting the installer package name is supported.
+		 */
+		public val installerPackageName: CapabilityStatus,
+
+		/**
+		 * Whether selecting the target Android user is supported.
+		 */
+		public val targetUser: CapabilityStatus
+	)
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -96,6 +150,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 		if (grantAllRequestedPermissions != other.grantAllRequestedPermissions) return false
 		if (allUsers != other.allUsers) return false
 		if (installerPackageName != other.installerPackageName) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -107,6 +162,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 		result = 31 * result + grantAllRequestedPermissions.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + installerPackageName.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
@@ -118,7 +174,8 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
 				"requestDowngrade=$requestDowngrade, " +
 				"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
 				"allUsers=$allUsers, " +
-				"installerPackageName=$installerPackageName" +
+				"installerPackageName=$installerPackageName, " +
+				"targetUser=$targetUser" +
 				")"
 	}
 }
@@ -127,37 +184,70 @@ public abstract class PrivilegedInstallCapabilities protected constructor(
  * Shared uninstall capabilities for privileged Ackpine plugins.
  *
  * Mirrors [PrivilegedUninstallParameters]: each field indicates whether the corresponding parameter is supported for
- * the resolved configuration. Parameters are only effective when [PrivilegedPlugin] or actually applies, but support
+ * the resolved configuration. Parameters are only effective when [PrivilegedPlugin] actually applies, but support
  * here is determined solely from the Android API level and the effective uninstaller type.
  */
-public abstract class PrivilegedUninstallCapabilities protected constructor(
+public abstract class PrivilegedUninstallCapabilities protected constructor(snapshot: Snapshot) : PluginCapability {
 
 	/**
 	 * Whether [PrivilegedUninstallParameters.keepData] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val keepData: CapabilityStatus,
+	public val keepData: CapabilityStatus = snapshot.keepData
 
 	/**
 	 * Whether [PrivilegedUninstallParameters.allUsers] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val allUsers: CapabilityStatus,
+	public val allUsers: CapabilityStatus = snapshot.allUsers
 
 	/**
 	 * Whether [PrivilegedUninstallParameters.systemApp] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val systemApp: CapabilityStatus
-) : PluginCapability {
+	public val systemApp: CapabilityStatus = snapshot.systemApp
+
+	/**
+	 * Whether [PrivilegedUninstallParameters.targetUser] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
+	 */
+	public val targetUser: CapabilityStatus = snapshot.targetUser
 
 	/**
 	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
+
+	/**
+	 * Immutable capability statuses passed to privileged uninstall capability factories and constructors.
+	 */
+	@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
+	public class Snapshot internal constructor(
+
+		/**
+		 * Whether retaining package data is supported.
+		 */
+		public val keepData: CapabilityStatus,
+
+		/**
+		 * Whether uninstalling for all users is supported.
+		 */
+		public val allUsers: CapabilityStatus,
+
+		/**
+		 * Whether the system-app uninstall behavior is supported.
+		 */
+		public val systemApp: CapabilityStatus,
+
+		/**
+		 * Whether selecting the target Android user is supported.
+		 */
+		public val targetUser: CapabilityStatus
+	)
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
@@ -166,6 +256,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
+		if (targetUser != other.targetUser) return false
 		return true
 	}
 
@@ -173,12 +264,14 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
+		result = 31 * result + targetUser.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "${getName()}(" +
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
-			"systemApp=$systemApp" +
+			"systemApp=$systemApp, " +
+			"targetUser=$targetUser" +
 			")"
 }

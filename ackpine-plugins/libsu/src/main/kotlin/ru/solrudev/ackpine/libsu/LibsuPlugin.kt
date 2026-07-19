@@ -14,12 +14,16 @@
  * limitations under the License.
  */
 
+@file:Suppress("UnusedImport")
+
 package ru.solrudev.ackpine.libsu
 
-import ru.solrudev.ackpine.capabilities.CapabilityStatus
+import ru.solrudev.ackpine.privileged.PrivilegedInstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
 import ru.solrudev.ackpine.privileged.PrivilegedPlugin
+import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
+import ru.solrudev.ackpine.privileged.TargetUser // KDoc
 
 /**
  * Ackpine plugin which enables installation and uninstallation under root user via `libsu` when applied.
@@ -35,49 +39,17 @@ public class LibsuPlugin : PrivilegedPlugin<
 		>(PLUGIN_ID) {
 
 	override fun createInstallCapabilities(
-		bypassLowTargetSdkBlock: CapabilityStatus,
-		allowTest: CapabilityStatus,
-		replaceExisting: CapabilityStatus,
-		requestDowngrade: CapabilityStatus,
-		grantAllRequestedPermissions: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus
-	): LibsuInstallCapabilities = LibsuInstallCapabilities(
-		bypassLowTargetSdkBlock,
-		allowTest,
-		replaceExisting,
-		requestDowngrade,
-		grantAllRequestedPermissions,
-		allUsers,
-		installerPackageName
-	)
+		snapshot: PrivilegedInstallCapabilities.Snapshot
+	): LibsuInstallCapabilities = LibsuInstallCapabilities(snapshot)
 
 	override fun createUninstallCapabilities(
-		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus
-	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(keepData, allUsers, systemApp)
+		snapshot: PrivilegedUninstallCapabilities.Snapshot
+	): LibsuUninstallCapabilities = LibsuUninstallCapabilities(snapshot)
 
 	/**
 	 * Install parameters for [LibsuPlugin].
 	 */
-	public class InstallParameters private constructor(
-		bypassLowTargetSdkBlock: Boolean,
-		allowTest: Boolean,
-		replaceExisting: Boolean,
-		requestDowngrade: Boolean,
-		grantAllRequestedPermissions: Boolean,
-		allUsers: Boolean,
-		installerPackageName: String
-	) : PrivilegedInstallParameters(
-		bypassLowTargetSdkBlock,
-		allowTest,
-		replaceExisting,
-		requestDowngrade,
-		grantAllRequestedPermissions,
-		allUsers,
-		installerPackageName
-	) {
+	public class InstallParameters private constructor(snapshot: Snapshot) : PrivilegedInstallParameters(snapshot) {
 
 		override fun getName(): String = "InstallParameters"
 
@@ -85,15 +57,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 		 * Builder for [LibsuPlugin.InstallParameters].
 		 */
 		public class Builder : PrivilegedInstallParameters.Builder<InstallParameters, Builder>() {
-			override fun build(): InstallParameters = InstallParameters(
-				bypassLowTargetSdkBlock,
-				allowTest,
-				replaceExisting,
-				requestDowngrade,
-				grantAllRequestedPermissions,
-				allUsers,
-				installerPackageName
-			)
+			override fun build(): InstallParameters = InstallParameters(buildSnapshot())
 		}
 
 		public companion object {
@@ -101,7 +65,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 			/**
 			 * Default [LibsuPlugin] install parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedInstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: InstallParameters = Builder().build()
@@ -109,13 +73,9 @@ public class LibsuPlugin : PrivilegedPlugin<
 	}
 
 	/**
-	 * Uninstall parameters for [LibsuPlugin]. Take effect only on Android 8.1+.
+	 * Uninstall parameters for [LibsuPlugin]. Uninstall flags take effect only on Android 8.1+.
 	 */
-	public class UninstallParameters private constructor(
-		keepData: Boolean,
-		allUsers: Boolean,
-		systemApp: Boolean
-	) : PrivilegedUninstallParameters(keepData, allUsers, systemApp) {
+	public class UninstallParameters private constructor(snapshot: Snapshot) : PrivilegedUninstallParameters(snapshot) {
 
 		override fun getName(): String = "UninstallParameters"
 
@@ -123,7 +83,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 		 * Builder for [LibsuPlugin.UninstallParameters].
 		 */
 		public class Builder : PrivilegedUninstallParameters.Builder<UninstallParameters, Builder>() {
-			override fun build(): UninstallParameters = UninstallParameters(keepData, allUsers, systemApp)
+			override fun build(): UninstallParameters = UninstallParameters(buildSnapshot())
 		}
 
 		public companion object {
@@ -131,7 +91,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 			/**
 			 * Default [LibsuPlugin] uninstall parameters.
 			 *
-			 * All parameters are `false` by default.
+			 * All flags are `false` and [PrivilegedUninstallParameters.targetUser] is [TargetUser.CURRENT] by default.
 			 */
 			@JvmField
 			public val DEFAULT: UninstallParameters = Builder().build()

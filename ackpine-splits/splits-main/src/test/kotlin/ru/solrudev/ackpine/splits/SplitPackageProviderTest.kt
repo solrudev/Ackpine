@@ -145,6 +145,20 @@ class SplitPackageProviderTest {
 	}
 
 	@Test
+	fun sortedByCompatibilityMarksEquallyCompatibleSplitsAsPreferred() {
+		val withSuffix = createLibsApk(name = "config.arm64_v8a.v2", abi = Abi.ARM64_V8A)
+		val withoutSuffix = createLibsApk(name = "config.arm64_v8a", abi = Abi.ARM64_V8A)
+		val incompatible = createLibsApk(name = "config.x86", abi = Abi.X86)
+		val provider = listOf(withSuffix, incompatible, withoutSuffix, createBaseApk()).toSplitPackage()
+
+		val sorted = provider.sortedByCompatibility(context).getAsync().get()
+
+		assertEquals(listOf(withSuffix.name, withoutSuffix.name), sorted.libs.take(2).map { it.apk.name })
+		assertTrue(sorted.libs.take(2).all { it.isPreferred })
+		assertFalse(sorted.libs.last().isPreferred)
+	}
+
+	@Test
 	fun sortedByCompatibilityMarksIncompatibleAbiAsNotPreferred() {
 		val libs = createLibsApk(name = "config.x86", abi = Abi.X86)
 		val provider = listOf(libs, createBaseApk()).toSplitPackage()
@@ -228,6 +242,23 @@ class SplitPackageProviderTest {
 		val filtered = provider.filterCompatible(context).getAsync().get()
 
 		assertTrue(filtered.libs.isEmpty())
+	}
+
+	@Test
+	fun filterCompatibleKeepsEquallyCompatibleAbis() {
+		val withoutSuffix = createLibsApk(name = "config.arm64_v8a", abi = Abi.ARM64_V8A)
+		val withSuffix = createLibsApk(name = "config.arm64_v8a.v2", abi = Abi.ARM64_V8A)
+		val incompatible = createLibsApk(name = "config.x86", abi = Abi.X86)
+		val provider = listOf(withoutSuffix, incompatible, withSuffix, createBaseApk()).toSplitPackage()
+
+		val filtered = provider
+			.sortedByCompatibility(context)
+			.filterCompatible(context)
+			.getAsync()
+			.get()
+
+		assertEquals(listOf(withoutSuffix.name, withSuffix.name), filtered.libs.map { it.apk.name })
+		assertTrue(filtered.libs.all { it.isPreferred })
 	}
 
 	@Test

@@ -33,8 +33,8 @@ private const val DATABASE_NAME = "ackpine_libsu.paramsdb"
 @Database(
 	entities = [LibsuInstallParametersEntity::class, LibsuUninstallParametersEntity::class],
 	exportSchema = true,
-	autoMigrations = [AutoMigration(from = 1, to = 2)],
-	version = 2
+	autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+	version = 3
 )
 internal abstract class LibsuDatabase : RoomDatabase() {
 
@@ -93,7 +93,10 @@ internal class LibsuInstallParametersEntity(
 	val allUsers: Boolean,
 	@JvmField
 	@ColumnInfo(name = "installer_package_name", defaultValue = "")
-	val installerPackageName: String
+	val installerPackageName: String,
+	@JvmField
+	@ColumnInfo(name = "target_user_id", defaultValue = "-2")
+	val targetUserId: Int
 )
 
 @Entity(tableName = "libsu_uninstall_parameters")
@@ -110,5 +113,8 @@ internal class LibsuUninstallParametersEntity(
 	val allUsers: Boolean,
 	@JvmField
 	@ColumnInfo(name = "system_app", defaultValue = "false")
-	val systemApp: Boolean
+	val systemApp: Boolean,
+	@JvmField
+	@ColumnInfo(name = "target_user_id", defaultValue = "-2")
+	val targetUserId: Int
 )

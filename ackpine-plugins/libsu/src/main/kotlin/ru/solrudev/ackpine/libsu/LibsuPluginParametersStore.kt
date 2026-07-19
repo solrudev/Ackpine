@@ -23,6 +23,7 @@ import ru.solrudev.ackpine.libsu.database.LibsuInstallParamsDao
 import ru.solrudev.ackpine.libsu.database.LibsuUninstallParametersEntity
 import ru.solrudev.ackpine.libsu.database.LibsuUninstallParamsDao
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.privileged.TargetUser
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
@@ -42,6 +43,7 @@ internal class LibsuPluginParametersStore(
 				.setGrantAllRequestedPermissions(libsuParams.grantAllRequestedPermissions)
 				.setAllUsers(libsuParams.allUsers)
 				.setInstallerPackageName(libsuParams.installerPackageName)
+				.setTargetUser(TargetUser(libsuParams.targetUserId))
 				.build()
 		}
 		libsuUninstallParamsDao.getBySessionId(id)?.let { libsuParams ->
@@ -49,6 +51,7 @@ internal class LibsuPluginParametersStore(
 				.setKeepData(libsuParams.keepData)
 				.setAllUsers(libsuParams.allUsers)
 				.setSystemApp(libsuParams.systemApp)
+				.setTargetUser(TargetUser(libsuParams.targetUserId))
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -64,7 +67,8 @@ internal class LibsuPluginParametersStore(
 				requestDowngrade = params.requestDowngrade,
 				grantAllRequestedPermissions = params.grantAllRequestedPermissions,
 				allUsers = params.allUsers,
-				installerPackageName = params.installerPackageName
+				installerPackageName = params.installerPackageName,
+				targetUserId = params.targetUser.userId
 			)
 			libsuInstallParamsDao.insertParameters(libsuParams)
 		}
@@ -74,7 +78,8 @@ internal class LibsuPluginParametersStore(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
 				allUsers = params.allUsers,
-				systemApp = params.systemApp
+				systemApp = params.systemApp,
+				targetUserId = params.targetUser.userId
 			)
 			libsuUninstallParamsDao.insertParameters(libsuParams)
 		}

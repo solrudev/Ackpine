@@ -18,8 +18,8 @@ package ru.solrudev.ackpine.impl.plugability
 
 import android.content.Context
 import androidx.annotation.RestrictTo
-import ru.solrudev.ackpine.impl.helpers.concurrent.Locks
-import ru.solrudev.ackpine.impl.helpers.concurrent.computeIfAbsentCompat
+import ru.solrudev.ackpine.helpers.concurrent.Locks
+import ru.solrudev.ackpine.helpers.concurrent.computeIfAbsentCompat
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass

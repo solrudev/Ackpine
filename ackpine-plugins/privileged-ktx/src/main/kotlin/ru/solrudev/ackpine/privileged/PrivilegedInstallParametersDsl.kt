@@ -62,6 +62,15 @@ public interface PrivilegedInstallParametersDsl {
 	 * on Android 9+.
 	 */
 	public var installerPackageName: String
+
+	/**
+	 * Android user targeted by this install session.
+	 *
+	 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+	 *
+	 * By default, equals to [TargetUser.CURRENT].
+	 */
+	public var targetUser: TargetUser
 }
 
 /**
@@ -114,6 +123,12 @@ public abstract class PrivilegedInstallParametersDslBuilder<
 		get() = delegate.installerPackageName
 		set(value) {
 			delegate.setInstallerPackageName(value)
+		}
+
+	override var targetUser: TargetUser
+		get() = delegate.targetUser
+		set(value) {
+			delegate.setTargetUser(value)
 		}
 
 	/**

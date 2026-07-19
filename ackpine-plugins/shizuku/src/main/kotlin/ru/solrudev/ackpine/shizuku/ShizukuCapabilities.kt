@@ -16,7 +16,6 @@
 
 package ru.solrudev.ackpine.shizuku
 
-import ru.solrudev.ackpine.capabilities.CapabilityStatus
 import ru.solrudev.ackpine.privileged.PrivilegedInstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
 
@@ -29,22 +28,8 @@ import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
  * and the effective installer type.
  */
 public class ShizukuInstallCapabilities internal constructor(
-	bypassLowTargetSdkBlock: CapabilityStatus,
-	allowTest: CapabilityStatus,
-	replaceExisting: CapabilityStatus,
-	requestDowngrade: CapabilityStatus,
-	grantAllRequestedPermissions: CapabilityStatus,
-	allUsers: CapabilityStatus,
-	installerPackageName: CapabilityStatus
-) : PrivilegedInstallCapabilities(
-	bypassLowTargetSdkBlock,
-	allowTest,
-	replaceExisting,
-	requestDowngrade,
-	grantAllRequestedPermissions,
-	allUsers,
-	installerPackageName
-) {
+	snapshot: Snapshot
+) : PrivilegedInstallCapabilities(snapshot) {
 	override fun getName(): String = "ShizukuInstallCapabilities"
 }
 
@@ -57,9 +42,7 @@ public class ShizukuInstallCapabilities internal constructor(
  * API level and the effective uninstaller type.
  */
 public class ShizukuUninstallCapabilities internal constructor(
-	keepData: CapabilityStatus,
-	allUsers: CapabilityStatus,
-	systemApp: CapabilityStatus
-) : PrivilegedUninstallCapabilities(keepData, allUsers, systemApp) {
+	snapshot: Snapshot
+) : PrivilegedUninstallCapabilities(snapshot) {
 	override fun getName(): String = "ShizukuUninstallCapabilities"
 }

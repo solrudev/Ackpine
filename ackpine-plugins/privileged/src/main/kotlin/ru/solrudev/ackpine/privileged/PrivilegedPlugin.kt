@@ -62,19 +62,23 @@ public abstract class PrivilegedPlugin<
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createInstallCapabilities(
-			bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
-			allowTest = isSupported,
-			replaceExisting = isSupported,
-			requestDowngrade = isSupported,
-			grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
-			allUsers = isSupported,
-			installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P)
+			PrivilegedInstallCapabilities.Snapshot(
+				bypassLowTargetSdkBlock = isSupportedOnApi(Build.VERSION_CODES.UPSIDE_DOWN_CAKE),
+				allowTest = isSupported,
+				replaceExisting = isSupported,
+				requestDowngrade = isSupported,
+				grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
+				allUsers = isSupported,
+				installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P),
+				targetUser = isSupported
+			)
 		)
 	}
 
 	override fun getCapabilities(context: UninstallCapabilityContext): UninstallCapabilities {
-		val isSupported = if (
-			context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED &&
+		val isPackageInstallerBased = context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED
+		val flagsStatus = if (
+			isPackageInstallerBased &&
 			context.sdkInt >= Build.VERSION_CODES.O_MR1
 		) {
 			CapabilityStatus.SUPPORTED
@@ -82,32 +86,31 @@ public abstract class PrivilegedPlugin<
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createUninstallCapabilities(
-			keepData = isSupported,
-			allUsers = isSupported,
-			systemApp = isSupported
+			PrivilegedUninstallCapabilities.Snapshot(
+				keepData = flagsStatus,
+				allUsers = flagsStatus,
+				systemApp = flagsStatus,
+				targetUser = if (isPackageInstallerBased) {
+					CapabilityStatus.SUPPORTED
+				} else {
+					CapabilityStatus.UNSUPPORTED
+				}
+			)
 		)
 	}
 
 	/**
-	 * Creates and returns the concrete [InstallCapabilities] instance from the pre-computed capability statuses.
+	 * Creates and returns the concrete [InstallCapabilities] instance from the pre-computed [snapshot].
 	 */
 	protected abstract fun createInstallCapabilities(
-		bypassLowTargetSdkBlock: CapabilityStatus,
-		allowTest: CapabilityStatus,
-		replaceExisting: CapabilityStatus,
-		requestDowngrade: CapabilityStatus,
-		grantAllRequestedPermissions: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		installerPackageName: CapabilityStatus
+		snapshot: PrivilegedInstallCapabilities.Snapshot
 	): InstallCapabilities
 
 	/**
-	 * Creates and returns the concrete [UninstallCapabilities] instance from the pre-computed capability statuses.
+	 * Creates and returns the concrete [UninstallCapabilities] instance from the pre-computed [snapshot].
 	 */
 	protected abstract fun createUninstallCapabilities(
-		keepData: CapabilityStatus,
-		allUsers: CapabilityStatus,
-		systemApp: CapabilityStatus
+		snapshot: PrivilegedUninstallCapabilities.Snapshot
 	): UninstallCapabilities
 
 	override fun equals(other: Any?): Boolean = this === other || other?.javaClass == javaClass

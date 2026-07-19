@@ -22,7 +22,6 @@ import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
 import android.os.Build
 import android.os.IBinder
-import android.os.UserHandleHidden
 import androidx.annotation.RestrictTo
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
@@ -38,10 +37,11 @@ import java.util.UUID
  */
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 internal class ShizukuPackageInstaller(
-	packageInstaller: PackageInstaller,
+	context: Context,
 	remotePackageInstaller: IPackageInstaller,
+	installerPackageName: String,
 	uid: Int
-) : PackageInstallerProxy(packageInstaller, remotePackageInstaller, uid) {
+) : PackageInstallerProxy(context, remotePackageInstaller, installerPackageName, uid) {
 
 	override fun applyParameters(sessionId: UUID, parameters: AckpinePlugin.Parameters) {
 		when (parameters) {
@@ -75,13 +75,9 @@ internal class ShizukuPackageInstaller(
 			val isRoot = uid == 0
 			val installerPackageName = if (isRoot) context.packageName else "com.android.shell"
 			return ShizukuPackageInstaller(
-				createPackageInstaller(
-					context,
-					remotePackageInstaller,
-					installerPackageName,
-					UserHandleHidden.myUserId()
-				),
+				context,
 				remotePackageInstaller,
+				installerPackageName,
 				uid
 			)
 		}

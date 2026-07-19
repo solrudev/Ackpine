@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.impl.helpers.concurrent
+package ru.solrudev.ackpine.helpers.concurrent
 
 import android.annotation.SuppressLint
 import androidx.annotation.RestrictTo
@@ -35,12 +35,13 @@ private val isComputeIfAbsentAvailable = try {
 }
 
 /**
- * Calls [computeIfAbsent][ConcurrentMap.computeIfAbsent] if available, otherwise falls back to [getOrPut] guarded by
+ * Calls [computeIfAbsent][computeIfAbsent] if available, otherwise falls back to [getOrPut] guarded by
  * a lock for the [key] retrieved from [locks].
  */
 @SuppressLint("NewApi")
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @JvmSynthetic
-internal fun <K : Any, V : Any> ConcurrentMap<K, V>.computeIfAbsentCompat(
+public fun <K : Any, V : Any> ConcurrentMap<K, V>.computeIfAbsentCompat(
 	key: K,
 	locks: Locks,
 	defaultValue: () -> V?
@@ -55,11 +56,17 @@ internal fun <K : Any, V : Any> ConcurrentMap<K, V>.computeIfAbsentCompat(
 	}
 }
 
-@RestrictTo(RestrictTo.Scope.LIBRARY)
+/**
+ * Striped locks used by [computeIfAbsentCompat] on runtimes without [ConcurrentMap.computeIfAbsent].
+ */
+@RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 @JvmInline
-internal value class Locks private constructor(private val locks: Array<Any>) {
+public value class Locks private constructor(private val locks: Array<Any>) {
 
-	internal constructor(size: Int) : this(Array(size) { Any() })
+	/**
+	 * @param size number of lock stripes.
+	 */
+	public constructor(size: Int) : this(Array(size) { Any() })
 
 	@JvmSynthetic
 	internal fun lockFor(key: Any) = locks[(key.hashCode() and Int.MAX_VALUE) % locks.size]

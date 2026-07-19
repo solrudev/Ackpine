@@ -85,6 +85,7 @@ To apply the plugin to an install session, just add this to your install paramet
             grantAllRequestedPermissions = true
             allUsers = true
             installerPackageName = "com.android.vending"
+            targetUser = TargetUser(10)
         }
     }
     ```
@@ -106,6 +107,7 @@ To apply the plugin to an install session, just add this to your install paramet
             .setGrantAllRequestedPermissions(true)
             .setAllUsers(true)
             .setInstallerPackageName("com.android.vending")
+            .setTargetUser(new TargetUser(10))
             .build();
     var parameters = new InstallParameters.Builder(uri)
             .registerPlugin(LibsuPlugin.class, libsuParameters)
@@ -125,6 +127,7 @@ Also, you can use libsu for uninstall sessions:
         libsu {
             keepData = true
             allUsers = true
+            targetUser = TargetUser(10)
         }
     }
     ```
@@ -141,6 +144,7 @@ Also, you can use libsu for uninstall sessions:
     var libsuParameters = new LibsuPlugin.UninstallParameters.Builder()
             .setKeepData(true)
             .setAllUsers(true)
+            .setTargetUser(new TargetUser(10))
             .build();
     var parameters = new UninstallParameters.Builder(packageName)
             .registerPlugin(LibsuPlugin.class, libsuParameters)
@@ -160,7 +164,13 @@ Also, you can use libsu for uninstall sessions:
 Plugin parameters
 -----------------
 
-By default, all flags are disabled.
+By default, all flags are disabled and the target user is `TargetUser.CURRENT`.
+
+### `targetUser`
+
+Android user targeted by the install or uninstall session. `TargetUser.CURRENT` resolves to the current Android user when the session binds to the package installer service. Pass an explicit Android user ID, for example `TargetUser(10)` in Kotlin or `new TargetUser(10)` in Java, to target a different user. This is an Android user ID, not an application UID.
+
+Android validates whether the user exists and whether the root backend has permission to operate across users. Setting `allUsers` is also allowed; it retains Android's native semantics and may make the selected target user irrelevant for that operation.
 
 ### Install flags
 
@@ -206,9 +216,9 @@ Flag parameter to indicate that you want the package deleted for all users.
 
 #### `systemApp`
 
-Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+Flag parameter to indicate that a system app should be marked as uninstalled for the target user.
 
-This does not remove the app from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for current user.
+This does not remove the app from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for the target user.
 
 Capabilities
 ------------

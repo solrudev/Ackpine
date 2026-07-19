@@ -35,12 +35,21 @@ public interface PrivilegedUninstallParametersDsl {
 	public var allUsers: Boolean
 
 	/**
-	 * Flag parameter to indicate that a system app should be marked as uninstalled for current user.
+	 * Flag parameter to indicate that a system app should be marked as uninstalled for the [targetUser].
 	 *
 	 * This does not remove the app from the system partition. For an updated system app, it prevents the update from
-	 * being rolled back globally when uninstalling it for current user.
+	 * being rolled back globally when uninstalling it for the target user.
 	 */
 	public var systemApp: Boolean
+
+	/**
+	 * Android user targeted by this uninstall session.
+	 *
+	 * [allUsers] retains Android's native semantics and may make the selected target irrelevant.
+	 *
+	 * By default, equals to [TargetUser.CURRENT].
+	 */
+	public var targetUser: TargetUser
 }
 
 /**
@@ -69,6 +78,12 @@ public abstract class PrivilegedUninstallParametersDslBuilder<
 		get() = delegate.systemApp
 		set(value) {
 			delegate.setSystemApp(value)
+		}
+
+	override var targetUser: TargetUser
+		get() = delegate.targetUser
+		set(value) {
+			delegate.setTargetUser(value)
 		}
 
 	/**
