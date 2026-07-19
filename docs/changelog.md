@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.25.1 (2026-07-20)
+---------------------------
+
+### Bug fixes and improvements
+
+- Uninstall flags for privileged (Shizuku/root) sessions now work on Android 5.0+.
+- Setting a custom installer package name for privileged (Shizuku/root) install sessions now works on Android 5.0+.
+
 Version 0.25.0 (2026-07-19)
 ---------------------------
 
