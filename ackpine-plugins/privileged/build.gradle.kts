@@ -36,4 +36,5 @@ dependencies {
 	api(projects.ackpineCore)
 	compileOnly(projects.ackpinePlugins.androidStubs)
 	implementation(projects.ackpineRuntime)
+	implementation(libs.hiddenApiBypass)
 }

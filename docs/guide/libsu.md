@@ -161,6 +161,38 @@ Also, you can use libsu for uninstall sessions:
     
     Plugin doesn't close the cached shell by itself to avoid interfering with other possible in-flight shell operations.
 
+Hidden APIs
+-----------
+
+This plugin initializes hidden Android API exemptions through AndroidX Startup using [LSPosed's HiddenApiBypass](https://github.com/LSPosed/AndroidHiddenApiBypass). In case you have your own additional exemptions:
+
+1. Disable the initializer in `AndroidManifest.xml`:
+
+    ```xml
+    <provider
+        android:name="androidx.startup.InitializationProvider"
+        android:authorities="${applicationId}.androidx-startup"
+        android:exported="false"
+        tools:node="merge">
+        <meta-data
+            android:name="ru.solrudev.ackpine.privileged.HiddenApiExemptionsInitializer"
+            tools:node="remove" />
+    </provider>
+    ```
+
+2. Add this list to your `HiddenApiBypass.setHiddenApiExemptions` call:
+
+    ```kotlin
+    HiddenApiBypass.setHiddenApiExemptions(
+        "Landroid/content/pm/IPackageManager",
+        "Landroid/content/pm/IPackageInstaller",
+        "Landroid/content/pm/IPackageInstallerSession",
+        "Landroid/content/pm/PackageInstaller",
+        "Landroid/os/UserHandle",
+        "Landroid/os/ServiceManager"
+    )
+    ```
+
 Plugin parameters
 -----------------
 

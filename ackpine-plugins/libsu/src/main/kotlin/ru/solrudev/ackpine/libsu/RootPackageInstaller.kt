@@ -19,11 +19,9 @@ package ru.solrudev.ackpine.libsu
 import android.content.Context
 import android.content.pm.IPackageInstaller
 import android.content.pm.IPackageManager
-import android.os.Build
 import android.os.IBinder
 import android.os.ServiceManager
 import androidx.annotation.RestrictTo
-import org.lsposed.hiddenapibypass.HiddenApiBypass
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.privileged.PackageInstallerProxy
 import java.util.UUID
@@ -48,16 +46,6 @@ internal class RootPackageInstaller(
 
 		@JvmSynthetic
 		internal fun create(context: Context): RootPackageInstaller {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				HiddenApiBypass.addHiddenApiExemptions(
-					"Landroid/content/pm/IPackageManager",
-					"Landroid/content/pm/IPackageInstaller",
-					"Landroid/content/pm/IPackageInstallerSession",
-					"Landroid/content/pm/PackageInstaller",
-					"Landroid/os/UserHandle",
-					"Landroid/os/ServiceManager"
-				)
-			}
 			val rootService = RootProxyService.bind(context)
 			val remotePackageManager = IPackageManager.Stub.asInterface(
 				RootProxyBinderWrapper(rootService, ServiceManager.getService("package"))

@@ -46,5 +46,4 @@ dependencies {
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.room.runtime)
 	implementation(libs.libsu.service)
-	implementation(libs.hiddenApiBypass)
 }
