@@ -57,8 +57,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 	public val allUsers: Boolean = snapshot.allUsers
 
 	/**
-	 * Installer package for the app. Empty by default, so the calling app package name will be used. Works only on
-	 * Android 9+.
+	 * Installer package for the app. Empty by default, so the calling app package name will be used.
 	 */
 	public val installerPackageName: String = snapshot.installerPackageName
 

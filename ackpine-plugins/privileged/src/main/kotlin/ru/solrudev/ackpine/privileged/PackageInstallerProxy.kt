@@ -59,6 +59,9 @@ public abstract class PackageInstallerProxy protected constructor(
 		val targetUser = installParameters[sessionId]?.targetUser
 			?: uninstallParameters[sessionId]?.targetUser
 			?: TargetUser.CURRENT
+		val installerPackageName = installParameters[sessionId]?.installerPackageName
+			?.ifEmpty { installerPackageName }
+			?: installerPackageName
 		val resolvedUserId = if (targetUser == TargetUser.CURRENT) {
 			UserHandleHidden.myUserId()
 		} else {
@@ -67,7 +70,7 @@ public abstract class PackageInstallerProxy protected constructor(
 		val packageInstaller = packageInstallers.computeIfAbsentCompat(resolvedUserId, packageInstallerLocks) {
 			createPackageInstaller(context, remotePackageInstaller, installerPackageName, resolvedUserId)
 		}
-		return BoundPackageInstaller(packageInstaller!!, resolvedUserId)
+		return BoundPackageInstaller(packageInstaller!!, resolvedUserId, installerPackageName)
 	}
 
 	final override fun createSession(
@@ -108,7 +111,8 @@ public abstract class PackageInstallerProxy protected constructor(
 
 	private inner class BoundPackageInstaller(
 		private val packageInstaller: PackageInstaller,
-		private val userId: Int
+		private val userId: Int,
+		private val installerPackageName: String
 	) : PackageInstallerService {
 
 		override val uid: Int
