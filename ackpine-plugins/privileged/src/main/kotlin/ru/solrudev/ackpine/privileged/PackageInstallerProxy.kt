@@ -26,6 +26,7 @@ import android.content.pm.PackageInstallerHidden
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
+import android.os.RemoteException
 import android.os.UserHandleHidden
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresPermission
@@ -58,6 +59,9 @@ public abstract class PackageInstallerProxy protected constructor(
 		val targetUser = installParameters[sessionId]?.targetUser
 			?: uninstallParameters[sessionId]?.targetUser
 			?: TargetUser.CURRENT
+		val installerPackageName = installParameters[sessionId]?.installerPackageName
+			?.ifEmpty { installerPackageName }
+			?: installerPackageName
 		val resolvedUserId = if (targetUser == TargetUser.CURRENT) {
 			UserHandleHidden.myUserId()
 		} else {
@@ -66,7 +70,7 @@ public abstract class PackageInstallerProxy protected constructor(
 		val packageInstaller = packageInstallers.computeIfAbsentCompat(resolvedUserId, packageInstallerLocks) {
 			createPackageInstaller(context, remotePackageInstaller, installerPackageName, resolvedUserId)
 		}
-		return BoundPackageInstaller(packageInstaller!!)
+		return BoundPackageInstaller(packageInstaller!!, resolvedUserId, installerPackageName)
 	}
 
 	final override fun createSession(
@@ -106,7 +110,9 @@ public abstract class PackageInstallerProxy protected constructor(
 	)
 
 	private inner class BoundPackageInstaller(
-		private val packageInstaller: PackageInstaller
+		private val packageInstaller: PackageInstaller,
+		private val userId: Int,
+		private val installerPackageName: String
 	) : PackageInstallerService {
 
 		override val uid: Int
@@ -166,21 +172,35 @@ public abstract class PackageInstallerProxy protected constructor(
 
 		override fun abandonSession(sessionId: Int): Unit = packageInstaller.abandonSession(sessionId)
 
+		@Suppress("CAST_NEVER_SUCCEEDS")
 		@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
 		override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
-			if (Build.VERSION.SDK_INT < 27) {
-				packageInstaller.uninstall(packageName, statusReceiver)
-				return
+			val flags = uninstallParameters[ackpineSessionId]?.toFlags() ?: 0
+			when {
+				Build.VERSION.SDK_INT >= 27 -> (packageInstaller as PackageInstallerHidden).uninstall(
+					packageName,
+					flags,
+					statusReceiver
+				)
+
+				Build.VERSION.SDK_INT >= 23 -> try {
+					remotePackageInstaller.uninstall(
+						packageName,
+						installerPackageName,
+						flags,
+						statusReceiver,
+						userId
+					)
+				} catch (e: RemoteException) {
+					e.rethrow()
+				}
+
+				else -> try {
+					remotePackageInstaller.uninstall(packageName, flags, statusReceiver, userId)
+				} catch (e: RemoteException) {
+					e.rethrow()
+				}
 			}
-			val privilegedParameters = uninstallParameters[ackpineSessionId]
-			var flags = 0
-			if (privilegedParameters != null) {
-				flags = applyFlag(flags, privilegedParameters.keepData, DELETE_KEEP_DATA)
-				flags = applyFlag(flags, privilegedParameters.allUsers, DELETE_ALL_USERS)
-				flags = applyFlag(flags, privilegedParameters.systemApp, DELETE_SYSTEM_APP)
-			}
-			@Suppress("CAST_NEVER_SUCCEEDS")
-			(packageInstaller as PackageInstallerHidden).uninstall(packageName, flags, statusReceiver)
 		}
 	}
 
@@ -245,10 +265,26 @@ public abstract class PackageInstallerProxy protected constructor(
 		params.installFlags = flags
 	}
 
+	private fun PrivilegedUninstallParameters.toFlags(): Int {
+		var flags = 0
+		flags = applyFlag(flags, keepData, DELETE_KEEP_DATA)
+		flags = applyFlag(flags, allUsers, DELETE_ALL_USERS)
+		flags = applyFlag(flags, systemApp, DELETE_SYSTEM_APP)
+		return flags
+	}
+
 	private fun applyFlag(flags: Int, isFlagPresent: Boolean, flag: Int): Int {
 		if (isFlagPresent) {
 			return flags or flag
 		}
 		return flags and flag.inv()
+	}
+
+	@Suppress("NewApi", "ThrowableNotThrown") // methods are available, but were hidden before API 30
+	private fun RemoteException.rethrow() {
+		if (Build.VERSION.SDK_INT >= 24) {
+			rethrowFromSystemServer()
+		}
+		rethrowAsRuntimeException()
 	}
 }

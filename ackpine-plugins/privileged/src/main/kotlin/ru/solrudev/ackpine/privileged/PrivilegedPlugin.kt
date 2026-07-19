@@ -76,25 +76,17 @@ public abstract class PrivilegedPlugin<
 	}
 
 	override fun getCapabilities(context: UninstallCapabilityContext): UninstallCapabilities {
-		val isPackageInstallerBased = context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED
-		val flagsStatus = if (
-			isPackageInstallerBased &&
-			context.sdkInt >= Build.VERSION_CODES.O_MR1
-		) {
+		val status = if (context.uninstallerType == UninstallerType.PACKAGE_INSTALLER_BASED) {
 			CapabilityStatus.SUPPORTED
 		} else {
 			CapabilityStatus.UNSUPPORTED
 		}
 		return createUninstallCapabilities(
 			PrivilegedUninstallCapabilities.Snapshot(
-				keepData = flagsStatus,
-				allUsers = flagsStatus,
-				systemApp = flagsStatus,
-				targetUser = if (isPackageInstallerBased) {
-					CapabilityStatus.SUPPORTED
-				} else {
-					CapabilityStatus.UNSUPPORTED
-				}
+				keepData = status,
+				allUsers = status,
+				systemApp = status,
+				targetUser = status
 			)
 		)
 	}

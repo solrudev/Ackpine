@@ -95,7 +95,7 @@ public class ShizukuPlugin private constructor() : PrivilegedPlugin<
 	}
 
 	/**
-	 * Uninstall parameters for [ShizukuPlugin]. Uninstall flags take effect only on Android 8.1+.
+	 * Uninstall parameters for [ShizukuPlugin].
 	 */
 	public class UninstallParameters private constructor(snapshot: Snapshot) : PrivilegedUninstallParameters(snapshot) {
 

@@ -22,7 +22,9 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 /**
  * Shared uninstall parameters for privileged Ackpine plugins.
  */
-public abstract class PrivilegedUninstallParameters protected constructor(snapshot: Snapshot) : AckpinePlugin.Parameters {
+public abstract class PrivilegedUninstallParameters protected constructor(
+	snapshot: Snapshot
+) : AckpinePlugin.Parameters {
 
 	/**
 	 * Flag parameter to indicate that you don't want to delete the package's data directory.
