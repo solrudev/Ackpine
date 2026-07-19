@@ -23,6 +23,7 @@ import ru.solrudev.ackpine.privileged.PrivilegedInstallParameters
 import ru.solrudev.ackpine.privileged.PrivilegedPlugin
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallCapabilities
 import ru.solrudev.ackpine.privileged.PrivilegedUninstallParameters
+import ru.solrudev.ackpine.privileged.TargetUser // KDoc
 
 /**
  * Ackpine plugin which enables installation and uninstallation under root user via `libsu` when applied.
