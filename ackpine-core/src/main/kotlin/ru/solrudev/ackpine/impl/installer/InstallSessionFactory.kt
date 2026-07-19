@@ -136,7 +136,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 				SessionBasedInstallSession(
 					loggerProvider,
 					applicationContext,
-					packageInstallerService = lazy { packageInstallerService.value.bind(id) },
+					packageInstallerService = lazy(LazyThreadSafetyMode.NONE) {
+						packageInstallerService.value.bind(id)
+					},
 					apks = parameters.apks.toList(),
 					id,
 					initialState = Session.State.Pending,
@@ -259,7 +261,9 @@ internal class InstallSessionFactoryImpl internal constructor(
 			sessionId = sessionId,
 			pluginClasses = plugins
 		) { packageInstallerService ->
-			boundPackageInstallerService = lazy { packageInstallerService.value.bind(sessionId) }
+			boundPackageInstallerService = lazy(LazyThreadSafetyMode.NONE) {
+				packageInstallerService.value.bind(sessionId)
+			}
 			SessionBasedInstallSession(
 				loggerProvider,
 				applicationContext,

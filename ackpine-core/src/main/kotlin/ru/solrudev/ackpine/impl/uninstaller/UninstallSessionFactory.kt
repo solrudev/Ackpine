@@ -117,7 +117,9 @@ internal class UninstallSessionFactoryImpl internal constructor(
 				PackageInstallerBasedUninstallSession(
 					loggerProvider,
 					applicationContext,
-					packageInstallerService = lazy { packageInstallerService.value.bind(id) },
+					packageInstallerService = lazy(LazyThreadSafetyMode.NONE) {
+						packageInstallerService.value.bind(id)
+					},
 					parameters.packageName,
 					id, initialState,
 					parameters.confirmation,
@@ -165,7 +167,9 @@ internal class UninstallSessionFactoryImpl internal constructor(
 					PackageInstallerBasedUninstallSession(
 						loggerProvider,
 						applicationContext,
-						packageInstallerService = lazy { packageInstallerService.value.bind(sessionId) },
+						packageInstallerService = lazy(LazyThreadSafetyMode.NONE) {
+							packageInstallerService.value.bind(sessionId)
+						},
 						packageName,
 						sessionId, initialState,
 						confirmation,
