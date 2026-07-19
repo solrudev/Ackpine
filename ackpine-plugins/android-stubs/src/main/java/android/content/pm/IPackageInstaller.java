@@ -16,6 +16,7 @@
 
 package android.content.pm;
 
+import android.content.IntentSender;
 import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
@@ -24,8 +25,9 @@ import android.os.IInterface;
  * Stub for {@code android.content.pm.IPackageInstaller}.
  */
 public interface IPackageInstaller extends IInterface {
-	void abandonSession(int sessionId);
 	IPackageInstallerSession openSession(int sessionId);
+	void uninstall(String packageName, int flags, IntentSender statusReceiver, int userId);
+	void uninstall(String packageName, String callerPackageName, int flags, IntentSender statusReceiver, int userId);
 	abstract class Stub extends Binder implements IPackageInstaller {
 		public static IPackageInstaller asInterface(IBinder binder) {
 			throw new UnsupportedOperationException();

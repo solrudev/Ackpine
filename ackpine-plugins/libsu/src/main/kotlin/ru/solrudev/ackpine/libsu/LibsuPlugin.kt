@@ -73,7 +73,7 @@ public class LibsuPlugin : PrivilegedPlugin<
 	}
 
 	/**
-	 * Uninstall parameters for [LibsuPlugin]. Uninstall flags take effect only on Android 8.1+.
+	 * Uninstall parameters for [LibsuPlugin].
 	 */
 	public class UninstallParameters private constructor(snapshot: Snapshot) : PrivilegedUninstallParameters(snapshot) {
 
