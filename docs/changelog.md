@@ -6,6 +6,14 @@ hide:
 Change Log
 ==========
 
+Version 0.25.2 (2026-07-20)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix `installerPackageName` privileged plugins capability incorrectly reported as unsupported on API < 28.
+- Set hidden API exemptions only once for all privileged plugins using AndroidX startup. On future Android versions, multiple calls to `HiddenApiBypass.setHiddenExemptions()` can result in a no-op or throw. If you have your own exemptions, disable Ackpine's privileged plugins exemptions initializer and add its exemptions list to your `setHiddenExemptions` call. See docs for details.
+
 Version 0.25.1 (2026-07-20)
 ---------------------------
 
