@@ -40,7 +40,7 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(DokkaPlugin::class)
-		dependencies.add("dokkaPlugin", dokkaPlugin("suppress-annotated-api"))
+		dependencies.add("dokkaPlugin", dependencies.dokkaPlugin("suppress-annotated-api"))
 		configureDokka()
 		pluginManager.withPlugin(AckpineLibraryBasePlugin.PLUGIN_ID) {
 			val ackpineLibraryExtension = the<AckpineLibraryExtension>()

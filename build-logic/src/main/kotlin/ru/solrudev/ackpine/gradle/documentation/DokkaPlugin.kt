@@ -16,6 +16,6 @@
 
 package ru.solrudev.ackpine.gradle.documentation
 
-import org.gradle.api.Project
+import org.gradle.api.artifacts.dsl.DependencyHandler
 
-internal fun Project.dokkaPlugin(name: String) = project(":dokka-plugins:$name")
+internal fun DependencyHandler.dokkaPlugin(name: String) = project(":dokka-plugins:$name")
