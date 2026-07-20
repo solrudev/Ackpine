@@ -69,7 +69,7 @@ public abstract class PrivilegedPlugin<
 				requestDowngrade = isSupported,
 				grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
 				allUsers = isSupported,
-				installerPackageName = isSupportedOnApi(Build.VERSION_CODES.P),
+				installerPackageName = isSupported,
 				targetUser = isSupported
 			)
 		)
