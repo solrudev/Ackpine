@@ -46,5 +46,4 @@ dependencies {
 	implementation(projects.ackpineRuntime)
 	implementation(androidx.room.runtime)
 	implementation(libs.shizuku.api)
-	implementation(libs.hiddenApiBypass)
 }

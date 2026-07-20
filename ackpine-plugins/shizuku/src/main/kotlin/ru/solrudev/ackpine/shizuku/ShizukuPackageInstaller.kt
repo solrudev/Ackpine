@@ -20,10 +20,8 @@ import android.content.Context
 import android.content.pm.IPackageInstaller
 import android.content.pm.IPackageManager
 import android.content.pm.PackageInstaller
-import android.os.Build
 import android.os.IBinder
 import androidx.annotation.RestrictTo
-import org.lsposed.hiddenapibypass.HiddenApiBypass
 import rikka.shizuku.Shizuku
 import rikka.shizuku.ShizukuBinderWrapper
 import rikka.shizuku.SystemServiceHelper
@@ -56,15 +54,6 @@ internal class ShizukuPackageInstaller(
 
 		@JvmSynthetic
 		internal fun create(context: Context): ShizukuPackageInstaller {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				HiddenApiBypass.addHiddenApiExemptions(
-					"Landroid/content/pm/IPackageManager",
-					"Landroid/content/pm/IPackageInstaller",
-					"Landroid/content/pm/IPackageInstallerSession",
-					"Landroid/content/pm/PackageInstaller",
-					"Landroid/os/UserHandle"
-				)
-			}
 			val remotePackageManager = IPackageManager.Stub.asInterface(
 				ShizukuBinderWrapper(SystemServiceHelper.getSystemService("package"))
 			)
