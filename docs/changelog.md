@@ -6,6 +6,21 @@ hide:
 Change Log
 ==========
 
+Version 0.25.3 (2026-07-29)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 9.3.1.
+
+### Bug fixes and improvements
+
+- Introduce Dhizuku plugin giving device-owner privileges for package installation and uninstallation. See docs on usage.
+
+### Public API changes
+
+- Added `ackpine-dhizuku` and `ackpine-dhizuku-ktx` artifacts.
+
 Version 0.25.2 (2026-07-20)
 ---------------------------
 
