@@ -124,6 +124,7 @@
             <trusting group="org.jetbrains.kotlin.plugin.serialization" name="org.jetbrains.kotlin.plugin.serialization.gradle.plugin"/>
          </trusted-key>
          <trusted-key id="6F7E5ACBCD02DB60DFD232E45E1F79A7C298661E" group="com.google.auto" name="auto-parent"/>
+         <trusted-key id="720CABB600031CBA16FB1B6EA2897DF851709C93" group="io.github.iamr0s" name="Dhizuku-API"/>
          <trusted-key id="73976C9C39C1479B84E2641A5A68A2249128E2C6" group="com.google.crypto.tink" name="tink"/>
          <trusted-key id="7440F1F7D27BAC115F953D55EB095DA7D2F6AC0E" group="org.tensorflow" name="tensorflow-lite-metadata"/>
          <trusted-key id="7616EB882DAF57A11477AAF559A252FB1199D873" group="com.google.code.findbugs" name="jsr305"/>

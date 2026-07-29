@@ -176,6 +176,7 @@ Most configuration options are applied on a best-effort basis — options unavai
 | Install constraints                       | 34      | Ignored                                                    |
 | Shizuku plugin                            | 24      | N/A (requires `ackpine-shizuku` dependency)                |
 | libsu plugin                              | 21      | N/A (requires `ackpine-libsu` dependency)                  |
+| Dhizuku plugin                            | 26      | N/A (requires `ackpine-dhizuku` dependency)                |
 
 User's confirmation
 -------------------
@@ -352,8 +353,9 @@ Built-in Ackpine plugins:
 
 - [`ShizukuPlugin`](shizuku.md) — uses Shizuku to obtain package installer service on behalf of root user or ADB shell.
 - [`LibsuPlugin`](libsu.md) — uses libsu to perform package installer operations under root user.
+- [`DhizukuPlugin`](dhizuku.md) — uses Dhizuku to obtain package installer service as the device owner.
 
-Both plugins support install and uninstall sessions. See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
+All plugins support install and uninstall sessions. See [Architecture](../architecture.md#plugin-system) for how the plugin system works internally.
 
 Querying capabilities
 ---------------------
@@ -423,7 +425,7 @@ Plugins may be passed to include their effect on the resolved result:
     var capabilities = PackageInstaller.getCapabilities(InstallerType.INTENT_BASED, ShizukuPlugin.class);
     ```
 
-Plugins that implement [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) or [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html) also expose plugin-specific capability data accessible via `InstallerCapabilities.plugin()` / `UninstallerCapabilities.plugin()`. See [Shizuku capabilities](shizuku.md#capabilities) or [libsu capabilities](libsu.md#capabilities) for examples.
+Plugins that implement [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) or [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html) also expose plugin-specific capability data accessible via `InstallerCapabilities.plugin()` / `UninstallerCapabilities.plugin()`. See [Shizuku capabilities](shizuku.md#capabilities), [libsu capabilities](libsu.md#capabilities) or [Dhizuku capabilities](dhizuku.md#capabilities) for examples.
 
 !!! Note
     Install capabilities are not split-aware. The split-install invariant that forces `SESSION_BASED` is enforced at session creation time and is not reflected in `getCapabilities()` results.

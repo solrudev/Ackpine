@@ -1,0 +1,76 @@
+public final class ru/solrudev/ackpine/dhizuku/DhizukuInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRequestDowngrade ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin : ru/solrudev/ackpine/capabilities/InstallCapabilityProvider, ru/solrudev/ackpine/capabilities/UninstallCapabilityProvider, ru/solrudev/ackpine/plugability/AckpineInstallPlugin, ru/solrudev/ackpine/plugability/AckpineUninstallPlugin {
+	public fun <init> ()V
+	public fun apply (Lru/solrudev/ackpine/plugability/InstallPluginScope;)V
+	public fun apply (Lru/solrudev/ackpine/plugability/UninstallPluginScope;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/InstallCapabilityContext;)Lru/solrudev/ackpine/dhizuku/DhizukuInstallCapabilities;
+	public synthetic fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/capabilities/PluginCapability;
+	public fun getCapabilities (Lru/solrudev/ackpine/capabilities/UninstallCapabilityContext;)Lru/solrudev/ackpine/dhizuku/DhizukuUninstallCapabilities;
+	public fun getId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters;
+	public synthetic fun <init> (ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getRequestDowngrade ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Builder {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters;
+	public final fun getRequestDowngrade ()Z
+	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
+	public static final field Companion Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Companion;
+	public static final field DEFAULT Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters;
+	public synthetic fun <init> (ZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public final fun getSystemApp ()Z
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder {
+	public fun <init> ()V
+	public final fun build ()Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters;
+	public final fun getAllUsers ()Z
+	public final fun getKeepData ()Z
+	public final fun getSystemApp ()Z
+	public final fun setAllUsers (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
+	public final fun setKeepData (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
+	public final fun setSystemApp (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Companion {
+}
+
+public final class ru/solrudev/ackpine/dhizuku/DhizukuUninstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getSystemApp ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
