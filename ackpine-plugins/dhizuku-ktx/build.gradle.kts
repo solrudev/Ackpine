@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,24 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.documentation
+description = "Kotlin extensions for Ackpine Dhizuku plugin"
 
-import org.gradle.api.artifacts.dsl.DependencyHandler
+plugins {
+	id("ru.solrudev.ackpine.library")
+	id("ru.solrudev.ackpine.library-publish")
+	id("ru.solrudev.ackpine.dokka")
+}
 
-internal fun DependencyHandler.dokkaPlugin(name: String) = project(":dokka-plugins:$name")
+ackpine {
+	id = "dhizuku-ktx"
+	minSdk = 26
+	artifact {
+		name = "Ackpine Dhizuku Plugin KTX"
+		inceptionYear = "2026"
+	}
+}
+
+dependencies {
+	api(projects.ackpineKtx)
+	api(projects.ackpinePlugins.dhizuku)
+}

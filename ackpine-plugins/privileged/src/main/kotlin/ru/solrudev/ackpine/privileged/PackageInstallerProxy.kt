@@ -39,6 +39,10 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
+private const val ROOT_UID = 0
+private const val SYSTEM_UID = 1000
+private const val SHELL_UID = 2000
+
 /**
  * Base [PackageInstallerService] implementation for backends that proxy package installer binders.
  */
@@ -258,12 +262,15 @@ public abstract class PackageInstallerProxy protected constructor(
 			flags = applyFlag(flags, bypassLowTargetSdkBlock, INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK)
 			flags = applyFlag(flags, allowTest, INSTALL_ALLOW_TEST)
 			flags = applyFlag(flags, replaceExisting, INSTALL_REPLACE_EXISTING)
-			flags = applyFlag(flags, requestDowngrade, INSTALL_REQUEST_DOWNGRADE or INSTALL_ALLOW_DOWNGRADE)
+			flags = applyFlag(flags, requestDowngrade, INSTALL_REQUEST_DOWNGRADE)
+			flags = applyFlag(flags, requestDowngrade && hasUnrestrictedUid(), INSTALL_ALLOW_DOWNGRADE)
 			flags = applyFlag(flags, grantAllRequestedPermissions, INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS)
 			flags = applyFlag(flags, allUsers, INSTALL_ALL_USERS)
 		}
 		params.installFlags = flags
 	}
+
+	private fun hasUnrestrictedUid() = uid == ROOT_UID || uid == SYSTEM_UID || uid == SHELL_UID
 
 	private fun PrivilegedUninstallParameters.toFlags(): Int {
 		var flags = 0

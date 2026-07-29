@@ -1,5 +1,5 @@
 [versions]
-android-plugin = "9.2.1"
+android-plugin = "9.3.1"
 bundletool = "1.18.3"
 dokka = "2.2.0"
 hidden-api-refine = "4.4.0"
@@ -7,7 +7,7 @@ hidden-api-refine = "4.4.0"
 jacoco = "0.8.14"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 kotlin-ksp = "2.3.9"
 libsu = "6.0.0"
 shizuku = "13.1.5"
@@ -24,6 +24,7 @@ plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
 bundletool = { module = "com.android.tools.build:bundletool", version.ref = "bundletool" }
+dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.5.4"
 dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
 dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
 guava = "com.google.guava:guava:33.4.8-android"

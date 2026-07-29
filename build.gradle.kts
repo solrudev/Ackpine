@@ -38,6 +38,8 @@ dependencies {
 	library(projects.ackpineResources)
 	library(projects.ackpinePlugins.privileged)
 	library(projects.ackpinePlugins.privilegedKtx)
+	library(projects.ackpinePlugins.dhizuku)
+	library(projects.ackpinePlugins.dhizukuKtx)
 	library(projects.ackpinePlugins.shizuku)
 	library(projects.ackpinePlugins.shizukuKtx)
 	library(projects.ackpinePlugins.libsu)

@@ -22,7 +22,7 @@ Key features of Ackpine:
 - **Deferred**: Ackpine allows to defer user's intervention via customizable high-priority notification.
 - **Progress and state updates**: it's easy to observe every session's state and progress updates.
 - **Advanced features**: Ackpine allows to benefit from advanced features without juggling complex OS APIs (such as install pre-approval) introduced in later Android versions.
-- **Elevated permissions**: Shizuku and root shell are supported as installer backends with advanced install flags.
+- **Elevated permissions**: Shizuku, root shell and Dhizuku are supported as installer backends with advanced install flags.
 - **100% Java and Kotlin-friendly**: while maintaining full Java compatibility, Ackpine was developed as a Kotlin-first library.
 - **Compatibility**: Ackpine supports Android versions starting from API level 16.
 
@@ -69,6 +69,12 @@ ackpine-libsu = { module = "ru.solrudev.ackpine:ackpine-libsu", version.ref = "a
 # optional - Kotlin extensions for libsu plugin
 ackpine-libsu-ktx = { module = "ru.solrudev.ackpine:ackpine-libsu-ktx", version.ref = "ackpine" }
 
+# optional - plugin enabling installs/uninstalls through Dhizuku
+ackpine-dhizuku = { module = "ru.solrudev.ackpine:ackpine-dhizuku", version.ref = "ackpine" }
+
+# optional - Kotlin extensions for Dhizuku plugin
+ackpine-dhizuku-ktx = { module = "ru.solrudev.ackpine:ackpine-dhizuku-ktx", version.ref = "ackpine" }
+
 # optional - testing utilities
 ackpine-test = { module = "ru.solrudev.ackpine:ackpine-test", version.ref = "ackpine" }
 
@@ -82,7 +88,9 @@ ackpine = [
     "ackpine-shizuku",
     "ackpine-shizuku-ktx",
     "ackpine-libsu",
-    "ackpine-libsu-ktx"
+    "ackpine-libsu-ktx",
+    "ackpine-dhizuku",
+    "ackpine-dhizuku-ktx"
 ]
 ```
 </details>
@@ -118,6 +126,12 @@ dependencies {
 
     // optional - Kotlin extensions for libsu plugin
     implementation("ru.solrudev.ackpine:ackpine-libsu-ktx:$ackpineVersion")
+
+    // optional - plugin enabling installs/uninstalls through Dhizuku
+    implementation("ru.solrudev.ackpine:ackpine-dhizuku:$ackpineVersion")
+
+    // optional - Kotlin extensions for Dhizuku plugin
+    implementation("ru.solrudev.ackpine:ackpine-dhizuku-ktx:$ackpineVersion")
 
     // optional - testing utilities
     testImplementation("ru.solrudev.ackpine:ackpine-test:$ackpineVersion")

@@ -25,7 +25,11 @@ import kotlin.test.assertTrue
 
 class LocaleHelpersTest {
 
-	private val deviceLocales = listOf(Locale("en", "US"), Locale("fr", "FR"), Locale("de", "DE"))
+	private val deviceLocales = listOf(
+		Locale.forLanguageTag("en-US"),
+		Locale.forLanguageTag("fr-FR"),
+		Locale.forLanguageTag("de-DE")
+	)
 
 	@Test
 	fun localeFromSplitNameReturnsLocaleForLanguage() {
@@ -59,12 +63,12 @@ class LocaleHelpersTest {
 
 	@Test
 	fun matchScoreReturnsMaxValueForEmptyDeviceLocales() {
-		assertEquals(Int.MAX_VALUE, Locale("en").matchScore(emptyList()))
+		assertEquals(Int.MAX_VALUE, Locale.forLanguageTag("en").matchScore(emptyList()))
 	}
 
 	@Test
 	fun matchScoreReturnsMaxValueForNonMatchingLanguage() {
-		assertEquals(Int.MAX_VALUE, Locale("ja").matchScore(deviceLocales))
+		assertEquals(Int.MAX_VALUE, Locale.forLanguageTag("ja").matchScore(deviceLocales))
 	}
 
 	@Test
@@ -75,30 +79,30 @@ class LocaleHelpersTest {
 	@Test
 	fun matchScoreIgnoresCountry() {
 		assertEquals(
-			Locale("en", "GB").matchScore(listOf(Locale("en", "US"))),
-			Locale("en").matchScore(listOf(Locale("en", "US")))
+			Locale("en", "GB").matchScore(listOf(Locale.forLanguageTag("en-US"))),
+			Locale("en").matchScore(listOf(Locale.forLanguageTag("en-US")))
 		)
 	}
 
 	@Test
 	fun matchScoreEarlierExactMatchIsBetterThanLaterExactMatch() {
-		val english = Locale("en", "US").matchScore(deviceLocales)
-		val french = Locale("fr", "FR").matchScore(deviceLocales)
+		val english = Locale.forLanguageTag("en-US").matchScore(deviceLocales)
+		val french = Locale.forLanguageTag("fr-FR").matchScore(deviceLocales)
 		assertTrue(english < french)
 	}
 
 	@Test
 	fun matchScoreEarlierLanguageOnlyMatchIsBetterThanLaterLanguageOnlyMatch() {
-		val english = Locale("en", "GB").matchScore(deviceLocales)
-		val german = Locale("de", "AT").matchScore(deviceLocales)
+		val english = Locale.forLanguageTag("en-GB").matchScore(deviceLocales)
+		val german = Locale.forLanguageTag("de-AT").matchScore(deviceLocales)
 		assertTrue(english < german)
 	}
 
 	@Test
 	fun matchScoreEarlierPositionWithLanguageOnlyMatchBeatsLaterExactMatch() {
-		val locales = listOf(Locale("en"), Locale("fr", "FR"))
-		val englishLanguageOnly = Locale("en", "GB").matchScore(locales)
-		val frenchExact = Locale("fr", "FR").matchScore(locales)
+		val locales = listOf(Locale.forLanguageTag("en"), Locale.forLanguageTag("fr-FR"))
+		val englishLanguageOnly = Locale.forLanguageTag("en-GB").matchScore(locales)
+		val frenchExact = Locale.forLanguageTag("fr-FR").matchScore(locales)
 		assertTrue(englishLanguageOnly < frenchExact)
 	}
 }

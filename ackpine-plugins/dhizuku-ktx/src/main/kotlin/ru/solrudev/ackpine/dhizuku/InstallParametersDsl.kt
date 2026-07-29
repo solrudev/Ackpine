@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,15 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.documentation
+package ru.solrudev.ackpine.dhizuku
 
-import org.gradle.api.artifacts.dsl.DependencyHandler
+import ru.solrudev.ackpine.installer.parameters.InstallParametersDsl
 
-internal fun DependencyHandler.dokkaPlugin(name: String) = project(":dokka-plugins:$name")
+/**
+ * Registers [DhizukuPlugin] for the session.
+ */
+public inline fun InstallParametersDsl.dhizuku(
+	configure: DhizukuInstallParametersDsl.() -> Unit = {}
+) {
+	plugin(DhizukuPlugin::class, DhizukuInstallParameters(configure))
+}

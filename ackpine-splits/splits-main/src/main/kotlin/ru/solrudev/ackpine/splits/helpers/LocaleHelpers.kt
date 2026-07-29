@@ -43,7 +43,7 @@ internal fun localeFromSplitName(name: String): Locale? {
 	if (language.isEmpty() || language !in availableLanguages) {
 		return null
 	}
-	return Locale(language)
+	return Locale.forLanguageTag(language)
 }
 
 @JvmSynthetic
