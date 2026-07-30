@@ -133,7 +133,7 @@ To apply the plugin to an install session, just add this to your install paramet
             .setReplaceExisting(true)
             .setRequestDowngrade(true)
             .setGrantAllRequestedPermissions(true)
-            .setAllUsers(true)
+            .setAllUsers(false)
             .setInstallerPackageName("com.android.vending")
             .setTargetUser(new TargetUser(10))
             .build();
@@ -154,7 +154,8 @@ Also, you can use Shizuku for uninstall sessions:
         // Or, if you want to configure some parameters for the plugin
         shizuku {
             keepData = true
-            allUsers = true
+            allUsers = false
+            systemApp = true
             targetUser = TargetUser(10)
         }
     }
@@ -171,7 +172,8 @@ Also, you can use Shizuku for uninstall sessions:
     // Or, if you want to configure some parameters for the plugin
     var shizukuParameters = new ShizukuPlugin.UninstallParameters.Builder()
             .setKeepData(true)
-            .setAllUsers(true)
+            .setAllUsers(false)
+            .setSystemApp(true)
             .setTargetUser(new TargetUser(10))
             .build();
     var parameters = new UninstallParameters.Builder(packageName)
