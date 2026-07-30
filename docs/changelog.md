@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Version 0.25.4 (2026-07-30)
+---------------------------
+
+### Bug fixes and improvements
+
+- Fix incorrect installer package name applied to a session when the same target user was already used with privileged plugins.
+
 Version 0.25.3 (2026-07-29)
 ---------------------------
 
