@@ -56,7 +56,7 @@ public abstract class PackageInstallerProxy protected constructor(
 
 	private val installParameters = ConcurrentHashMap<UUID, PrivilegedInstallParameters>()
 	private val uninstallParameters = ConcurrentHashMap<UUID, PrivilegedUninstallParameters>()
-	private val packageInstallers = ConcurrentHashMap<Int, PackageInstaller>()
+	private val packageInstallers = ConcurrentHashMap<PackageInstallerKey, PackageInstaller>()
 	private val packageInstallerLocks = Locks(16)
 
 	final override fun bind(sessionId: UUID): PackageInstallerService {
@@ -71,7 +71,8 @@ public abstract class PackageInstallerProxy protected constructor(
 		} else {
 			targetUser.userId
 		}
-		val packageInstaller = packageInstallers.computeIfAbsentCompat(resolvedUserId, packageInstallerLocks) {
+		val key = PackageInstallerKey(resolvedUserId, installerPackageName)
+		val packageInstaller = packageInstallers.computeIfAbsentCompat(key, packageInstallerLocks) {
 			createPackageInstaller(context, remotePackageInstaller, installerPackageName, resolvedUserId)
 		}
 		return BoundPackageInstaller(packageInstaller!!, resolvedUserId, installerPackageName)
@@ -112,6 +113,8 @@ public abstract class PackageInstallerProxy protected constructor(
 	private fun unboundServiceAccess(): Nothing = error(
 		"PackageInstallerService must be bound to an Ackpine session before use"
 	)
+
+	private data class PackageInstallerKey(val userId: Int, val installerPackageName: String)
 
 	private inner class BoundPackageInstaller(
 		private val packageInstaller: PackageInstaller,
