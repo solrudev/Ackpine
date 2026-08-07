@@ -79,8 +79,8 @@ class LocaleHelpersTest {
 	@Test
 	fun matchScoreIgnoresCountry() {
 		assertEquals(
-			Locale("en", "GB").matchScore(listOf(Locale.forLanguageTag("en-US"))),
-			Locale("en").matchScore(listOf(Locale.forLanguageTag("en-US")))
+			Locale.forLanguageTag("en-GB").matchScore(listOf(Locale.forLanguageTag("en-US"))),
+			Locale.forLanguageTag("en").matchScore(listOf(Locale.forLanguageTag("en-US")))
 		)
 	}
 

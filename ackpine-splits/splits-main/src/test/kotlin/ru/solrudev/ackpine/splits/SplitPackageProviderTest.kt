@@ -170,19 +170,19 @@ class SplitPackageProviderTest {
 
 	@Test
 	fun sortedByCompatibilityPutsMatchingLocaleFirst() {
-		val japanese = createLocalizationApk(name = "config.ja", locale = Locale("ja"))
-		val english = createLocalizationApk(name = "config.en", locale = Locale("en"))
+		val japanese = createLocalizationApk(name = "config.ja", locale = Locale.forLanguageTag("ja"))
+		val english = createLocalizationApk(name = "config.en", locale = Locale.forLanguageTag("en"))
 		val provider = listOf(japanese, english, createBaseApk()).toSplitPackage()
 
 		val sorted = provider.sortedByCompatibility(context).getAsync().get()
 
-		assertEquals(Locale("en"), sorted.localization.first().apk.locale)
+		assertEquals(Locale.forLanguageTag("en"), sorted.localization.first().apk.locale)
 		assertTrue(sorted.localization.first().isPreferred)
 	}
 
 	@Test
 	fun sortedByCompatibilityMarksNonMatchingLocaleAsNotPreferred() {
-		val japanese = createLocalizationApk(name = "config.ja", locale = Locale("ja"))
+		val japanese = createLocalizationApk(name = "config.ja", locale = Locale.forLanguageTag("ja"))
 		val provider = listOf(japanese, createBaseApk()).toSplitPackage()
 
 		val sorted = provider.sortedByCompatibility(context).getAsync().get()

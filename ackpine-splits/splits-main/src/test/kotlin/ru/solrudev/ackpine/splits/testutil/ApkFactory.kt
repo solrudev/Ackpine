@@ -75,7 +75,7 @@ fun createLocalizationApk(
 	name: String = "config.en",
 	packageName: String = DEFAULT_PACKAGE,
 	versionCode: Long = DEFAULT_VERSION_CODE,
-	locale: Locale = Locale("en"),
+	locale: Locale = Locale.forLanguageTag("en"),
 	configForSplit: String = ""
 ) = Apk.Localization(
 	uri = Uri.EMPTY,
