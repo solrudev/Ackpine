@@ -17,8 +17,10 @@
 package ru.solrudev.ackpine.gradle.versioning
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 private val validSuffix = Regex("[a-z0-9]*")
+private val validChannel = Regex("[a-z0-9.]*")
 
 /**
  * Version of the project, adhering to semantic versioning.
@@ -29,8 +31,19 @@ public data class Version(
 	public val minorVersion: Int,
 	public val patchVersion: Int,
 	public val suffix: String,
-	public val isSnapshot: Boolean
+	public val isSnapshot: Boolean,
+
+	/**
+	 * Release channel of the werunplugged fork, e.g. `unplugged.dev.12`. Appended to the version so that the fork's
+	 * artifacts never share a version with upstream's. Not read from `version.json`, and doesn't affect [versionCode].
+	 */
+	@Transient
+	public val channel: String = ""
 ) : Comparable<Version> {
+
+	init {
+		require(channel.matches(validChannel)) { "Version channel contains illegal characters: $channel" }
+	}
 
 	/**
 	 * Version code computed from semantic version number.
@@ -46,6 +59,9 @@ public data class Version(
 			append("$majorVersion.$minorVersion.$patchVersion")
 			if (suffix.isNotEmpty()) {
 				append("-$suffix")
+			}
+			if (channel.isNotEmpty()) {
+				append("-$channel")
 			}
 			if (isSnapshot) {
 				append("-SNAPSHOT")

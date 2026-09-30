@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.gradle.versioning
 
 import kotlinx.serialization.json.Json
 import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.services.BuildService
 import org.gradle.api.services.BuildServiceParameters
 
@@ -27,10 +28,13 @@ internal abstract class VersioningService : BuildService<VersioningService.Param
 
 	internal val version by lazy {
 		val versionJson = parameters.versionFile.get().asFile.readText()
-		json.decodeFromString<Version>(versionJson)
+		json
+			.decodeFromString<Version>(versionJson)
+			.copy(channel = parameters.channel.get())
 	}
 
 	internal interface Parameters : BuildServiceParameters {
 		val versionFile: RegularFileProperty
+		val channel: Property<String>
 	}
 }
