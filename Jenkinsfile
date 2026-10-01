@@ -74,22 +74,30 @@ pipeline {
                     usernamePassword(credentialsId: 'artifactory-credentials', usernameVariable: 'ORG_GRADLE_PROJECT_unpluggedUsername', passwordVariable: 'ORG_GRADLE_PROJECT_unpluggedPassword')
                 ]) {
                     // Refuse to overwrite a published version, e.g. after the job was recreated and its build numbers
-                    // restarted: builds that already resolved that version would keep the old artifacts. The
-                    // credentials go to curl on stdin so they never appear in a process list.
+                    // restarted: builds that already resolved that version would keep the old artifacts. The search
+                    // covers every module, not just ackpine-core, so a publish that failed halfway is caught too
+                    // ("*" also matches compress-android's 1.28.0-<version>). Anything but an empty 200 answer
+                    // refuses. The credentials go to curl on stdin so they never appear in a process list.
                     sh '''
                         set +x
-                        pom="$UNPLUGGED_REPOSITORY_URL/ru/solrudev/ackpine/ackpine-core/$ACKPINE_VERSION/ackpine-core-$ACKPINE_VERSION.pom"
+                        search="https://unplugged.jfrog.io/artifactory/api/search/gavc?g=ru.solrudev.ackpine&v=*$ACKPINE_VERSION&repos=unplugged-libraries"
                         status=$(printf 'user = "%s:%s"\\n' "$ORG_GRADLE_PROJECT_unpluggedUsername" "$ORG_GRADLE_PROJECT_unpluggedPassword" \
-                            | curl -s -K - -o /dev/null -w '%{http_code}' -I "$pom")
-                        if [ "$status" != 404 ]; then
-                            echo "❌ ackpine-core $ACKPINE_VERSION already exists in Artifactory or can't be checked (HTTP $status)"
+                            | curl -s -K - -o search.json -w '%{http_code}' "$search")
+                        if [ "$status" != 200 ]; then
+                            echo "❌ Can't check whether $ACKPINE_VERSION is already in Artifactory (HTTP $status)"
+                            exit 1
+                        fi
+                        if grep -q '"uri"' search.json; then
+                            echo "❌ $ACKPINE_VERSION already exists in Artifactory:"
+                            cat search.json
                             exit 1
                         fi
                         ./gradlew $GRADLE_ARGS -Packpine.publishing.unplugged.url="$UNPLUGGED_REPOSITORY_URL" publishAllPublicationsToUnpluggedRepository
                     '''
                 }
                 script {
-                    currentBuild.description = "📦 Published ${env.ACKPINE_VERSION}"
+                    env.JFROG_URL = "https://unplugged.jfrog.io/ui/repos/tree/General/unplugged-libraries/ru/solrudev/ackpine/ackpine-core/${env.ACKPINE_VERSION}"
+                    currentBuild.description = "📦 New version ${env.ACKPINE_VERSION} published to JFrog (all 18 libraries, under ru/solrudev/ackpine):\n${env.JFROG_URL}"
                 }
             }
         }
@@ -101,7 +109,9 @@ pipeline {
         }
         success {
             script {
-                if (env.PUBLISH != 'true') {
+                if (env.PUBLISH == 'true') {
+                    echo "📦 New version ${env.ACKPINE_VERSION} is in JFrog: ${env.JFROG_URL}"
+                } else {
                     currentBuild.description = "✅ Built and tested | ${env.CHANNEL}"
                 }
             }
