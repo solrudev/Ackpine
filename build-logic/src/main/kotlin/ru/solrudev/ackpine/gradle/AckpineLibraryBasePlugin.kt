@@ -43,7 +43,7 @@ import ru.solrudev.ackpine.gradle.versioning.ackpineVersion
 public class AckpineLibraryBasePlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
-		group = Constants.PACKAGE_NAME
+		group = Constants.MAVEN_GROUP
 		version = ackpineVersion.get().toString()
 		pluginManager.apply(LibraryPlugin::class)
 		configureJava()

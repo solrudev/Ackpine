@@ -41,7 +41,7 @@ public class AckpinePlugin : Plugin<Project> {
 		require(isolated == isolated.rootProject) {
 			"Plugin must be applied to the root project but was applied to $path"
 		}
-		group = Constants.PACKAGE_NAME
+		group = Constants.MAVEN_GROUP
 		version = ackpineVersion.get().toString()
 		val library = configurations.dependencyScope("library")
 		registerBuildAckpineTask(library)

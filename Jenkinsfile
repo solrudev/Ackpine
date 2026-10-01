@@ -39,8 +39,12 @@ pipeline {
                 script {
                     def branch = env.BRANCH_NAME ?: ''
                     def isMainBranch = branch in ['main', 'master']
-                    env.CHANNEL = isMainBranch ? "unplugged.${env.BUILD_NUMBER}" : "unplugged.ci.${env.BUILD_NUMBER}"
-                    env.PUBLISH = isMainBranch.toString()
+                    // TEMPORARY (UNP-9252): lets this branch publish once more, to verify the com.unplugged.ackpine group
+                    // and the all-modules overwrite check, as 0.25.4-unplugged.test.<build>. Remove once verified.
+                    def isTestPublishBranch = branch == 'UNP-9252'
+                    env.CHANNEL = isMainBranch ? "unplugged.${env.BUILD_NUMBER}" :
+                        (isTestPublishBranch ? "unplugged.test.${env.BUILD_NUMBER}" : "unplugged.ci.${env.BUILD_NUMBER}")
+                    env.PUBLISH = (isMainBranch || isTestPublishBranch).toString()
                     env.GRADLE_ARGS = "--no-daemon --console=plain -Packpine.version.channel=${env.CHANNEL} " +
                         '-Packpine.publishing.sign=false -Pkotlin.daemon.jvmargs=-Xmx3g'
                     echo "🌿 Branch: ${branch} | channel: ${env.CHANNEL} | publish: ${env.PUBLISH == 'true' ? 'yes' : 'no, only the main branch publishes'}"
@@ -80,7 +84,7 @@ pipeline {
                     // refuses. The credentials go to curl on stdin so they never appear in a process list.
                     sh '''
                         set +x
-                        search="https://unplugged.jfrog.io/artifactory/api/search/gavc?g=ru.solrudev.ackpine&v=*$ACKPINE_VERSION&repos=unplugged-libraries"
+                        search="https://unplugged.jfrog.io/artifactory/api/search/gavc?g=com.unplugged.ackpine&v=*$ACKPINE_VERSION&repos=unplugged-libraries"
                         status=$(printf 'user = "%s:%s"\\n' "$ORG_GRADLE_PROJECT_unpluggedUsername" "$ORG_GRADLE_PROJECT_unpluggedPassword" \
                             | curl -s -K - -o search.json -w '%{http_code}' "$search")
                         if [ "$status" != 200 ]; then
@@ -96,8 +100,8 @@ pipeline {
                     '''
                 }
                 script {
-                    env.JFROG_URL = "https://unplugged.jfrog.io/ui/repos/tree/General/unplugged-libraries/ru/solrudev/ackpine/ackpine-core/${env.ACKPINE_VERSION}"
-                    currentBuild.description = "📦 New version ${env.ACKPINE_VERSION} published to JFrog (all 18 libraries, under ru/solrudev/ackpine):\n${env.JFROG_URL}"
+                    env.JFROG_URL = "https://unplugged.jfrog.io/ui/repos/tree/General/unplugged-libraries/com/unplugged/ackpine/ackpine-core/${env.ACKPINE_VERSION}"
+                    currentBuild.description = "📦 New version ${env.ACKPINE_VERSION} published to JFrog (all 18 libraries, under com/unplugged/ackpine):\n${env.JFROG_URL}"
                 }
             }
         }

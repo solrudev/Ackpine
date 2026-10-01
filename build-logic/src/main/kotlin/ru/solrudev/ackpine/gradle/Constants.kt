@@ -21,6 +21,13 @@ import org.gradle.api.JavaVersion
 public object Constants {
 	public const val TARGET_SDK: Int = 36
 	public const val PACKAGE_NAME: String = "ru.solrudev.ackpine"
+
+	/**
+	 * Maven group of the werunplugged fork's artifacts. Not upstream's [PACKAGE_NAME], so the fork can't be confused
+	 * with, or lose conflict resolution to, upstream's ru.solrudev.ackpine releases. Code packages and Android
+	 * namespaces keep [PACKAGE_NAME].
+	 */
+	public const val MAVEN_GROUP: String = "com.unplugged.ackpine"
 	public const val JDK_VERSION: Int = 21
 }
 
