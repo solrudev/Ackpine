@@ -2,11 +2,9 @@
 // Artifactory (unplugged-libraries), so it publishes with Gradle rather than through DeploymentHelper/AndroidBuilderTest,
 // which uploads a single file.
 //
-// The branch picks the release channel, which is appended to the upstream version from version.json:
-//   main               production   0.25.4-unplugged.<build>        published
-//   v<version>         staging      0.25.4-unplugged.rc.<build>     published
-//   unplugged-develop  development  0.25.4-unplugged.dev.<build>    published
-//   anything else      -            0.25.4-unplugged.ci.<build>     ABI check, build and tests only
+// Only the main branch publishes: a merge to main (or master, the fork's default branch) publishes every library as
+// <upstream version>-unplugged.<build>, e.g. 0.25.4-unplugged.12. Every other branch (UNP-*, version branches, ...)
+// runs the ABI check, build and tests only, and its 0.25.4-unplugged.ci.<build> version never leaves the agent.
 //
 // Job setup: a Multibranch Pipeline for werunplugged/up_ackpine, with the artifactory-credentials credential. The
 // repository is public: don't enable "Discover pull requests from forks", or anyone's code would run on the agent.
@@ -36,30 +34,16 @@ pipeline {
         UNPLUGGED_REPOSITORY_URL = 'https://unplugged.jfrog.io/artifactory/unplugged-libraries'
     }
     stages {
-        stage('Resolve Channel') {
+        stage('Resolve Version') {
             steps {
                 script {
                     def branch = env.BRANCH_NAME ?: ''
-                    def environment = null
-                    def channel
-                    if (branch == 'main') {
-                        environment = 'production'
-                        channel = "unplugged.${env.BUILD_NUMBER}"
-                    } else if (branch ==~ /v\d+(\.\d+)*/) {
-                        environment = 'staging'
-                        channel = "unplugged.rc.${env.BUILD_NUMBER}"
-                    } else if (branch == 'unplugged-develop') {
-                        environment = 'development'
-                        channel = "unplugged.dev.${env.BUILD_NUMBER}"
-                    } else {
-                        channel = "unplugged.ci.${env.BUILD_NUMBER}"
-                    }
-                    env.ENVIRONMENT = environment ?: 'none'
-                    env.CHANNEL = channel
-                    env.PUBLISH = (environment != null).toString()
+                    def isMainBranch = branch in ['main', 'master']
+                    env.CHANNEL = isMainBranch ? "unplugged.${env.BUILD_NUMBER}" : "unplugged.ci.${env.BUILD_NUMBER}"
+                    env.PUBLISH = isMainBranch.toString()
                     env.GRADLE_ARGS = "--no-daemon --console=plain -Packpine.version.channel=${env.CHANNEL} " +
                         '-Packpine.publishing.sign=false -Pkotlin.daemon.jvmargs=-Xmx3g'
-                    echo "🌿 Branch: ${branch} | environment: ${env.ENVIRONMENT} | channel: ${env.CHANNEL} | publish: ${env.PUBLISH}"
+                    echo "🌿 Branch: ${branch} | channel: ${env.CHANNEL} | publish: ${isMainBranch ? 'yes' : 'no, only the main branch publishes'}"
                 }
             }
         }
@@ -84,7 +68,7 @@ pipeline {
                     if (!env.ACKPINE_VERSION) {
                         error('❌ Could not determine the Ackpine version')
                     }
-                    echo "📦 Publishing ${env.ACKPINE_VERSION} (${env.ENVIRONMENT})"
+                    echo "📦 Publishing ${env.ACKPINE_VERSION}"
                 }
                 withCredentials([
                     usernamePassword(credentialsId: 'artifactory-credentials', usernameVariable: 'ORG_GRADLE_PROJECT_unpluggedUsername', passwordVariable: 'ORG_GRADLE_PROJECT_unpluggedPassword')
@@ -105,7 +89,7 @@ pipeline {
                     '''
                 }
                 script {
-                    currentBuild.description = "📦 ${env.ENVIRONMENT} | ${env.ACKPINE_VERSION}"
+                    currentBuild.description = "📦 Published ${env.ACKPINE_VERSION}"
                 }
             }
         }
