@@ -39,11 +39,16 @@ pipeline {
                 script {
                     def branch = env.BRANCH_NAME ?: ''
                     def isMainBranch = branch in ['main', 'master']
-                    env.CHANNEL = isMainBranch ? "unplugged.${env.BUILD_NUMBER}" : "unplugged.ci.${env.BUILD_NUMBER}"
-                    env.PUBLISH = isMainBranch.toString()
+                    // TEMPORARY (UNP-9252): lets this branch run the whole pipeline, publish included, before main
+                    // publishes for real. Its "test" versions (0.25.4-unplugged.test.<build>) can't pass for a main
+                    // release. Remove this once the first run is verified.
+                    def isTestPublishBranch = branch == 'UNP-9252'
+                    env.CHANNEL = isMainBranch ? "unplugged.${env.BUILD_NUMBER}" :
+                        (isTestPublishBranch ? "unplugged.test.${env.BUILD_NUMBER}" : "unplugged.ci.${env.BUILD_NUMBER}")
+                    env.PUBLISH = (isMainBranch || isTestPublishBranch).toString()
                     env.GRADLE_ARGS = "--no-daemon --console=plain -Packpine.version.channel=${env.CHANNEL} " +
                         '-Packpine.publishing.sign=false -Pkotlin.daemon.jvmargs=-Xmx3g'
-                    echo "🌿 Branch: ${branch} | channel: ${env.CHANNEL} | publish: ${isMainBranch ? 'yes' : 'no, only the main branch publishes'}"
+                    echo "🌿 Branch: ${branch} | channel: ${env.CHANNEL} | publish: ${env.PUBLISH == 'true' ? 'yes' : 'no, only the main branch publishes'}"
                 }
             }
         }
