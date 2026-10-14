@@ -70,7 +70,12 @@ public abstract class PrivilegedPlugin<
 				grantAllRequestedPermissions = isSupportedOnApi(Build.VERSION_CODES.M),
 				allUsers = isSupported,
 				installerPackageName = isSupported,
-				targetUser = isSupported
+				targetUser = isSupported,
+				installFlags = if (isSessionBased) {
+					CapabilityStatus.UNRELIABLE
+				} else {
+					CapabilityStatus.UNSUPPORTED
+				}
 			)
 		)
 	}
@@ -86,7 +91,12 @@ public abstract class PrivilegedPlugin<
 				keepData = status,
 				allUsers = status,
 				systemApp = status,
-				targetUser = status
+				targetUser = status,
+				uninstallFlags = if (status == CapabilityStatus.SUPPORTED) {
+					CapabilityStatus.UNRELIABLE
+				} else {
+					CapabilityStatus.UNSUPPORTED
+				}
 			)
 		)
 	}

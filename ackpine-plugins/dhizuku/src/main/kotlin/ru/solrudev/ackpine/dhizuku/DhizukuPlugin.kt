@@ -35,6 +35,9 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
  *
  * Dhizuku performs package installer operations as the active device owner application. Accordingly,
  * [InstallParameters] and [UninstallParameters] expose only options supported for that identity.
+ * [Arbitrary install][DhizukuPlugin.InstallParameters.installFlags] and
+ * [uninstall flags][DhizukuPlugin.UninstallParameters.uninstallFlags] can be supplied, but there's no guarantee that
+ * they will affect the outcome or that the session will succeed when they are applied.
  *
  * **Note:** Dhizuku activation and permission are not managed by this Ackpine plugin. You must handle them in your app
  * to successfully use Dhizuku.
@@ -58,12 +61,15 @@ public class DhizukuPlugin :
 	}
 
 	override fun getCapabilities(context: InstallCapabilityContext): DhizukuInstallCapabilities {
-		val requestDowngradeStatus = if (context.installerType == InstallerType.SESSION_BASED) {
+		val capabilityStatus = if (context.installerType == InstallerType.SESSION_BASED) {
 			CapabilityStatus.UNRELIABLE
 		} else {
 			CapabilityStatus.UNSUPPORTED
 		}
-		return DhizukuInstallCapabilities(requestDowngrade = requestDowngradeStatus)
+		return DhizukuInstallCapabilities(
+			requestDowngrade = capabilityStatus,
+			installFlags = capabilityStatus
+		)
 	}
 
 	override fun getCapabilities(context: UninstallCapabilityContext): DhizukuUninstallCapabilities {
@@ -75,7 +81,12 @@ public class DhizukuPlugin :
 		return DhizukuUninstallCapabilities(
 			keepData = status,
 			allUsers = status,
-			systemApp = status
+			systemApp = status,
+			uninstallFlags = if (status == CapabilityStatus.SUPPORTED) {
+				CapabilityStatus.UNRELIABLE
+			} else {
+				CapabilityStatus.UNSUPPORTED
+			}
 		)
 	}
 
@@ -96,18 +107,44 @@ public class DhizukuPlugin :
 		 * The device owner must still be authorized by Android to perform the downgrade, so setting this option does
 		 * not guarantee that a downgrade will succeed.
 		 */
-		public val requestDowngrade: Boolean
+		public val requestDowngrade: Boolean,
+
+		/**
+		 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+		 *
+		 * The mask is ORed with platform flags _before_ applying Dhizuku's boolean options. These options take
+		 * precedence for their corresponding bits, including clearing them when `false`. Flags without corresponding
+		 * Dhizuku boolean options remain unchanged.
+		 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask;
+		 * unrelated platform flags are preserved.
+		 *
+		 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+		 * and device-owner permissions. Supplying flags grants no additional privileges.
+		 */
+		public val installFlags: Int
 	) : AckpinePlugin.Parameters {
 
 		override fun equals(other: Any?): Boolean {
 			if (this === other) return true
 			if (javaClass != other?.javaClass) return false
 			other as InstallParameters
-			return requestDowngrade == other.requestDowngrade
+			if (requestDowngrade != other.requestDowngrade) return false
+			if (installFlags != other.installFlags) return false
+			return true
 		}
 
-		override fun hashCode(): Int = requestDowngrade.hashCode()
-		override fun toString(): String = "InstallParameters(requestDowngrade=$requestDowngrade)"
+		override fun hashCode(): Int {
+			var result = requestDowngrade.hashCode()
+			result = 31 * result + installFlags
+			return result
+		}
+
+		override fun toString(): String {
+			return "InstallParameters(" +
+					"requestDowngrade=$requestDowngrade, " +
+					"installFlags=$installFlags" +
+					")"
+		}
 
 		/**
 		 * Builder for [DhizukuPlugin.InstallParameters].
@@ -127,6 +164,21 @@ public class DhizukuPlugin :
 				private set
 
 			/**
+			 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+			 *
+			 * The mask is ORed with platform flags _before_ applying Dhizuku's boolean options. These options take
+			 * precedence for their corresponding bits, including clearing them when `false`. Flags without
+			 * corresponding Dhizuku boolean options remain unchanged.
+			 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask;
+			 * unrelated platform flags are preserved.
+			 *
+			 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android
+			 * version and device-owner permissions. Supplying flags grants no additional privileges.
+			 */
+			public var installFlags: Int = 0
+				private set
+
+			/**
 			 * Sets [InstallParameters.requestDowngrade].
 			 *
 			 * This is a **delicate** API. The outcome of using this flag depends on the app being installed, on a
@@ -138,15 +190,26 @@ public class DhizukuPlugin :
 			}
 
 			/**
+			 * Sets [InstallParameters.installFlags].
+			 *
+			 * This is a **delicate** API.
+			 */
+			@DelicateAckpineApi
+			public fun setInstallFlags(value: Int): Builder = apply {
+				installFlags = value
+			}
+
+			/**
 			 * Constructs a new instance of [InstallParameters].
 			 */
-			public fun build(): InstallParameters = InstallParameters(requestDowngrade)
+			public fun build(): InstallParameters = InstallParameters(requestDowngrade, installFlags)
 		}
 
 		public companion object {
 
 			/**
-			 * Default [DhizukuPlugin] install parameters with [requestDowngrade] disabled.
+			 * Default [DhizukuPlugin] install parameters with [requestDowngrade] disabled and [installFlags] equal to
+			 * `0`.
 			 */
 			@JvmField
 			public val DEFAULT: InstallParameters = Builder().build()
@@ -176,7 +239,20 @@ public class DhizukuPlugin :
 		 * This does not remove the app from the system partition. For an updated system app, it prevents the update
 		 * from being rolled back globally when uninstalling it for the current user.
 		 */
-		public val systemApp: Boolean
+		public val systemApp: Boolean,
+
+		/**
+		 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+		 *
+		 * The mask is applied _before_ Dhizuku's boolean options. These options take precedence for their corresponding
+		 * bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean options remain
+		 * unchanged. The boolean values remain independent of this mask.
+		 * Setting the mask replaces the previous supplied mask.
+		 *
+		 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+		 * and device-owner permissions. Supplying flags grants no additional privileges.
+		 */
+		public val uninstallFlags: Int
 	) : AckpinePlugin.Parameters {
 
 		override fun equals(other: Any?): Boolean {
@@ -186,6 +262,7 @@ public class DhizukuPlugin :
 			if (keepData != other.keepData) return false
 			if (allUsers != other.allUsers) return false
 			if (systemApp != other.systemApp) return false
+			if (uninstallFlags != other.uninstallFlags) return false
 			return true
 		}
 
@@ -193,13 +270,15 @@ public class DhizukuPlugin :
 			var result = keepData.hashCode()
 			result = 31 * result + allUsers.hashCode()
 			result = 31 * result + systemApp.hashCode()
+			result = 31 * result + uninstallFlags.hashCode()
 			return result
 		}
 
 		override fun toString(): String = "UninstallParameters(" +
 				"keepData=$keepData, " +
 				"allUsers=$allUsers, " +
-				"systemApp=$systemApp" +
+				"systemApp=$systemApp, " +
+				"uninstallFlags=$uninstallFlags" +
 				")"
 
 		/**
@@ -226,6 +305,20 @@ public class DhizukuPlugin :
 				private set
 
 			/**
+			 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+			 *
+			 * The mask is applied _before_ Dhizuku's boolean options. These options take precedence for their corresponding
+			 * bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean options remain
+			 * unchanged. The boolean values remain independent of this mask.
+			 * Setting the mask replaces the previous supplied mask.
+			 *
+			 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android
+			 * version and device-owner permissions. Supplying flags grants no additional privileges.
+			 */
+			public var uninstallFlags: Int = 0
+				private set
+
+			/**
 			 * Sets [UninstallParameters.keepData].
 			 */
 			public fun setKeepData(value: Boolean): Builder = apply {
@@ -247,19 +340,31 @@ public class DhizukuPlugin :
 			}
 
 			/**
+			 * Sets [UninstallParameters.uninstallFlags].
+			 *
+			 * This is a **delicate** API.
+			 */
+			@DelicateAckpineApi
+			public fun setUninstallFlags(value: Int): Builder = apply {
+				uninstallFlags = value
+			}
+
+			/**
 			 * Constructs a new instance of [UninstallParameters].
 			 */
 			public fun build(): UninstallParameters = UninstallParameters(
 				keepData,
 				allUsers,
-				systemApp
+				systemApp,
+				uninstallFlags
 			)
 		}
 
 		public companion object {
 
 			/**
-			 * Default [DhizukuPlugin] uninstall parameters with all flags disabled.
+			 * Default [DhizukuPlugin] uninstall parameters with all boolean flags disabled and [uninstallFlags] equal
+			 * to `0`.
 			 */
 			@JvmField
 			public val DEFAULT: UninstallParameters = Builder().build()

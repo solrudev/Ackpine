@@ -34,18 +34,38 @@ public class DhizukuInstallCapabilities internal constructor(
 	 *
 	 * [CapabilityStatus.UNRELIABLE] with [InstallerType.SESSION_BASED].
 	 */
-	public val requestDowngrade: CapabilityStatus
+	public val requestDowngrade: CapabilityStatus,
+
+	/**
+	 * Whether raw install flags are supported.
+	 *
+	 * [CapabilityStatus.UNRELIABLE] with [InstallerType.SESSION_BASED], because arbitrary flags may depend on Android
+	 * version and device-owner permissions, otherwise [CapabilityStatus.UNSUPPORTED].
+	 */
+	public val installFlags: CapabilityStatus
 ) : PluginCapability {
 
 	override fun equals(other: Any?): Boolean {
 		if (this === other) return true
 		if (javaClass != other?.javaClass) return false
 		other as DhizukuInstallCapabilities
-		return requestDowngrade == other.requestDowngrade
+		if (requestDowngrade != other.requestDowngrade) return false
+		if (installFlags != other.installFlags) return false
+		return true
 	}
 
-	override fun hashCode(): Int = requestDowngrade.hashCode()
-	override fun toString(): String = "DhizukuInstallCapabilities(requestDowngrade=$requestDowngrade)"
+	override fun hashCode(): Int {
+		var result = requestDowngrade.hashCode()
+		result = 31 * result + installFlags.hashCode()
+		return result
+	}
+
+	override fun toString(): String {
+		return "DhizukuInstallCapabilities(" +
+				"requestDowngrade=$requestDowngrade, " +
+				"installFlags=$installFlags" +
+				")"
+	}
 }
 
 /**
@@ -75,7 +95,15 @@ public class DhizukuUninstallCapabilities internal constructor(
 	 *
 	 * [CapabilityStatus.SUPPORTED] with [UninstallerType.PACKAGE_INSTALLER_BASED].
 	 */
-	public val systemApp: CapabilityStatus
+	public val systemApp: CapabilityStatus,
+
+	/**
+	 * Whether [DhizukuPlugin.UninstallParameters.uninstallFlags] is supported.
+	 *
+	 * [CapabilityStatus.UNRELIABLE] with [UninstallerType.PACKAGE_INSTALLER_BASED], because arbitrary flags may depend
+	 * on Android version and device-owner permissions, otherwise [CapabilityStatus.UNSUPPORTED].
+	 */
+	public val uninstallFlags: CapabilityStatus
 ) : PluginCapability {
 
 	override fun equals(other: Any?): Boolean {
@@ -85,6 +113,7 @@ public class DhizukuUninstallCapabilities internal constructor(
 		if (keepData != other.keepData) return false
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
+		if (uninstallFlags != other.uninstallFlags) return false
 		return true
 	}
 
@@ -92,12 +121,14 @@ public class DhizukuUninstallCapabilities internal constructor(
 		var result = keepData.hashCode()
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
+		result = 31 * result + uninstallFlags.hashCode()
 		return result
 	}
 
 	override fun toString(): String = "DhizukuUninstallCapabilities(" +
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
-			"systemApp=$systemApp" +
+			"systemApp=$systemApp, " +
+			"uninstallFlags=$uninstallFlags" +
 			")"
 }

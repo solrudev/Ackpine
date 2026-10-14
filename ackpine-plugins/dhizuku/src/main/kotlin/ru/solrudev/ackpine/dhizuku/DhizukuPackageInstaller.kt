@@ -24,6 +24,7 @@ import android.os.IBinder
 import android.os.ServiceManager
 import androidx.annotation.RestrictTo
 import com.rosan.dhizuku.api.Dhizuku
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.privileged.PackageInstallerProxy
@@ -88,13 +89,17 @@ private class DhizukuInstallParametersBridge private constructor(
 
 	override fun getName(): String = "DhizukuInstallParametersBridge"
 
-	private class Builder : PrivilegedInstallParameters.Builder<DhizukuInstallParametersBridge, Builder>() {
+	private class Builder : PrivilegedInstallParameters.Builder<DhizukuInstallParametersBridge, Builder>(
+		partialOverride = true
+	) {
 		override fun build(): DhizukuInstallParametersBridge = DhizukuInstallParametersBridge(buildSnapshot())
 	}
 
 	companion object {
+		@OptIn(DelicateAckpineApi::class)
 		fun create(parameters: DhizukuPlugin.InstallParameters): DhizukuInstallParametersBridge = Builder()
 			.setRequestDowngrade(parameters.requestDowngrade)
+			.setInstallFlags(parameters.installFlags)
 			.setTargetUser(TargetUser.CURRENT)
 			.build()
 	}
@@ -106,12 +111,16 @@ private class DhizukuUninstallParametersBridge private constructor(
 
 	override fun getName(): String = "DhizukuUninstallParametersBridge"
 
-	private class Builder : PrivilegedUninstallParameters.Builder<DhizukuUninstallParametersBridge, Builder>() {
+	private class Builder : PrivilegedUninstallParameters.Builder<DhizukuUninstallParametersBridge, Builder>(
+		partialOverride = true
+	) {
 		override fun build(): DhizukuUninstallParametersBridge = DhizukuUninstallParametersBridge(buildSnapshot())
 	}
 
 	companion object {
+		@OptIn(DelicateAckpineApi::class)
 		fun create(parameters: DhizukuPlugin.UninstallParameters): DhizukuUninstallParametersBridge = Builder()
+			.setUninstallFlags(parameters.uninstallFlags)
 			.setKeepData(parameters.keepData)
 			.setAllUsers(parameters.allUsers)
 			.setSystemApp(parameters.systemApp)

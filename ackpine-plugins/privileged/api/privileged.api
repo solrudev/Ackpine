@@ -5,6 +5,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallCapabiliti
 	public final fun getAllowTest ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getBypassLowTargetSdkBlock ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getGrantAllRequestedPermissions ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getInstallFlags ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getInstallerPackageName ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	protected abstract fun getName ()Ljava/lang/String;
 	public final fun getReplaceExisting ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
@@ -21,6 +22,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters
 	public final fun getAllowTest ()Z
 	public final fun getBypassLowTargetSdkBlock ()Z
 	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallFlags ()I
 	public final fun getInstallerPackageName ()Ljava/lang/String;
 	protected abstract fun getName ()Ljava/lang/String;
 	public final fun getReplaceExisting ()Z
@@ -31,13 +33,16 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder {
-	public fun <init> ()V
+	protected fun <init> ()V
+	protected fun <init> (Z)V
+	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters;
 	protected final fun buildSnapshot ()Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Snapshot;
 	public final fun getAllUsers ()Z
 	public final fun getAllowTest ()Z
 	public final fun getBypassLowTargetSdkBlock ()Z
 	public final fun getGrantAllRequestedPermissions ()Z
+	public final fun getInstallFlags ()I
 	public final fun getInstallerPackageName ()Ljava/lang/String;
 	public final fun getReplaceExisting ()Z
 	public final fun getRequestDowngrade ()Z
@@ -50,6 +55,8 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedInstallParameters
 	protected final fun setBypassLowTargetSdkBlock (Z)V
 	public fun setGrantAllRequestedPermissions (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
 	protected final fun setGrantAllRequestedPermissions (Z)V
+	public fun setInstallFlags (I)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
+	protected final fun setInstallFlags (I)V
 	public fun setInstallerPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
 	protected final fun setInstallerPackageName (Ljava/lang/String;)V
 	public fun setReplaceExisting (Z)Lru/solrudev/ackpine/privileged/PrivilegedInstallParameters$Builder;
@@ -84,6 +91,7 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallCapabili
 	protected abstract fun getName ()Ljava/lang/String;
 	public final fun getSystemApp ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getTargetUser ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getUninstallFlags ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -96,18 +104,22 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParamete
 	protected abstract fun getName ()Ljava/lang/String;
 	public final fun getSystemApp ()Z
 	public final fun getTargetUser ()Lru/solrudev/ackpine/privileged/TargetUser;
+	public final fun getUninstallFlags ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
 
 public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder {
-	public fun <init> ()V
+	protected fun <init> ()V
+	protected fun <init> (Z)V
+	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public abstract fun build ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters;
 	protected final fun buildSnapshot ()Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Snapshot;
 	public final fun getAllUsers ()Z
 	public final fun getKeepData ()Z
 	public final fun getSystemApp ()Z
 	public final fun getTargetUser ()Lru/solrudev/ackpine/privileged/TargetUser;
+	public final fun getUninstallFlags ()I
 	public fun setAllUsers (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
 	protected final fun setAllUsers (Z)V
 	public fun setKeepData (Z)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
@@ -116,6 +128,8 @@ public abstract class ru/solrudev/ackpine/privileged/PrivilegedUninstallParamete
 	protected final fun setSystemApp (Z)V
 	public fun setTargetUser (Lru/solrudev/ackpine/privileged/TargetUser;)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
 	protected final fun setTargetUser (Lru/solrudev/ackpine/privileged/TargetUser;)V
+	public fun setUninstallFlags (I)Lru/solrudev/ackpine/privileged/PrivilegedUninstallParameters$Builder;
+	protected final fun setUninstallFlags (I)V
 }
 
 public final class ru/solrudev/ackpine/privileged/TargetUser {

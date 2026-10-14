@@ -17,12 +17,15 @@
 package ru.solrudev.ackpine.privileged
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 /**
  * Shared install parameters for privileged Ackpine plugins.
  */
 public abstract class PrivilegedInstallParameters protected constructor(snapshot: Snapshot) : AckpinePlugin.Parameters {
+
+	private val overriddenFlags = snapshot.overriddenFlags
 
 	/**
 	 * Flag to bypass the low target SDK version block for this install.
@@ -71,6 +74,19 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 	public val targetUser: TargetUser = snapshot.targetUser
 
 	/**
+	 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is ORed with platform flags _before_ boolean options. Boolean options take precedence for their
+	 * corresponding bits, including clearing bits when `false`.
+	 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied
+	 * mask; unrelated platform flags are preserved.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and backend permissions. Supplying flags grants no additional privileges.
+	 */
+	public val installFlags: Int = snapshot.installFlags
+
+	/**
 	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
@@ -87,6 +103,8 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		if (allUsers != other.allUsers) return false
 		if (installerPackageName != other.installerPackageName) return false
 		if (targetUser != other.targetUser) return false
+		if (installFlags != other.installFlags) return false
+		if (overriddenFlags != other.overriddenFlags) return false
 		return true
 	}
 
@@ -99,6 +117,8 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + installerPackageName.hashCode()
 		result = 31 * result + targetUser.hashCode()
+		result = 31 * result + installFlags.hashCode()
+		result = 31 * result + overriddenFlags
 		return result
 	}
 
@@ -111,7 +131,8 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 				"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
 				"allUsers=$allUsers, " +
 				"installerPackageName=$installerPackageName, " +
-				"targetUser=$targetUser" +
+				"targetUser=$targetUser, " +
+				"installFlags=$installFlags" +
 				")"
 	}
 
@@ -159,13 +180,33 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		/**
 		 * Android user targeted by the install.
 		 */
-		public val targetUser: TargetUser
+		public val targetUser: TargetUser,
+
+		/**
+		 * Raw Android install flags mask.
+		 */
+		public val installFlags: Int,
+
+		@get:JvmSynthetic
+		internal val overriddenFlags: Int
 	)
 
 	/**
 	 * Base builder for privileged install parameters.
 	 */
-	public abstract class Builder<Params : PrivilegedInstallParameters, Self : Builder<Params, Self>> {
+	public abstract class Builder<
+			Params : PrivilegedInstallParameters,
+			Self : Builder<Params, Self>
+			> protected constructor(
+		/**
+		 * Whether only boolean options set through this builder's boolean setters override platform and raw install
+		 * flags. When `false` (default), all boolean options override their corresponding bits, including their default
+		 * `false` values. When `true`, options whose setters have not been called leave those bits unchanged.
+		 */
+		partialOverride: Boolean = false
+	) {
+
+		private var overriddenFlags = if (partialOverride) 0 else -1
 
 		/**
 		 * Flag to bypass the low target SDK version block for this install.
@@ -223,10 +264,25 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 			protected set
 
 		/**
+		 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+		 *
+		 * The mask is ORed with platform flags _before_ boolean options. Boolean options take precedence for their
+		 * corresponding bits, including clearing bits when `false`.
+		 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied
+		 * mask; unrelated platform flags are preserved.
+		 *
+		 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+		 * and backend permissions. Supplying flags grants no additional privileges.
+		 */
+		public var installFlags: Int = 0
+			protected set
+
+		/**
 		 * Sets [PrivilegedInstallParameters.bypassLowTargetSdkBlock].
 		 */
 		public open fun setBypassLowTargetSdkBlock(value: Boolean): Self = self().apply {
 			bypassLowTargetSdkBlock = value
+			overriddenFlags = overriddenFlags or INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK
 		}
 
 		/**
@@ -234,6 +290,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		 */
 		public open fun setAllowTest(value: Boolean): Self = self().apply {
 			allowTest = value
+			overriddenFlags = overriddenFlags or INSTALL_ALLOW_TEST
 		}
 
 		/**
@@ -241,6 +298,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		 */
 		public open fun setReplaceExisting(value: Boolean): Self = self().apply {
 			replaceExisting = value
+			overriddenFlags = overriddenFlags or INSTALL_REPLACE_EXISTING
 		}
 
 		/**
@@ -248,6 +306,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		 */
 		public open fun setRequestDowngrade(value: Boolean): Self = self().apply {
 			requestDowngrade = value
+			overriddenFlags = overriddenFlags or INSTALL_REQUEST_DOWNGRADE or INSTALL_ALLOW_DOWNGRADE
 		}
 
 		/**
@@ -255,6 +314,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		 */
 		public open fun setGrantAllRequestedPermissions(value: Boolean): Self = self().apply {
 			grantAllRequestedPermissions = value
+			overriddenFlags = overriddenFlags or INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS
 		}
 
 		/**
@@ -262,6 +322,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		 */
 		public open fun setAllUsers(value: Boolean): Self = self().apply {
 			allUsers = value
+			overriddenFlags = overriddenFlags or INSTALL_ALL_USERS
 		}
 
 		/**
@@ -279,6 +340,16 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		}
 
 		/**
+		 * Sets [PrivilegedInstallParameters.installFlags].
+		 *
+		 * This is a **delicate** API.
+		 */
+		@DelicateAckpineApi
+		public open fun setInstallFlags(value: Int): Self = self().apply {
+			installFlags = value
+		}
+
+		/**
 		 * Returns an immutable snapshot of this builder for passing to a [PrivilegedInstallParameters] constructor.
 		 */
 		protected fun buildSnapshot(): Snapshot = Snapshot(
@@ -289,7 +360,9 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 			grantAllRequestedPermissions,
 			allUsers,
 			installerPackageName,
-			targetUser
+			targetUser,
+			installFlags,
+			overriddenFlags
 		)
 
 		/**
@@ -300,4 +373,7 @@ public abstract class PrivilegedInstallParameters protected constructor(snapshot
 		@Suppress("UNCHECKED_CAST")
 		private fun self() = this as Self
 	}
+
+	@JvmSynthetic
+	internal fun isFlagOverridden(flag: Int): Boolean = overriddenFlags and flag != 0
 }

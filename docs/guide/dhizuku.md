@@ -7,7 +7,7 @@ Dhizuku
 
 `ackpine-dhizuku` artifact provides a plugin for Ackpine which, when applied, uses Dhizuku to obtain package installer service instead of plain `context.getPackageManager().getPackageInstaller()`, so that Ackpine can manage sessions on behalf of the active device owner even if your app doesn't have such privileges. This can bypass the requirement for user confirmation for uninstalls and fresh installs, request version downgrades, and use selected uninstall flags.
 
-Dhizuku calls run as the device owner application's UID. They do not run as root, ADB shell, or the Android system. Ackpine therefore exposes only the package installer options applicable to that identity.
+Dhizuku performs package installer operations as the active device owner application. Its install and uninstall parameters expose options supported for that identity. Arbitrary flags can also be supplied through `installFlags` and `uninstallFlags`, but there is no guarantee that they will affect the outcome or that the session will succeed when they are applied.
 
 Kotlin examples below use APIs from `ackpine-dhizuku-ktx` artifact. For general plugin usage in session parameters, see [Configuration](configuration.md#plugins).
 
@@ -199,9 +199,9 @@ This plugin initializes hidden Android API exemptions through AndroidX Startup u
 Plugin parameters
 -----------------
 
-By default, all flags are disabled.
+By default, all boolean flags are `false`, and `installFlags` and `uninstallFlags` are `0`.
 
-Dhizuku operations only target the current Android user (unlike Shizuku and libsu plugins), because device owner identity doesn't give access to cross-user operations on its own without `android.permission.INTERACT_ACROSS_USERS_FULL` permission, which has `signature|installer|role` protection levels.
+Dhizuku has no `targetUser` parameter. Install sessions only target the current Android user; uninstall sessions target the current user unless `allUsers` is enabled. Android still checks device-owner permissions for the requested operation, including operations across users. Device owner identity doesn't give access to cross-user operations on its own without `android.permission.INTERACT_ACROSS_USERS_FULL` permission, which has `signature|installer|role` protection levels.
 
 ### Install flags
 
@@ -212,6 +212,31 @@ Indicates that an upgrade to a lower version of a package than currently install
 Ackpine sets downgrade-request flag which is honored for debuggable installed apps or debuggable OS builds, but does not add the unrestricted downgrade permission flag used by root, shell, or system identities. The device owner must still be authorized by Android to perform the downgrade, so setting this option does not guarantee that a downgrade will succeed.
 
 This is a **delicate** API.
+
+#### `installFlags`
+
+Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is ORed with platform flags **before** applying Dhizuku's boolean options. These options take precedence for their corresponding bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean options remain unchanged. The boolean values remain independent of this mask. Setting the mask replaces the previously supplied mask; unrelated platform flags are preserved.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and device-owner permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun installParameters(rawFlags: Int) = DhizukuInstallParameters {
+        installFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    DhizukuPlugin.InstallParameters parameters = new DhizukuPlugin.InstallParameters.Builder()
+        .setInstallFlags(rawFlags)
+        .build();
+    ```
 
 ### Uninstall flags
 
@@ -229,12 +254,39 @@ Flag parameter to indicate that a system app should be marked as uninstalled for
 
 This does not remove the app from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for the current user.
 
+#### `uninstallFlags`
+
+Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is applied **before** Dhizuku's boolean options. These options take precedence for their corresponding bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean options remain unchanged. The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and device-owner permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun uninstallParameters(rawFlags: Int) = DhizukuUninstallParameters {
+        uninstallFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    DhizukuPlugin.UninstallParameters parameters = new DhizukuPlugin.UninstallParameters.Builder()
+        .setUninstallFlags(rawFlags)
+        .build();
+    ```
+
 Capabilities
 ------------
 
 `DhizukuPlugin` implements [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) and [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html), so you can query whether individual Dhizuku install/uninstall parameters are supported for a given configuration via `getCapabilities()`. See [Querying capabilities](configuration.md#querying-capabilities) for an overview of the capabilities API.
 
 Each field in [`DhizukuInstallCapabilities`](../api/ackpine-plugins/dhizuku/ru.solrudev.ackpine.dhizuku/-dhizuku-install-capabilities/index.html) mirrors the corresponding `DhizukuPlugin.InstallParameters` flag and reports whether it is supported for the resolved configuration. Similarly, [`DhizukuUninstallCapabilities`](../api/ackpine-plugins/dhizuku/ru.solrudev.ackpine.dhizuku/-dhizuku-uninstall-capabilities/index.html) mirrors `DhizukuPlugin.UninstallParameters`.
+
+Raw install flags are `UNRELIABLE` with `InstallerType.SESSION_BASED`, and raw uninstall flags are `UNRELIABLE` with `UninstallerType.PACKAGE_INSTALLER_BASED`; each is `UNSUPPORTED` otherwise. Availability may depend on the Android version and device-owner permissions.
 
 !!! Note
     Dhizuku capability support is determined from the effective installer/uninstaller type. Whether Dhizuku is active, whether permission is granted to the app at runtime, and whether Android authorizes a specific downgrade are not taken into account.

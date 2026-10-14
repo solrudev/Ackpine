@@ -260,15 +260,19 @@ public abstract class PackageInstallerProxy protected constructor(
 		params: PackageInstallerHidden.SessionParams,
 		privilegedParameters: PrivilegedInstallParameters
 	) {
-		var flags = params.installFlags
+		var flags = params.installFlags or privilegedParameters.installFlags
+		fun applyFlag(isFlagPresent: Boolean, flag: Int) = applyFlag(
+			flags, isFlagPresent, flag,
+			privilegedParameters::isFlagOverridden
+		)
 		privilegedParameters.run {
-			flags = applyFlag(flags, bypassLowTargetSdkBlock, INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK)
-			flags = applyFlag(flags, allowTest, INSTALL_ALLOW_TEST)
-			flags = applyFlag(flags, replaceExisting, INSTALL_REPLACE_EXISTING)
-			flags = applyFlag(flags, requestDowngrade, INSTALL_REQUEST_DOWNGRADE)
-			flags = applyFlag(flags, requestDowngrade && hasUnrestrictedUid(), INSTALL_ALLOW_DOWNGRADE)
-			flags = applyFlag(flags, grantAllRequestedPermissions, INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS)
-			flags = applyFlag(flags, allUsers, INSTALL_ALL_USERS)
+			flags = applyFlag(bypassLowTargetSdkBlock, INSTALL_BYPASS_LOW_TARGET_SDK_BLOCK)
+			flags = applyFlag(allowTest, INSTALL_ALLOW_TEST)
+			flags = applyFlag(replaceExisting, INSTALL_REPLACE_EXISTING)
+			flags = applyFlag(requestDowngrade, INSTALL_REQUEST_DOWNGRADE)
+			flags = applyFlag(requestDowngrade && hasUnrestrictedUid(), INSTALL_ALLOW_DOWNGRADE)
+			flags = applyFlag(grantAllRequestedPermissions, INSTALL_GRANT_ALL_REQUESTED_PERMISSIONS)
+			flags = applyFlag(allUsers, INSTALL_ALL_USERS)
 		}
 		params.installFlags = flags
 	}
@@ -276,14 +280,22 @@ public abstract class PackageInstallerProxy protected constructor(
 	private fun hasUnrestrictedUid() = uid == ROOT_UID || uid == SYSTEM_UID || uid == SHELL_UID
 
 	private fun PrivilegedUninstallParameters.toFlags(): Int {
-		var flags = 0
-		flags = applyFlag(flags, keepData, DELETE_KEEP_DATA)
-		flags = applyFlag(flags, allUsers, DELETE_ALL_USERS)
-		flags = applyFlag(flags, systemApp, DELETE_SYSTEM_APP)
+		var flags = uninstallFlags
+		flags = applyFlag(flags, keepData, DELETE_KEEP_DATA, ::isFlagOverridden)
+		flags = applyFlag(flags, allUsers, DELETE_ALL_USERS, ::isFlagOverridden)
+		flags = applyFlag(flags, systemApp, DELETE_SYSTEM_APP, ::isFlagOverridden)
 		return flags
 	}
 
-	private fun applyFlag(flags: Int, isFlagPresent: Boolean, flag: Int): Int {
+	private inline fun applyFlag(
+		flags: Int,
+		isFlagPresent: Boolean,
+		flag: Int,
+		isFlagOverridden: (Int) -> Boolean
+	): Int {
+		if (!isFlagOverridden(flag)) {
+			return flags
+		}
 		if (isFlagPresent) {
 			return flags or flag
 		}

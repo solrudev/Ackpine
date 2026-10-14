@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.privileged
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 
 /**
@@ -25,6 +26,8 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 public abstract class PrivilegedUninstallParameters protected constructor(
 	snapshot: Snapshot
 ) : AckpinePlugin.Parameters {
+
+	private val overriddenFlags = snapshot.overriddenFlags
 
 	/**
 	 * Flag parameter to indicate that you don't want to delete the package's data directory.
@@ -54,6 +57,18 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 	public val targetUser: TargetUser = snapshot.targetUser
 
 	/**
+	 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is applied _before_ boolean options. Boolean options take precedence for their corresponding
+	 * bits, including clearing bits when `false`. The boolean values remain independent of this mask.
+	 * Setting the mask replaces the previous supplied mask.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and backend permissions. Supplying flags grants no additional privileges.
+	 */
+	public val uninstallFlags: Int = snapshot.uninstallFlags
+
+	/**
 	 * Returns the simple class name used in [toString].
 	 */
 	protected abstract fun getName(): String
@@ -66,6 +81,8 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
 		if (targetUser != other.targetUser) return false
+		if (uninstallFlags != other.uninstallFlags) return false
+		if (overriddenFlags != other.overriddenFlags) return false
 		return true
 	}
 
@@ -74,6 +91,8 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
 		result = 31 * result + targetUser.hashCode()
+		result = 31 * result + uninstallFlags.hashCode()
+		result = 31 * result + overriddenFlags
 		return result
 	}
 
@@ -81,7 +100,8 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
 			"systemApp=$systemApp, " +
-			"targetUser=$targetUser" +
+			"targetUser=$targetUser, " +
+			"uninstallFlags=$uninstallFlags" +
 			")"
 
 	/**
@@ -108,13 +128,33 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		/**
 		 * Android user targeted by the uninstall.
 		 */
-		public val targetUser: TargetUser
+		public val targetUser: TargetUser,
+
+		/**
+		 * Raw Android uninstall flags mask.
+		 */
+		public val uninstallFlags: Int,
+
+		@get:JvmSynthetic
+		internal val overriddenFlags: Int
 	)
 
 	/**
 	 * Base builder for privileged uninstall parameters.
 	 */
-	public abstract class Builder<Params : PrivilegedUninstallParameters, Self : Builder<Params, Self>> {
+	public abstract class Builder<
+			Params : PrivilegedUninstallParameters,
+			Self : Builder<Params, Self>
+			> protected constructor(
+		/**
+		 * Whether only boolean options set through this builder's boolean setters override platform and raw uninstall
+		 * flags. When `false` (default), all boolean options override their corresponding bits, including their default
+		 * `false` values. When `true`, options whose setters have not been called leave those bits unchanged.
+		 */
+		partialOverride: Boolean = false
+	) {
+
+		private var overriddenFlags = if (partialOverride) 0 else -1
 
 		/**
 		 * Flag parameter to indicate that you don't want to delete the package's data directory.
@@ -148,10 +188,24 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 			protected set
 
 		/**
+		 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+		 *
+		 * The mask is applied _before_ boolean options. Boolean options take precedence for their corresponding
+		 * bits, including clearing bits when `false`. The boolean values remain independent of this mask.
+		 * Setting the mask replaces the previous supplied mask.
+		 *
+		 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+		 * and backend permissions. Supplying flags grants no additional privileges.
+		 */
+		public var uninstallFlags: Int = 0
+			protected set
+
+		/**
 		 * Sets [PrivilegedUninstallParameters.keepData].
 		 */
 		public open fun setKeepData(value: Boolean): Self = self().apply {
 			keepData = value
+			overriddenFlags = overriddenFlags or DELETE_KEEP_DATA
 		}
 
 		/**
@@ -159,6 +213,7 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		 */
 		public open fun setAllUsers(value: Boolean): Self = self().apply {
 			allUsers = value
+			overriddenFlags = overriddenFlags or DELETE_ALL_USERS
 		}
 
 		/**
@@ -166,6 +221,7 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		 */
 		public open fun setSystemApp(value: Boolean): Self = self().apply {
 			systemApp = value
+			overriddenFlags = overriddenFlags or DELETE_SYSTEM_APP
 		}
 
 		/**
@@ -176,9 +232,26 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		}
 
 		/**
+		 * Sets [PrivilegedUninstallParameters.uninstallFlags].
+		 *
+		 * This is a **delicate** API.
+		 */
+		@DelicateAckpineApi
+		public open fun setUninstallFlags(value: Int): Self = self().apply {
+			uninstallFlags = value
+		}
+
+		/**
 		 * Returns an immutable snapshot of this builder for passing to a [PrivilegedUninstallParameters] constructor.
 		 */
-		protected fun buildSnapshot(): Snapshot = Snapshot(keepData, allUsers, systemApp, targetUser)
+		protected fun buildSnapshot(): Snapshot = Snapshot(
+			keepData,
+			allUsers,
+			systemApp,
+			targetUser,
+			uninstallFlags,
+			overriddenFlags
+		)
 
 		/**
 		 * Constructs a new instance of privileged uninstall parameters.
@@ -188,4 +261,7 @@ public abstract class PrivilegedUninstallParameters protected constructor(
 		@Suppress("UNCHECKED_CAST")
 		private fun self() = this as Self
 	}
+
+	@JvmSynthetic
+	internal fun isFlagOverridden(flag: Int): Boolean = overriddenFlags and flag != 0
 }

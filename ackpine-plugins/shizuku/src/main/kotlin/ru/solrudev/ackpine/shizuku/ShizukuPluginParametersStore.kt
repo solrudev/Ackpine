@@ -17,16 +17,18 @@
 package ru.solrudev.ackpine.shizuku
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.impl.plugability.PluginParametersStore
 import ru.solrudev.ackpine.plugability.AckpinePlugin
+import ru.solrudev.ackpine.privileged.TargetUser
 import ru.solrudev.ackpine.shizuku.database.ShizukuParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuParamsDao
 import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParametersEntity
 import ru.solrudev.ackpine.shizuku.database.ShizukuUninstallParamsDao
-import ru.solrudev.ackpine.privileged.TargetUser
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@OptIn(DelicateAckpineApi::class)
 internal class ShizukuPluginParametersStore(
 	private val shizukuParamsDao: ShizukuParamsDao,
 	private val shizukuUninstallParamsDao: ShizukuUninstallParamsDao
@@ -44,6 +46,7 @@ internal class ShizukuPluginParametersStore(
 				.setAllUsers(shizukuParams.allUsers)
 				.setInstallerPackageName(shizukuParams.installerPackageName)
 				.setTargetUser(TargetUser(shizukuParams.targetUserId))
+				.setInstallFlags(shizukuParams.installFlags)
 				.build()
 		}
 		shizukuUninstallParamsDao.getBySessionId(id)?.let { shizukuParams ->
@@ -52,6 +55,7 @@ internal class ShizukuPluginParametersStore(
 				.setAllUsers(shizukuParams.allUsers)
 				.setSystemApp(shizukuParams.systemApp)
 				.setTargetUser(TargetUser(shizukuParams.targetUserId))
+				.setUninstallFlags(shizukuParams.uninstallFlags)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -71,7 +75,8 @@ internal class ShizukuPluginParametersStore(
 				grantAllRequestedPermissions = params.grantAllRequestedPermissions,
 				allUsers = params.allUsers,
 				installerPackageName = params.installerPackageName,
-				targetUserId = params.targetUser.userId
+				targetUserId = params.targetUser.userId,
+				installFlags = params.installFlags
 			)
 			shizukuParamsDao.insertParameters(shizukuParams)
 		}
@@ -82,7 +87,8 @@ internal class ShizukuPluginParametersStore(
 				keepData = params.keepData,
 				allUsers = params.allUsers,
 				systemApp = params.systemApp,
-				targetUserId = params.targetUser.userId
+				targetUserId = params.targetUser.userId,
+				uninstallFlags = params.uninstallFlags
 			)
 			shizukuUninstallParamsDao.insertParameters(shizukuParams)
 		}

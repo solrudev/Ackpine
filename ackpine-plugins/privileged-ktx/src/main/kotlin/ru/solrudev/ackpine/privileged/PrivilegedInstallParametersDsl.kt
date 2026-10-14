@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.privileged
 
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 
 /**
@@ -71,6 +72,20 @@ public interface PrivilegedInstallParametersDsl {
 	 * By default, equals to [TargetUser.CURRENT].
 	 */
 	public var targetUser: TargetUser
+
+	/**
+	 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is ORed with platform flags _before_ boolean options. Boolean options take precedence for their
+	 * corresponding bits, including clearing bits when `false`.
+	 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied
+	 * mask; unrelated platform flags are preserved.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and backend permissions. Supplying flags grants no additional privileges.
+	 */
+	@set:DelicateAckpineApi
+	public var installFlags: Int
 }
 
 /**
@@ -129,6 +144,13 @@ public abstract class PrivilegedInstallParametersDslBuilder<
 		get() = delegate.targetUser
 		set(value) {
 			delegate.setTargetUser(value)
+		}
+
+	@set:DelicateAckpineApi
+	override var installFlags: Int
+		get() = delegate.installFlags
+		set(value) {
+			delegate.setInstallFlags(value)
 		}
 
 	/**

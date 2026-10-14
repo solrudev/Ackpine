@@ -198,7 +198,7 @@ This plugin initializes hidden Android API exemptions through AndroidX Startup u
 Plugin parameters
 -----------------
 
-By default, all flags are disabled and the target user is `TargetUser.CURRENT`.
+By default, all boolean flags are `false`, `installFlags` and `uninstallFlags` are `0`, and the target user is `TargetUser.CURRENT`.
 
 ### `targetUser`
 
@@ -236,6 +236,31 @@ Flag to indicate that this install should immediately be visible to all users.
 
 Installer package for the app. Empty by default, so the calling app package name will be used.
 
+#### `installFlags`
+
+Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is ORed with platform flags **before** boolean options. Boolean options take precedence for their corresponding bits, including clearing bits when `false`. The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask; unrelated platform flags are preserved.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and backend permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun installParameters(rawFlags: Int) = LibsuInstallParameters {
+        installFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    LibsuPlugin.InstallParameters parameters = new LibsuPlugin.InstallParameters.Builder()
+        .setInstallFlags(rawFlags)
+        .build();
+    ```
+
 ### Uninstall flags
 
 #### `keepData`
@@ -252,12 +277,39 @@ Flag parameter to indicate that a system app should be marked as uninstalled for
 
 This does not remove the app from the system partition. For an updated system app, it prevents the update from being rolled back globally when uninstalling it for the target user.
 
+#### `uninstallFlags`
+
+Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is applied **before** boolean options. Boolean options take precedence for their corresponding bits, including clearing bits when `false`. The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and backend permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun uninstallParameters(rawFlags: Int) = LibsuUninstallParameters {
+        uninstallFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    LibsuPlugin.UninstallParameters parameters = new LibsuPlugin.UninstallParameters.Builder()
+        .setUninstallFlags(rawFlags)
+        .build();
+    ```
+
 Capabilities
 ------------
 
 `LibsuPlugin` implements [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) and [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html), so you can query whether individual libsu install/uninstall parameters are supported for a given configuration via `getCapabilities()`. See [Querying capabilities](configuration.md#querying-capabilities) for an overview of the capabilities API.
 
 Each field in [`LibsuInstallCapabilities`](../api/ackpine-plugins/libsu/ru.solrudev.ackpine.libsu/-libsu-install-capabilities/index.html) mirrors the corresponding `LibsuPlugin.InstallParameters` flag and reports whether it is supported for the resolved configuration. Similarly, [`LibsuUninstallCapabilities`](../api/ackpine-plugins/libsu/ru.solrudev.ackpine.libsu/-libsu-uninstall-capabilities/index.html) mirrors `LibsuPlugin.UninstallParameters`.
+
+Raw install flags are `UNRELIABLE` with `InstallerType.SESSION_BASED`, and raw uninstall flags are `UNRELIABLE` with `UninstallerType.PACKAGE_INSTALLER_BASED`; each is `UNSUPPORTED` otherwise. Availability may depend on the Android version and backend permissions.
 
 !!! Note
     libsu capability support is determined from Android API level and the effective installer/uninstaller type. Whether root access is available at runtime is not taken into account.

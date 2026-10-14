@@ -38,6 +38,21 @@ public interface DhizukuInstallParametersDsl {
 	 */
 	@set:DelicateAckpineApi
 	public var requestDowngrade: Boolean
+
+	/**
+	 * Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is ORed with platform flags _before_ applying Dhizuku's boolean options. These options take precedence
+	 * for their corresponding bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean
+	 * options remain unchanged.
+	 * The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask;
+	 * unrelated platform flags are preserved.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and device-owner permissions. Supplying flags grants no additional privileges.
+	 */
+	@set:DelicateAckpineApi
+	public var installFlags: Int
 }
 
 @PublishedApi
@@ -50,6 +65,13 @@ internal class DhizukuInstallParametersDslBuilder : DhizukuInstallParametersDsl 
 		get() = delegate.requestDowngrade
 		set(value) {
 			delegate.setRequestDowngrade(value)
+		}
+
+	@set:DelicateAckpineApi
+	override var installFlags: Int
+		get() = delegate.installFlags
+		set(value) {
+			delegate.setInstallFlags(value)
 		}
 
 	fun build(): DhizukuPlugin.InstallParameters = delegate.build()
