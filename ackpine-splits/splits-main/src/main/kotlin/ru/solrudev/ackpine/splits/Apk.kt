@@ -47,6 +47,8 @@ import java.util.zip.ZipException
 import java.util.zip.ZipFile
 import java.util.zip.ZipInputStream
 
+private const val MAX_ANDROID_MANIFEST_SIZE = 16 * 1024 * 1024
+
 /**
  * Represents an APK split.
  */
@@ -219,7 +221,7 @@ public sealed class Apk(
 		/**
 		 * Reads provided [file], parses it and creates an [APK split][Apk] instance.
 		 *
-		 * Returns `null` if provided file is not an APK.
+		 * Returns `null` if provided file is not an APK, or its manifest size is invalid or exceeds 16 MiB.
 		 */
 		@JvmStatic
 		public fun fromFile(file: File, context: Context): Apk? {
@@ -232,7 +234,7 @@ public sealed class Apk(
 		/**
 		 * Reads file at provided [uri], parses it and creates an [APK split][Apk] instance.
 		 *
-		 * Returns `null` if provided file is not an APK.
+		 * Returns `null` if provided file is not an APK, or its manifest size is invalid or exceeds 16 MiB.
 		 *
 		 * @param cancellationSignal a signal to cancel the operation in progress, or `null` if none. If the operation
 		 * is cancelled, then [OperationCanceledException] will be thrown.
@@ -247,8 +249,12 @@ public sealed class Apk(
 			val androidManifest = try {
 				ZipEntryStream
 					.open(uri, ANDROID_MANIFEST_FILE_NAME, context, cancellationSignal)
-					?.use(InputStream::toByteBuffer) ?: return null
+					?.use { it.toByteBuffer(it.size, MAX_ANDROID_MANIFEST_SIZE) } ?: return null
 			} catch (_: ZipEntryStreamException) {
+				return null
+			} catch (_: ZipException) {
+				return null
+			} catch (_: EOFException) {
 				return null
 			}
 			val (displayName, size) = uri.displayNameAndSize(context, cancellationSignal)
@@ -268,11 +274,17 @@ public sealed class Apk(
 			}
 			val uri = ZippedFileProvider.getUriForZipEntry(zipPath, zipEntry.name)
 			val name = zipEntry.name.substringAfterLast('/').substringBeforeLast('.')
-			val androidManifest = ZipInputStream(inputStream.nonClosing()).use { zipInputStream ->
-				zipInputStream.entries()
-					.filterNot { scope.isClosed }
-					.firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
-				zipInputStream.toByteBuffer()
+			val androidManifest = try {
+				ZipInputStream(inputStream.nonClosing()).use { zipInputStream ->
+					val manifestEntry = zipInputStream.entries()
+						.filterNot { scope.isClosed }
+						.firstOrNull { it.name == ANDROID_MANIFEST_FILE_NAME } ?: return null
+					zipInputStream.toByteBuffer(manifestEntry.size, MAX_ANDROID_MANIFEST_SIZE) ?: return null
+				}
+			} catch (_: ZipException) {
+				return null
+			} catch (_: EOFException) {
+				return null
 			}
 			return createApkSplit(androidManifest, name, uri, zipEntry.size)
 		}
@@ -284,7 +296,9 @@ public sealed class Apk(
 			val androidManifest = try {
 				ZipFile(file).use { zipFile ->
 					val zipEntry = zipFile.getEntry(ANDROID_MANIFEST_FILE_NAME) ?: return null
-					zipFile.getInputStream(zipEntry).toByteBuffer()
+					zipFile.getInputStream(zipEntry).use {
+						it.toByteBuffer(zipEntry.size, MAX_ANDROID_MANIFEST_SIZE)
+					} ?: return null
 				}
 			} catch (_: ZipException) {
 				return null

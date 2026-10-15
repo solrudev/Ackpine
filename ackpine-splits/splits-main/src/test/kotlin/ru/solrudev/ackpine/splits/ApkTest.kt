@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.splits
 
 import android.content.Context
+import android.net.Uri
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import androidx.test.core.app.ApplicationProvider
@@ -25,7 +26,11 @@ import org.robolectric.RobolectricTestRunner
 import ru.solrudev.ackpine.splits.testutil.SplitFixtures
 import ru.solrudev.ackpine.splits.testutil.SyntheticPayloads
 import ru.solrudev.ackpine.splits.testutil.TestFileProvider
+import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.util.zip.ZipFile
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -77,5 +82,42 @@ class ApkTest {
 		assertFailsWith<OperationCanceledException> {
 			Apk.fromUri(contentUri, context, signal)
 		}
+	}
+
+	@Test
+	fun fromUriReturnsNullForOversizedManifest() {
+		val manifest = manifestBytes().copyOf(16 * 1024 * 1024 + 1)
+		val uri = SyntheticPayloads.zipUriOf("oversized-manifest.apk", mapOf("AndroidManifest.xml" to manifest))
+		assertNull(Apk.fromUri(uri, context))
+		assertNull(Apk.fromUri(Uri.fromFile(File(requireNotNull(uri.path))), context))
+	}
+
+	@Test
+	fun fromUriReturnsNullForOversizedDeclaredManifestSize() {
+		assertNullForDeclaredManifestSize(Int.MAX_VALUE)
+	}
+
+	@Test
+	fun fromUriReturnsNullWhenManifestExceedsDeclaredSize() {
+		assertNullForDeclaredManifestSize(manifestBytes().size - 1)
+	}
+
+	@Test
+	fun fromUriReturnsNullWhenManifestIsShorterThanDeclaredSize() {
+		assertNullForDeclaredManifestSize(manifestBytes().size + 1)
+	}
+
+	private fun assertNullForDeclaredManifestSize(size: Int) {
+		val bytes = SyntheticPayloads.zipBytesOf(mapOf("AndroidManifest.xml" to manifestBytes()))
+		val buffer = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN)
+		val centralDirectoryOffset = buffer.getInt(bytes.size - 6)
+		buffer.putInt(centralDirectoryOffset + 24, size)
+		val uri = SyntheticPayloads.rawBytesUri("invalid-manifest-size.apk", bytes)
+		assertNull(Apk.fromUri(uri, context))
+		assertNull(Apk.fromUri(Uri.fromFile(File(requireNotNull(uri.path))), context))
+	}
+
+	private fun manifestBytes() = ZipFile(SplitFixtures.apkFile(SplitFixtures.BASE_APK)).use { zip ->
+		zip.getInputStream(zip.getEntry("AndroidManifest.xml")).use { it.readBytes() }
 	}
 }

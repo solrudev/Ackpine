@@ -16,13 +16,32 @@
 
 package ru.solrudev.ackpine.io
 
+import ru.solrudev.ackpine.compress.utils.BoundedInputStream
 import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
 
+/**
+ * Buffers a stream with the expected [size], or `-1` if unknown, up to [maxSize] bytes.
+ * Returns `null` if the size is invalid, exceeds the limit, or differs from the actual number of bytes.
+ */
 @JvmSynthetic
-internal fun InputStream.toByteBuffer(): ByteBuffer {
-	val buffer = ByteArrayOutputStream()
-	copyTo(buffer)
-	return ByteBuffer.wrap(buffer.toByteArray())
+internal fun InputStream.toByteBuffer(size: Long, maxSize: Int): ByteBuffer? {
+	require(maxSize > 0) { "maxSize should be larger than 0, but was $maxSize" }
+	if (size < -1 || size > maxSize) {
+		return null
+	}
+	val initialCapacity = if (size >= 0) size.toInt() else minOf(DEFAULT_BUFFER_SIZE, maxSize)
+	val buffer = object : ByteArrayOutputStream(initialCapacity) {
+		fun toByteBuffer() = ByteBuffer.wrap(buf, 0, count)
+	}
+	val bytesRead = BoundedInputStream.builder()
+		.setInputStream(this)
+		.setMaxCount(if (size >= 0) size else maxSize.toLong())
+		.get()
+		.copyTo(buffer)
+	if (size >= 0 && bytesRead != size) {
+		return null
+	}
+	return if (read() == -1) buffer.toByteBuffer() else null
 }
