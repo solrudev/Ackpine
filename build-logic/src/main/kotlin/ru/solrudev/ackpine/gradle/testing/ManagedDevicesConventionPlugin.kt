@@ -45,24 +45,28 @@ public class ManagedDevicesConventionPlugin : Plugin<Project> {
 				sdkVersion = 27
 				systemImageSource = "aosp"
 				require64Bit = true
+				testedAbi = "x86_64"
 			}
 			localDevices.register("api30") {
 				device = "Pixel 5"
 				sdkVersion = 30
 				systemImageSource = "aosp"
 				require64Bit = true
+				testedAbi = "x86_64"
 			}
 			localDevices.register("api31") {
 				device = "Pixel 6"
 				sdkVersion = 31
 				systemImageSource = "aosp"
 				require64Bit = true
+				testedAbi = "x86_64"
 			}
 			localDevices.register("api34") {
 				device = "Pixel 8"
 				sdkVersion = 34
 				systemImageSource = "aosp"
 				require64Bit = true
+				testedAbi = "x86_64"
 			}
 		}
 	}
