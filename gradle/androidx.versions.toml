@@ -40,4 +40,4 @@ navigation = ["navigation-fragment", "navigation-ui"]
 test = ["test-core", "test-ext-junit", "test-runner", "test-rules", "test-uiautomator"]
 
 [plugins]
-room = "androidx.room:2.8.4"
+room = "androidx.room:2.8.5"
