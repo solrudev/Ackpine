@@ -1,7 +1,7 @@
 [versions]
 android-plugin = "9.3.1"
 bundletool = "1.18.3"
-dokka = "2.2.0"
+dokka = "2.3.0-Beta"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
 jacoco = "0.8.14"
