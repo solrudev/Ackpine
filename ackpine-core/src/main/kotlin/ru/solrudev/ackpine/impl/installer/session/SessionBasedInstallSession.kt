@@ -88,6 +88,7 @@ internal class SessionBasedInstallSession internal constructor(
 	private val context: Context,
 	packageInstallerService: Lazy<PackageInstallerService>,
 	private val apks: List<Uri>,
+	private val v4Signatures: Map<Uri, Uri>,
 	id: UUID,
 	initialState: Session.State<InstallFailure>,
 	initialProgress: Progress,
@@ -308,6 +309,12 @@ internal class SessionBasedInstallSession internal constructor(
 				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
 	}
 
+	@ChecksSdkIntAtLeast(Build.VERSION_CODES.VANILLA_ICE_CREAM)
+	private fun shouldStageV4Signatures(): Boolean {
+		return v4Signatures.isNotEmpty()
+				&& Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM
+	}
+
 	private fun shouldCommitNormallyAfterTimeout(): Boolean {
 		return constraints.timeoutStrategy == TimeoutStrategy.CommitEagerly
 				&& commitAttempts.get() == 1
@@ -491,6 +498,7 @@ internal class SessionBasedInstallSession internal constructor(
 				}
 				return tag
 			}
+		val stageV4Signatures = shouldStageV4Signatures()
 		val filesCount = apks.size
 		val countdown = AtomicInteger(filesCount)
 		val currentProgress = AtomicInteger(0)
@@ -514,20 +522,39 @@ internal class SessionBasedInstallSession internal constructor(
 			}
 		}
 
+		fun stageFile(
+			afd: AssetFileDescriptor,
+			name: String,
+			onProgress: (Int) -> Unit
+		) = afd.createInputStream().use { inputStream ->
+			checkNotNull(inputStream) { "$name InputStream was null." }
+			val length = afd.declaredLength
+			val sessionStream = openWrite(name, 0, length)
+			sessionStream.buffered().use { bufferedSessionStream ->
+				inputStream.copyTo(bufferedSessionStream, length, sharedCancelSignal, onProgress)
+				bufferedSessionStream.flush()
+				fsync(sessionStream)
+			}
+		}
+
 		fun writeApk(
 			afd: AssetFileDescriptor,
 			index: Int
-		) = afd.createInputStream().use { apkStream ->
-			checkNotNull(apkStream) { "APK $index InputStream was null." }
-			val length = afd.declaredLength
-			val sessionStream = openWrite("$index.apk", 0, length)
-			sessionStream.buffered().use { bufferedSessionStream ->
-				apkStream.copyTo(bufferedSessionStream, length, sharedCancelSignal, onProgress = { progress ->
-					val current = currentProgress.addAndGet(progress)
-					setStagingProgress(current.toFloat() / progressMax)
-				})
-				bufferedSessionStream.flush()
-				fsync(sessionStream)
+		) {
+			stageFile(afd, "$index.apk", onProgress = { progress ->
+				val current = currentProgress.addAndGet(progress)
+				setStagingProgress(current.toFloat() / progressMax)
+			})
+			if (!stageV4Signatures) {
+				return
+			}
+			val v4Signature = v4Signatures[apks[index]] ?: return
+			// A v4 signature is orders of magnitude smaller than an APK, and copyTo() always reports exactly
+			// PROGRESS_MAX in total regardless of size, so staging it must not report progress: otherwise reported
+			// staging progress would exceed progressMax, which is derived from the APKs count only.
+			context.openAssetFileDescriptorWithSize(v4Signature, sharedCancelSignal).use { v4SignatureAfd ->
+				val descriptor = checkNotNull(v4SignatureAfd) { "AssetFileDescriptor was null: $v4Signature" }
+				stageFile(descriptor, "$index.apk.idsig", onProgress = {})
 			}
 		}
 

@@ -37,6 +37,7 @@ import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 
@@ -86,13 +87,19 @@ public final class InstallViewModel extends ViewModel {
 	}
 
 	public void installPackage(@NonNull SplitPackage.Provider splitPackageProvider, @NonNull String fileName) {
+		installPackage(splitPackageProvider, fileName, V4Signatures.EMPTY);
+	}
+
+	public void installPackage(@NonNull SplitPackage.Provider splitPackageProvider, @NonNull String fileName,
+							   @NonNull V4Signatures.Provider v4SignatureProvider) {
 		final var splitPackageFuture = splitPackageProvider.getAsync();
 		splitPackageFuture.addListener(() -> futures.remove(splitPackageFuture), MoreExecutors.directExecutor());
 		futures.add(splitPackageFuture);
 		Futures.addCallback(splitPackageFuture, new FutureCallback<>() {
 			@Override
 			public void onSuccess(SplitPackage splitPackage) {
-				installPackage(splitPackage, fileName);
+				// Runs on the thread which resolved the split package, so reading the signatures here is fine.
+				installPackage(splitPackage, fileName, v4SignatureProvider.get());
 			}
 
 			@Override
@@ -166,7 +173,8 @@ public final class InstallViewModel extends ViewModel {
 		}
 	}
 
-	private void installPackage(@NonNull SplitPackage splitPackage, @NonNull String fileName) {
+	private void installPackage(@NonNull SplitPackage splitPackage, @NonNull String fileName,
+								@NonNull Map<String, Uri> v4SignaturesByApkName) {
 		final var splits = settingsRepository.isInstallBestSuitedApks()
 				? splitPackage.filterPreferred()
 				: splitPackage;
@@ -179,6 +187,13 @@ public final class InstallViewModel extends ViewModel {
 			uris.add(entry.getApk().getUri());
 		}
 		final var builder = new InstallParameters.Builder(uris).setName(fileName);
+		for (final var entry : apks) {
+			final var apk = entry.getApk();
+			final var v4Signature = v4SignaturesByApkName.get(apk.getName());
+			if (v4Signature != null) {
+				builder.addV4Signature(apk.getUri(), v4Signature);
+			}
+		}
 		switch (settingsRepository.getInstallerBackend()) {
 			case ROOT -> builder.registerPlugin(LibsuPlugin.class,
 					new LibsuPlugin.InstallParameters.Builder().setReplaceExisting(true).build());

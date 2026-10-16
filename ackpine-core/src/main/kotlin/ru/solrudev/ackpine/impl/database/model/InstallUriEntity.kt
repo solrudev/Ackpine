@@ -40,5 +40,8 @@ internal class InstallUriEntity internal constructor(
 	val sessionId: String,
 	@JvmField
 	@ColumnInfo(name = "uri")
-	val uri: String
+	val uri: String,
+	@JvmField
+	@ColumnInfo(name = "v4_signature_uri")
+	val v4SignatureUri: String? = null
 )

@@ -19,6 +19,7 @@ package ru.solrudev.ackpine.impl.testutil
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
+import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.installer.parameters.InstallerType
@@ -48,6 +49,7 @@ internal fun createInstallSessionEntity(
 	state: SessionEntity.State,
 	installerType: InstallerType,
 	uris: List<String>,
+	v4SignatureUris: Map<String, String> = emptyMap(),
 	notificationId: Int = 1,
 	plugins: List<PluginEntity> = emptyList(),
 	confirmation: Confirmation = Confirmation.DEFERRED,
@@ -68,7 +70,9 @@ internal fun createInstallSessionEntity(
 		confirmation = confirmation,
 		requireUserAction = requireUserAction
 	),
-	installerType, uris, plugins, name, notificationId, installMode,
+	installerType,
+	uris.map { uri -> InstallUriEntity(sessionId = id, uri = uri, v4SignatureUri = v4SignatureUris[uri]) },
+	plugins, name, notificationId, installMode,
 	packageName, lastUpdateTimestamp, preapproval, constraints,
 	requestUpdateOwnership = null,
 	packageSource = null,

@@ -266,7 +266,14 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 		private val _preapprovalRequests = mutableListOf<PreapprovalRequest>()
 		val preapprovalRequests: List<PreapprovalRequest> = _preapprovalRequests
 
+		private val _writeCalls = mutableListOf<WriteCall>()
+		val writeCalls: List<WriteCall> = _writeCalls
+
+		private val _stagingProgress = mutableListOf<Float>()
+		val stagingProgress: List<Float> = _stagingProgress
+
 		override fun openWrite(name: String, offsetBytes: Long, lengthBytes: Long): OutputStream {
+			_writeCalls += WriteCall(name, offsetBytes, lengthBytes)
 			return object : ByteArrayOutputStream() {
 				override fun close() {
 					_writes[name] = toByteArray()
@@ -277,7 +284,8 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 		override fun fsync(out: OutputStream) { // no-op
 		}
 
-		override fun setStagingProgress(progress: Float) { // no-op
+		override fun setStagingProgress(progress: Float) {
+			_stagingProgress += progress
 		}
 
 		override fun commit(statusReceiver: IntentSender) {
@@ -300,6 +308,12 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 		data class PreapprovalRequest(
 			val details: PackageInstaller.PreapprovalDetails,
 			val statusReceiver: IntentSender
+		)
+
+		data class WriteCall(
+			val name: String,
+			val offsetBytes: Long,
+			val lengthBytes: Long
 		)
 	}
 }

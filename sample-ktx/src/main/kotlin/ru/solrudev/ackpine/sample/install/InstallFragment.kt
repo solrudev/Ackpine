@@ -23,12 +23,11 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts.OpenDocument
+import androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
 import androidx.annotation.RequiresApi
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
-import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -44,10 +43,6 @@ import ru.solrudev.ackpine.splits.ApkSplits.validate
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.splits.SplitPackage.Companion.toSplitPackage
 import ru.solrudev.ackpine.splits.ZippedApkSplits
-
-private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
-private const val ZIP_MIME_TYPE = "application/zip"
-private const val BINARY_MIME_TYPE = "application/octet-stream"
 
 class InstallFragment : Fragment(R.layout.fragment_install) {
 
@@ -85,7 +80,7 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 		resetUriToInstall()
 	}
 
-	private val pickerLauncher = registerForActivityResult(OpenDocument(), ::install)
+	private val pickerLauncher = registerForActivityResult(OpenMultipleDocuments(), ::install)
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		findAppBarLayout().setLiftOnScrollTargetView(binding.recyclerViewInstall)
@@ -156,32 +151,42 @@ class InstallFragment : Fragment(R.layout.fragment_install) {
 	}
 
 	private fun install(uri: Uri?) {
-		if (uri == null) {
-			return
-		}
-		val name = DocumentFile.fromSingleUri(requireContext(), uri)?.name.orEmpty()
-		val apks = getApksFromUri(uri, name)
-		viewModel.installPackage(apks, name)
+		install(listOfNotNull(uri))
 	}
 
-	private fun getApksFromUri(uri: Uri, name: String): SplitPackage.Provider {
+	private fun install(uris: List<Uri>) {
+		if (uris.isEmpty()) {
+			return
+		}
 		val context = requireContext()
-		val fileType = name
-			.substringAfterLast('.', "")
-			.ifEmpty { context.contentResolver.getType(uri) }
-			?.lowercase()
-		return when (fileType) {
-			"apk",
-			APK_MIME_TYPE -> SingletonApkSequence(uri, context).toSplitPackage()
-
-			"zip", "apks", "xapk", "apkm",
-			ZIP_MIME_TYPE, BINARY_MIME_TYPE -> ZippedApkSplits.getApksForUri(uri, context)
+		val (signatureFiles, packageFiles) = uris
+			.map { uri -> uri.toPickedFile(context) }
+			.partition { file -> file.isV4Signature }
+		if (packageFiles.isEmpty()) {
+			viewModel.installPackage(SplitPackage.empty(), signatureFiles.first().name)
+			return
+		}
+		val name = packageFiles.first().name
+		val archive = packageFiles.singleOrNull()?.takeIf { it.isArchive }
+		val pickedSignatures = pickedV4Signatures(packageFiles, signatureFiles)
+		if (archive != null) {
+			val splitPackage = ZippedApkSplits.getApksForUri(archive.uri, context)
 				.validate()
 				.toSplitPackage()
 				.sortedByCompatibility(context)
-
-			else -> SplitPackage.empty()
+			// Signatures picked as separate files take precedence over the ones inside the archive.
+			viewModel.installPackage(splitPackage, name) {
+				zipV4Signatures(archive.uri, context) + pickedSignatures
+			}
+			return
 		}
+		// Everything that's not a lone archive is treated as APKs, so several separately picked splits install as
+		// one package. Files which aren't APKs are skipped when the sequence is iterated.
+		var splitPackage = UriApkSequence(packageFiles.map { it.uri }, context).toSplitPackage()
+		if (packageFiles.size > 1) {
+			splitPackage = splitPackage.sortedByCompatibility(context)
+		}
+		viewModel.installPackage(splitPackage, name) { pickedSignatures }
 	}
 
 	@RequiresApi(Build.VERSION_CODES.M)

@@ -50,6 +50,7 @@ class InstallerCapabilitiesResolverTest {
 		assertEquals(CapabilityStatus.SUPPORTED, caps.requestUpdateOwnership)
 		assertEquals(CapabilityStatus.SUPPORTED, caps.packageSource)
 		assertEquals(CapabilityStatus.SUPPORTED, caps.dontKillApp)
+		assertEquals(CapabilityStatus.UNSUPPORTED, caps.v4Signature)
 	}
 
 	@Test
@@ -63,6 +64,7 @@ class InstallerCapabilitiesResolverTest {
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.requestUpdateOwnership)
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.packageSource)
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.dontKillApp)
+		assertEquals(CapabilityStatus.UNSUPPORTED, caps.v4Signature)
 	}
 
 	@Test
@@ -76,6 +78,7 @@ class InstallerCapabilitiesResolverTest {
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.requestUpdateOwnership)
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.packageSource)
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.dontKillApp)
+		assertEquals(CapabilityStatus.UNSUPPORTED, caps.v4Signature)
 	}
 
 	@Test
@@ -100,6 +103,34 @@ class InstallerCapabilitiesResolverTest {
 		SdkInt.set(32)
 		val caps = resolve(InstallerType.SESSION_BASED)
 		assertEquals(CapabilityStatus.UNSUPPORTED, caps.packageSource)
+	}
+
+	@Test
+	fun sessionBasedPreApi35V4SignatureUnsupported() {
+		SdkInt.set(34)
+		val caps = resolve(InstallerType.SESSION_BASED)
+		assertEquals(CapabilityStatus.UNSUPPORTED, caps.v4Signature)
+	}
+
+	@Test
+	fun sessionBasedApi35V4SignatureUnreliable() {
+		SdkInt.set(35)
+		val caps = resolve(InstallerType.SESSION_BASED)
+		assertEquals(CapabilityStatus.UNRELIABLE, caps.v4Signature)
+	}
+
+	@Test
+	fun sessionBasedApi36V4SignatureSupported() {
+		SdkInt.set(36)
+		val caps = resolve(InstallerType.SESSION_BASED)
+		assertEquals(CapabilityStatus.SUPPORTED, caps.v4Signature)
+	}
+
+	@Test
+	fun intentBasedApi36V4SignatureUnsupported() {
+		SdkInt.set(36)
+		val caps = resolve(InstallerType.INTENT_BASED)
+		assertEquals(CapabilityStatus.UNSUPPORTED, caps.v4Signature)
 	}
 
 	@Test

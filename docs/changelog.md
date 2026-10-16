@@ -6,6 +6,20 @@ hide:
 Change Log
 ==========
 
+Unreleased
+----------
+
+### Bug fixes and improvements
+
+- Allow staging v4 signatures (`.idsig` files) alongside APKs in install sessions using `SESSION_BASED` installer via the new `v4Signatures` parameter. This makes the platform enable fs-verity for the staged APKs, which is required to update preinstalled apps on API level 35+. Applying this option is best-effort: it's silently ignored on lower API levels, where the platform doesn't recognize `.idsig` session entries and rejects the whole session with `INSTALL_PARSE_FAILED_NOT_APK`.
+
+### Public API changes
+
+#### New
+
+- Added `InstallParameters.v4Signatures` property, `InstallParameters.Builder.setV4Signatures()` and `InstallParameters.Builder.addV4Signature()` methods, and the `v4Signatures` DSL property in `InstallParametersDsl`.
+- Added `InstallerCapabilities.v4Signature` property.
+
 Version 0.25.4 (2026-07-30)
 ---------------------------
 

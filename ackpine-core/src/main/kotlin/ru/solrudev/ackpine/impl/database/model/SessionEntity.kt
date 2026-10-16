@@ -99,11 +99,9 @@ internal class SessionEntity internal constructor(
 		@JvmField
 		@Relation(
 			parentColumn = "id",
-			entityColumn = "session_id",
-			entity = InstallUriEntity::class,
-			projection = ["uri"]
+			entityColumn = "session_id"
 		)
-		val uris: List<String>,
+		val uris: List<InstallUriEntity>,
 		@Relation(
 			parentColumn = "id",
 			entityColumn = "session_id"

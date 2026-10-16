@@ -239,7 +239,7 @@ internal class PackageInstallerImpl internal constructor(
 					parameters.requireUserAction
 				),
 				installerType = parameters.installerType,
-				uris = parameters.apks.toList().map { it.toString() },
+				uris = parameters.toInstallUriEntities(sessionId),
 				plugins = parameters.pluginContainer.toEntityList(sessionId),
 				name = parameters.name,
 				notificationId,

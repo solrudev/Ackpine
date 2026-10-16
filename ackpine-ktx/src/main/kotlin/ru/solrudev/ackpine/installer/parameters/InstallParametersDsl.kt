@@ -22,6 +22,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.capabilities.InstallerCapabilities
 import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
 import ru.solrudev.ackpine.plugability.AckpinePlugin.Parameters
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -42,6 +43,22 @@ public interface InstallParametersDsl : ConfirmationDsl {
 	 * Mutable list of APKs [URIs][Uri] to install in one session.
 	 */
 	public val apks: MutableApkList
+
+	/**
+	 * Mutable mapping of APK [URIs][Uri] from [apks] to [URIs][Uri] of their v4 signatures (`.idsig` files).
+	 *
+	 * When a v4 signature is provided for an APK, it's staged in the install session alongside that APK, which
+	 * allows to update preinstalled apps on Android versions enforcing fs-verity.
+	 *
+	 * Applying this option is best-effort. It takes effect only when using [InstallerType.SESSION_BASED] installer
+	 * and on API level >= 35, and is ignored otherwise. Note that on API level 35 the platform may not apply
+	 * fs-verity even when the v4 signature is staged. Query [InstallerCapabilities.v4Signature] to check
+	 * availability of this option on the current device.
+	 *
+	 * Keys must be APK [URIs][Uri] which are also present in [apks], otherwise creating the session fails with
+	 * [IllegalArgumentException].
+	 */
+	public val v4Signatures: MutableMap<Uri, Uri>
 
 	/**
 	 * Type of the package installer implementation.
@@ -163,6 +180,10 @@ internal class InstallParametersDslBuilder : InstallParametersDsl {
 
 	override val apks: MutableApkList
 		get() = builder.apks as MutableApkList
+
+	@Suppress("UNCHECKED_CAST")
+	override val v4Signatures: MutableMap<Uri, Uri>
+		get() = builder.v4Signatures as MutableMap<Uri, Uri>
 
 	override var installerType: InstallerType
 		get() = builder.installerType

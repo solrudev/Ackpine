@@ -16,21 +16,47 @@
 
 package ru.solrudev.ackpine.impl.installer
 
+import android.net.Uri
 import androidx.core.net.toUri
 import ru.solrudev.ackpine.impl.database.dao.SessionProgressDao
 import ru.solrudev.ackpine.impl.database.model.InstallConstraintsEntity
 import ru.solrudev.ackpine.impl.database.model.InstallModeEntity
 import ru.solrudev.ackpine.impl.database.model.InstallPreapprovalEntity
+import ru.solrudev.ackpine.impl.database.model.InstallUriEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.installer.session.PreapprovalLifecycle
 import ru.solrudev.ackpine.installer.parameters.InstallConstraints
 import ru.solrudev.ackpine.installer.parameters.InstallMode
+import ru.solrudev.ackpine.installer.parameters.InstallParameters
 import ru.solrudev.ackpine.installer.parameters.InstallPreapproval
 import ru.solrudev.ackpine.session.Progress
 
 @JvmSynthetic
 internal fun SessionEntity.InstallSession.getProgress(sessionProgressDao: SessionProgressDao): Progress {
 	return sessionProgressDao.getProgress(session.id) ?: Progress()
+}
+
+@JvmSynthetic
+internal fun SessionEntity.InstallSession.getApks(): List<Uri> {
+	return uris.map { it.uri.toUri() }
+}
+
+@JvmSynthetic
+internal fun SessionEntity.InstallSession.getV4Signatures(): Map<Uri, Uri> {
+	return uris
+		.mapNotNull { entity -> entity.v4SignatureUri?.let { entity.uri.toUri() to it.toUri() } }
+		.toMap()
+}
+
+@JvmSynthetic
+internal fun InstallParameters.toInstallUriEntities(sessionId: String): List<InstallUriEntity> {
+	return apks.toList().map { apk ->
+		InstallUriEntity(
+			sessionId = sessionId,
+			uri = apk.toString(),
+			v4SignatureUri = v4Signatures[apk]?.toString()
+		)
+	}
 }
 
 @JvmSynthetic

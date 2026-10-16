@@ -21,12 +21,14 @@ import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstaller.SessionParams
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import androidx.core.net.toUri
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
 import ru.solrudev.ackpine.impl.logging.AckpineLoggerProvider
@@ -99,6 +101,136 @@ class SessionBasedInstallSessionTest {
 		assertNotNull(writtenApk)
 		assertEquals("test apk", writtenApk.toString(Charsets.UTF_8))
 		assertEquals(Session.State.Awaiting, states.last())
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
+	fun launchStagesV4SignatureNextToApk() {
+		val sessionId = UUID.randomUUID()
+		val apkFile = context.createAckpineFile("test/$sessionId.apk") { writeText("test apk") }
+		val v4SignatureFile = context.createAckpineFile("test/$sessionId.apk.idsig") { writeText("test idsig") }
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			apks = listOf(apkFile.toUri()),
+			v4Signatures = mapOf(apkFile.toUri() to v4SignatureFile.toUri()),
+			id = sessionId,
+			initialState = Session.State.Pending
+		)
+		val states = session.captureStates()
+
+		session.launch()
+		drainMainThread()
+
+		assertEquals(2, packageInstaller.session.writes.size)
+		val writtenApk = packageInstaller.session.writes["0.apk"]
+		val writtenV4Signature = packageInstaller.session.writes["0.apk.idsig"]
+		assertNotNull(writtenApk)
+		assertNotNull(writtenV4Signature)
+		assertEquals("test apk", writtenApk.toString(Charsets.UTF_8))
+		assertEquals("test idsig", writtenV4Signature.toString(Charsets.UTF_8))
+		// The APK and its v4 signature are staged as separate entries, each opened at offset 0. Exact lengths
+		// aren't asserted because Robolectric's ContentResolver reports an unknown declaredLength for file: URIs,
+		// which is also why the written content above is what proves the right file was streamed.
+		val v4SignatureWriteCall = packageInstaller.session.writeCalls.single { it.name == "0.apk.idsig" }
+		assertEquals(0, v4SignatureWriteCall.offsetBytes)
+		assertEquals(0, packageInstaller.session.writeCalls.single { it.name == "0.apk" }.offsetBytes)
+		assertEquals(Session.State.Awaiting, states.last())
+	}
+
+	@Test
+	fun launchDoesNotStageV4SignatureBelowMinSdk() {
+		val sessionId = UUID.randomUUID()
+		val apkFile = context.createAckpineFile("test/$sessionId.apk") { writeText("test apk") }
+		val v4SignatureFile = context.createAckpineFile("test/$sessionId.apk.idsig") { writeText("test idsig") }
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			apks = listOf(apkFile.toUri()),
+			v4Signatures = mapOf(apkFile.toUri() to v4SignatureFile.toUri()),
+			id = sessionId,
+			initialState = Session.State.Pending
+		)
+		val states = session.captureStates()
+
+		session.launch()
+		drainMainThread()
+
+		assertEquals(1, packageInstaller.session.writes.size)
+		assertNotNull(packageInstaller.session.writes["0.apk"])
+		assertFalse("0.apk.idsig" in packageInstaller.session.writes)
+		assertEquals(Session.State.Awaiting, states.last())
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.VANILLA_ICE_CREAM])
+	fun launchStagesV4SignaturesOnlyForApksWhichHaveThem() {
+		val sessionId = UUID.randomUUID()
+		val apkFiles = listOf(
+			context.createAckpineFile("test/split-$sessionId-1.apk") { writeText("apk 1") },
+			context.createAckpineFile("test/split-$sessionId-2.apk") { writeText("apk 2") },
+			context.createAckpineFile("test/split-$sessionId-3.apk") { writeText("apk 3") }
+		)
+		val v4SignatureFiles = listOf(
+			context.createAckpineFile("test/split-$sessionId-1.apk.idsig") { writeText("idsig 1") },
+			context.createAckpineFile("test/split-$sessionId-3.apk.idsig") { writeText("idsig 3") }
+		)
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			apks = apkFiles.map(File::toUri),
+			v4Signatures = mapOf(
+				apkFiles[0].toUri() to v4SignatureFiles[0].toUri(),
+				apkFiles[2].toUri() to v4SignatureFiles[1].toUri()
+			),
+			id = sessionId,
+			initialState = Session.State.Pending
+		)
+		val states = session.captureStates()
+
+		session.launch()
+		drainMainThread()
+
+		assertContains(states, Session.State.Awaiting)
+		assertEquals(
+			setOf("0.apk", "0.apk.idsig", "1.apk", "2.apk", "2.apk.idsig"),
+			packageInstaller.session.writes.keys
+		)
+		assertEquals("idsig 1", packageInstaller.session.writes.getValue("0.apk.idsig").toString(Charsets.UTF_8))
+		assertEquals("idsig 3", packageInstaller.session.writes.getValue("2.apk.idsig").toString(Charsets.UTF_8))
+	}
+
+	@Test
+	@Config(sdk = [Build.VERSION_CODES.BAKLAVA])
+	fun launchWithV4SignaturesKeepsStagingProgressWithinBounds() {
+		val sessionId = UUID.randomUUID()
+		val apkFiles = List(3) { index ->
+			context.createAckpineFile("test/split-$sessionId-$index.apk") { writeText("apk $index") }
+		}
+		val v4SignatureFiles = List(3) { index ->
+			context.createAckpineFile("test/split-$sessionId-$index.apk.idsig") { writeText("idsig $index") }
+		}
+		val packageInstaller = RecordingPackageInstallerService()
+		val session = createSessionBasedSession(
+			packageInstaller = packageInstaller,
+			apks = apkFiles.map(File::toUri),
+			v4Signatures = apkFiles.map(File::toUri).zip(v4SignatureFiles.map(File::toUri)).toMap(),
+			id = sessionId,
+			initialState = Session.State.Pending,
+			parallelism = 1
+		)
+
+		session.launch()
+		drainMainThread()
+
+		assertEquals(6, packageInstaller.session.writes.size)
+		val stagingProgress = packageInstaller.session.stagingProgress
+		assertTrue(stagingProgress.isNotEmpty(), "staging progress was never reported")
+		assertTrue(
+			stagingProgress.all { it in 0f..1f },
+			"staging progress went out of [0, 1]: ${stagingProgress.filterNot { it in 0f..1f }}"
+		)
+		assertEquals(1f, stagingProgress.last())
 	}
 
 	@Test
@@ -538,6 +670,7 @@ class SessionBasedInstallSessionTest {
 internal fun createSessionBasedSession(
 	packageInstaller: PackageInstallerService = RecordingPackageInstallerService(),
 	apks: List<Uri> = listOf(Uri.EMPTY),
+	v4Signatures: Map<Uri, Uri> = emptyMap(),
 	id: UUID = UUID.randomUUID(),
 	preapproval: InstallPreapproval = InstallPreapproval.NONE,
 	constraints: InstallConstraints = InstallConstraints.NONE,
@@ -558,7 +691,7 @@ internal fun createSessionBasedSession(
 ) = SessionBasedInstallSession(
 	loggerProvider = AckpineLoggerProvider("SessionBasedInstallSession") { null },
 	context = ApplicationProvider.getApplicationContext(),
-	lazyOf(packageInstaller), apks, id, initialState, initialProgress,
+	lazyOf(packageInstaller), apks, v4Signatures, id, initialState, initialProgress,
 	confirmation = Confirmation.DEFERRED,
 	notificationData = NotificationData.DEFAULT,
 	requireUserAction, installMode, preapproval, constraints, requestUpdateOwnership, packageSource,
