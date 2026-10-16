@@ -70,6 +70,7 @@ public class AckpineLibraryBasePlugin : Plugin<Project> {
 		enableKotlin = false
 
 		defaultConfig {
+			aarMetadata.minCompileSdk = 36
 			testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 			consumerProguardFiles("consumer-rules.pro")
 		}
