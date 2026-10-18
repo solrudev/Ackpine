@@ -61,6 +61,7 @@ import ru.solrudev.ackpine.session.await
 import ru.solrudev.ackpine.session.progress
 import ru.solrudev.ackpine.session.state
 import ru.solrudev.ackpine.shizuku.shizuku
+import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.SplitPackage
 import ru.solrudev.ackpine.splits.get
 import java.util.UUID
@@ -82,13 +83,21 @@ class InstallViewModel(
 		.onStart { awaitSessionsFromSavedState() }
 		.stateIn(viewModelScope, SharingStarted.Lazily, InstallUiState())
 
-	fun installPackage(splitPackage: SplitPackage.Provider, fileName: String) = viewModelScope.launch {
-		val uris = getApkUris(splitPackage)
-		if (uris.isEmpty()) {
+	fun installPackage(
+		splitPackage: SplitPackage.Provider,
+		fileName: String,
+		v4SignatureProvider: V4SignatureProvider = EmptyV4SignatureProvider
+	) = viewModelScope.launch {
+		val apks = getApks(splitPackage)
+		if (apks.isEmpty()) {
 			return@launch
 		}
-		val session = packageInstaller.createSession(uris) {
+		val v4SignaturesByApkName = v4SignatureProvider()
+		val session = packageInstaller.createSession(apks.map { it.uri }) {
 			name = fileName
+			for (apk in apks) {
+				v4Signatures[apk.uri] = v4SignaturesByApkName[apk.name] ?: continue
+			}
 			when (settingsRepository.installerBackend.first()) {
 				InstallerBackend.ROOT -> libsu { replaceExisting = true }
 				InstallerBackend.SHIZUKU -> shizuku { replaceExisting = true }
@@ -163,7 +172,7 @@ class InstallViewModel(
 		sessionDataRepository.setError(sessionId, error)
 	}
 
-	private suspend inline fun getApkUris(splitPackage: SplitPackage.Provider): List<Uri> {
+	private suspend inline fun getApks(splitPackage: SplitPackage.Provider): List<Apk> {
 		try {
 			var splits = splitPackage.get()
 			if (settingsRepository.installBestSuitedApks.first()) {
@@ -171,7 +180,7 @@ class InstallViewModel(
 			}
 			return splits
 				.toList()
-				.map { it.apk.uri }
+				.map { it.apk }
 		} catch (exception: SplitPackageException) {
 			error.value = when (exception) {
 				is NoBaseApkException -> ResolvableString.transientResource(R.string.error_no_base_apk)

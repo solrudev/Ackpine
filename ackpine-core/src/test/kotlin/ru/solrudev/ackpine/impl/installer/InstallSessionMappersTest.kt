@@ -240,6 +240,34 @@ class InstallSessionMappersTest {
 		assertEquals(expectedEntity, entity)
 	}
 
+	@Test
+	fun getApksMapsPersistedUrisInOrder() {
+		val session = createInstallSessionEntity(
+			id = "session-id",
+			state = SessionEntity.State.PENDING,
+			installerType = InstallerType.SESSION_BASED,
+			uris = listOf("file:///base.apk", "file:///split.apk")
+		)
+		assertEquals(listOf("file:///base.apk".toUri(), "file:///split.apk".toUri()), session.getApks())
+	}
+
+	@Test
+	fun getV4SignaturesPairsSignaturesWithTheirApks() {
+		val session = createInstallSessionEntity(
+			id = "session-id",
+			state = SessionEntity.State.PENDING,
+			installerType = InstallerType.SESSION_BASED,
+			uris = listOf("file:///base.apk", "file:///split.apk"),
+			v4SignatureUris = mapOf("file:///split.apk" to "file:///split.apk.idsig")
+		)
+		assertEquals(mapOf("file:///split.apk".toUri() to "file:///split.apk.idsig".toUri()), session.getV4Signatures())
+	}
+
+	@Test
+	fun getV4SignaturesIsEmptyWhenNoSignaturesArePersisted() {
+		assertEquals(emptyMap(), createInstallSession().getV4Signatures())
+	}
+
 	private fun createInstallSession(
 		installMode: InstallModeEntity? = null,
 		preapproval: InstallPreapprovalEntity? = null,

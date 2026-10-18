@@ -44,6 +44,7 @@ internal fun resolveInstallerCapabilities(
 		requestUpdateOwnership = isAvailable(capabilities::requestUpdateOwnership, scope.isUpdateOwnershipDisabled),
 		packageSource = capabilities.packageSource,
 		dontKillApp = capabilities.dontKillApp,
+		v4Signature = capabilities.v4Signature,
 		pluginCapabilities = collectInstallPluginCapabilities(scope, context)
 	)
 }
@@ -59,7 +60,8 @@ private fun resolveBaseInstallerCapabilities(
 			constraints = CapabilityStatus.UNSUPPORTED,
 			requestUpdateOwnership = CapabilityStatus.UNSUPPORTED,
 			packageSource = CapabilityStatus.UNSUPPORTED,
-			dontKillApp = CapabilityStatus.UNSUPPORTED
+			dontKillApp = CapabilityStatus.UNSUPPORTED,
+			v4Signature = CapabilityStatus.UNSUPPORTED
 		)
 	}
 	val api34Support = if (sdkInt >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -81,7 +83,14 @@ private fun resolveBaseInstallerCapabilities(
 		} else {
 			CapabilityStatus.UNSUPPORTED
 		},
-		dontKillApp = api34Support
+		dontKillApp = api34Support,
+		// Staging of v4 signatures as sibling session entries is rejected by the platform below API level 35, and
+		// fs-verity is applied from them unconditionally only since API level 36.
+		v4Signature = when {
+			sdkInt >= Build.VERSION_CODES.BAKLAVA -> CapabilityStatus.SUPPORTED
+			sdkInt >= Build.VERSION_CODES.VANILLA_ICE_CREAM -> CapabilityStatus.UNRELIABLE
+			else -> CapabilityStatus.UNSUPPORTED
+		}
 	)
 }
 
@@ -124,5 +133,6 @@ private class BaseInstallerCapabilities(
 	val constraints: CapabilityStatus,
 	val requestUpdateOwnership: CapabilityStatus,
 	val packageSource: CapabilityStatus,
-	val dontKillApp: CapabilityStatus
+	val dontKillApp: CapabilityStatus,
+	val v4Signature: CapabilityStatus
 )

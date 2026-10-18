@@ -16,9 +16,20 @@
 
 package android.net
 
-class Uri private constructor() {
+class Uri private constructor(private val uriString: String) {
+
+	override fun equals(other: Any?): Boolean = this === other || other is Uri && uriString == other.uriString
+
+	override fun hashCode(): Int = uriString.hashCode()
+
+	override fun toString(): String = uriString
+
 	companion object {
+
 		@JvmField
-		val EMPTY: Uri = Uri()
+		val EMPTY: Uri = Uri("")
+
+		@JvmStatic
+		fun parse(uriString: String): Uri = Uri(uriString)
 	}
 }

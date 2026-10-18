@@ -54,9 +54,7 @@ internal abstract class InstallSessionDao protected constructor(private val data
 		if (session.installMode != null) {
 			insertInstallMode(session.installMode)
 		}
-		insertUris(session.uris.map { uri ->
-			InstallUriEntity(sessionId = session.session.id, uri = uri)
-		})
+		insertUris(session.uris)
 		insertPlugins(session.plugins)
 		database.sessionProgressDao().initProgress(session.session.id)
 		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)

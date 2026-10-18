@@ -33,9 +33,11 @@ import ru.solrudev.ackpine.session.parameters.NotificationData
 import java.util.Locale
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 
 class InstallParametersBuilderTest {
@@ -55,6 +57,7 @@ class InstallParametersBuilderTest {
 		assertEquals(InstallConstraints.NONE, parameters.constraints)
 		assertFalse(parameters.requestUpdateOwnership)
 		assertEquals(PackageSource.Unspecified, parameters.packageSource)
+		assertEquals(emptyMap(), parameters.v4Signatures)
 	}
 
 	@Test
@@ -127,6 +130,7 @@ class InstallParametersBuilderTest {
 			.setContentText(ResolvableString.raw("text"))
 			.build()
 		val installMode = InstallMode.InheritExisting("com.example.pkg", dontKillApp = true)
+		val v4Signature = Uri.parse("file:///base.apk.idsig")
 		val preapproval = InstallPreapproval.Builder("com.example.pkg", "label", Locale.US).build()
 		val constraints = InstallConstraints.Builder(1000L)
 			.setAppNotForegroundRequired(true)
@@ -142,6 +146,7 @@ class InstallParametersBuilderTest {
 			.setConstraints(constraints)
 			.setRequestUpdateOwnership(true)
 			.setPackageSource(PackageSource.Store)
+			.setV4Signatures(mapOf(Uri.EMPTY to v4Signature))
 			.build()
 		assertEquals(InstallerType.INTENT_BASED, parameters.installerType)
 		assertEquals(Confirmation.IMMEDIATE, parameters.confirmation)
@@ -153,6 +158,7 @@ class InstallParametersBuilderTest {
 		assertEquals(constraints, parameters.constraints)
 		assertTrue(parameters.requestUpdateOwnership)
 		assertEquals(PackageSource.Store, parameters.packageSource)
+		assertEquals(mapOf(Uri.EMPTY to v4Signature), parameters.v4Signatures)
 	}
 
 	@OptIn(DelicateAckpineApi::class)
@@ -223,5 +229,64 @@ class InstallParametersBuilderTest {
 		)
 		assertEquals(InstallerType.SESSION_BASED, parameters.installerType)
 		assertEquals(expectedPlugins, parameters.pluginContainer.getPlugins())
+	}
+
+	@Test
+	fun setV4SignaturesReplacesPreviouslyAddedEntries() {
+		val baseApk = Uri.parse("file:///base.apk")
+		val split = Uri.parse("file:///split.apk")
+		val builder = InstallParameters.Builder(listOf(baseApk, split))
+			.addV4Signature(baseApk, Uri.parse("file:///stale.idsig"))
+			.setV4Signatures(mapOf(split to Uri.parse("file:///split.apk.idsig")))
+		assertEquals(mapOf(split to Uri.parse("file:///split.apk.idsig")), builder.build().v4Signatures)
+	}
+
+	@Test
+	fun addV4SignatureAccumulatesEntries() {
+		val baseApk = Uri.parse("file:///base.apk")
+		val split = Uri.parse("file:///split.apk")
+		val parameters = InstallParameters.Builder(listOf(baseApk, split))
+			.addV4Signature(baseApk, Uri.parse("file:///base.apk.idsig"))
+			.addV4Signature(split, Uri.parse("file:///split.apk.idsig"))
+			.build()
+		assertEquals(
+			mapOf(
+				baseApk to Uri.parse("file:///base.apk.idsig"),
+				split to Uri.parse("file:///split.apk.idsig")
+			),
+			parameters.v4Signatures
+		)
+	}
+
+	@Test
+	fun v4SignaturesInBuiltParametersAreNotAffectedByLaterBuilderMutations() {
+		val baseApk = Uri.parse("file:///base.apk")
+		val builder = InstallParameters.Builder(baseApk)
+			.addV4Signature(baseApk, Uri.parse("file:///base.apk.idsig"))
+		val parameters = builder.build()
+		builder.setV4Signatures(emptyMap())
+		assertEquals(mapOf(baseApk to Uri.parse("file:///base.apk.idsig")), parameters.v4Signatures)
+	}
+
+	@Test
+	fun buildFailsWhenV4SignatureIsProvidedForApkNotAddedToSession() {
+		val baseApk = Uri.parse("file:///base.apk")
+		val unknownApk = Uri.parse("file:///unknown.apk")
+		val builder = InstallParameters.Builder(baseApk)
+			.addV4Signature(unknownApk, Uri.parse("file:///unknown.apk.idsig"))
+		val exception = assertFailsWith<IllegalArgumentException> { builder.build() }
+		assertContains(exception.message.orEmpty(), unknownApk.toString())
+	}
+
+	@Test
+	fun v4SignaturesAreTakenIntoAccountInEquality() {
+		val baseApk = Uri.parse("file:///base.apk")
+		val withSignature = InstallParameters.Builder(baseApk)
+			.addV4Signature(baseApk, Uri.parse("file:///base.apk.idsig"))
+			.build()
+		val withoutSignature = InstallParameters.Builder(baseApk).build()
+		assertNotEquals(withoutSignature, withSignature)
+		assertNotEquals(withoutSignature.hashCode(), withSignature.hashCode())
+		assertContains(withSignature.toString(), "v4Signatures=")
 	}
 }

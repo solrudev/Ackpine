@@ -45,6 +45,7 @@ public final class ru/solrudev/ackpine/capabilities/InstallerCapabilities {
 	public final fun getPreapproval ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getRequestUpdateOwnership ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getSkipUserAction ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getV4Signature ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public fun hashCode ()I
 	public final fun plugin (Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/PluginCapability;
 	public fun toString ()Ljava/lang/String;
@@ -319,7 +320,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallMode$InheritE
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : ru/solrudev/ackpine/session/parameters/ConfirmationAware {
-	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;ZLru/solrudev/ackpine/installer/parameters/InstallMode;Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;Lru/solrudev/ackpine/installer/parameters/InstallConstraints;ZLru/solrudev/ackpine/installer/parameters/PackageSource;Lru/solrudev/ackpine/plugability/AckpinePluginContainer;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Lru/solrudev/ackpine/installer/parameters/ApkList;Ljava/util/Map;Lru/solrudev/ackpine/installer/parameters/InstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Ljava/lang/String;ZLru/solrudev/ackpine/installer/parameters/InstallMode;Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;Lru/solrudev/ackpine/installer/parameters/InstallConstraints;ZLru/solrudev/ackpine/installer/parameters/PackageSource;Lru/solrudev/ackpine/plugability/AckpinePluginContainer;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getApks ()Lru/solrudev/ackpine/installer/parameters/ApkList;
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
@@ -333,6 +334,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters : 
 	public final fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public final fun getRequestUpdateOwnership ()Z
 	public final fun getRequireUserAction ()Z
+	public final fun getV4Signatures ()Ljava/util/Map;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -342,6 +344,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public fun <init> (Ljava/lang/Iterable;)V
 	public final fun addApk (Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun addApks (Ljava/lang/Iterable;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun addV4Signature (Landroid/net/Uri;Landroid/net/Uri;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun build ()Lru/solrudev/ackpine/installer/parameters/InstallParameters;
 	public final fun getApks ()Lru/solrudev/ackpine/installer/parameters/ApkList;
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
@@ -354,6 +357,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun getPreapproval ()Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;
 	public final fun getRequestUpdateOwnership ()Z
 	public final fun getRequireUserAction ()Z
+	public final fun getV4Signatures ()Ljava/util/Map;
 	public final fun registerPlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun registerPlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
@@ -366,6 +370,7 @@ public final class ru/solrudev/ackpine/installer/parameters/InstallParameters$Bu
 	public final fun setPreapproval (Lru/solrudev/ackpine/installer/parameters/InstallPreapproval;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequestUpdateOwnership (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 	public final fun setRequireUserAction (Z)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
+	public final fun setV4Signatures (Ljava/util/Map;)Lru/solrudev/ackpine/installer/parameters/InstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/installer/parameters/InstallPreapproval {

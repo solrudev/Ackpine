@@ -21,22 +21,28 @@ import android.net.Uri;
 import android.os.CancellationSignal;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import ru.solrudev.ackpine.splits.Apk;
 import ru.solrudev.ackpine.splits.CloseableSequence;
 
-public final class SingletonApkSequence implements CloseableSequence<Apk> {
+public final class UriApkSequence implements CloseableSequence<Apk> {
 
-	private final Uri uri;
+	private final List<Uri> uris;
 	private final Context applicationContext;
 	private final CancellationSignal cancellationSignal = new CancellationSignal();
 	private volatile boolean isClosed = false;
 
-	public SingletonApkSequence(@NonNull Uri uri, @NonNull Context context) {
-		this.uri = uri;
+	public UriApkSequence(@NonNull Uri uri, @NonNull Context context) {
+		this(List.of(uri), context);
+	}
+
+	public UriApkSequence(@NonNull List<Uri> uris, @NonNull Context context) {
+		this.uris = uris;
 		applicationContext = context.getApplicationContext();
 	}
 
@@ -45,12 +51,16 @@ public final class SingletonApkSequence implements CloseableSequence<Apk> {
 	public Iterator<Apk> iterator() {
 		return new Iterator<>() {
 
-			private final Apk apk = Apk.fromUri(uri, applicationContext, cancellationSignal);
-			private boolean isYielded = false;
+			private int index = 0;
+			@Nullable
+			private Apk next = null;
 
 			@Override
 			public boolean hasNext() {
-				return apk != null && !isYielded;
+				while (next == null && !isClosed && index < uris.size()) {
+					next = Apk.fromUri(uris.get(index++), applicationContext, cancellationSignal);
+				}
+				return next != null;
 			}
 
 			@Override
@@ -58,7 +68,8 @@ public final class SingletonApkSequence implements CloseableSequence<Apk> {
 				if (!hasNext()) {
 					throw new NoSuchElementException();
 				}
-				isYielded = true;
+				final var apk = next;
+				next = null;
 				return apk;
 			}
 		};

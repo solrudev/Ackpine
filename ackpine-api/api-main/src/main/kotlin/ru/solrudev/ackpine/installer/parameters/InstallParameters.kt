@@ -22,6 +22,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import ru.solrudev.ackpine.DelicateAckpineApi
+import ru.solrudev.ackpine.capabilities.InstallerCapabilities
 import ru.solrudev.ackpine.exceptions.SplitPackagesNotSupportedException
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpineInstallPlugin
@@ -42,6 +43,21 @@ public class InstallParameters private constructor(
 	 * List of APKs [URIs][Uri] to install in one session.
 	 */
 	public val apks: ApkList,
+
+	/**
+	 * Mapping of APK [URIs][Uri] from [apks] to [URIs][Uri] of their v4 signatures (`.idsig` files).
+	 *
+	 * When a v4 signature is provided for an APK, it's staged in the install session alongside that APK, which
+	 * allows to update preinstalled apps on Android versions enforcing fs-verity.
+	 *
+	 * Applying this option is best-effort. It takes effect only when using [InstallerType.SESSION_BASED] installer
+	 * and on API level >= 35, and is ignored otherwise. Note that on API level 35 the platform may not apply
+	 * fs-verity even when the v4 signature is staged. Query [InstallerCapabilities.v4Signature] to check
+	 * availability of this option on the current device.
+	 *
+	 * Default value is an empty map.
+	 */
+	public val v4Signatures: Map<Uri, Uri>,
 
 	/**
 	 * Type of the package installer implementation.
@@ -148,6 +164,7 @@ public class InstallParameters private constructor(
 		if (requireUserAction != other.requireUserAction) return false
 		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
 		if (apks != other.apks) return false
+		if (v4Signatures != other.v4Signatures) return false
 		if (installerType != other.installerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
@@ -164,6 +181,7 @@ public class InstallParameters private constructor(
 		var result = requireUserAction.hashCode()
 		result = 31 * result + requestUpdateOwnership.hashCode()
 		result = 31 * result + apks.hashCode()
+		result = 31 * result + v4Signatures.hashCode()
 		result = 31 * result + installerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
@@ -179,6 +197,7 @@ public class InstallParameters private constructor(
 	override fun toString(): String {
 		return "InstallParameters(" +
 				"apks=$apks, " +
+				"v4Signatures=$v4Signatures, " +
 				"installerType=$installerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
@@ -217,6 +236,8 @@ public class InstallParameters private constructor(
 
 		private val _apks: RealMutableApkList
 
+		private val _v4Signatures = mutableMapOf<Uri, Uri>()
+
 		@get:JvmSynthetic
 		internal val pluginScope: InstallPluginScope
 
@@ -225,6 +246,14 @@ public class InstallParameters private constructor(
 		 */
 		public val apks: ApkList
 			get() = _apks
+
+		/**
+		 * Mapping of APK [URIs][Uri] from [apks] to [URIs][Uri] of their v4 signatures (`.idsig` files).
+		 *
+		 * Default value is an empty map.
+		 */
+		public val v4Signatures: Map<Uri, Uri>
+			get() = _v4Signatures
 
 		/**
 		 * Type of the package installer implementation.
@@ -366,6 +395,32 @@ public class InstallParameters private constructor(
 		}
 
 		/**
+		 * Sets [InstallParameters.v4Signatures], replacing all previously added entries.
+		 *
+		 * Keys of [v4Signatures] must be APK [URIs][Uri] which are also present in [apks], otherwise [build] throws
+		 * [IllegalArgumentException].
+		 *
+		 * @param v4Signatures mapping of APK [URIs][Uri] to [URIs][Uri] of their v4 signatures (`.idsig` files).
+		 */
+		public fun setV4Signatures(v4Signatures: Map<Uri, Uri>): Builder = apply {
+			_v4Signatures.clear()
+			_v4Signatures.putAll(v4Signatures)
+		}
+
+		/**
+		 * Adds a v4 signature (`.idsig` file) [URI][Uri] for the given [apk] to [InstallParameters.v4Signatures],
+		 * replacing a previously added entry for this [apk] if there was one.
+		 *
+		 * [apk] must be also present in [apks], otherwise [build] throws [IllegalArgumentException].
+		 *
+		 * @param apk an APK [URI][Uri].
+		 * @param v4Signature [URI][Uri] of the APK's v4 signature (`.idsig` file).
+		 */
+		public fun addV4Signature(apk: Uri, v4Signature: Uri): Builder = apply {
+			_v4Signatures[apk] = v4Signature
+		}
+
+		/**
 		 * Sets [InstallParameters.installerType], maintaining the following invariants:
 		 * * When on API level < 21, [InstallerType.INTENT_BASED] is always set regardless of the provided value;
 		 * * When on API level >= 21 and [apks] contains more than one entry, [InstallerType.SESSION_BASED] is always
@@ -470,8 +525,15 @@ public class InstallParameters private constructor(
 		public fun build(): InstallParameters {
 			val snapshot = createSnapshot()
 			snapshot.applyPlugins()
+			val v4Signatures = snapshot.v4Signatures.toMap()
+			val apks = snapshot._apks.toList().toSet()
+			val danglingV4Signatures = v4Signatures.keys - apks
+			require(danglingV4Signatures.isEmpty()) {
+				"v4 signatures were provided for APKs which are not added to the session: $danglingV4Signatures."
+			}
 			return InstallParameters(
 				ReadOnlyApkList(snapshot._apks),
+				v4Signatures,
 				snapshot.installerType,
 				snapshot.confirmation,
 				snapshot.notificationData,
@@ -508,6 +570,7 @@ public class InstallParameters private constructor(
 			.setNotificationData(notificationData)
 			.setInstallMode(installMode)
 			.setPackageSource(packageSource)
+			.setV4Signatures(v4Signatures)
 
 		private fun InstallPluginScope.normalizeInstallerType(
 			value: InstallerType = this.installerType

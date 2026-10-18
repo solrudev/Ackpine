@@ -29,6 +29,7 @@ An example of creating a session with custom parameters:
         requireUserAction = true
         requestUpdateOwnership = true
         packageSource = PackageSource.Store
+        v4Signatures[baseApkUri] = baseApkV4SignatureUri
         notification {
             title = InstallMessageTitle
             contentText = InstallMessage(fileName)
@@ -98,6 +99,7 @@ An example of creating a session with custom parameters:
             .setRequireUserAction(true)
             .setRequestUpdateOwnership(true)
             .setPackageSource(PackageSource.STORE)
+            .addV4Signature(baseApkUri, baseApkV4SignatureUri)
             .setNotificationData(notificationData)
             .setPreapproval(preapproval)
             .setConstraints(constraints)
@@ -174,6 +176,7 @@ Most configuration options are applied on a best-effort basis — options unavai
 | `requestUpdateOwnership`                  | 34      | Ignored                                                    |
 | Install preapproval                       | 34      | Ignored                                                    |
 | Install constraints                       | 34      | Ignored                                                    |
+| v4 signature staging                      | 35      | Ignored                                                    |
 | Shizuku plugin                            | 24      | N/A (requires `ackpine-shizuku` dependency)                |
 | libsu plugin                              | 21      | N/A (requires `ackpine-libsu` dependency)                  |
 | Dhizuku plugin                            | 26      | N/A (requires `ackpine-dhizuku` dependency)                |
@@ -344,6 +347,19 @@ Optionally indicates the package source of the app being installed. This is info
 
 Setting this value to `PackageSource.LocalFile` or `PackageSource.DownloadedFile` will disable restricted settings for the app being installed on API level 33+.
 
+v4 signatures
+-------------
+
+Available for install sessions using `SESSION_BASED` installer.
+
+Optionally maps APK URIs to URIs of their v4 signatures (`.idsig` files, as produced by `apksigner sign --v4-signing-enabled`). When a v4 signature is provided for an APK, it's staged in the install session alongside that APK, which makes the platform enable fs-verity for it. This is required to update preinstalled and system apps on Android versions enforcing fs-verity. Default value is an empty map.
+
+Keys must be APK URIs which are also present in `apks`, otherwise creating the session fails with `IllegalArgumentException`.
+
+!!! warning
+
+    On API level < 35 the platform doesn't recognize `.idsig` session entries and rejects the whole session with `INSTALL_PARSE_FAILED_NOT_APK`, so Ackpine ignores this option below API level 35. On API level 35 the v4 signature is staged, but whether the platform applies fs-verity from it depends on a platform configuration flag which can't be queried by an app — hence `CapabilityStatus.UNRELIABLE` there. Query [`InstallerCapabilities.v4Signature`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-installer-capabilities/index.html) to check availability of this option on the current device.
+
 Plugins
 -------
 
@@ -382,6 +398,7 @@ Each capability field is reported as a [`CapabilityStatus`](../api/ackpine-api/a
 | `requestUpdateOwnership` | Whether update ownership enforcement is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only)              |
 | `packageSource`          | Whether setting the package source is available (`SUPPORTED` on API 33+ with `SESSION_BASED` only)                |
 | `dontKillApp`            | Whether `InstallMode.InheritExisting.dontKillApp` is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only) |
+| `v4Signature`            | Whether v4 signature staging is available (`SUPPORTED` on API 36+, `UNRELIABLE` on API 35, `SESSION_BASED` only)  |
 
 `PackageUninstaller.getCapabilities()` returns [`UninstallerCapabilities`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstaller-capabilities/index.html) with a `uninstallerType` field.
 

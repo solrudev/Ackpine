@@ -88,6 +88,17 @@ public class InstallerCapabilities internal constructor(
 	 */
 	public val dontKillApp: CapabilityStatus,
 
+	/**
+	 * Whether staging of v4 signatures (`.idsig` files) via [InstallParameters.v4Signatures] is supported.
+	 *
+	 * [CapabilityStatus.SUPPORTED] only on API level >= 36 with [InstallerType.SESSION_BASED].
+	 *
+	 * [CapabilityStatus.UNRELIABLE] on API level 35 with [InstallerType.SESSION_BASED]: staging a v4 signature is
+	 * accepted by the platform there, but whether fs-verity is actually applied from it depends on a platform
+	 * configuration flag which can't be queried by an app.
+	 */
+	public val v4Signature: CapabilityStatus,
+
 	private val pluginCapabilities: Map<Class<out InstallCapabilityProvider<*>>, PluginCapability>
 ) {
 
@@ -115,6 +126,7 @@ public class InstallerCapabilities internal constructor(
 		if (requestUpdateOwnership != other.requestUpdateOwnership) return false
 		if (packageSource != other.packageSource) return false
 		if (dontKillApp != other.dontKillApp) return false
+		if (v4Signature != other.v4Signature) return false
 		if (pluginCapabilities != other.pluginCapabilities) return false
 		return true
 	}
@@ -127,6 +139,7 @@ public class InstallerCapabilities internal constructor(
 		result = 31 * result + requestUpdateOwnership.hashCode()
 		result = 31 * result + packageSource.hashCode()
 		result = 31 * result + dontKillApp.hashCode()
+		result = 31 * result + v4Signature.hashCode()
 		result = 31 * result + pluginCapabilities.hashCode()
 		return result
 	}
@@ -140,6 +153,7 @@ public class InstallerCapabilities internal constructor(
 				"requestUpdateOwnership=$requestUpdateOwnership, " +
 				"packageSource=$packageSource, " +
 				"dontKillApp=$dontKillApp, " +
+				"v4Signature=$v4Signature, " +
 				"pluginCapabilities=$pluginCapabilities" +
 				")"
 	}

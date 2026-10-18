@@ -140,6 +140,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 						packageInstallerService.value.bind(id)
 					},
 					apks = parameters.apks.toList(),
+					v4Signatures = parameters.v4Signatures,
 					id,
 					initialState = Session.State.Pending,
 					initialProgress = Progress(),
@@ -199,7 +200,7 @@ internal class InstallSessionFactoryImpl internal constructor(
 		val session = IntentBasedInstallSession(
 			loggerProvider,
 			applicationContext,
-			apk = installSession.uris.singleOrNull()?.toUri() ?: throw SplitPackagesNotSupportedException(),
+			apk = installSession.uris.singleOrNull()?.uri?.toUri() ?: throw SplitPackagesNotSupportedException(),
 			id, initialState, initialProgress,
 			installSession.session.confirmation, installSession.getNotificationData(),
 			lastUpdateTimestampDao, sessionDao,
@@ -268,7 +269,8 @@ internal class InstallSessionFactoryImpl internal constructor(
 				loggerProvider,
 				applicationContext,
 				boundPackageInstallerService,
-				apks = installSession.uris.map(String::toUri),
+				apks = installSession.getApks(),
+				v4Signatures = installSession.getV4Signatures(),
 				sessionId,
 				initialState, initialProgress,
 				installSession.session.confirmation, installSession.getNotificationData(),

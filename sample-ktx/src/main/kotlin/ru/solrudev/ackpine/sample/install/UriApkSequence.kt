@@ -23,7 +23,9 @@ import ru.solrudev.ackpine.splits.Apk
 import ru.solrudev.ackpine.splits.CloseableSequence
 import kotlin.concurrent.Volatile
 
-class SingletonApkSequence(private val uri: Uri, context: Context) : CloseableSequence<Apk> {
+class UriApkSequence(private val uris: List<Uri>, context: Context) : CloseableSequence<Apk> {
+
+	constructor(uri: Uri, context: Context) : this(listOf(uri), context)
 
 	@Volatile
 	override var isClosed: Boolean = false
@@ -32,23 +34,13 @@ class SingletonApkSequence(private val uri: Uri, context: Context) : CloseableSe
 	private val applicationContext = context.applicationContext
 	private val cancellationSignal = CancellationSignal()
 
-	override fun iterator(): Iterator<Apk> {
-		return object : Iterator<Apk> {
-
-			private val apk = Apk.fromUri(uri, applicationContext, cancellationSignal)
-			private var isYielded = false
-
-			override fun hasNext(): Boolean {
-				return apk != null && !isYielded
+	override fun iterator(): Iterator<Apk> = iterator {
+		for (uri in uris) {
+			if (isClosed) {
+				break
 			}
-
-			override fun next(): Apk {
-				if (!hasNext()) {
-					throw NoSuchElementException()
-				}
-				isYielded = true
-				return apk!!
-			}
+			val apk = Apk.fromUri(uri, applicationContext, cancellationSignal) ?: continue
+			yield(apk)
 		}
 	}
 

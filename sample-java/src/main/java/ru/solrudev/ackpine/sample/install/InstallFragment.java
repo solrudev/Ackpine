@@ -26,21 +26,23 @@ import android.os.Bundle;
 import android.view.View;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts.OpenDocument;
+import androidx.activity.result.contract.ActivityResultContracts.OpenMultipleDocuments;
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.os.BundleCompat;
 import androidx.core.view.ViewKt;
-import androidx.documentfile.provider.DocumentFile;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import ru.solrudev.ackpine.sample.R;
 import ru.solrudev.ackpine.sample.databinding.FragmentInstallBinding;
@@ -51,9 +53,6 @@ import ru.solrudev.ackpine.splits.ZippedApkSplits;
 public final class InstallFragment extends Fragment {
 
 	public static final String URI_KEY = "URI";
-	private static final String APK_MIME_TYPE = "application/vnd.android.package-archive";
-	private static final String ZIP_MIME_TYPE = "application/zip";
-	private static final String BINARY_MIME_TYPE = "application/octet-stream";
 	private FragmentInstallBinding binding;
 	private InstallViewModel viewModel;
 
@@ -87,7 +86,7 @@ public final class InstallFragment extends Fragment {
 			});
 
 	private final ActivityResultLauncher<String[]> pickerLauncher =
-			registerForActivityResult(new OpenDocument(), this::install);
+			registerForActivityResult(new OpenMultipleDocuments(), this::install);
 
 	public InstallFragment() {
 		super(R.layout.fragment_install);
@@ -175,46 +174,57 @@ public final class InstallFragment extends Fragment {
 
 	private void chooseFile() {
 		try {
-			pickerLauncher.launch(new String[]{APK_MIME_TYPE, ZIP_MIME_TYPE, BINARY_MIME_TYPE});
+			pickerLauncher.launch(new String[]{PickedFile.APK_MIME_TYPE, PickedFile.ZIP_MIME_TYPE,
+					PickedFile.BINARY_MIME_TYPE});
 		} catch (ActivityNotFoundException ignored) { // no-op
 		}
 	}
 
 	private void install(@Nullable Uri uri) {
-		if (uri == null) {
-			return;
-		}
-		final var document = DocumentFile.fromSingleUri(requireContext(), uri);
-		if (document == null) {
-			return;
-		}
-		var name = document.getName();
-		if (name == null) {
-			name = "";
-		}
-		final var apks = getApksFromUri(uri, name);
-		viewModel.installPackage(apks, name);
+		install(uri != null ? List.of(uri) : List.of());
 	}
 
-	@NonNull
-	private SplitPackage.Provider getApksFromUri(@NonNull Uri uri, @NonNull String name) {
+	private void install(@NonNull List<Uri> uris) {
+		if (uris.isEmpty()) {
+			return;
+		}
 		final var context = requireContext();
-		final var extensionIndex = name.lastIndexOf('.') + 1;
-		var fileType = extensionIndex != 0 ? name.substring(extensionIndex) : "";
-		if (fileType.isEmpty()) {
-			fileType = context.getContentResolver().getType(uri);
+		final var signatureFiles = new ArrayList<PickedFile>();
+		final var packageFiles = new ArrayList<PickedFile>();
+		for (final var uri : uris) {
+			final var file = PickedFile.from(uri, context);
+			(file.isV4Signature() ? signatureFiles : packageFiles).add(file);
 		}
-		if (fileType == null) {
-			return SplitPackage.empty();
+		if (packageFiles.isEmpty()) {
+			viewModel.installPackage(SplitPackage.empty(), signatureFiles.get(0).getName());
+			return;
 		}
-		fileType = fileType.toLowerCase();
-		return switch (fileType) {
-			case "apk", APK_MIME_TYPE -> SplitPackage.from(new SingletonApkSequence(uri, context));
-			case "zip", "apks", "xapk", "apkm", ZIP_MIME_TYPE, BINARY_MIME_TYPE -> SplitPackage
-					.from(ApkSplits.validate(ZippedApkSplits.getApksForUri(uri, context)))
+		final var name = packageFiles.get(0).getName();
+		final var pickedSignatures = V4Signatures.fromPickedFiles(packageFiles, signatureFiles);
+		if (packageFiles.size() == 1 && packageFiles.get(0).isArchive()) {
+			final var archiveUri = packageFiles.get(0).getUri();
+			final var splitPackage = SplitPackage
+					.from(ApkSplits.validate(ZippedApkSplits.getApksForUri(archiveUri, context)))
 					.sortedByCompatibility(context);
-			default -> SplitPackage.empty();
-		};
+			// Signatures picked as separate files take precedence over the ones inside the archive.
+			viewModel.installPackage(splitPackage, name, () -> {
+				final var signatures = new HashMap<>(V4Signatures.fromZip(archiveUri, context));
+				signatures.putAll(pickedSignatures);
+				return signatures;
+			});
+			return;
+		}
+		// Everything that's not a lone archive is treated as APKs, so several separately picked splits install as
+		// one package. Files which aren't APKs are skipped when the sequence is iterated.
+		final var apkUris = new ArrayList<Uri>();
+		for (final var file : packageFiles) {
+			apkUris.add(file.getUri());
+		}
+		var splitPackage = SplitPackage.from(new UriApkSequence(apkUris, context));
+		if (packageFiles.size() > 1) {
+			splitPackage = splitPackage.sortedByCompatibility(context);
+		}
+		viewModel.installPackage(splitPackage, name, () -> pickedSignatures);
 	}
 
 	@RequiresApi(Build.VERSION_CODES.M)
