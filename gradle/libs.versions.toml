@@ -1,7 +1,7 @@
 [versions]
 android-plugin = "9.4.1"
 bundletool = "1.18.3"
-dokka = "2.3.0-Beta"
+dokka = "2.3.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
 jacoco = "0.8.15"
@@ -25,8 +25,6 @@ apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
 bundletool = { module = "com.android.tools.build:bundletool", version.ref = "bundletool" }
 dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.6.0"
-dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
-dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
 guava = "com.google.guava:guava:33.4.8-android"
 hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.2"
 hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
