@@ -6,12 +6,32 @@ hide:
 Change Log
 ==========
 
-Next release
-------------
+Version 0.26.0 (2026-11-13)
+---------------------------
+
+### Dependencies
+
+- Updated `apksig` to 9.5.1.
+- Updated `androidx.annotation` to 1.11.0.
+- Updated `Dhizuku-API` to 2.7.0.
+- Updated `HiddenApiBypass` to 6.2.
 
 ### Bug fixes and improvements
 
-- Add version-targeted uninstalls.
+- Add version-targeted uninstalls. See docs for details.
+- Allow supplying raw install and uninstall flags in Shizuku, libsu and Dhizuku plugins. This is a delicate API. See docs for details.
+- Lower minimum SDK for Dhizuku plugin to 23.
+- Fail the session instead of crashing when no system confirmation activity is available (#221).
+- Fix out-of-memory crashes when reading malformed APK manifests in `ackpine-splits` (#222).
+
+### Public API changes
+
+- Added `PackageVersionCode` type and `VersionedUninstallPolicy` enum.
+- Added `packageVersionCode` and `versionedUninstallPolicy` properties to `UninstallParameters` and related APIs.
+- Added `UninstallerCapabilities.packageVersionCode` property.
+- Added `VersionedUninstallNotSupportedException`.
+- Added `UninstallFailure.Unsupported`.
+- Added `installFlags` and `uninstallFlags` properties to privileged and Dhizuku parameters, DSLs and capabilities.
 
 Version 0.25.4 (2026-07-30)
 ---------------------------
