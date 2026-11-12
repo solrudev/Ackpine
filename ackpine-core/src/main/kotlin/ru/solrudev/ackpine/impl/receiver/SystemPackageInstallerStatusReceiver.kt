@@ -62,6 +62,12 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 	abstract fun getAction(context: Context): String
 	open fun modifyConfirmationWrapperIntent(intent: Intent, wrapperIntent: Intent): Intent = wrapperIntent
 
+	/**
+	 * Handles a pending user action before its confirmation intent is read.
+	 * @return `true` to continue with the default confirmation flow, or `false` to stop processing the event.
+	 */
+	protected open fun onUserActionRequired(session: CompletableSession<F>, intent: Intent): Boolean = true
+
 	final override fun onReceive(context: Context, intent: Intent) {
 		if (intent.action != getAction(context)) {
 			return
@@ -121,6 +127,9 @@ internal abstract class SystemPackageInstallerStatusReceiver<F : Failure> protec
 		isPreapproval: Boolean,
 		intent: Intent
 	) {
+		if (!onUserActionRequired(session, intent)) {
+			return
+		}
 		logger.debug(
 			"Pending user action for session %s nativeSessionId=%s preapproval=%s",
 			ackpineSessionId,

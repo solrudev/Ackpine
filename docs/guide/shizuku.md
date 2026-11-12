@@ -181,6 +181,8 @@ Also, you can use Shizuku for uninstall sessions:
             .build();
     ```
 
+Shizuku preserves exact version-targeted uninstalls on API 26 and above (codes exceeding `Int.MAX_VALUE` require API 28). See [versioned uninstalls](configuration.md#versioned-uninstalls) for details.
+
 !!! Note
     Shizuku versions below 11 are not supported, and with these versions operations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer/uninstaller (if was set).
 

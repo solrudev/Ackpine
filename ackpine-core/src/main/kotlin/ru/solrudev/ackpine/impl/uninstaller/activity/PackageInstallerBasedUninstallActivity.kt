@@ -24,6 +24,11 @@ import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.getParcelableCompat
 import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
+import ru.solrudev.ackpine.impl.helpers.isPackageInstalledOrNotVisible
+import ru.solrudev.ackpine.session.Session
+import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 private const val TAG = "PackageInstallerBasedUninstallActivity"
 private const val ACTION_ABORT_IF_PACKAGE_STILL_INSTALLED = 1
@@ -59,6 +64,14 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	override fun launchUninstallActivity() {
+		val packageName = getUninstalledPackageName() ?: return
+		if (!shouldProceedWithUninstall(packageName)) {
+			completeSession(
+				Session.State.Failed(UninstallFailure.Generic("Requested package version is not installed"))
+			)
+			finish()
+			return
+		}
 		logger.info(
 			"Launching uninstall confirmation intent for session %s packageName=%s",
 			ackpineSessionId,
@@ -70,18 +83,32 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	private fun abortIfPackageStillInstalled() {
-		val packageName = getUninstalledPackageName()
-		if (packageName == null) {
-			logger.error("Missing package name for session %s", ackpineSessionId)
-			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
-			finish()
-			return
+		val packageName = getUninstalledPackageName() ?: return
+		val isPackageStillInstalled = if (isExactUnsafeVersionedFallback()) {
+			isPackageInstalledOrNotVisible(packageName)
+		} else {
+			isPackageInstalled(packageName)
 		}
-		if (isPackageInstalled(packageName)) {
+		if (isPackageStillInstalled) {
 			logger.warn("Package installer uninstall appears aborted for session %s", ackpineSessionId)
 			abortSession("Aborted by user")
 		}
 	}
 
-	private fun getUninstalledPackageName() = intent.getStringExtra(EXTRA_PACKAGE_NAME)
+	private fun getUninstalledPackageName(): String? {
+		val packageName = intent.getStringExtra(EXTRA_PACKAGE_NAME)
+		if (packageName == null) {
+			logger.error("Missing package name for session %s", ackpineSessionId)
+			completeSessionExceptionally(IllegalStateException("$TAG: packageName was null."))
+			finish()
+		}
+		return packageName
+	}
+
+	private fun isExactUnsafeVersionedFallback(): Boolean {
+		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, PackageVersionCode.HIGHEST.value)
+		val policy = intent.getIntExtra(EXTRA_VERSIONED_UNINSTALL_POLICY, VersionedUninstallPolicy.STRICT.ordinal)
+		return version != PackageVersionCode.HIGHEST.value
+				&& policy == VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+	}
 }

@@ -28,6 +28,8 @@ public interface IPackageInstaller extends IInterface {
 	IPackageInstallerSession openSession(int sessionId);
 	void uninstall(String packageName, int flags, IntentSender statusReceiver, int userId);
 	void uninstall(String packageName, String callerPackageName, int flags, IntentSender statusReceiver, int userId);
+	void uninstall(VersionedPackage versionedPackage, String callerPackageName, int flags, IntentSender statusReceiver,
+				   int userId);
 	abstract class Stub extends Binder implements IPackageInstaller {
 		public static IPackageInstaller asInterface(IBinder binder) {
 			throw new UnsupportedOperationException();

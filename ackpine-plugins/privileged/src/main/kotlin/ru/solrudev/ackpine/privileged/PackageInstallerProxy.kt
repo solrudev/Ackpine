@@ -23,6 +23,7 @@ import android.content.pm.IPackageInstaller
 import android.content.pm.IPackageInstallerSession
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageInstallerHidden
+import android.content.pm.VersionedPackage
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -109,6 +110,14 @@ public abstract class PackageInstallerProxy protected constructor(
 	final override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) {
 		bind(ackpineSessionId).uninstall(packageName, statusReceiver, ackpineSessionId)
 	}
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
+	final override fun uninstall(
+		versionedPackage: VersionedPackage,
+		statusReceiver: IntentSender,
+		ackpineSessionId: UUID
+	): Unit = bind(ackpineSessionId).uninstall(versionedPackage, statusReceiver, ackpineSessionId)
 
 	private fun unboundServiceAccess(): Nothing = error(
 		"PackageInstallerService must be bound to an Ackpine session before use"
@@ -207,6 +216,32 @@ public abstract class PackageInstallerProxy protected constructor(
 				} catch (e: RemoteException) {
 					e.rethrow()
 				}
+			}
+		}
+
+		@Suppress("CAST_NEVER_SUCCEEDS")
+		@RequiresApi(Build.VERSION_CODES.O)
+		@RequiresPermission(anyOf = [Manifest.permission.REQUEST_DELETE_PACKAGES, Manifest.permission.DELETE_PACKAGES])
+		override fun uninstall(
+			versionedPackage: VersionedPackage,
+			statusReceiver: IntentSender,
+			ackpineSessionId: UUID
+		) {
+			val flags = uninstallParameters[ackpineSessionId]?.toFlags() ?: 0
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				(packageInstaller as PackageInstallerHidden).uninstall(versionedPackage, flags, statusReceiver)
+				return
+			}
+			try {
+				remotePackageInstaller.uninstall(
+					versionedPackage,
+					installerPackageName,
+					flags,
+					statusReceiver,
+					userId
+				)
+			} catch (e: RemoteException) {
+				e.rethrow()
 			}
 		}
 	}

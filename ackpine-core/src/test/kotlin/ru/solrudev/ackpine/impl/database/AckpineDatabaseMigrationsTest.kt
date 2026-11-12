@@ -36,6 +36,38 @@ class AckpineDatabaseMigrationsTest {
 	)
 
 	@Test
+	fun migration16To17PreservesUninstallerTypeAndAddsVersionTable() {
+		migrationTestHelper.createDatabase(TEST_DB_NAME, 16).use { db ->
+			db.execSQL(
+				"""
+				INSERT INTO sessions (id, type, state, confirmation, notification_title, notification_text,
+				                       notification_icon, require_user_action, last_launch_timestamp,
+				                       last_commit_timestamp)
+				VALUES ('uninstall-session', 'UNINSTALL', 'PENDING', 'DEFERRED', X'00', X'00', X'00', 1, 0, 0)
+				""".trimIndent()
+			)
+			db.execSQL(
+				"""
+				INSERT INTO sessions_uninstaller_types (session_id, uninstaller_type)
+				VALUES ('uninstall-session', 'INTENT_BASED')
+				""".trimIndent()
+			)
+		}
+
+		migrationTestHelper.runMigrationsAndValidate(TEST_DB_NAME, 17, true).use { db ->
+			db.query("SELECT session_id, uninstaller_type FROM sessions_uninstaller_types").use { cursor ->
+				assertEquals(1, cursor.count)
+				cursor.moveToFirst()
+				assertEquals("uninstall-session", cursor.getString(0))
+				assertEquals("INTENT_BASED", cursor.getString(1))
+			}
+			db.query("SELECT * FROM sessions_uninstall_versions").use { cursor ->
+				assertEquals(0, cursor.count)
+			}
+		}
+	}
+
+	@Test
 	fun migration4To5RecreatesSessionsTableWithTypeColumn() {
 		migrationTestHelper.createDatabase(TEST_DB_NAME, 4).use { db ->
 			db.execSQL(

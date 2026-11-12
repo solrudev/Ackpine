@@ -21,8 +21,11 @@ import android.os.Bundle
 import androidx.annotation.RestrictTo
 import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
+import ru.solrudev.ackpine.impl.helpers.isPackageVersionInstalledOrNotVisible
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 private const val WAS_ON_TOP_ON_STOP_KEY = "WAS_ON_TOP_ON_STOP"
 
@@ -76,12 +79,27 @@ internal abstract class UninstallActivity protected constructor(
 		processResult(resultCode)
 	}
 
+	protected fun shouldProceedWithUninstall(packageName: String): Boolean {
+		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, PackageVersionCode.HIGHEST.value)
+		val policy = intent.getIntExtra(EXTRA_VERSIONED_UNINSTALL_POLICY, VersionedUninstallPolicy.STRICT.ordinal)
+		return version == PackageVersionCode.HIGHEST.value
+				|| policy != VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+				|| isPackageVersionInstalledOrNotVisible(packageName, version)
+	}
+
 	protected abstract fun processResult(resultCode: Int)
 	protected abstract fun launchUninstallActivity()
 
 	@RestrictTo(RestrictTo.Scope.LIBRARY)
 	internal companion object {
+
 		@JvmSynthetic
 		internal const val EXTRA_PACKAGE_NAME = "ru.solrudev.ackpine.extra.PACKAGE_NAME"
+
+		@JvmSynthetic
+		internal const val EXTRA_PACKAGE_VERSION_CODE = "ru.solrudev.ackpine.extra.PACKAGE_VERSION_CODE"
+
+		@JvmSynthetic
+		internal const val EXTRA_VERSIONED_UNINSTALL_POLICY = "ru.solrudev.ackpine.extra.VERSIONED_UNINSTALL_POLICY"
 	}
 }

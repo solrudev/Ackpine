@@ -51,6 +51,13 @@ internal class IntentBasedUninstallActivity : UninstallActivity(TAG) {
 	@Suppress("DEPRECATION")
 	override fun launchUninstallActivity() {
 		val packageName = getPackageNameToUninstall() ?: return
+		if (!shouldProceedWithUninstall(packageName)) {
+			completeSession(
+				Session.State.Failed(UninstallFailure.Generic("Requested package version is not installed"))
+			)
+			finish()
+			return
+		}
 		logger.info("Launching intent-based uninstall UI for session %s packageName=%s", ackpineSessionId, packageName)
 		val intent = Intent(Intent.ACTION_UNINSTALL_PACKAGE)
 			.setData(Uri.parse("package:$packageName"))

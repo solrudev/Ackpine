@@ -25,8 +25,10 @@ import androidx.room.Transaction
 import ru.solrudev.ackpine.impl.database.AckpineDatabase
 import ru.solrudev.ackpine.impl.database.model.PluginEntity
 import ru.solrudev.ackpine.impl.database.model.SessionEntity
+import ru.solrudev.ackpine.impl.database.model.UninstallVersionEntity
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Dao
@@ -47,6 +49,15 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 		database.sessionDao().insertSession(session.session)
 		insertPackageName(session.session.id, session.packageName)
 		insertUninstallerType(session.session.id, session.uninstallerType)
+		session.packageVersionCode?.let { versionCode ->
+			insertUninstallVersion(
+				UninstallVersionEntity(
+					session.session.id,
+					versionCode,
+					session.versionedUninstallPolicy ?: VersionedUninstallPolicy.STRICT
+				)
+			)
+		}
 		insertPlugins(session.plugins)
 		database.notificationIdDao().initNotificationId(session.session.id, session.notificationId!!)
 	}
@@ -61,6 +72,9 @@ internal abstract class UninstallSessionDao protected constructor(private val da
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstaller_types(session_id, uninstaller_type) VALUES (:id, :uninstallerType)")
 	protected abstract fun insertUninstallerType(id: String, uninstallerType: UninstallerType)
+
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
+	protected abstract fun insertUninstallVersion(version: UninstallVersionEntity)
 
 	@Query("INSERT OR IGNORE INTO sessions_uninstall_failures(session_id, failure) VALUES (:id, :failure)")
 	protected abstract fun insertUninstallFailure(id: String, failure: UninstallFailure)

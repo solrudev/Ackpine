@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.exceptions.VersionedUninstallNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -36,12 +37,48 @@ public interface UninstallParametersDsl : ConfirmationDsl {
 	public var packageName: String
 
 	/**
+	 * Version targeted by the uninstall session.
+	 *
+	 * Default value is [PackageVersionCode.HIGHEST].
+	 *
+	 * Assignment selects [VersionedUninstallPolicy.STRICT]. Use [packageVersionCode] with an explicit policy to
+	 * permit [name-only fallback][VersionedUninstallPolicy.ALLOW_NAME_ONLY].
+	 *
+	 * @throws VersionedUninstallNotSupportedException if an exact target cannot be represented on the current API.
+	 */
+	public var packageVersionCode: PackageVersionCode
+
+	/**
+	 * Policy configured together with the version through [packageVersionCode].
+	 *
+	 * Default value is [VersionedUninstallPolicy.STRICT].
+	 */
+	public val versionedUninstallPolicy: VersionedUninstallPolicy
+
+	/**
+	 * Configures the version and [policy] atomically. Omitting [policy] selects [VersionedUninstallPolicy.STRICT].
+	 * @param packageVersionCode the version to target, or [PackageVersionCode.HIGHEST] for name-only behavior.
+	 * @param policy whether a name-only fallback is acceptable when exact targeting is unavailable.
+	 * @throws VersionedUninstallNotSupportedException if [policy] is [VersionedUninstallPolicy.STRICT] and an exact
+	 * target is requested on API level < 26, or its code exceeds [Int.MAX_VALUE] on API levels 26–27.
+	 * Configuration remains unchanged when validation fails.
+	 */
+	public fun packageVersionCode(
+		packageVersionCode: PackageVersionCode,
+		policy: VersionedUninstallPolicy = VersionedUninstallPolicy.STRICT
+	)
+
+	/**
 	 * Type of the package uninstaller implementation.
 	 *
 	 * Default value is [UninstallerType.DEFAULT].
 	 *
-	 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
-	 * returned/set regardless of the current/provided value.
+	 * When getting/setting the value of this property, the following invariants are maintained:
+	 * * When on API level < 21, [UninstallerType.INTENT_BASED] is always returned/set regardless of the
+	 * current/provided value;
+	 * * When on API level >= 26 and [packageVersionCode] targets an exact version representable on the current
+	 * API level, [UninstallerType.PACKAGE_INSTALLER_BASED] is always returned/set regardless of the
+	 * current/provided value. On API levels 26–27, the code must not exceed [Int.MAX_VALUE].
 	 */
 	public var uninstallerType: UninstallerType
 
@@ -91,11 +128,24 @@ internal class UninstallParametersDslBuilder(packageName: String) : UninstallPar
 			builder.setUninstallerType(value)
 		}
 
+	override var packageVersionCode: PackageVersionCode
+		get() = builder.packageVersionCode
+		set(value) {
+			builder.setPackageVersionCode(value)
+		}
+
+	override val versionedUninstallPolicy: VersionedUninstallPolicy
+		get() = builder.versionedUninstallPolicy
+
 	override fun <Params : AckpinePlugin.Parameters> plugin(
 		plugin: KClass<out AckpineUninstallPlugin<Params>>,
 		parameters: Params
 	) {
 		builder.registerPlugin(plugin.java, parameters)
+	}
+
+	override fun packageVersionCode(packageVersionCode: PackageVersionCode, policy: VersionedUninstallPolicy) {
+		builder.setPackageVersionCode(packageVersionCode, policy)
 	}
 
 	override fun plugin(plugin: KClass<out AckpineUninstallPlugin<AckpinePlugin.Parameters.None>>) {

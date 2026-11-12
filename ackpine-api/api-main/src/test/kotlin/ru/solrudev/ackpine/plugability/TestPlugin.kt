@@ -96,6 +96,9 @@ class TestUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.Parameters.None
 	override val id = "test-uninstall-plugin"
 }
 
+/**
+ * Flips the backend type and registers [IntentBasedBackendObserverPlugin].
+ */
 class BackendFlipperPlugin :
 	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
 	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {
@@ -189,6 +192,9 @@ class CapabilityRegistrarUninstallPlugin : AckpineUninstallPlugin<AckpinePlugin.
 	}
 }
 
+/**
+ * Registers [TestParameterlessPlugin] if the selected effective backend is intent-based.
+ */
 class IntentBasedBackendObserverPlugin :
 	AckpineInstallPlugin<AckpinePlugin.Parameters.None>,
 	AckpineUninstallPlugin<AckpinePlugin.Parameters.None> {

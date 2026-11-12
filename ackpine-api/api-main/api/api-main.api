@@ -65,6 +65,7 @@ public abstract interface class ru/solrudev/ackpine/capabilities/UninstallCapabi
 
 public final class ru/solrudev/ackpine/capabilities/UninstallerCapabilities {
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getPackageVersionCode ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
 	public fun hashCode ()I
 	public final fun plugin (Ljava/lang/Class;)Lru/solrudev/ackpine/capabilities/PluginCapability;
@@ -73,6 +74,12 @@ public final class ru/solrudev/ackpine/capabilities/UninstallerCapabilities {
 
 public final class ru/solrudev/ackpine/exceptions/SplitPackagesNotSupportedException : java/lang/IllegalStateException {
 	public fun <init> ()V
+}
+
+public final class ru/solrudev/ackpine/exceptions/VersionedUninstallNotSupportedException : java/lang/IllegalStateException {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
 }
 
 public abstract class ru/solrudev/ackpine/installer/InstallFailure : java/io/Serializable, ru/solrudev/ackpine/session/Failure {
@@ -786,14 +793,43 @@ public final class ru/solrudev/ackpine/uninstaller/UninstallFailure$Generic : ru
 	public fun toString ()Ljava/lang/String;
 }
 
+public final class ru/solrudev/ackpine/uninstaller/UninstallFailure$Unsupported : ru/solrudev/ackpine/uninstaller/UninstallFailure {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;)Lru/solrudev/ackpine/uninstaller/UninstallFailure$Unsupported;
+	public static synthetic fun copy$default (Lru/solrudev/ackpine/uninstaller/UninstallFailure$Unsupported;Ljava/lang/String;ILjava/lang/Object;)Lru/solrudev/ackpine/uninstaller/UninstallFailure$Unsupported;
+	public fun equals (Ljava/lang/Object;)Z
+	public fun getMessage ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode : java/io/Serializable {
+	public static final field Companion Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode$Companion;
+	public static final field HIGHEST Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;
+	public fun <init> (I)V
+	public fun <init> (J)V
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()J
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class ru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode$Companion {
+}
+
 public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParameters : ru/solrudev/ackpine/session/parameters/ConfirmationAware {
-	public synthetic fun <init> (Ljava/lang/String;Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Lru/solrudev/ackpine/plugability/AckpinePluginContainer;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (Ljava/lang/String;Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;Lru/solrudev/ackpine/session/parameters/Confirmation;Lru/solrudev/ackpine/session/parameters/NotificationData;Lru/solrudev/ackpine/plugability/AckpinePluginContainer;Lkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
 	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getPackageVersionCode ()Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;
 	public final fun getPluginContainer ()Lru/solrudev/ackpine/plugability/AckpinePluginContainer;
 	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
+	public final fun getVersionedUninstallPolicy ()Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -804,12 +840,17 @@ public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallParameter
 	public fun getConfirmation ()Lru/solrudev/ackpine/session/parameters/Confirmation;
 	public fun getNotificationData ()Lru/solrudev/ackpine/session/parameters/NotificationData;
 	public final fun getPackageName ()Ljava/lang/String;
+	public final fun getPackageVersionCode ()Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;
 	public final fun getUninstallerType ()Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;
+	public final fun getVersionedUninstallPolicy ()Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
 	public final fun registerPlugin (Ljava/lang/Class;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun registerPlugin (Ljava/lang/Class;Lru/solrudev/ackpine/plugability/AckpinePlugin$Parameters;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setConfirmation (Lru/solrudev/ackpine/session/parameters/Confirmation;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setNotificationData (Lru/solrudev/ackpine/session/parameters/NotificationData;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setPackageName (Ljava/lang/String;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
+	public final fun setPackageVersionCode (Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
+	public final fun setPackageVersionCode (Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
+	public static synthetic fun setPackageVersionCode$default (Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;Lru/solrudev/ackpine/uninstaller/parameters/PackageVersionCode;Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;ILjava/lang/Object;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 	public final fun setUninstallerType (Lru/solrudev/ackpine/uninstaller/parameters/UninstallerType;)Lru/solrudev/ackpine/uninstaller/parameters/UninstallParameters$Builder;
 }
 
@@ -824,5 +865,13 @@ public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallerType : 
 }
 
 public final class ru/solrudev/ackpine/uninstaller/parameters/UninstallerType$Companion {
+}
+
+public final class ru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy : java/lang/Enum {
+	public static final field ALLOW_NAME_ONLY Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
+	public static final field STRICT Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
+	public static fun values ()[Lru/solrudev/ackpine/uninstaller/parameters/VersionedUninstallPolicy;
 }
 

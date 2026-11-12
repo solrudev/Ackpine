@@ -28,6 +28,7 @@ import ru.solrudev.ackpine.resources.ResolvableString
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.DrawableId
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
 @Entity(tableName = "sessions")
@@ -225,7 +226,23 @@ internal class SessionEntity internal constructor(
 			parentColumn = "id",
 			entityColumn = "session_id"
 		)
-		override val plugins: List<PluginEntity>
+		override val plugins: List<PluginEntity>,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = UninstallVersionEntity::class,
+			projection = ["package_version_code"]
+		)
+		val packageVersionCode: Long? = null,
+		@JvmField
+		@Relation(
+			parentColumn = "id",
+			entityColumn = "session_id",
+			entity = UninstallVersionEntity::class,
+			projection = ["versioned_uninstall_policy"]
+		)
+		val versionedUninstallPolicy: VersionedUninstallPolicy? = null
 	) : HasSession, HasPlugins
 }
 

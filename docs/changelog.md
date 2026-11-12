@@ -6,6 +6,13 @@ hide:
 Change Log
 ==========
 
+Next release
+------------
+
+### Bug fixes and improvements
+
+- Add version-targeted uninstalls.
+
 Version 0.25.4 (2026-07-30)
 ---------------------------
 

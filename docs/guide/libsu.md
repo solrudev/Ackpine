@@ -153,6 +153,7 @@ Also, you can use libsu for uninstall sessions:
             .build();
     ```
 
+libsu preserves exact version-targeted uninstalls on API 26 and above (codes exceeding `Int.MAX_VALUE` require API 28). See [versioned uninstalls](configuration.md#versioned-uninstalls) for details.
 
 !!! Note
     Plugin obtains root shell by a call to `Shell.getShell()` on first root operation. You should keep this in mind when working with `libsu` if you are constructing `Shell` yourself.

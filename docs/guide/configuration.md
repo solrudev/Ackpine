@@ -161,22 +161,23 @@ An example of creating a session with custom parameters:
 API level compatibility
 -----------------------
 
-Most configuration options are applied on a best-effort basis — options unavailable on the device's API level are silently ignored. The table below summarizes minimum API levels for each feature.
+Most configuration options are applied on a best-effort basis — options unavailable on the device's API level are silently ignored. Requests that cannot preserve their target, such as split APK installation or strict version-targeted uninstall, are rejected on unsupported Android versions. The table below summarizes minimum API levels for each feature.
 
-| Feature                                   | Min API | Fallback on lower API                                      |
-|-------------------------------------------|---------|------------------------------------------------------------|
-| `SESSION_BASED` installer                 | 21      | `INTENT_BASED` is used                                     |
-| Split APK installation                    | 21      | Not supported, throws `SplitPackagesNotSupportedException` |
-| `PACKAGE_INSTALLER_BASED` uninstaller     | 21      | `INTENT_BASED` is used                                     |
-| `requireUserAction`                       | 31      | Ignored                                                    |
-| `PackageSource`                           | 33      | Ignored                                                    |
-| `InstallMode.InheritExisting.dontKillApp` | 34      | Ignored                                                    |
-| `requestUpdateOwnership`                  | 34      | Ignored                                                    |
-| Install preapproval                       | 34      | Ignored                                                    |
-| Install constraints                       | 34      | Ignored                                                    |
-| Shizuku plugin                            | 24      | N/A (requires `ackpine-shizuku` dependency)                |
-| libsu plugin                              | 21      | N/A (requires `ackpine-libsu` dependency)                  |
-| Dhizuku plugin                            | 26      | N/A (requires `ackpine-dhizuku` dependency)                |
+| Feature                                   | Min API | Fallback on lower API                                                |
+|-------------------------------------------|---------|----------------------------------------------------------------------|
+| `SESSION_BASED` installer                 | 21      | `INTENT_BASED` is used                                               |
+| Split APK installation                    | 21      | Not supported, throws `SplitPackagesNotSupportedException`           |
+| `PACKAGE_INSTALLER_BASED` uninstaller     | 21      | `INTENT_BASED` is used                                               |
+| Exact version-targeted uninstall          | 26      | Strict requests are rejected; policy configuration permits name-only |
+| `requireUserAction`                       | 31      | Ignored                                                              |
+| `PackageSource`                           | 33      | Ignored                                                              |
+| `InstallMode.InheritExisting.dontKillApp` | 34      | Ignored                                                              |
+| `requestUpdateOwnership`                  | 34      | Ignored                                                              |
+| Install preapproval                       | 34      | Ignored                                                              |
+| Install constraints                       | 34      | Ignored                                                              |
+| Shizuku plugin                            | 24      | N/A (requires `ackpine-shizuku` dependency)                          |
+| libsu plugin                              | 21      | N/A (requires `ackpine-libsu` dependency)                            |
+| Dhizuku plugin                            | 26      | N/A (requires `ackpine-dhizuku` dependency)                          |
 
 User's confirmation
 -------------------
@@ -264,9 +265,52 @@ By default, the value of installer type on API level < 21 is `INTENT_BASED`, and
 Uninstaller type
 --------------
 
-Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` action. They're configured with `UninstallerType` enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
+Available for uninstall sessions. Ackpine supports two different package uninstaller implementations: Android's `PackageInstaller` and an intent with `ACTION_UNINSTALL_PACKAGE` action. They're configured with [`UninstallerType`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-uninstaller-type/index.html) enum with entries `PACKAGE_INSTALLER_BASED` and `INTENT_BASED` respectively.
+
+`UninstallParameters` builder will maintain the following invariants when configuring the uninstaller type:
+
+- When on API level < 21, `INTENT_BASED` is always set regardless of the provided value;
+- When on API level 26+ and `packageVersionCode` specifies an exact version supported on that API level, `PACKAGE_INSTALLER_BASED` is always set regardless of the provided value.
 
 By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level 21+ it is `PACKAGE_INSTALLER_BASED`.
+
+Versioned uninstalls
+--------------------
+
+Available for uninstall sessions. Specifies the version of the app to uninstall. Configured with [`PackageVersionCode`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-package-version-code/index.html). By default, `PackageVersionCode.HIGHEST` is used, allowing any installed version of the app to be uninstalled.
+
+Exact version targeting is available with `PACKAGE_INSTALLER_BASED` uninstaller on API level 26+. Version codes exceeding `Int.MAX_VALUE` require API level 28+. `PackageVersionCode(Int)` can be used on any supported API level; `Long` is accepted on API level 28+.
+
+[`VersionedUninstallPolicy`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-versioned-uninstall-policy/index.html) determines how to proceed when an exact version cannot be enforced for uninstallation. It can be `STRICT` (used by default) or `ALLOW_NAME_ONLY`.
+
+- `STRICT` (default) — requires exact version targeting. Configuring a version unsupported by the device's API level throws `VersionedUninstallNotSupportedException`. Backend limitations discovered during execution fail the session with `UninstallFailure.Unsupported`.
+
+- `ALLOW_NAME_ONLY` — allows uninstallation by package name when exact version targeting is unavailable. Exact targeting is preferred whenever supported.
+
+!!! Note
+    Android's user-confirmation path can discard the version constraint. In this case, `STRICT` sessions fail with `UninstallFailure.Unsupported` before showing confirmation. With `ALLOW_NAME_ONLY`, a different version may be removed if the app is updated while confirmation is visible.
+
+=== "Kotlin"
+
+    ```kotlin
+    val parameters = UninstallParameters("com.example.app") {
+        packageVersionCode(
+            PackageVersionCode(42),
+            VersionedUninstallPolicy.ALLOW_NAME_ONLY // optional
+        )
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    var parameters = new UninstallParameters.Builder("com.example.app")
+            .setPackageVersionCode(new PackageVersionCode(42),
+                                   VersionedUninstallPolicy.ALLOW_NAME_ONLY) // optional
+            .build();
+    ```
+
+If Ackpine can verify that the requested version is absent or has been replaced before opening fallback confirmation, the session fails with `UninstallFailure.Generic`.
 
 Install mode
 ------------
@@ -383,7 +427,12 @@ Each capability field is reported as a [`CapabilityStatus`](../api/ackpine-api/a
 | `packageSource`          | Whether setting the package source is available (`SUPPORTED` on API 33+ with `SESSION_BASED` only)                |
 | `dontKillApp`            | Whether `InstallMode.InheritExisting.dontKillApp` is available (`SUPPORTED` on API 34+ with `SESSION_BASED` only) |
 
-`PackageUninstaller.getCapabilities()` returns [`UninstallerCapabilities`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstaller-capabilities/index.html) with a `uninstallerType` field.
+`PackageUninstaller.getCapabilities()` returns [`UninstallerCapabilities`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstaller-capabilities/index.html):
+
+| Field                | Description                                                                                               |
+|----------------------|-----------------------------------------------------------------------------------------------------------|
+| `uninstallerType`    | Effective backend after normalization and plugin resolution                                               |
+| `packageVersionCode` | Whether exact version targeting is available (`SUPPORTED` on API 26+ with `PACKAGE_INSTALLER_BASED` only) |
 
 === "Kotlin"
 
@@ -429,3 +478,5 @@ Plugins that implement [`InstallCapabilityProvider`](../api/ackpine-api/api-main
 
 !!! Note
     Install capabilities are not split-aware. The split-install invariant that forces `SESSION_BASED` is enforced at session creation time and is not reflected in `getCapabilities()` results.
+
+    Uninstall capability queries do not take a version code. To reflect the builder's backend selection, query the built parameters' `uninstallerType`. Version codes exceeding `Int.MAX_VALUE` require API 28.

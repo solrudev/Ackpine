@@ -38,6 +38,18 @@ public sealed class UninstallFailure(public open val message: String?) : Failure
 	}
 
 	/**
+	 * The operation failed because it is not supported.
+	 * For example, the requested exact version cannot be safely preserved during execution.
+	 */
+	public data class Unsupported @JvmOverloads public constructor(
+		public override val message: String? = null
+	) : UninstallFailure(message) {
+		private companion object {
+			private const val serialVersionUID: Long = 214483912034318994L
+		}
+	}
+
+	/**
 	 * The operation failed because it was actively aborted.
 	 * For example, the user actively declined uninstall request.
 	 */
