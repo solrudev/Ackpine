@@ -76,7 +76,7 @@ if (!Dhizuku.isPermissionGranted()) {
 }
 ```
 
-The plugin supports Android 8.0 (API 26) and newer.
+The plugin supports Android 6.0 (API 23) and newer.
 
 Using the plugin
 ----------------

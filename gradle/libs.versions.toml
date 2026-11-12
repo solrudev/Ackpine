@@ -24,7 +24,7 @@ plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
 bundletool = { module = "com.android.tools.build:bundletool", version.ref = "bundletool" }
-dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.6.0"
+dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.7.0"
 guava = "com.google.guava:guava:33.4.8-android"
 hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.2"
 hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
