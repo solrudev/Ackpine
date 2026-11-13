@@ -41,7 +41,7 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import kotlin.test.Test
@@ -96,7 +96,7 @@ class IntentBasedUninstallSessionTest {
 		val session = createSession(
 			id = UUID.randomUUID(),
 			confirmation = Confirmation.IMMEDIATE,
-			packageVersionCode = PackageVersionCode(42)
+			uninstallVersion = UninstallVersion(42)
 		)
 		assertTrue(session.commit())
 		assertTrue(session.isCompleted)
@@ -109,8 +109,7 @@ class IntentBasedUninstallSessionTest {
 		val session = createSession(
 			id = UUID.randomUUID(),
 			confirmation = Confirmation.IMMEDIATE,
-			packageVersionCode = PackageVersionCode(42),
-			policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY
+			uninstallVersion = UninstallVersion(42, VersionedUninstallPolicy.ALLOW_NAME_ONLY)
 		)
 		assertTrue(session.commit())
 		val started = assertNotNull(Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity)
@@ -124,16 +123,14 @@ class IntentBasedUninstallSessionTest {
 	private fun createSession(
 		id: UUID,
 		confirmation: Confirmation,
-		packageVersionCode: PackageVersionCode = PackageVersionCode.HIGHEST,
-		policy: VersionedUninstallPolicy = VersionedUninstallPolicy.STRICT,
+		uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST,
 		initialState: Session.State<UninstallFailure> = Session.State.Awaiting,
 		logger: RecordingAckpineLogger? = null
 	) = IntentBasedUninstallSession(
 		loggerProvider = AckpineLoggerProvider("IntentBasedUninstallSession") { logger },
 		context = context,
 		packageName = "com.example.app",
-		packageVersionCode = packageVersionCode,
-		versionedUninstallPolicy = policy,
+		uninstallVersion = uninstallVersion,
 		id = id,
 		initialState = initialState,
 		confirmation = confirmation,

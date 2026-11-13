@@ -45,8 +45,7 @@ class UninstallParametersBuilderTest {
 		assertEquals(UninstallerType.DEFAULT, parameters.uninstallerType)
 		assertEquals(Confirmation.DEFERRED, parameters.confirmation)
 		assertEquals(NotificationData.DEFAULT, parameters.notificationData)
-		assertEquals(PackageVersionCode.HIGHEST, parameters.packageVersionCode)
-		assertEquals(VersionedUninstallPolicy.STRICT, parameters.versionedUninstallPolicy)
+		assertEquals(UninstallVersion.HIGHEST, parameters.uninstallVersion)
 	}
 
 	@Test
@@ -78,7 +77,7 @@ class UninstallParametersBuilderTest {
 		SdkInt.set(26)
 		val builder = UninstallParameters.Builder("com.example")
 			.setUninstallerType(UninstallerType.INTENT_BASED)
-			.setPackageVersionCode(PackageVersionCode(42))
+			.setUninstallVersion(UninstallVersion(42))
 		assertEquals(UninstallerType.PACKAGE_INSTALLER_BASED, builder.uninstallerType)
 		builder.setUninstallerType(UninstallerType.INTENT_BASED)
 		assertEquals(UninstallerType.PACKAGE_INSTALLER_BASED, builder.uninstallerType)
@@ -89,10 +88,10 @@ class UninstallParametersBuilderTest {
 		SdkInt.set(25)
 		val builder = UninstallParameters.Builder("com.example")
 			.setUninstallerType(UninstallerType.INTENT_BASED)
-			.setPackageVersionCode(PackageVersionCode(42), VersionedUninstallPolicy.ALLOW_NAME_ONLY)
+			.setUninstallVersion(UninstallVersion(42, VersionedUninstallPolicy.ALLOW_NAME_ONLY))
 		val initial = builder.build()
 		assertFailsWith<VersionedUninstallNotSupportedException> {
-			builder.setPackageVersionCode(PackageVersionCode(43), VersionedUninstallPolicy.STRICT)
+			builder.setUninstallVersion(UninstallVersion(43, VersionedUninstallPolicy.STRICT))
 		}
 		assertEquals(initial, builder.build())
 	}
@@ -101,13 +100,10 @@ class UninstallParametersBuilderTest {
 	fun strictVersionCodeAboveIntMaxIsRejectedBelowApi28() {
 		SdkInt.set(27)
 		val builder = UninstallParameters.Builder("com.example")
-			.setPackageVersionCode(PackageVersionCode(42), VersionedUninstallPolicy.STRICT)
+			.setUninstallVersion(UninstallVersion(42, VersionedUninstallPolicy.STRICT))
 		val initial = builder.build()
 		assertFailsWith<VersionedUninstallNotSupportedException> {
-			builder.setPackageVersionCode(
-				PackageVersionCode(Int.MAX_VALUE.toLong() + 1),
-				VersionedUninstallPolicy.STRICT
-			)
+			builder.setUninstallVersion(UninstallVersion(Int.MAX_VALUE.toLong() + 1, VersionedUninstallPolicy.STRICT))
 		}
 		assertEquals(initial, builder.build())
 	}
@@ -116,26 +112,17 @@ class UninstallParametersBuilderTest {
 	fun api28AcceptsLongMaxVersionCode() {
 		SdkInt.set(28)
 		val parameters = UninstallParameters.Builder("com.example")
-			.setPackageVersionCode(PackageVersionCode(Long.MAX_VALUE), VersionedUninstallPolicy.STRICT)
+			.setUninstallVersion(UninstallVersion(Long.MAX_VALUE, VersionedUninstallPolicy.STRICT))
 			.build()
-		assertEquals(Long.MAX_VALUE, parameters.packageVersionCode.value)
-	}
-
-	@Test
-	fun omittingVersionedUninstallPolicyResetsToStrict() {
-		SdkInt.set(26)
-		val builder = UninstallParameters.Builder("com.example")
-			.setPackageVersionCode(PackageVersionCode(42), VersionedUninstallPolicy.ALLOW_NAME_ONLY)
-		builder.setPackageVersionCode(PackageVersionCode(43))
-		assertEquals(VersionedUninstallPolicy.STRICT, builder.versionedUninstallPolicy)
+		assertEquals(Long.MAX_VALUE, parameters.uninstallVersion.code)
 	}
 
 	@Test
 	fun highestVersionCodeRespectsManualUninstallerTypeSelection() {
 		SdkInt.set(26)
 		val builder = UninstallParameters.Builder("com.example")
-			.setPackageVersionCode(PackageVersionCode(42), VersionedUninstallPolicy.STRICT)
-			.setPackageVersionCode(PackageVersionCode.HIGHEST, VersionedUninstallPolicy.STRICT)
+			.setUninstallVersion(UninstallVersion(42, VersionedUninstallPolicy.STRICT))
+			.setUninstallVersion(UninstallVersion.HIGHEST)
 			.setUninstallerType(UninstallerType.INTENT_BASED)
 		assertEquals(UninstallerType.INTENT_BASED, builder.uninstallerType)
 		builder.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
@@ -146,7 +133,7 @@ class UninstallParametersBuilderTest {
 	fun pluginsCannotOverrideExactVersionInvariant() {
 		SdkInt.set(26)
 		val builder = UninstallParameters.Builder("com.example")
-			.setPackageVersionCode(PackageVersionCode(42))
+			.setUninstallVersion(UninstallVersion(42))
 			.setUninstallerType(UninstallerType.PACKAGE_INSTALLER_BASED)
 			.registerPlugin(BackendFlipperPlugin::class.java)
 		val parameters = builder.build()

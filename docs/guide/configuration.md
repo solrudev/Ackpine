@@ -270,18 +270,18 @@ Available for uninstall sessions. Ackpine supports two different package uninsta
 `UninstallParameters` builder will maintain the following invariants when configuring the uninstaller type:
 
 - When on API level < 21, `INTENT_BASED` is always set regardless of the provided value;
-- When on API level 26+ and `packageVersionCode` specifies an exact version supported on that API level, `PACKAGE_INSTALLER_BASED` is always set regardless of the provided value.
+- When on API level 26+ and `uninstallVersion` specifies an exact version supported on that API level, `PACKAGE_INSTALLER_BASED` is always set regardless of the provided value.
 
 By default, the value of uninstaller type on API level < 21 is `INTENT_BASED`, and on API level 21+ it is `PACKAGE_INSTALLER_BASED`.
 
 Versioned uninstalls
 --------------------
 
-Available for uninstall sessions. Specifies the version of the app to uninstall. Configured with [`PackageVersionCode`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-package-version-code/index.html). By default, `PackageVersionCode.HIGHEST` is used, allowing any installed version of the app to be uninstalled.
+Available for uninstall sessions. Specifies the version of the app to uninstall. Configured with [`UninstallVersion`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-uninstall-version/index.html). By default, `UninstallVersion.HIGHEST` is used, uninstalling by package name and targeting the highest installed version. Use `UninstallVersion(code, policy)` to request a specific version and configure its fallback policy together.
 
-Exact version targeting is available with `PACKAGE_INSTALLER_BASED` uninstaller on API level 26+. Version codes exceeding `Int.MAX_VALUE` require API level 28+. `PackageVersionCode(Int)` can be used on any supported API level; `Long` is accepted on API level 28+.
+Exact version targeting is available with `PACKAGE_INSTALLER_BASED` uninstaller on API level 26+. Version codes exceeding `Int.MAX_VALUE` require API level 28+. `UninstallVersion(Int)` is available on any supported API level; the `Long` constructor requires API level 28+. Codes must be non-negative; use `UninstallVersion.HIGHEST` instead of a sentinel value. Platform support is checked when assigning the target to the builder or DSL.
 
-[`VersionedUninstallPolicy`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-versioned-uninstall-policy/index.html) determines how to proceed when an exact version cannot be enforced for uninstallation. It can be `STRICT` (used by default) or `ALLOW_NAME_ONLY`.
+[`VersionedUninstallPolicy`](../api/ackpine-api/api-main/ru.solrudev.ackpine.uninstaller.parameters/-versioned-uninstall-policy/index.html) determines how to proceed when an exact version cannot be enforced for uninstallation. It is carried by `UninstallVersion` and can be `STRICT` (used by default) or `ALLOW_NAME_ONLY`. The policy has no effect for `UninstallVersion.HIGHEST`.
 
 - `STRICT` (default) — requires exact version targeting. Configuring a version unsupported by the device's API level throws `VersionedUninstallNotSupportedException`. Backend limitations discovered during execution fail the session with `UninstallFailure.Unsupported`.
 
@@ -294,9 +294,9 @@ Exact version targeting is available with `PACKAGE_INSTALLER_BASED` uninstaller 
 
     ```kotlin
     val parameters = UninstallParameters("com.example.app") {
-        packageVersionCode(
-            PackageVersionCode(42),
-            VersionedUninstallPolicy.ALLOW_NAME_ONLY // optional
+        uninstallVersion = UninstallVersion(
+            code = 42,
+            policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY // optional; defaults to STRICT
         )
     }
     ```
@@ -305,8 +305,8 @@ Exact version targeting is available with `PACKAGE_INSTALLER_BASED` uninstaller 
 
     ```java
     var parameters = new UninstallParameters.Builder("com.example.app")
-            .setPackageVersionCode(new PackageVersionCode(42),
-                                   VersionedUninstallPolicy.ALLOW_NAME_ONLY) // optional
+            .setUninstallVersion(new UninstallVersion(42,
+                                 VersionedUninstallPolicy.ALLOW_NAME_ONLY)) // policy is optional; defaults to STRICT
             .build();
     ```
 

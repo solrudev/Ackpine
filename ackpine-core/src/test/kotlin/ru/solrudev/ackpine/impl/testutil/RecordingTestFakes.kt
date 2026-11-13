@@ -31,7 +31,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.session.Progress
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.util.UUID
@@ -254,11 +254,11 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 			versionedPackage.packageName,
 			statusReceiver,
 			ackpineSessionId,
-			packageVersionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-				PackageVersionCode(versionedPackage.longVersionCode)
+			uninstallVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				UninstallVersion(versionedPackage.longVersionCode)
 			} else {
 				@Suppress("DEPRECATION")
-				PackageVersionCode(versionedPackage.versionCode)
+				UninstallVersion(versionedPackage.versionCode)
 			}
 		)
 	}
@@ -274,7 +274,7 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 		val packageName: String,
 		val statusReceiver: IntentSender,
 		val ackpineSessionId: UUID,
-		val packageVersionCode: PackageVersionCode = PackageVersionCode.HIGHEST
+		val uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST
 	)
 
 	class RecordingSession : PackageInstallerService.Session {

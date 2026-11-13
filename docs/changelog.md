@@ -26,8 +26,8 @@ Version 0.26.0 (2026-11-13)
 
 ### Public API changes
 
-- Added `PackageVersionCode` type and `VersionedUninstallPolicy` enum.
-- Added `packageVersionCode` and `versionedUninstallPolicy` properties to `UninstallParameters` and related APIs.
+- Added `UninstallVersion` type.
+- Added `uninstallVersion` property to `UninstallParameters`, `UninstallParametersBuilder`, and `UninstallParametersDsl`.
 - Added `UninstallerCapabilities.packageVersionCode` property.
 - Added `VersionedUninstallNotSupportedException`.
 - Added `UninstallFailure.Unsupported`.

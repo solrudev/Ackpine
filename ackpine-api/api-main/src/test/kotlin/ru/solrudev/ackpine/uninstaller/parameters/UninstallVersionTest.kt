@@ -17,19 +17,15 @@
 package ru.solrudev.ackpine.uninstaller.parameters
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class PackageVersionCodeTest {
+class UninstallVersionTest {
 
 	@Test
-	fun versionCodeConstructorsPreserveValuesAndValidation() {
-		for (value in listOf(-1, 0, Int.MAX_VALUE)) {
-			assertEquals(PackageVersionCode(value.toLong()), PackageVersionCode(value))
-			assertEquals(value.toLong(), PackageVersionCode(value).value)
+	fun constructorsRejectNegativeVersionCodes() {
+		for (value in listOf(-1, -2, Int.MIN_VALUE)) {
+			assertFailsWith<IllegalArgumentException> { UninstallVersion(value) }
+			assertFailsWith<IllegalArgumentException> { UninstallVersion(value.toLong()) }
 		}
-		assertEquals(Long.MAX_VALUE, PackageVersionCode(Long.MAX_VALUE).value)
-		assertFailsWith<IllegalArgumentException> { PackageVersionCode(-2) }
-		assertFailsWith<IllegalArgumentException> { PackageVersionCode(-2L) }
 	}
 }

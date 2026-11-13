@@ -32,7 +32,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure.Aborted
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Blocked
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Conflict
 import ru.solrudev.ackpine.uninstaller.UninstallFailure.Generic
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 
@@ -69,7 +69,7 @@ internal class UninstallStatusReceiver : SystemPackageInstallerStatusReceiver<Un
 			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
 			.putExtra(
 				UninstallActivity.EXTRA_PACKAGE_VERSION_CODE,
-				intent.getLongExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, PackageVersionCode.HIGHEST.value)
+				intent.getLongExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, UninstallVersion.HIGHEST.code)
 			)
 			.putExtra(
 				UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY,
@@ -86,7 +86,7 @@ internal class UninstallStatusReceiver : SystemPackageInstallerStatusReceiver<Un
 	): Boolean {
 		val version = intent.getLongExtra(
 			UninstallActivity.EXTRA_PACKAGE_VERSION_CODE,
-			PackageVersionCode.HIGHEST.value
+			UninstallVersion.HIGHEST.code
 		)
 		val policy = intent.getIntExtra(
 			UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY,
@@ -95,7 +95,7 @@ internal class UninstallStatusReceiver : SystemPackageInstallerStatusReceiver<Un
 		// AOSP drops the version constraint when creating the uninstall confirmation intent.
 		// Reject this path under STRICT because a replacement version could otherwise be removed.
 		// ref: https://cs.android.com/android/_/android/platform/frameworks/base/+/cbb3299c41a06cf28e31d85d3ac2418368de8a86:services/core/java/com/android/server/pm/PackageInstallerService.java;l=1666;drc=cbb3299c41a06cf28e31d85d3ac2418368de8a86
-		if (version != PackageVersionCode.HIGHEST.value && policy == VersionedUninstallPolicy.STRICT.ordinal) {
+		if (version != UninstallVersion.HIGHEST.code && policy == VersionedUninstallPolicy.STRICT.ordinal) {
 			session.complete(
 				Session.State.Failed(
 					UninstallFailure.Unsupported("Exact version uninstall requires a non-confirmation path")

@@ -27,7 +27,7 @@ import ru.solrudev.ackpine.impl.helpers.isPackageInstalled
 import ru.solrudev.ackpine.impl.helpers.isPackageInstalledOrNotVisible
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 private const val TAG = "PackageInstallerBasedUninstallActivity"
@@ -106,9 +106,8 @@ internal class PackageInstallerBasedUninstallActivity : UninstallActivity(TAG) {
 	}
 
 	private fun isExactUnsafeVersionedFallback(): Boolean {
-		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, PackageVersionCode.HIGHEST.value)
+		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, -1L)
 		val policy = intent.getIntExtra(EXTRA_VERSIONED_UNINSTALL_POLICY, VersionedUninstallPolicy.STRICT.ordinal)
-		return version != PackageVersionCode.HIGHEST.value
-				&& policy == VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+		return version != UninstallVersion.HIGHEST.code && policy == VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
 	}
 }

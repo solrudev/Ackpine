@@ -43,8 +43,8 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.DEFAULT_NOTIFICATION_STRING
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallParameters
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
@@ -95,8 +95,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			loggerProvider,
 			applicationContext,
 			parameters.packageName,
-			parameters.packageVersionCode,
-			parameters.versionedUninstallPolicy,
+			parameters.uninstallVersion,
 			id, initialState,
 			parameters.confirmation,
 			resolveNotificationData(parameters.notificationData, parameters.packageName),
@@ -125,8 +124,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 						packageInstallerService.value.bind(id)
 					},
 					parameters.packageName,
-					parameters.packageVersionCode,
-					parameters.versionedUninstallPolicy,
+					parameters.uninstallVersion,
 					id, initialState,
 					parameters.confirmation,
 					resolveNotificationData(parameters.notificationData, parameters.packageName),
@@ -146,9 +144,13 @@ internal class UninstallSessionFactoryImpl internal constructor(
 			uninstallSession.packageName
 		)
 		val packageName = uninstallSession.packageName
-		val packageVersionCode = uninstallSession.packageVersionCode?.let(::PackageVersionCode)
-			?: PackageVersionCode.HIGHEST
-		val versionedUninstallPolicy = uninstallSession.versionedUninstallPolicy ?: VersionedUninstallPolicy.STRICT
+		val uninstallVersion = when (val code = uninstallSession.packageVersionCode) {
+			null, -1L -> UninstallVersion.HIGHEST
+			else -> UninstallVersion(
+				code,
+				uninstallSession.versionedUninstallPolicy ?: VersionedUninstallPolicy.STRICT
+			)
+		}
 		val initialState = uninstallSession.getState(sessionFailureDao)
 		val confirmation = uninstallSession.session.confirmation
 		val notificationData = uninstallSession.getNotificationData()
@@ -158,8 +160,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 				loggerProvider,
 				applicationContext,
 				packageName,
-				packageVersionCode,
-				versionedUninstallPolicy,
+				uninstallVersion,
 				sessionId, initialState,
 				confirmation,
 				resolveNotificationData(notificationData, packageName),
@@ -182,8 +183,7 @@ internal class UninstallSessionFactoryImpl internal constructor(
 							packageInstallerService.value.bind(sessionId)
 						},
 						packageName,
-						packageVersionCode,
-						versionedUninstallPolicy,
+						uninstallVersion,
 						sessionId, initialState,
 						confirmation,
 						resolveNotificationData(notificationData, packageName),

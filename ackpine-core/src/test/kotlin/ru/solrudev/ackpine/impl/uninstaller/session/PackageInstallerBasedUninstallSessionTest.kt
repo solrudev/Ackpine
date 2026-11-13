@@ -38,7 +38,7 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import kotlin.test.Test
@@ -71,28 +71,28 @@ class PackageInstallerBasedUninstallSessionTest {
 	@Config(sdk = [Build.VERSION_CODES.O])
 	fun exactVersionWithinIntRangeIsDispatchedWithoutLosingValue() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(Int.MAX_VALUE)
-		val session = createSession(service, packageVersionCode = version)
+		val version = UninstallVersion(Int.MAX_VALUE)
+		val session = createSession(service, uninstallVersion = version)
 		assertTrue(session.commit())
-		assertEquals(version, service.uninstallCalls.single().packageVersionCode)
+		assertEquals(version, service.uninstallCalls.single().uninstallVersion)
 	}
 
 	@Test
 	fun exactLongVersionIsDispatchedWithoutNarrowing() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(Long.MAX_VALUE)
-		val session = createSession(service, packageVersionCode = version)
+		val version = UninstallVersion(Long.MAX_VALUE)
+		val session = createSession(service, uninstallVersion = version)
 		assertTrue(session.commit())
-		assertEquals(version, service.uninstallCalls.single().packageVersionCode)
+		assertEquals(version, service.uninstallCalls.single().uninstallVersion)
 	}
 
 	@Test
 	@Config(sdk = [Build.VERSION_CODES.M])
 	fun restoredStrictTargetBelowApi26FailsBeforeDispatch() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(42)
+		val version = UninstallVersion(42)
 		val failureDao = TestSessionFailureDao<UninstallFailure>()
-		val session = createSession(service, packageVersionCode = version, failureDao = failureDao)
+		val session = createSession(service, uninstallVersion = version, failureDao = failureDao)
 		assertTrue(session.commit())
 		assertTrue(session.isCompleted)
 		assertIs<UninstallFailure.Unsupported>(failureDao.getFailure(session.id.toString()))
@@ -103,9 +103,9 @@ class PackageInstallerBasedUninstallSessionTest {
 	@Config(sdk = [Build.VERSION_CODES.O])
 	fun restoredStrictTargetExceedingIntRangeBelowApi28FailsBeforeDispatch() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(Int.MAX_VALUE.toLong() + 1)
+		val version = UninstallVersion(Int.MAX_VALUE.toLong() + 1)
 		val failureDao = TestSessionFailureDao<UninstallFailure>()
-		val session = createSession(service, packageVersionCode = version, failureDao = failureDao)
+		val session = createSession(service, uninstallVersion = version, failureDao = failureDao)
 		assertTrue(session.commit())
 		assertTrue(session.isCompleted)
 		assertIs<UninstallFailure.Unsupported>(failureDao.getFailure(session.id.toString()))
@@ -116,28 +116,26 @@ class PackageInstallerBasedUninstallSessionTest {
 	@Config(sdk = [Build.VERSION_CODES.M])
 	fun unsafeTargetBelowApi26UsesNameOnly() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(42)
+		val version = UninstallVersion(42)
 		val session = createSession(
 			service,
-			packageVersionCode = version,
-			policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY
+			uninstallVersion = UninstallVersion(version.code, VersionedUninstallPolicy.ALLOW_NAME_ONLY)
 		)
 		assertTrue(session.commit())
-		assertEquals(PackageVersionCode.HIGHEST, service.uninstallCalls.single().packageVersionCode)
+		assertEquals(UninstallVersion.HIGHEST, service.uninstallCalls.single().uninstallVersion)
 	}
 
 	@Test
 	@Config(sdk = [Build.VERSION_CODES.O])
 	fun unsafeTargetExceedingIntRangeBelowApi28UsesNameOnly() {
 		val service = RecordingPackageInstallerService()
-		val version = PackageVersionCode(Int.MAX_VALUE.toLong() + 1)
+		val version = UninstallVersion(Int.MAX_VALUE.toLong() + 1)
 		val session = createSession(
 			service,
-			packageVersionCode = version,
-			policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY
+			uninstallVersion = UninstallVersion(version.code, VersionedUninstallPolicy.ALLOW_NAME_ONLY)
 		)
 		assertTrue(session.commit())
-		assertEquals(PackageVersionCode.HIGHEST, service.uninstallCalls.single().packageVersionCode)
+		assertEquals(UninstallVersion.HIGHEST, service.uninstallCalls.single().uninstallVersion)
 	}
 
 	@Test
@@ -146,7 +144,7 @@ class PackageInstallerBasedUninstallSessionTest {
 		val failureDao = TestSessionFailureDao<UninstallFailure>()
 		val session = createSession(
 			nameOnlyService(recording),
-			packageVersionCode = PackageVersionCode(42),
+			uninstallVersion = UninstallVersion(42),
 			failureDao = failureDao
 		)
 		assertTrue(session.commit())
@@ -160,11 +158,10 @@ class PackageInstallerBasedUninstallSessionTest {
 		val recording = RecordingPackageInstallerService()
 		val session = createSession(
 			nameOnlyService(recording),
-			packageVersionCode = PackageVersionCode(42),
-			policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY
+			uninstallVersion = UninstallVersion(42, VersionedUninstallPolicy.ALLOW_NAME_ONLY)
 		)
 		assertTrue(session.commit())
-		assertEquals(PackageVersionCode.HIGHEST, recording.uninstallCalls.single().packageVersionCode)
+		assertEquals(UninstallVersion.HIGHEST, recording.uninstallCalls.single().uninstallVersion)
 	}
 
 	@Test
@@ -180,8 +177,7 @@ class PackageInstallerBasedUninstallSessionTest {
 		val failureDao = TestSessionFailureDao<UninstallFailure>()
 		val session = createSession(
 			service,
-			packageVersionCode = PackageVersionCode(42),
-			policy = VersionedUninstallPolicy.ALLOW_NAME_ONLY,
+			uninstallVersion = UninstallVersion(42, VersionedUninstallPolicy.ALLOW_NAME_ONLY),
 			failureDao = failureDao
 		)
 		assertTrue(session.commit())
@@ -203,8 +199,7 @@ class PackageInstallerBasedUninstallSessionTest {
 	private fun createSession(
 		packageInstaller: PackageInstallerService,
 		id: UUID = UUID.randomUUID(),
-		packageVersionCode: PackageVersionCode = PackageVersionCode.HIGHEST,
-		policy: VersionedUninstallPolicy = VersionedUninstallPolicy.STRICT,
+		uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST,
 		initialState: Session.State<UninstallFailure> = Session.State.Awaiting,
 		logger: RecordingAckpineLogger? = null,
 		failureDao: TestSessionFailureDao<UninstallFailure> = TestSessionFailureDao()
@@ -213,8 +208,7 @@ class PackageInstallerBasedUninstallSessionTest {
 		context = context,
 		packageInstallerService = lazyOf(packageInstaller),
 		packageName = "com.example.app",
-		packageVersionCode = packageVersionCode,
-		versionedUninstallPolicy = policy,
+		uninstallVersion = uninstallVersion,
 		id = id,
 		initialState = initialState,
 		confirmation = Confirmation.DEFERRED,

@@ -25,7 +25,7 @@ import ru.solrudev.ackpine.uninstaller.UninstallFailure
 public enum class VersionedUninstallPolicy {
 
 	/**
-	 * Refuse the operation without deleting anything. [UninstallParameters.Builder.setPackageVersionCode] throws
+	 * Refuse the operation without deleting anything. [UninstallParameters.Builder.setUninstallVersion] throws
 	 * [VersionedUninstallNotSupportedException] immediately when the target cannot be represented on the current
 	 * API level. Backend or lossy confirmation limitations discovered during execution produce
 	 * [UninstallFailure.Unsupported].

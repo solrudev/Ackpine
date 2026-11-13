@@ -24,7 +24,7 @@ import ru.solrudev.ackpine.impl.activity.SessionCommitActivity
 import ru.solrudev.ackpine.impl.helpers.isPackageVersionInstalledOrNotVisible
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 
 private const val WAS_ON_TOP_ON_STOP_KEY = "WAS_ON_TOP_ON_STOP"
@@ -80,9 +80,9 @@ internal abstract class UninstallActivity protected constructor(
 	}
 
 	protected fun shouldProceedWithUninstall(packageName: String): Boolean {
-		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, PackageVersionCode.HIGHEST.value)
+		val version = intent.getLongExtra(EXTRA_PACKAGE_VERSION_CODE, UninstallVersion.HIGHEST.code)
 		val policy = intent.getIntExtra(EXTRA_VERSIONED_UNINSTALL_POLICY, VersionedUninstallPolicy.STRICT.ordinal)
-		return version == PackageVersionCode.HIGHEST.value
+		return version == UninstallVersion.HIGHEST.code
 				|| policy != VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
 				|| isPackageVersionInstalledOrNotVisible(packageName, version)
 	}

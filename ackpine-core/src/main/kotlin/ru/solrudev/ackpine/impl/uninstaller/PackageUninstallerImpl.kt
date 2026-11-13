@@ -201,8 +201,8 @@ internal class PackageUninstallerImpl internal constructor(
 				parameters.uninstallerType,
 				notificationId,
 				plugins = parameters.pluginContainer.toEntityList(sessionId),
-				parameters.packageVersionCode.value,
-				parameters.versionedUninstallPolicy
+				parameters.uninstallVersion.code,
+				parameters.uninstallVersion.policy
 			)
 		)
 		ackpineServiceProviders.persistPluginParameters(id, parameters.pluginContainer)

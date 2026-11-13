@@ -33,7 +33,7 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
-import ru.solrudev.ackpine.uninstaller.parameters.PackageVersionCode
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import java.util.concurrent.Executor
@@ -45,8 +45,7 @@ internal class IntentBasedUninstallSession internal constructor(
 	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
 	private val packageName: String,
-	private val packageVersionCode: PackageVersionCode,
-	private val versionedUninstallPolicy: VersionedUninstallPolicy,
+	private val uninstallVersion: UninstallVersion,
 	id: UUID,
 	initialState: Session.State<UninstallFailure>,
 	private val confirmation: Confirmation,
@@ -72,8 +71,8 @@ internal class IntentBasedUninstallSession internal constructor(
 
 	override fun launchConfirmation() {
 		if (
-			packageVersionCode != PackageVersionCode.HIGHEST
-			&& versionedUninstallPolicy == VersionedUninstallPolicy.STRICT
+			uninstallVersion != UninstallVersion.HIGHEST
+			&& uninstallVersion.policy == VersionedUninstallPolicy.STRICT
 		) {
 			complete(
 				Session.State.Failed(
@@ -94,8 +93,8 @@ internal class IntentBasedUninstallSession internal constructor(
 		) { intent ->
 			intent.data = "ackpine://session/$id/confirmation".toUri()
 			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
-			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, packageVersionCode.value)
-			intent.putExtra(UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY, versionedUninstallPolicy.ordinal)
+			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, uninstallVersion.code)
+			intent.putExtra(UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY, uninstallVersion.policy.ordinal)
 		}
 	}
 }
