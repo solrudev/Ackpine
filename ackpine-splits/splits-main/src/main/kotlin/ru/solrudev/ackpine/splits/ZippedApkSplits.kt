@@ -63,7 +63,7 @@ public object ZippedApkSplits {
 		val applicationContext = context.applicationContext // avoid capturing context into closure
 		return closeableSequence {
 			val file = applicationContext.getFileFromUri(uri)
-			if (file.canRead()) {
+			if (file != null && file.canRead()) {
 				yieldAllUsingFile(file)
 			} else {
 				yieldAllUsingFileChannel(applicationContext, uri)

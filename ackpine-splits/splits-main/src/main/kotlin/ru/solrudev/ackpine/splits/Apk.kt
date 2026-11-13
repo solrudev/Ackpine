@@ -243,7 +243,7 @@ public sealed class Apk(
 		@JvmStatic
 		public fun fromUri(uri: Uri, context: Context, cancellationSignal: CancellationSignal? = null): Apk? {
 			val file = context.getFileFromUri(uri, cancellationSignal)
-			if (file.canRead()) {
+			if (file != null && file.canRead()) {
 				return fromFile(file, uri)
 			}
 			val androidManifest = try {

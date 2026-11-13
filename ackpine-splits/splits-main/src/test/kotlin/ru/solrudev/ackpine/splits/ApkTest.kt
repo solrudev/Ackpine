@@ -27,6 +27,7 @@ import ru.solrudev.ackpine.splits.testutil.SplitFixtures
 import ru.solrudev.ackpine.splits.testutil.SyntheticPayloads
 import ru.solrudev.ackpine.splits.testutil.TestFileProvider
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -50,6 +51,14 @@ class ApkTest {
 	fun fromUriReturnsNullForNonApkFile() {
 		val apk = Apk.fromUri(SplitFixtures.apkFileUri(SplitFixtures.APKS_ARCHIVE), context)
 		assertNull(apk)
+	}
+
+	@Test
+	fun fromUriThrowsForMissingContentUri() {
+		val uri = TestFileProvider.getUri(File(context.cacheDir, "missing.apk"))
+		assertFailsWith<FileNotFoundException> {
+			Apk.fromUri(uri, context)
+		}
 	}
 
 	@Test
