@@ -6,6 +6,17 @@ hide:
 Change Log
 ==========
 
+Version 0.27.0 (2026-11-13)
+---------------------------
+
+### Bug fixes and improvements
+
+- Rename `UninstallerCapabilities.packageVersionCode` to `uninstallVersion` for consistency.
+
+### Public API changes
+
+- Breaking: renamed `UninstallerCapabilities.packageVersionCode` property to `uninstallVersion`.
+
 Version 0.26.0 (2026-11-13)
 ---------------------------
 
