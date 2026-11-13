@@ -1,14 +1,14 @@
 [versions]
-android-plugin = "9.3.1"
+android-plugin = "9.5.1"
 bundletool = "1.18.3"
-dokka = "2.2.0"
+dokka = "2.3.0"
 hidden-api-refine = "4.4.0"
 #noinspection UnusedVersionCatalogEntry
-jacoco = "0.8.14"
+jacoco = "0.8.15"
 #noinspection UnusedVersionCatalogEntry
 kotlin-for-consumers = "2.1.21"
-kotlin = "2.4.10"
-kotlin-ksp = "2.3.9"
+kotlin = "2.4.21"
+kotlin-ksp = "2.3.12"
 libsu = "6.0.0"
 shizuku = "13.1.5"
 
@@ -24,11 +24,9 @@ plugin-toolchains = "org.gradle.toolchains.foojay-resolver-convention:org.gradle
 apache-commons-io = "commons-io:commons-io:2.20.0"
 apksig = { module = "com.android.tools.build:apksig", version.ref = "android-plugin" }
 bundletool = { module = "com.android.tools.build:bundletool", version.ref = "bundletool" }
-dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.5.4"
-dokka-base = { module = "org.jetbrains.dokka:dokka-base", version.ref = "dokka" }
-dokka-core = { module = "org.jetbrains.dokka:dokka-core", version.ref = "dokka" }
+dhizuku-api = "io.github.iamr0s:Dhizuku-API:2.7.0"
 guava = "com.google.guava:guava:33.4.8-android"
-hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.1"
+hiddenApiBypass = "org.lsposed.hiddenapibypass:hiddenapibypass:6.2"
 hiddenApiRefine-annotation = { module = "dev.rikka.tools.refine:annotation", version.ref = "hidden-api-refine" }
 hiddenApiRefine-processor = { module = "dev.rikka.tools.refine:annotation-processor", version.ref = "hidden-api-refine" }
 insetter = "dev.chrisbanes.insetter:insetter:0.6.1"
@@ -38,8 +36,8 @@ libsu-core = { module = "com.github.topjohnwu.libsu:core", version.ref = "libsu"
 libsu-service = { module = "com.github.topjohnwu.libsu:service", version.ref = "libsu" }
 listenableFuture = "com.google.guava:listenablefuture:1.0"
 materialComponents = "com.google.android.material:material:1.13.0"
-okHttp = "com.squareup.okhttp3:okhttp:5.4.0"
-robolectric = "org.robolectric:robolectric:4.16.1"
+okHttp = "com.squareup.okhttp3:okhttp:5.5.1"
+robolectric = "org.robolectric:robolectric:4.17"
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 turbine = "app.cash.turbine:turbine:1.2.1"

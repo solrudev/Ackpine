@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.dhizuku
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.dhizuku.database.DhizukuInstallParametersEntity
 import ru.solrudev.ackpine.dhizuku.database.DhizukuInstallParamsDao
 import ru.solrudev.ackpine.dhizuku.database.DhizukuUninstallParametersEntity
@@ -26,6 +27,7 @@ import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@OptIn(DelicateAckpineApi::class)
 internal class DhizukuPluginParametersStore(
 	private val dhizukuInstallParamsDao: DhizukuInstallParamsDao,
 	private val dhizukuUninstallParamsDao: DhizukuUninstallParamsDao
@@ -36,6 +38,7 @@ internal class DhizukuPluginParametersStore(
 		dhizukuInstallParamsDao.getBySessionId(id)?.let { dhizukuParams ->
 			return DhizukuPlugin.InstallParameters.Builder()
 				.setRequestDowngrade(dhizukuParams.requestDowngrade)
+				.setInstallFlags(dhizukuParams.installFlags)
 				.build()
 		}
 		dhizukuUninstallParamsDao.getBySessionId(id)?.let { dhizukuParams ->
@@ -43,6 +46,7 @@ internal class DhizukuPluginParametersStore(
 				.setKeepData(dhizukuParams.keepData)
 				.setAllUsers(dhizukuParams.allUsers)
 				.setSystemApp(dhizukuParams.systemApp)
+				.setUninstallFlags(dhizukuParams.uninstallFlags)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -52,7 +56,8 @@ internal class DhizukuPluginParametersStore(
 		is DhizukuPlugin.InstallParameters -> {
 			val dhizukuParams = DhizukuInstallParametersEntity(
 				sessionId = sessionId.toString(),
-				requestDowngrade = params.requestDowngrade
+				requestDowngrade = params.requestDowngrade,
+				installFlags = params.installFlags
 			)
 			dhizukuInstallParamsDao.insertParameters(dhizukuParams)
 		}
@@ -62,7 +67,8 @@ internal class DhizukuPluginParametersStore(
 				sessionId = sessionId.toString(),
 				keepData = params.keepData,
 				allUsers = params.allUsers,
-				systemApp = params.systemApp
+				systemApp = params.systemApp,
+				uninstallFlags = params.uninstallFlags
 			)
 			dhizukuUninstallParamsDao.insertParameters(dhizukuParams)
 		}

@@ -30,7 +30,10 @@ import ru.solrudev.ackpine.splits.testutil.assertFixturePackage
 import ru.solrudev.ackpine.splits.testutil.setup
 import java.io.File
 import java.io.IOException
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.zip.ZipException
+import java.util.zip.ZipFile
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -165,6 +168,40 @@ class ZippedApkSplitsTest {
 				"malformed.apk" to "not a zip file".toByteArray()
 			)
 		)
+		val apks = ZippedApkSplits.getApksForUri(uri, context).use { it.toList() }
+		assertContainsOnlyValidBaseApk(apks, "valid")
+	}
+
+	@Test
+	fun skipsOversizedManifestAndReturnsFollowingValidApk() {
+		val manifest = ZipFile(SplitFixtures.apkFile(SplitFixtures.BASE_APK)).use { zip ->
+			zip.getInputStream(zip.getEntry("AndroidManifest.xml")).use { it.readBytes() }
+		}.copyOf(16 * 1024 * 1024 + 1)
+		val oversizedApk = SyntheticPayloads.zipBytesOf(mapOf("AndroidManifest.xml" to manifest))
+		assertSkipsInvalidApk(oversizedApk)
+	}
+
+	@Test
+	fun skipsManifestWithInvalidDataDescriptorAndReturnsFollowingValidApk() {
+		val manifest = ZipFile(SplitFixtures.apkFile(SplitFixtures.BASE_APK)).use { zip ->
+			zip.getInputStream(zip.getEntry("AndroidManifest.xml")).use { it.readBytes() }
+		}
+		val invalidApk = SyntheticPayloads.zipBytesOf(mapOf("AndroidManifest.xml" to manifest))
+		val buffer = ByteBuffer.wrap(invalidApk).order(ByteOrder.LITTLE_ENDIAN)
+		val centralDirectoryOffset = buffer.getInt(invalidApk.size - 6)
+		buffer.putInt(centralDirectoryOffset - 4, manifest.size + 1)
+		assertSkipsInvalidApk(invalidApk)
+	}
+
+	private fun assertSkipsInvalidApk(invalidApk: ByteArray) {
+		val archive = SyntheticPayloads.zipBytesOf(
+			mapOf(
+				"invalid.apk" to invalidApk,
+				"valid.apk" to SplitFixtures.apkFile(SplitFixtures.BASE_APK).readBytes()
+			)
+		)
+		assertContainsOnlyValidBaseApk(getApksForFile(archive), "valid")
+		val uri = SyntheticPayloads.rawBytesUri("invalid-manifest.apks", archive)
 		val apks = ZippedApkSplits.getApksForUri(uri, context).use { it.toList() }
 		assertContainsOnlyValidBaseApk(apks, "valid")
 	}

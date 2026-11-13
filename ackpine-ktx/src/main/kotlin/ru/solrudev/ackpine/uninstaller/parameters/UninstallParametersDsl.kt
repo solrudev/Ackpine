@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import ru.solrudev.ackpine.exceptions.VersionedUninstallNotSupportedException
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpineUninstallPlugin
 import ru.solrudev.ackpine.session.parameters.Confirmation
@@ -40,10 +41,25 @@ public interface UninstallParametersDsl : ConfirmationDsl {
 	 *
 	 * Default value is [UninstallerType.DEFAULT].
 	 *
-	 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
-	 * returned/set regardless of the current/provided value.
+	 * When getting/setting the value of this property, the following invariants are maintained:
+	 * * When on API level < 21, [UninstallerType.INTENT_BASED] is always returned/set regardless of the
+	 * current/provided value;
+	 * * When on API level >= 26 and [uninstallVersion] targets an exact version representable on the current
+	 * API level, [UninstallerType.PACKAGE_INSTALLER_BASED] is always returned/set regardless of the
+	 * current/provided value.
 	 */
 	public var uninstallerType: UninstallerType
+
+	/**
+	 * Version targeted by the uninstall session, including its fallback policy.
+	 *
+	 * Default value is [UninstallVersion.HIGHEST]. Assignment preserves the policy carried by the value.
+	 *
+	 * @throws VersionedUninstallNotSupportedException if a [strict][VersionedUninstallPolicy.STRICT] exact
+	 * target is requested on API level < 26, or its code exceeds [Int.MAX_VALUE] on API levels 26–27.
+	 * Configuration remains unchanged when validation fails.
+	 */
+	public var uninstallVersion: UninstallVersion
 
 	/**
 	 * Registers a [plugin] for the uninstall session.
@@ -89,6 +105,12 @@ internal class UninstallParametersDslBuilder(packageName: String) : UninstallPar
 		get() = builder.uninstallerType
 		set(value) {
 			builder.setUninstallerType(value)
+		}
+
+	override var uninstallVersion: UninstallVersion
+		get() = builder.uninstallVersion
+		set(value) {
+			builder.setUninstallVersion(value)
 		}
 
 	override fun <Params : AckpinePlugin.Parameters> plugin(

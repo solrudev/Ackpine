@@ -18,6 +18,7 @@ package ru.solrudev.ackpine.impl.activity
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -147,7 +148,12 @@ internal abstract class SessionCommitActivity<F : Failure> protected constructor
 	open fun onActivityResult(resultCode: Int) { // no-op by default
 	}
 
-	protected fun startActivityForResult(intent: Intent) = startActivityForResult(intent, requestCode)
+	protected fun startActivityForResult(intent: Intent) = try {
+		startActivityForResult(intent, requestCode)
+	} catch (e: ActivityNotFoundException) {
+		completeSessionExceptionally(e)
+		finish()
+	}
 
 	protected fun completeSession(state: Session.State.Completed<F>) = withCompletableSession { session ->
 		session?.complete(state)

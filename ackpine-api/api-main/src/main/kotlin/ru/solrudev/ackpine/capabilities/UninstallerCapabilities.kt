@@ -33,6 +33,15 @@ public class UninstallerCapabilities internal constructor(
 	 */
 	public val uninstallerType: UninstallerType,
 
+	/**
+	 * Whether exact package version targeting is supported by the effective uninstaller type.
+	 *
+	 * This describes platform support depending on [uninstallerType], without a particular version constraint.
+	 * On API levels 26–27, version codes exceeding [Int.MAX_VALUE] remain unsupported. A strict session can also fail
+	 * when execution requires lossy user confirmation.
+	 */
+	public val packageVersionCode: CapabilityStatus,
+
 	private val pluginCapabilities: Map<Class<out UninstallCapabilityProvider<*>>, PluginCapability>
 ) {
 
@@ -54,12 +63,14 @@ public class UninstallerCapabilities internal constructor(
 		if (this === other) return true
 		if (other !is UninstallerCapabilities) return false
 		if (uninstallerType != other.uninstallerType) return false
+		if (packageVersionCode != other.packageVersionCode) return false
 		if (pluginCapabilities != other.pluginCapabilities) return false
 		return true
 	}
 
 	override fun hashCode(): Int {
 		var result = uninstallerType.hashCode()
+		result = 31 * result + packageVersionCode.hashCode()
 		result = 31 * result + pluginCapabilities.hashCode()
 		return result
 	}
@@ -67,6 +78,7 @@ public class UninstallerCapabilities internal constructor(
 	override fun toString(): String {
 		return "UninstallerCapabilities(" +
 				"uninstallerType=$uninstallerType, " +
+				"packageVersionCode=$packageVersionCode, " +
 				"pluginCapabilities=$pluginCapabilities" +
 				")"
 	}

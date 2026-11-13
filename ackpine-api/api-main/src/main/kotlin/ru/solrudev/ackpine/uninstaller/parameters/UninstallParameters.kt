@@ -16,6 +16,9 @@
 
 package ru.solrudev.ackpine.uninstaller.parameters
 
+import android.os.Build
+import ru.solrudev.ackpine.SdkIntWrapper
+import ru.solrudev.ackpine.exceptions.VersionedUninstallNotSupportedException
 import ru.solrudev.ackpine.isPackageInstallerApiAvailable
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.plugability.AckpinePluginCache
@@ -60,6 +63,13 @@ public class UninstallParameters private constructor(
 	public override val notificationData: NotificationData,
 
 	/**
+	 * Version targeted by the uninstall session, including its fallback policy.
+	 *
+	 * Default value is [UninstallVersion.HIGHEST].
+	 */
+	public val uninstallVersion: UninstallVersion,
+
+	/**
 	 * [Plugins][AckpinePlugin] applied to the uninstall session.
 	 */
 	public val pluginContainer: AckpinePluginContainer
@@ -73,6 +83,7 @@ public class UninstallParameters private constructor(
 		if (uninstallerType != other.uninstallerType) return false
 		if (confirmation != other.confirmation) return false
 		if (notificationData != other.notificationData) return false
+		if (uninstallVersion != other.uninstallVersion) return false
 		if (pluginContainer != other.pluginContainer) return false
 		return true
 	}
@@ -82,6 +93,7 @@ public class UninstallParameters private constructor(
 		result = 31 * result + uninstallerType.hashCode()
 		result = 31 * result + confirmation.hashCode()
 		result = 31 * result + notificationData.hashCode()
+		result = 31 * result + uninstallVersion.hashCode()
 		result = 31 * result + pluginContainer.hashCode()
 		return result
 	}
@@ -92,6 +104,7 @@ public class UninstallParameters private constructor(
 				"uninstallerType=$uninstallerType, " +
 				"confirmation=$confirmation, " +
 				"notificationData=$notificationData, " +
+				"uninstallVersion=$uninstallVersion, " +
 				"pluginContainer=$pluginContainer" +
 				")"
 	}
@@ -125,8 +138,12 @@ public class UninstallParameters private constructor(
 		 *
 		 * Default value is [UninstallerType.DEFAULT].
 		 *
-		 * When getting/setting the value of this property on API level < 21, [UninstallerType.INTENT_BASED] is always
-		 * returned/set regardless of the current/provided value.
+		 * When getting/setting the value of this property, the following invariants are maintained:
+		 * * When on API level < 21, [UninstallerType.INTENT_BASED] is always returned/set regardless of the
+		 * current/provided value;
+		 * * When on API level >= 26 and [uninstallVersion] targets an exact version representable on the current
+		 * API level, [UninstallerType.PACKAGE_INSTALLER_BASED] is always returned/set regardless of the
+		 * current/provided value.
 		 */
 		public var uninstallerType: UninstallerType
 			get() = pluginScope.normalizeUninstallerType()
@@ -150,6 +167,12 @@ public class UninstallParameters private constructor(
 		 * Ignored when [confirmation] is [Confirmation.IMMEDIATE].
 		 */
 		public override var notificationData: NotificationData = NotificationData.DEFAULT
+			private set
+
+		/**
+		 * Version targeted by the uninstall session, including its fallback policy.
+		 */
+		public var uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST
 			private set
 
 		/**
@@ -179,6 +202,31 @@ public class UninstallParameters private constructor(
 		 */
 		public fun setNotificationData(notificationData: NotificationData): Builder = apply {
 			this.notificationData = notificationData
+		}
+
+		/**
+		 * Sets [UninstallParameters.uninstallVersion], including its fallback policy.
+		 *
+		 * When exact targeting is available, [uninstallerType] is normalized to
+		 * [UninstallerType.PACKAGE_INSTALLER_BASED]. Otherwise, [VersionedUninstallPolicy.ALLOW_NAME_ONLY]
+		 * preserves the existing backend selection rules.
+		 * @param uninstallVersion the version to target and its fallback policy.
+		 * @throws VersionedUninstallNotSupportedException if an exact target is requested with
+		 * [VersionedUninstallPolicy.STRICT] on API level < 26, or its code exceeds [Int.MAX_VALUE] on API levels 26–27.
+		 * The builder remains unchanged when validation fails.
+		 */
+		public fun setUninstallVersion(uninstallVersion: UninstallVersion): Builder = apply {
+			if (
+				uninstallVersion != UninstallVersion.HIGHEST
+				&& uninstallVersion.policy == VersionedUninstallPolicy.STRICT
+				&& !canTargetExactVersion(uninstallVersion)
+			) {
+				throw VersionedUninstallNotSupportedException(
+					"Version ${uninstallVersion.code} cannot be targeted on Android API level ${SdkIntWrapper.get()}"
+				)
+			}
+			this.uninstallVersion = uninstallVersion
+			pluginScope.normalizeUninstallerType()
 		}
 
 		/**
@@ -214,6 +262,7 @@ public class UninstallParameters private constructor(
 				snapshot.uninstallerType,
 				snapshot.confirmation,
 				snapshot.notificationData,
+				snapshot.uninstallVersion,
 				AckpinePluginContainer.from(snapshot.pluginScope.getPlugins())
 			)
 		}
@@ -237,6 +286,7 @@ public class UninstallParameters private constructor(
 		private fun createUninstallSnapshot() = Builder(packageName, pluginScope.copy())
 			.setConfirmation(confirmation)
 			.setNotificationData(notificationData)
+			.setUninstallVersion(uninstallVersion)
 
 		private fun UninstallPluginScope.normalizeUninstallerType(
 			value: UninstallerType = this.uninstallerType
@@ -247,8 +297,17 @@ public class UninstallParameters private constructor(
 		}
 
 		private fun applyUninstallerTypeInvariants(value: UninstallerType) = when {
-			isPackageInstallerApiAvailable() -> value
-			else -> UninstallerType.INTENT_BASED
+			!isPackageInstallerApiAvailable() -> UninstallerType.INTENT_BASED
+			uninstallVersion != UninstallVersion.HIGHEST && canTargetExactVersion(uninstallVersion) ->
+				UninstallerType.PACKAGE_INSTALLER_BASED
+
+			else -> value
+		}
+
+		private fun canTargetExactVersion(version: UninstallVersion): Boolean {
+			val sdkInt = SdkIntWrapper.get()
+			return sdkInt >= Build.VERSION_CODES.O
+					&& (sdkInt >= Build.VERSION_CODES.P || version.code <= Int.MAX_VALUE)
 		}
 	}
 }

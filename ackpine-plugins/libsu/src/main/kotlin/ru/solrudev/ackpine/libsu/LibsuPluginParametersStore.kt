@@ -17,6 +17,7 @@
 package ru.solrudev.ackpine.libsu
 
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.impl.plugability.PluginParametersStore
 import ru.solrudev.ackpine.libsu.database.LibsuInstallParametersEntity
 import ru.solrudev.ackpine.libsu.database.LibsuInstallParamsDao
@@ -27,6 +28,7 @@ import ru.solrudev.ackpine.privileged.TargetUser
 import java.util.UUID
 
 @RestrictTo(RestrictTo.Scope.LIBRARY)
+@OptIn(DelicateAckpineApi::class)
 internal class LibsuPluginParametersStore(
 	private val libsuInstallParamsDao: LibsuInstallParamsDao,
 	private val libsuUninstallParamsDao: LibsuUninstallParamsDao
@@ -44,6 +46,7 @@ internal class LibsuPluginParametersStore(
 				.setAllUsers(libsuParams.allUsers)
 				.setInstallerPackageName(libsuParams.installerPackageName)
 				.setTargetUser(TargetUser(libsuParams.targetUserId))
+				.setInstallFlags(libsuParams.installFlags)
 				.build()
 		}
 		libsuUninstallParamsDao.getBySessionId(id)?.let { libsuParams ->
@@ -52,6 +55,7 @@ internal class LibsuPluginParametersStore(
 				.setAllUsers(libsuParams.allUsers)
 				.setSystemApp(libsuParams.systemApp)
 				.setTargetUser(TargetUser(libsuParams.targetUserId))
+				.setUninstallFlags(libsuParams.uninstallFlags)
 				.build()
 		}
 		return AckpinePlugin.Parameters.None
@@ -68,7 +72,8 @@ internal class LibsuPluginParametersStore(
 				grantAllRequestedPermissions = params.grantAllRequestedPermissions,
 				allUsers = params.allUsers,
 				installerPackageName = params.installerPackageName,
-				targetUserId = params.targetUser.userId
+				targetUserId = params.targetUser.userId,
+				installFlags = params.installFlags
 			)
 			libsuInstallParamsDao.insertParameters(libsuParams)
 		}
@@ -79,7 +84,8 @@ internal class LibsuPluginParametersStore(
 				keepData = params.keepData,
 				allUsers = params.allUsers,
 				systemApp = params.systemApp,
-				targetUserId = params.targetUser.userId
+				targetUserId = params.targetUser.userId,
+				uninstallFlags = params.uninstallFlags
 			)
 			libsuUninstallParamsDao.insertParameters(libsuParams)
 		}

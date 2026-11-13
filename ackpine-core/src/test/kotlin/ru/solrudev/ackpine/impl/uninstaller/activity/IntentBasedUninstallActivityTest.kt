@@ -16,27 +16,52 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
+import android.Manifest.permission.QUERY_ALL_PACKAGES
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.testutil.TestCompletableSession
+import ru.solrudev.ackpine.impl.testutil.runScheduledMainThreadTasks
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 @RunWith(RobolectricTestRunner::class)
 class IntentBasedUninstallActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
+
+	@Test
+	fun replacedTargetFailsWithoutLaunchingConfirmation() {
+		shadowOf(context.packageManager).installPackage(
+			PackageInfo().apply {
+				packageName = "com.example.app"
+				setLongVersionCode(2L)
+			}
+		)
+		assertUnavailableTargetFailsWithoutLaunchingConfirmation()
+	}
+
+	@Test
+	fun missingTargetFailsWithoutLaunchingConfirmation() {
+		shadowOf(context as Application).grantPermissions(QUERY_ALL_PACKAGES)
+		assertUnavailableTargetFailsWithoutLaunchingConfirmation()
+	}
 
 	@Test
 	fun resultCanceledCompletesWithAbortedFailure() {
@@ -96,6 +121,27 @@ class IntentBasedUninstallActivityTest {
 		ActivityScenario.launch<IntentBasedUninstallActivity>(intent).use { scenario ->
 			scenario.onActivity { it.onActivityResult(Activity.RESULT_OK) }
 			assertEquals(Session.State.Succeeded, session.completedState)
+		}
+	}
+
+	private fun assertUnavailableTargetFailsWithoutLaunchingConfirmation() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, IntentBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, 1L)
+			.putExtra(
+				UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY,
+				VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+			)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		ActivityScenario.launch<IntentBasedUninstallActivity>(intent).use { scenario ->
+			runScheduledMainThreadTasks()
+			val result = assertIs<Session.State.Failed<UninstallFailure>>(session.completedState)
+			assertIs<UninstallFailure.Generic>(result.failure)
+			assertNull(shadowOf(context as Application).nextStartedActivityForResult)
+			assertEquals(Lifecycle.State.DESTROYED, scenario.state)
 		}
 	}
 }

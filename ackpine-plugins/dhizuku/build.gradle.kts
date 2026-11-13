@@ -27,7 +27,7 @@ plugins {
 
 ackpine {
 	id = "dhizuku"
-	minSdk = 26
+	minSdk = 23
 	artifact {
 		name = "Ackpine Dhizuku Plugin"
 		inceptionYear = "2026"

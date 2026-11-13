@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.privileged
 
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 
 /**
@@ -50,6 +51,19 @@ public interface PrivilegedUninstallParametersDsl {
 	 * By default, equals to [TargetUser.CURRENT].
 	 */
 	public var targetUser: TargetUser
+
+	/**
+	 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is applied _before_ boolean options. Boolean options take precedence for their corresponding
+	 * bits, including clearing bits when `false`. The boolean values remain independent of this mask.
+	 * Setting the mask replaces the previous supplied mask.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and backend permissions. Supplying flags grants no additional privileges.
+	 */
+	@set:DelicateAckpineApi
+	public var uninstallFlags: Int
 }
 
 /**
@@ -84,6 +98,13 @@ public abstract class PrivilegedUninstallParametersDslBuilder<
 		get() = delegate.targetUser
 		set(value) {
 			delegate.setTargetUser(value)
+		}
+
+	@set:DelicateAckpineApi
+	override var uninstallFlags: Int
+		get() = delegate.uninstallFlags
+		set(value) {
+			delegate.setUninstallFlags(value)
 		}
 
 	/**

@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.dhizuku
 
+import ru.solrudev.ackpine.DelicateAckpineApi
 import ru.solrudev.ackpine.session.parameters.SessionParametersDsl
 
 /**
@@ -38,6 +39,20 @@ public interface DhizukuUninstallParametersDsl {
 	 * Whether a system app should be marked as uninstalled for the current user.
 	 */
 	public var systemApp: Boolean
+
+	/**
+	 * Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+	 *
+	 * The mask is applied _before_ Dhizuku's boolean options. These options take precedence for their corresponding
+	 * bits, including clearing them when `false`. Flags without corresponding Dhizuku boolean options remain unchanged.
+	 * The boolean values remain independent of this mask.
+	 * Setting the mask replaces the previous supplied mask.
+	 *
+	 * Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version
+	 * and device-owner permissions. Supplying flags grants no additional privileges.
+	 */
+	@set:DelicateAckpineApi
+	public var uninstallFlags: Int
 }
 
 @PublishedApi
@@ -61,6 +76,13 @@ internal class DhizukuUninstallParametersDslBuilder : DhizukuUninstallParameters
 		get() = delegate.systemApp
 		set(value) {
 			delegate.setSystemApp(value)
+		}
+
+	@set:DelicateAckpineApi
+	override var uninstallFlags: Int
+		get() = delegate.uninstallFlags
+		set(value) {
+			delegate.setUninstallFlags(value)
 		}
 
 	fun build(): DhizukuPlugin.UninstallParameters = delegate.build()

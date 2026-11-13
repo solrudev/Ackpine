@@ -26,8 +26,6 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.VersionCatalogsExtension
-import org.gradle.api.problems.ProblemGroup
-import org.gradle.api.problems.ProblemId
 import org.gradle.api.problems.Problems
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.Sync
@@ -55,7 +53,6 @@ private const val APP_SIGNING_KEY_PASSWORD = "APP_SIGNING_KEY_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PASSWORD = "APP_SIGNING_KEY_STORE_PASSWORD"
 private const val APP_SIGNING_KEY_STORE_PATH = "APP_SIGNING_KEY_STORE_PATH"
 private const val APP_SIGNING_PREFIX = "APP_SIGNING_"
-private val PROBLEM_GROUP = ProblemGroup.create("ackpine-app-release", "Ackpine AppRelease plugin")
 
 public class AppReleasePlugin @Inject public constructor(private val problems: Problems) : Plugin<Project> {
 
@@ -206,11 +203,7 @@ public class AppReleasePlugin @Inject public constructor(private val problems: P
 	}
 
 	private fun reportBundletoolNotFound() {
-		val problem = ProblemId.create(
-			"bundletool-not-found",
-			"'bundletool' version catalog entry was not found.",
-			PROBLEM_GROUP
-		)
+		val problem = problems.groups.dependencies.declaration.problemId("bundletool-not-found")
 		problems.reporter.report(problem) {
 			details(
 				"""

@@ -19,11 +19,13 @@ package ru.solrudev.ackpine.impl.services
 import android.content.Context
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
+import android.content.pm.VersionedPackage
 import android.os.Build
 import android.os.Handler
 import android.os.Process
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
+import ru.solrudev.ackpine.exceptions.VersionedUninstallNotSupportedException
 import ru.solrudev.ackpine.impl.plugability.AckpineService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import java.io.Closeable
@@ -94,6 +96,16 @@ public interface PackageInstallerService : AckpineService {
 	 * @see PackageInstaller.uninstall
 	 */
 	public fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID)
+
+	/**
+	 * @param ackpineSessionId ID of the Ackpine uninstall session.
+	 * @throws VersionedUninstallNotSupportedException if this service does not implement versioned dispatch.
+	 * @see PackageInstaller.uninstall
+	 */
+	@RequiresApi(Build.VERSION_CODES.O)
+	public fun uninstall(versionedPackage: VersionedPackage, statusReceiver: IntentSender, ackpineSessionId: UUID) {
+		throw VersionedUninstallNotSupportedException("Exact version uninstall is not supported by this backend")
+	}
 
 	/**
 	 * A facade for [PackageInstaller.Session].
@@ -199,6 +211,15 @@ internal class PackageInstallerWrapper(
 
 	override fun uninstall(packageName: String, statusReceiver: IntentSender, ackpineSessionId: UUID) =
 		packageInstaller.uninstall(packageName, statusReceiver)
+
+	@RequiresApi(Build.VERSION_CODES.O)
+	override fun uninstall(
+		versionedPackage: VersionedPackage,
+		statusReceiver: IntentSender,
+		ackpineSessionId: UUID
+	) {
+		packageInstaller.uninstall(versionedPackage, statusReceiver)
+	}
 
 	internal companion object {
 		@JvmSynthetic

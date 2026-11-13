@@ -51,7 +51,7 @@ public suspend fun PackageUninstaller.getSession(sessionId: UUID): Session<Unins
 
 /**
  * A suspending variant of [PackageUninstaller.getSessionsAsync].
- * @return [Session] or `null` if not found.
+ * @return List of [Sessions][Session].
  */
 public suspend fun PackageUninstaller.getSessions(): List<Session<UninstallFailure>> {
 	return getSessionsAsync().await()
@@ -59,7 +59,7 @@ public suspend fun PackageUninstaller.getSessions(): List<Session<UninstallFailu
 
 /**
  * A suspending variant of [PackageUninstaller.getActiveSessionsAsync].
- * @return [Session] or `null` if not found.
+ * @return List of [Sessions][Session].
  */
 public suspend fun PackageUninstaller.getActiveSessions(): List<Session<UninstallFailure>> {
 	return getActiveSessionsAsync().await()

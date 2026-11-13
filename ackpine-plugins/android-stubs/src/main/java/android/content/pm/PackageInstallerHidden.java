@@ -57,6 +57,11 @@ public class PackageInstallerHidden {
 		throw new UnsupportedOperationException();
 	}
 
+	@RequiresApi(Build.VERSION_CODES.P)
+	public void uninstall(VersionedPackage packageName, int flags, IntentSender statusReceiver) {
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Stub for {@link PackageInstaller.SessionParams} which will be removed during transformation.
 	 */

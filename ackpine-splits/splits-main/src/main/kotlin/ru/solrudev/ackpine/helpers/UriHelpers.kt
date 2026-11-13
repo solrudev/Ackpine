@@ -28,7 +28,7 @@ import java.io.File
 import java.io.FileNotFoundException
 
 @JvmSynthetic
-internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null): File {
+internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null): File? {
 	if (uri.scheme == ContentResolver.SCHEME_FILE) {
 		return File(requireNotNull(uri.path) { "Uri path is null: $uri" })
 	}
@@ -46,12 +46,12 @@ internal fun Context.getFileFromUri(uri: Uri, signal: CancellationSignal? = null
 				}
 			}
 			if (canonicalPath == path) {
-				return tryGetFileFromExternalDocumentUri(this, uri) ?: File("")
+				return tryGetFileFromExternalDocumentUri(this, uri)
 			}
 			return File(canonicalPath)
 		}
 	} catch (_: FileNotFoundException) {
-		return File("")
+		return null
 	}
 }
 

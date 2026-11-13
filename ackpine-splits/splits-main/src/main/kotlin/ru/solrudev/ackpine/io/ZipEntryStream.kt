@@ -80,7 +80,7 @@ internal class ZipEntryStream private constructor(
 			signal: CancellationSignal? = null
 		): ZipEntryStream? {
 			val file = context.getFileFromUri(uri, signal)
-			if (file.canRead()) {
+			if (file != null && file.canRead()) {
 				return openUsingZipFile(file, zipEntryName)
 			}
 			return openUsingFileChannel(uri, zipEntryName, context, signal)

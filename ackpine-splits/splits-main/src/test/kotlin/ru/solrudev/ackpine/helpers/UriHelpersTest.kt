@@ -53,10 +53,10 @@ class UriHelpersTest {
 	}
 
 	@Test
-	fun missingContentUriReturnsInvalidFile() {
+	fun missingContentUriReturnsNull() {
 		val uri = TestFileProvider.getUri(File(UUID.randomUUID().toString()))
 		val result = context.getFileFromUri(uri)
-		assertEquals(File(""), result)
+		assertNull(result)
 	}
 
 	@Test

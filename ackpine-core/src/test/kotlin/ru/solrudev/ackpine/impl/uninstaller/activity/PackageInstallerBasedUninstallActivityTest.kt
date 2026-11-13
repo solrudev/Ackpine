@@ -16,31 +16,55 @@
 
 package ru.solrudev.ackpine.impl.uninstaller.activity
 
+import android.Manifest.permission.QUERY_ALL_PACKAGES
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
+import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
-import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
+import org.robolectric.shadow.api.Shadow
+import org.robolectric.shadows.ShadowViewRootImpl
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.testutil.TestCompletableSession
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
 import ru.solrudev.ackpine.impl.testutil.runScheduledMainThreadTasks
 import ru.solrudev.ackpine.impl.uninstaller.PackageUninstallerImpl
 import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
 class PackageInstallerBasedUninstallActivityTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
+
+	@Test
+	fun replacedTargetFailsWithoutLaunchingConfirmation() {
+		shadowOf(context.packageManager).installPackage(PackageInfo().apply {
+			packageName = "com.example.app"
+			setLongVersionCode(2L)
+		})
+		assertUnavailableTargetFailsWithoutLaunchingConfirmation()
+	}
+
+	@Test
+	fun missingTargetFailsWithoutLaunchingConfirmation() {
+		shadowOf(context as Application).grantPermissions(QUERY_ALL_PACKAGES)
+		assertUnavailableTargetFailsWithoutLaunchingConfirmation()
+	}
 
 	@Test
 	fun noStatusFromReceiverAbortsWhenPackageIsStillInstalled() {
@@ -59,6 +83,44 @@ class PackageInstallerBasedUninstallActivityTest {
 			val result = session.completedState
 			assertIs<Session.State.Failed<UninstallFailure>>(result)
 			assertIs<UninstallFailure.Aborted>(result.failure)
+		}
+	}
+
+	@Test
+	fun noStatusFromReceiverAbortsWhenPackageVersionChangesDuringConfirmation() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		val packageManager = shadowOf(context.packageManager)
+		packageManager.installPackage(PackageInfo().apply {
+			packageName = "com.example.app"
+			setLongVersionCode(1L)
+		})
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, PackageInstallerBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, 1L)
+			.putExtra(
+				UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY,
+				VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+			)
+			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
+		SessionIdIntents.putSessionId(intent, sessionId)
+		ActivityScenario.launch<PackageInstallerBasedUninstallActivity>(intent).use { scenario ->
+			scenario.onActivity { activity ->
+				assertNull(session.completedState)
+				val confirmation = assertNotNull(shadowOf(activity).nextStartedActivityForResult)
+				assertEquals(Intent.ACTION_DELETE, confirmation.intent.action)
+				packageManager.installPackage(PackageInfo().apply {
+					packageName = "com.example.app"
+					setLongVersionCode(2L)
+				})
+				activity.onActivityResult(Activity.RESULT_CANCELED)
+			}
+			runScheduledMainThreadTasks()
+			val result = session.completedState
+			assertIs<Session.State.Failed<UninstallFailure>>(result)
+			assertIs<UninstallFailure.Aborted>(result.failure)
+			scenario.onActivity { assertTrue(it.isFinishing) }
 		}
 	}
 
@@ -90,14 +152,14 @@ class PackageInstallerBasedUninstallActivityTest {
 			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
 			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
 		SessionIdIntents.putSessionId(intent, sessionId)
-		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
-			.setup()
-			.use { controller ->
-				controller.windowFocusChanged(false)
-				controller.get().onActivityResult(Activity.RESULT_OK)
-				runScheduledMainThreadTasks()
-				assertNull(session.completedState)
+		ActivityScenario.launch<PackageInstallerBasedUninstallActivity>(intent).use { scenario ->
+			scenario.onActivity { activity ->
+				activity.setWindowFocus(false)
+				activity.onActivityResult(Activity.RESULT_OK)
 			}
+			runScheduledMainThreadTasks()
+			assertNull(session.completedState)
+		}
 	}
 
 	@Test
@@ -111,20 +173,20 @@ class PackageInstallerBasedUninstallActivityTest {
 			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
 			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
 		SessionIdIntents.putSessionId(intent, sessionId)
-		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
-			.setup()
-			.use { controller ->
-				controller.windowFocusChanged(false)
-				controller.get().onActivityResult(Activity.RESULT_OK)
-				runScheduledMainThreadTasks()
-				assertNull(session.completedState)
-				controller.windowFocusChanged(true)
-				assertNull(session.completedState)
-				runScheduledMainThreadTasks()
-				val result = session.completedState
-				assertIs<Session.State.Failed<UninstallFailure>>(result)
-				assertIs<UninstallFailure.Aborted>(result.failure)
+		ActivityScenario.launch<PackageInstallerBasedUninstallActivity>(intent).use { scenario ->
+			scenario.onActivity { activity ->
+				activity.setWindowFocus(false)
+				activity.onActivityResult(Activity.RESULT_OK)
 			}
+			runScheduledMainThreadTasks()
+			assertNull(session.completedState)
+			scenario.onActivity { it.setWindowFocus(true) }
+			assertNull(session.completedState)
+			runScheduledMainThreadTasks()
+			val result = session.completedState
+			assertIs<Session.State.Failed<UninstallFailure>>(result)
+			assertIs<UninstallFailure.Aborted>(result.failure)
+		}
 	}
 
 	@Test
@@ -136,14 +198,41 @@ class PackageInstallerBasedUninstallActivityTest {
 			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
 			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
 		SessionIdIntents.putSessionId(intent, sessionId)
-		Robolectric.buildActivity(PackageInstallerBasedUninstallActivity::class.java, intent)
-			.setup()
-			.use { controller ->
-				controller.windowFocusChanged(false)
-				controller.get().onActivityResult(Activity.RESULT_OK)
-				controller.windowFocusChanged(true)
-				runScheduledMainThreadTasks()
-				assertNull(session.completedState)
+		ActivityScenario.launch<PackageInstallerBasedUninstallActivity>(intent).use { scenario ->
+			scenario.onActivity { activity ->
+				activity.setWindowFocus(false)
+				activity.onActivityResult(Activity.RESULT_OK)
+				activity.setWindowFocus(true)
 			}
+			runScheduledMainThreadTasks()
+			assertNull(session.completedState)
+		}
+	}
+
+	private fun assertUnavailableTargetFailsWithoutLaunchingConfirmation() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableSession<UninstallFailure>(sessionId)
+		PackageUninstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, PackageInstallerBasedUninstallActivity::class.java)
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, "com.example.app")
+			.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, 1L)
+			.putExtra(
+				UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY,
+				VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal
+			)
+			.putExtra(Intent.EXTRA_INTENT, Intent(Intent.ACTION_DELETE))
+		SessionIdIntents.putSessionId(intent, sessionId)
+		ActivityScenario.launch<PackageInstallerBasedUninstallActivity>(intent).use { scenario ->
+			runScheduledMainThreadTasks()
+			val result = assertIs<Session.State.Failed<UninstallFailure>>(session.completedState)
+			assertIs<UninstallFailure.Generic>(result.failure)
+			assertNull(shadowOf(context as Application).nextStartedActivityForResult)
+			assertEquals(Lifecycle.State.DESTROYED, scenario.state)
+		}
+	}
+
+	private fun Activity.setWindowFocus(hasFocus: Boolean) {
+		Shadow.extract<ShadowViewRootImpl>(window.decorView.parent).callWindowFocusChanged(hasFocus)
+		drainMainThread()
 	}
 }

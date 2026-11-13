@@ -24,3 +24,12 @@ import ru.solrudev.ackpine.SdkIntWrapper
 public class SplitPackagesNotSupportedException : IllegalStateException(
 	"Split packages are not supported on current Android API level: ${SdkIntWrapper.get()}"
 )
+
+/**
+ * Thrown when configuring an unsupported exact version with a strict uninstall policy, or when a backend
+ * cannot dispatch a version-targeted uninstall.
+ */
+public class VersionedUninstallNotSupportedException @JvmOverloads public constructor(
+	message: String = "Version-targeted uninstall is not supported by this configuration " +
+			"on current Android API level: ${SdkIntWrapper.get()}"
+) : IllegalStateException(message)

@@ -16,6 +16,8 @@
 
 package ru.solrudev.ackpine.impl.installer.activity
 
+import android.app.Application
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInstaller
@@ -24,17 +26,24 @@ import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import ru.solrudev.ackpine.Ackpine
 import ru.solrudev.ackpine.impl.helpers.SessionIdIntents
 import ru.solrudev.ackpine.impl.installer.PackageInstallerImpl
+import ru.solrudev.ackpine.impl.testutil.TestCompletableProgressSession
 import ru.solrudev.ackpine.impl.testutil.TestPreapprovalSession
+import ru.solrudev.ackpine.impl.testutil.drainMainThread
+import ru.solrudev.ackpine.installer.InstallFailure
+import ru.solrudev.ackpine.session.Session
 import java.util.UUID
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @RunWith(RobolectricTestRunner::class)
@@ -45,6 +54,30 @@ class SessionBasedInstallConfirmationActivityTest {
 	@AfterTest
 	fun tearDown() {
 		Ackpine.setLogger(null)
+	}
+
+	@Test
+	fun missingConfirmationActivityFailsSessionAndFinishesActivity() {
+		val sessionId = UUID.randomUUID()
+		val session = TestCompletableProgressSession<InstallFailure>(
+			sessionId,
+			exceptionalFailureFactory = InstallFailure::Exceptional
+		)
+		PackageInstallerImpl.getInstance(context).addSession(sessionId, session)
+		val intent = Intent(context, SessionBasedInstallConfirmationActivity::class.java)
+			.putExtra(Intent.EXTRA_INTENT, Intent("ru.solrudev.ackpine.test.MISSING_CONFIRMATION"))
+			.putExtra(PackageInstaller.EXTRA_SESSION_ID, 1)
+		SessionIdIntents.putSessionId(intent, sessionId)
+		shadowOf(ApplicationProvider.getApplicationContext<Application>()).checkActivities(true)
+		Robolectric.buildActivity(SessionBasedInstallConfirmationActivity::class.java, intent)
+			.create()
+			.use { controller ->
+				drainMainThread()
+				val state = assertIs<Session.State.Failed<InstallFailure>>(session.state)
+				val failure = assertIs<InstallFailure.Exceptional>(state.failure)
+				assertIs<ActivityNotFoundException>(failure.exception)
+				assertTrue(controller.get().isFinishing)
+			}
 	}
 
 	@Test

@@ -42,8 +42,8 @@ public class AckpineSettingsPlugin : Plugin<Settings> {
 		}
 		extensions.create<AckpineSettingsExtension>("ackpine", this)
 		extensions.configure<SettingsExtension> {
-			compileSdk = 36
-			buildToolsVersion = "36.1.0"
+			compileSdk = 37
+			buildToolsVersion = "37.0.0"
 			minSdk = 16
 			targetSdk = 36
 		}

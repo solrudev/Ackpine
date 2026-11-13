@@ -24,7 +24,7 @@ plugins {
 
 ackpine {
 	id = "dhizuku-ktx"
-	minSdk = 26
+	minSdk = 23
 	artifact {
 		name = "Ackpine Dhizuku Plugin KTX"
 		inceptionYear = "2026"

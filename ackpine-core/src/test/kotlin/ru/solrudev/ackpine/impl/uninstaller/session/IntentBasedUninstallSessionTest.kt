@@ -41,10 +41,14 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 private const val NOTIFICATION_ID = 42
@@ -53,6 +57,7 @@ private const val NOTIFICATION_ID = 42
 class IntentBasedUninstallSessionTest {
 
 	private val context: Context = ApplicationProvider.getApplicationContext()
+	private val failureDao = TestSessionFailureDao<UninstallFailure>()
 
 	@Test
 	fun commitImmediateLaunchesUninstallActivity() {
@@ -86,21 +91,52 @@ class IntentBasedUninstallSessionTest {
 		assertNotNull(notificationManager.getNotification(sessionId.toString(), NOTIFICATION_ID))
 	}
 
+	@Test
+	fun restoredStrictExactTargetFailsWithoutLaunchingConfirmation() {
+		val session = createSession(
+			id = UUID.randomUUID(),
+			confirmation = Confirmation.IMMEDIATE,
+			uninstallVersion = UninstallVersion(42)
+		)
+		assertTrue(session.commit())
+		assertTrue(session.isCompleted)
+		assertIs<UninstallFailure.Unsupported>(failureDao.getFailure(session.id.toString()))
+		assertNull(Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity)
+	}
+
+	@Test
+	fun unsafeExactTargetForwardsVersionAndPolicyToConfirmation() {
+		val session = createSession(
+			id = UUID.randomUUID(),
+			confirmation = Confirmation.IMMEDIATE,
+			uninstallVersion = UninstallVersion(42, VersionedUninstallPolicy.ALLOW_NAME_ONLY)
+		)
+		assertTrue(session.commit())
+		val started = assertNotNull(Shadow.extract<ShadowContextWrapper>(context).nextStartedActivity)
+		assertEquals(42L, started.getLongExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, -1))
+		assertEquals(
+			VersionedUninstallPolicy.ALLOW_NAME_ONLY.ordinal,
+			started.getIntExtra(UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY, -1)
+		)
+	}
+
 	private fun createSession(
 		id: UUID,
 		confirmation: Confirmation,
+		uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST,
 		initialState: Session.State<UninstallFailure> = Session.State.Awaiting,
 		logger: RecordingAckpineLogger? = null
 	) = IntentBasedUninstallSession(
 		loggerProvider = AckpineLoggerProvider("IntentBasedUninstallSession") { logger },
 		context = context,
 		packageName = "com.example.app",
+		uninstallVersion = uninstallVersion,
 		id = id,
 		initialState = initialState,
 		confirmation = confirmation,
 		notificationData = NotificationData.DEFAULT,
 		sessionDao = RecordingSessionDao(),
-		sessionFailureDao = TestSessionFailureDao(),
+		sessionFailureDao = failureDao,
 		executor = ImmediateExecutor,
 		handler = Handler(Looper.getMainLooper()),
 		notificationId = NOTIFICATION_ID,

@@ -26,6 +26,7 @@ import ru.solrudev.ackpine.helpers.onCancellation
 import ru.solrudev.ackpine.splits.SplitPackage.Provider
 import ru.solrudev.ackpine.splits.helpers.deviceLocales
 import ru.solrudev.ackpine.splits.helpers.matchScore
+import java.util.Locale
 import kotlin.math.abs
 
 /**

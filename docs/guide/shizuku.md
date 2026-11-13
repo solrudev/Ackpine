@@ -133,7 +133,7 @@ To apply the plugin to an install session, just add this to your install paramet
             .setReplaceExisting(true)
             .setRequestDowngrade(true)
             .setGrantAllRequestedPermissions(true)
-            .setAllUsers(true)
+            .setAllUsers(false)
             .setInstallerPackageName("com.android.vending")
             .setTargetUser(new TargetUser(10))
             .build();
@@ -154,7 +154,8 @@ Also, you can use Shizuku for uninstall sessions:
         // Or, if you want to configure some parameters for the plugin
         shizuku {
             keepData = true
-            allUsers = true
+            allUsers = false
+            systemApp = true
             targetUser = TargetUser(10)
         }
     }
@@ -171,13 +172,16 @@ Also, you can use Shizuku for uninstall sessions:
     // Or, if you want to configure some parameters for the plugin
     var shizukuParameters = new ShizukuPlugin.UninstallParameters.Builder()
             .setKeepData(true)
-            .setAllUsers(true)
+            .setAllUsers(false)
+            .setSystemApp(true)
             .setTargetUser(new TargetUser(10))
             .build();
     var parameters = new UninstallParameters.Builder(packageName)
             .registerPlugin(ShizukuPlugin.class, shizukuParameters)
             .build();
     ```
+
+Shizuku preserves exact version-targeted uninstalls on API 26 and above (codes exceeding `Int.MAX_VALUE` require API 28). See [versioned uninstalls](configuration.md#versioned-uninstalls) for details.
 
 !!! Note
     Shizuku versions below 11 are not supported, and with these versions operations will fall back to normal system's `PackageInstaller`, or `INTENT_BASED` installer/uninstaller (if was set).
@@ -219,7 +223,9 @@ This plugin initializes hidden Android API exemptions through AndroidX Startup u
 Plugin parameters
 -----------------
 
-By default, all flags are disabled and the target user is `TargetUser.CURRENT`.
+By default, all boolean flags are `false`, `installFlags` and `uninstallFlags` are `0`, and the target user is `TargetUser.CURRENT`.
+
+Built parameters are immutable snapshots of the builder or DSL configuration. Both raw masks are stored with the session and restored with its other plugin parameters. Sessions stored before these properties were introduced receive masks of `0` when the database is migrated.
 
 ### `targetUser`
 
@@ -228,6 +234,31 @@ Android user targeted by the install or uninstall session. `TargetUser.CURRENT` 
 Android validates whether the user exists and whether Shizuku has permission to operate across users. Setting `allUsers` is also allowed; it retains Android's native semantics and may make the selected target user irrelevant for that operation.
 
 ### Install flags
+
+#### `installFlags`
+
+Raw Android install flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is ORed with platform flags **before** boolean options. Boolean options take precedence for their corresponding bits, including clearing bits when `false`. The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask; unrelated platform flags are preserved.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and backend permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun installParameters(rawFlags: Int) = ShizukuInstallParameters {
+        installFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    ShizukuPlugin.InstallParameters parameters = new ShizukuPlugin.InstallParameters.Builder()
+        .setInstallFlags(rawFlags)
+        .build();
+    ```
 
 #### `bypassLowTargetSdkBlock`
 
@@ -259,6 +290,31 @@ Installer package for the app. Empty by default, so the calling app package name
 
 ### Uninstall flags
 
+#### `uninstallFlags`
+
+Raw Android uninstall flags mask, `0` by default. All `Int` bit patterns are accepted.
+
+The mask is applied **before** boolean options. Boolean options take precedence for their corresponding bits, including clearing bits when `false`. The boolean values remain independent of this mask. Setting the mask replaces the previous supplied mask.
+
+Setting this value is a **delicate** API: flags availability and behavior may depend on the Android version and backend permissions. Supplying flags grants no additional privileges.
+
+=== "Kotlin"
+
+    ```kotlin
+    @OptIn(DelicateAckpineApi::class)
+    fun uninstallParameters(rawFlags: Int) = ShizukuUninstallParameters {
+        uninstallFlags = rawFlags
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    ShizukuPlugin.UninstallParameters parameters = new ShizukuPlugin.UninstallParameters.Builder()
+        .setUninstallFlags(rawFlags)
+        .build();
+    ```
+
 #### `keepData`
 
 Flag parameter to indicate that you don't want to delete the package's data directory.
@@ -279,6 +335,8 @@ Capabilities
 `ShizukuPlugin` implements [`InstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-install-capability-provider/index.html) and [`UninstallCapabilityProvider`](../api/ackpine-api/api-main/ru.solrudev.ackpine.capabilities/-uninstall-capability-provider/index.html), so you can query whether individual Shizuku install/uninstall parameters are supported for a given configuration via `getCapabilities()`. See [Querying capabilities](configuration.md#querying-capabilities) for an overview of the capabilities API.
 
 Each field in [`ShizukuInstallCapabilities`](../api/ackpine-plugins/shizuku/ru.solrudev.ackpine.shizuku/-shizuku-install-capabilities/index.html) mirrors the corresponding `ShizukuPlugin.InstallParameters` flag and reports whether it is supported for the resolved configuration. Similarly, [`ShizukuUninstallCapabilities`](../api/ackpine-plugins/shizuku/ru.solrudev.ackpine.shizuku/-shizuku-uninstall-capabilities/index.html) mirrors `ShizukuPlugin.UninstallParameters`.
+
+Raw install flags are `UNRELIABLE` with `InstallerType.SESSION_BASED`, and raw uninstall flags are `UNRELIABLE` with `UninstallerType.PACKAGE_INSTALLER_BASED`; each is `UNSUPPORTED` otherwise. Availability may depend on the Android version and backend permissions.
 
 !!! Note
     Shizuku capability support is determined from Android API level and the effective installer/uninstaller type. Whether Shizuku version is >= 11 and whether it is available for usage by the app at runtime is not taken into account.

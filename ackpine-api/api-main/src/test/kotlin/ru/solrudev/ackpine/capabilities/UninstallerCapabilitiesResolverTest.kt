@@ -55,6 +55,14 @@ class UninstallerCapabilitiesResolverTest {
 	}
 
 	@Test
+	fun packageVersionCodeSupportedStartingAtApi26() {
+		SdkInt.set(25)
+		assertEquals(CapabilityStatus.UNSUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).packageVersionCode)
+		SdkInt.set(26)
+		assertEquals(CapabilityStatus.SUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).packageVersionCode)
+	}
+
+	@Test
 	fun pluginOverridesBackendEffectiveTypeReflectsOverride() {
 		SdkInt.set(34)
 		// BackendFlipperPlugin flips PACKAGE_INSTALLER_BASED -> INTENT_BASED

@@ -1,5 +1,6 @@
 public final class ru/solrudev/ackpine/dhizuku/DhizukuInstallCapabilities : ru/solrudev/ackpine/capabilities/PluginCapability {
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstallFlags ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getRequestDowngrade ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -22,8 +23,9 @@ public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin : ru/solrudev/ackpi
 public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
 	public static final field Companion Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters;
-	public synthetic fun <init> (ZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
+	public final fun getInstallFlags ()I
 	public final fun getRequestDowngrade ()Z
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
@@ -32,7 +34,9 @@ public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters :
 public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Builder {
 	public fun <init> ()V
 	public final fun build ()Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters;
+	public final fun getInstallFlags ()I
 	public final fun getRequestDowngrade ()Z
+	public final fun setInstallFlags (I)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Builder;
 	public final fun setRequestDowngrade (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$Builder;
 }
 
@@ -42,11 +46,12 @@ public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$InstallParameters$C
 public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters : ru/solrudev/ackpine/plugability/AckpinePlugin$Parameters {
 	public static final field Companion Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Companion;
 	public static final field DEFAULT Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters;
-	public synthetic fun <init> (ZZZLkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public synthetic fun <init> (ZZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
 	public fun equals (Ljava/lang/Object;)Z
 	public final fun getAllUsers ()Z
 	public final fun getKeepData ()Z
 	public final fun getSystemApp ()Z
+	public final fun getUninstallFlags ()I
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }
@@ -57,9 +62,11 @@ public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters
 	public final fun getAllUsers ()Z
 	public final fun getKeepData ()Z
 	public final fun getSystemApp ()Z
+	public final fun getUninstallFlags ()I
 	public final fun setAllUsers (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
 	public final fun setKeepData (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
 	public final fun setSystemApp (Z)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
+	public final fun setUninstallFlags (I)Lru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Builder;
 }
 
 public final class ru/solrudev/ackpine/dhizuku/DhizukuPlugin$UninstallParameters$Companion {
@@ -70,6 +77,7 @@ public final class ru/solrudev/ackpine/dhizuku/DhizukuUninstallCapabilities : ru
 	public final fun getAllUsers ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getKeepData ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public final fun getSystemApp ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
+	public final fun getUninstallFlags ()Lru/solrudev/ackpine/capabilities/CapabilityStatus;
 	public fun hashCode ()I
 	public fun toString ()Ljava/lang/String;
 }

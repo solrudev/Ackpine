@@ -18,11 +18,13 @@ package ru.solrudev.ackpine.impl.uninstaller.session
 
 import android.content.Context
 import android.content.IntentSender
+import android.content.pm.VersionedPackage
 import android.os.Build
 import android.os.Handler
 import androidx.annotation.RequiresApi
 import androidx.annotation.RestrictTo
 import androidx.core.net.toUri
+import ru.solrudev.ackpine.exceptions.VersionedUninstallNotSupportedException
 import ru.solrudev.ackpine.impl.database.dao.SessionDao
 import ru.solrudev.ackpine.impl.database.dao.SessionFailureDao
 import ru.solrudev.ackpine.impl.helpers.concurrent.BinarySemaphore
@@ -36,6 +38,8 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -48,6 +52,7 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	private val context: Context,
 	packageInstallerService: Lazy<PackageInstallerService>,
 	private val packageName: String,
+	private val uninstallVersion: UninstallVersion,
 	id: UUID,
 	initialState: Session.State<UninstallFailure>,
 	private val confirmation: Confirmation,
@@ -74,16 +79,48 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
+		if (!canDispatchVersionedUninstall() && uninstallVersion.policy == VersionedUninstallPolicy.STRICT) {
+			complete(Session.State.Failed(UninstallFailure.Unsupported("Exact version uninstall is not supported")))
+			return
+		}
 		logger.debug(
 			"Launching package installer uninstall for session %s packageName=%s",
 			id,
 			packageName
 		)
-		packageInstaller.uninstall(
-			packageName,
-			statusReceiver = createPackageInstallerStatusIntentSender(),
-			ackpineSessionId = id
-		)
+		val statusReceiver = createPackageInstallerStatusIntentSender()
+		if (uninstallVersion == UninstallVersion.HIGHEST || !canDispatchVersionedUninstall()) {
+			packageInstaller.uninstall(packageName, statusReceiver, id)
+			return
+		}
+		val versionedPackage = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+			VersionedPackage(packageName, uninstallVersion.code)
+		} else {
+			VersionedPackage(packageName, uninstallVersion.code.toInt())
+		}
+		try {
+			packageInstaller.uninstall(versionedPackage, statusReceiver, id)
+		} catch (exception: VersionedUninstallNotSupportedException) {
+			when (uninstallVersion.policy) {
+				VersionedUninstallPolicy.STRICT -> complete(
+					Session.State.Failed(
+						UninstallFailure.Unsupported(exception.message)
+					)
+				)
+
+				VersionedUninstallPolicy.ALLOW_NAME_ONLY -> packageInstaller.uninstall(
+					packageName,
+					statusReceiver,
+					id
+				)
+			}
+		}
+	}
+
+	private fun canDispatchVersionedUninstall(): Boolean {
+		return uninstallVersion == UninstallVersion.HIGHEST
+				|| (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+				&& (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P || uninstallVersion.code <= Int.MAX_VALUE))
 	}
 
 	private fun createPackageInstallerStatusIntentSender(): IntentSender {
@@ -95,6 +132,8 @@ internal class PackageInstallerBasedUninstallSession internal constructor(
 		) { intent ->
 			intent.data = "ackpine://session/$id/status".toUri()
 			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
+			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, uninstallVersion.code)
+			intent.putExtra(UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY, uninstallVersion.policy.ordinal)
 		}
 	}
 }

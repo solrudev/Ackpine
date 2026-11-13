@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.impl.helpers
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -27,6 +28,33 @@ internal fun Context.isPackageInstalled(packageName: String) = try {
 	true
 } catch (_: PackageManager.NameNotFoundException) {
 	false
+}
+
+@JvmSynthetic
+internal fun Context.isPackageInstalledOrNotVisible(packageName: String): Boolean = try {
+	packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
+	true
+} catch (_: PackageManager.NameNotFoundException) {
+	!canQueryAllPackages()
+}
+
+@Suppress("DEPRECATION")
+@JvmSynthetic
+internal fun Context.isPackageVersionInstalledOrNotVisible(packageName: String, versionCode: Long): Boolean = try {
+	val packageInfo = packageManager.getPackageInfoCompat(packageName, PackageManager.GET_ACTIVITIES)
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+		packageInfo.longVersionCode == versionCode
+	} else {
+		packageInfo.versionCode.toLong() == versionCode
+	}
+} catch (_: PackageManager.NameNotFoundException) {
+	!canQueryAllPackages()
+}
+
+private fun Context.canQueryAllPackages(): Boolean {
+	return Build.VERSION.SDK_INT < Build.VERSION_CODES.R
+			|| applicationInfo.targetSdkVersion < Build.VERSION_CODES.R
+			|| checkSelfPermission(Manifest.permission.QUERY_ALL_PACKAGES) == PackageManager.PERMISSION_GRANTED
 }
 
 private fun PackageManager.getPackageInfoCompat(packageName: String, flags: Int): PackageInfo {

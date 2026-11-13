@@ -18,6 +18,8 @@ package ru.solrudev.ackpine.impl.testutil
 
 import android.content.IntentSender
 import android.content.pm.PackageInstaller
+import android.content.pm.VersionedPackage
+import android.os.Build
 import android.os.Handler
 import org.robolectric.util.ReflectionHelpers
 import ru.solrudev.ackpine.impl.database.dao.InstallConstraintsDao
@@ -29,6 +31,7 @@ import ru.solrudev.ackpine.impl.database.model.SessionEntity
 import ru.solrudev.ackpine.impl.services.PackageInstallerService
 import ru.solrudev.ackpine.plugability.AckpinePlugin
 import ru.solrudev.ackpine.session.Progress
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
 import java.io.ByteArrayOutputStream
 import java.io.OutputStream
 import java.util.UUID
@@ -242,6 +245,24 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 		_uninstallCalls += UninstallCall(packageName, statusReceiver, ackpineSessionId)
 	}
 
+	override fun uninstall(
+		versionedPackage: VersionedPackage,
+		statusReceiver: IntentSender,
+		ackpineSessionId: UUID
+	) {
+		_uninstallCalls += UninstallCall(
+			versionedPackage.packageName,
+			statusReceiver,
+			ackpineSessionId,
+			uninstallVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+				UninstallVersion(versionedPackage.longVersionCode)
+			} else {
+				@Suppress("DEPRECATION")
+				UninstallVersion(versionedPackage.versionCode)
+			}
+		)
+	}
+
 	data class CommitAfterConstraintsCall(
 		val sessionId: Int,
 		val statusReceiver: IntentSender,
@@ -252,7 +273,8 @@ internal class RecordingPackageInstallerService(override val uid: Int = 10000) :
 	data class UninstallCall(
 		val packageName: String,
 		val statusReceiver: IntentSender,
-		val ackpineSessionId: UUID
+		val ackpineSessionId: UUID,
+		val uninstallVersion: UninstallVersion = UninstallVersion.HIGHEST
 	)
 
 	class RecordingSession : PackageInstallerService.Session {

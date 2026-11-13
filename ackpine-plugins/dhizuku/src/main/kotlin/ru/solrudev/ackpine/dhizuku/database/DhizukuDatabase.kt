@@ -16,6 +16,7 @@
 
 package ru.solrudev.ackpine.dhizuku.database
 
+import androidx.room.AutoMigration
 import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
@@ -32,7 +33,8 @@ private const val DATABASE_NAME = "ackpine_dhizuku.paramsdb"
 @Database(
 	entities = [DhizukuInstallParametersEntity::class, DhizukuUninstallParametersEntity::class],
 	exportSchema = true,
-	version = 1
+	autoMigrations = [AutoMigration(from = 1, to = 2)],
+	version = 2
 )
 internal abstract class DhizukuDatabase : RoomDatabase() {
 
@@ -73,7 +75,10 @@ internal class DhizukuInstallParametersEntity(
 	val sessionId: String,
 	@JvmField
 	@ColumnInfo(name = "request_downgrade")
-	val requestDowngrade: Boolean
+	val requestDowngrade: Boolean,
+	@JvmField
+	@ColumnInfo(name = "install_flags", defaultValue = "0")
+	val installFlags: Int
 )
 
 @Entity(tableName = "dhizuku_uninstall_parameters")
@@ -90,5 +95,8 @@ internal class DhizukuUninstallParametersEntity(
 	val allUsers: Boolean,
 	@JvmField
 	@ColumnInfo(name = "system_app")
-	val systemApp: Boolean
+	val systemApp: Boolean,
+	@JvmField
+	@ColumnInfo(name = "uninstall_flags", defaultValue = "0")
+	val uninstallFlags: Int
 )

@@ -70,3 +70,13 @@ slugify.kwds = { case = "lower" }
 [project.markdown_extensions.admonition]
 [project.markdown_extensions.toc]
 permalink = true
+[project.plugins.minify]
+minify_html = true
+
+[project.plugins.redirects.redirect_maps]
+"getting_started.md" = "guide/getting_started.md"
+"configuration.md" = "guide/configuration.md"
+"split_apks.md" = "guide/split_apks.md"
+"shizuku.md" = "guide/shizuku.md"
+"testing.md" = "guide/testing.md"
+"samples.md" = "guide/samples.md"

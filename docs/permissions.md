@@ -32,3 +32,7 @@ For always getting correct uninstall results with `PACKAGE_INSTALLER_BASED` unin
 ```
 
 Or, if you must, add the `QUERY_ALL_PACKAGES` permission. Be careful about not violating Google Play policies in regards to this permission.
+
+When uninstalling an exact version with `ALLOW_NAME_ONLY`, Ackpine checks the installed version before opening or reopening the system confirmation dialog. This check also requires package visibility.
+
+If the package isn't visible to your app, Ackpine cannot verify its version and proceeds with the name-only fallback.

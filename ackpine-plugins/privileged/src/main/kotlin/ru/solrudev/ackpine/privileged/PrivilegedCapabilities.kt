@@ -32,6 +32,14 @@ import ru.solrudev.ackpine.uninstaller.parameters.UninstallerType
 public abstract class PrivilegedInstallCapabilities protected constructor(snapshot: Snapshot) : PluginCapability {
 
 	/**
+	 * Whether raw install flags are supported.
+	 *
+	 * [CapabilityStatus.UNRELIABLE] with [InstallerType.SESSION_BASED], otherwise [CapabilityStatus.UNSUPPORTED].
+	 * Availability may depend on the Android version and backend permissions.
+	 */
+	public val installFlags: CapabilityStatus = snapshot.installFlags
+
+	/**
 	 * Whether [PrivilegedInstallParameters.bypassLowTargetSdkBlock] is supported.
 	 *
 	 * [CapabilityStatus.SUPPORTED] on API level >= 34 with [InstallerType.SESSION_BASED].
@@ -136,7 +144,12 @@ public abstract class PrivilegedInstallCapabilities protected constructor(snapsh
 		/**
 		 * Whether selecting the target Android user is supported.
 		 */
-		public val targetUser: CapabilityStatus
+		public val targetUser: CapabilityStatus,
+
+		/**
+		 * Whether raw install flags are supported.
+		 */
+		public val installFlags: CapabilityStatus
 	)
 
 	override fun equals(other: Any?): Boolean {
@@ -151,6 +164,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(snapsh
 		if (allUsers != other.allUsers) return false
 		if (installerPackageName != other.installerPackageName) return false
 		if (targetUser != other.targetUser) return false
+		if (installFlags != other.installFlags) return false
 		return true
 	}
 
@@ -163,6 +177,7 @@ public abstract class PrivilegedInstallCapabilities protected constructor(snapsh
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + installerPackageName.hashCode()
 		result = 31 * result + targetUser.hashCode()
+		result = 31 * result + installFlags.hashCode()
 		return result
 	}
 
@@ -175,7 +190,8 @@ public abstract class PrivilegedInstallCapabilities protected constructor(snapsh
 				"grantAllRequestedPermissions=$grantAllRequestedPermissions, " +
 				"allUsers=$allUsers, " +
 				"installerPackageName=$installerPackageName, " +
-				"targetUser=$targetUser" +
+				"targetUser=$targetUser, " +
+				"installFlags=$installFlags" +
 				")"
 	}
 }
@@ -188,6 +204,14 @@ public abstract class PrivilegedInstallCapabilities protected constructor(snapsh
  * here is determined solely from the Android API level and the effective uninstaller type.
  */
 public abstract class PrivilegedUninstallCapabilities protected constructor(snapshot: Snapshot) : PluginCapability {
+
+	/**
+	 * Whether [PrivilegedUninstallParameters.uninstallFlags] is supported.
+	 *
+	 * [CapabilityStatus.UNRELIABLE] with [UninstallerType.PACKAGE_INSTALLER_BASED], otherwise
+	 * [CapabilityStatus.UNSUPPORTED]. Availability may depend on the Android version and backend permissions.
+	 */
+	public val uninstallFlags: CapabilityStatus = snapshot.uninstallFlags
 
 	/**
 	 * Whether [PrivilegedUninstallParameters.keepData] is supported.
@@ -246,7 +270,12 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(snap
 		/**
 		 * Whether selecting the target Android user is supported.
 		 */
-		public val targetUser: CapabilityStatus
+		public val targetUser: CapabilityStatus,
+
+		/**
+		 * Whether raw uninstall flags are supported.
+		 */
+		public val uninstallFlags: CapabilityStatus
 	)
 
 	override fun equals(other: Any?): Boolean {
@@ -257,6 +286,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(snap
 		if (allUsers != other.allUsers) return false
 		if (systemApp != other.systemApp) return false
 		if (targetUser != other.targetUser) return false
+		if (uninstallFlags != other.uninstallFlags) return false
 		return true
 	}
 
@@ -265,6 +295,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(snap
 		result = 31 * result + allUsers.hashCode()
 		result = 31 * result + systemApp.hashCode()
 		result = 31 * result + targetUser.hashCode()
+		result = 31 * result + uninstallFlags.hashCode()
 		return result
 	}
 
@@ -272,6 +303,7 @@ public abstract class PrivilegedUninstallCapabilities protected constructor(snap
 			"keepData=$keepData, " +
 			"allUsers=$allUsers, " +
 			"systemApp=$systemApp, " +
-			"targetUser=$targetUser" +
+			"targetUser=$targetUser, " +
+			"uninstallFlags=$uninstallFlags" +
 			")"
 }

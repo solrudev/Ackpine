@@ -24,7 +24,6 @@ import org.gradle.kotlin.dsl.assign
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.named
 import org.gradle.kotlin.dsl.register
-import org.gradle.kotlin.dsl.registerBinding
 import org.gradle.kotlin.dsl.the
 import org.jetbrains.dokka.gradle.DokkaExtension
 import org.jetbrains.dokka.gradle.DokkaPlugin
@@ -40,7 +39,6 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	override fun apply(target: Project): Unit = target.run {
 		pluginManager.apply(DokkaPlugin::class)
-		dependencies.add("dokkaPlugin", dependencies.dokkaPlugin("suppress-annotated-api"))
 		configureDokka()
 		pluginManager.withPlugin(AckpineLibraryBasePlugin.PLUGIN_ID) {
 			val ackpineLibraryExtension = the<AckpineLibraryExtension>()
@@ -52,19 +50,13 @@ public class DokkaConventionPlugin : Plugin<Project> {
 
 	private fun Project.configureDokka() = extensions.configure<DokkaExtension> {
 		moduleVersion = ackpineVersion.get().toString()
-		pluginsConfiguration.registerBinding(
-			SuppressAnnotatedApiParameters::class,
-			SuppressAnnotatedApiParameters::class
-		)
-		pluginsConfiguration.register<SuppressAnnotatedApiParameters>("suppressAnnotatedApi") {
-			annotatedWith.add("androidx.annotation.RestrictTo")
-		}
 		pluginsConfiguration.named<DokkaHtmlPluginParameters>("html") {
 			customAssets.from(layout.docsDirectory.file("images/logo-icon.svg"))
 			customStyleSheets.from(layout.docsDirectory.file("css/logo-styles.css"))
 			footerMessage = "© Ilya Fomichev"
 		}
 		dokkaSourceSets.configureEach {
+			suppressAnnotatedWith.add("androidx.annotation.RestrictTo")
 			suppress = name != "release"
 			externalDocumentationLinks.register("kotlinx.coroutines") {
 				url = URI("https://kotlinlang.org/api/kotlinx.coroutines/")

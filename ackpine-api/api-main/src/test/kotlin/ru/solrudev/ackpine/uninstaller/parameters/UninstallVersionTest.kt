@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2025 Ilya Fomichev
+ * Copyright (C) 2026 Ilya Fomichev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,18 @@
  * limitations under the License.
  */
 
-package ru.solrudev.ackpine.gradle.documentation
+package ru.solrudev.ackpine.uninstaller.parameters
 
-import org.gradle.api.artifacts.dsl.DependencyHandler
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
-internal fun DependencyHandler.dokkaPlugin(name: String) = project(":dokka-plugins:$name")
+class UninstallVersionTest {
+
+	@Test
+	fun constructorsRejectNegativeVersionCodes() {
+		for (value in listOf(-1, -2, Int.MIN_VALUE)) {
+			assertFailsWith<IllegalArgumentException> { UninstallVersion(value) }
+			assertFailsWith<IllegalArgumentException> { UninstallVersion(value.toLong()) }
+		}
+	}
+}

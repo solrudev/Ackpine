@@ -33,6 +33,8 @@ import ru.solrudev.ackpine.session.Session
 import ru.solrudev.ackpine.session.parameters.Confirmation
 import ru.solrudev.ackpine.session.parameters.NotificationData
 import ru.solrudev.ackpine.uninstaller.UninstallFailure
+import ru.solrudev.ackpine.uninstaller.parameters.UninstallVersion
+import ru.solrudev.ackpine.uninstaller.parameters.VersionedUninstallPolicy
 import java.util.UUID
 import java.util.concurrent.Executor
 
@@ -43,6 +45,7 @@ internal class IntentBasedUninstallSession internal constructor(
 	loggerProvider: AckpineLoggerProvider,
 	private val context: Context,
 	private val packageName: String,
+	private val uninstallVersion: UninstallVersion,
 	id: UUID,
 	initialState: Session.State<UninstallFailure>,
 	private val confirmation: Confirmation,
@@ -67,6 +70,19 @@ internal class IntentBasedUninstallSession internal constructor(
 	}
 
 	override fun launchConfirmation() {
+		if (
+			uninstallVersion != UninstallVersion.HIGHEST
+			&& uninstallVersion.policy == VersionedUninstallPolicy.STRICT
+		) {
+			complete(
+				Session.State.Failed(
+					UninstallFailure.Unsupported(
+						"Exact version uninstall is not supported by the intent-based uninstaller"
+					)
+				)
+			)
+			return
+		}
 		logger.debug("Launching intent-based uninstall for session %s packageName=%s", id, packageName)
 		context.launchConfirmation<IntentBasedUninstallActivity>(
 			confirmation, notificationData,
@@ -77,6 +93,8 @@ internal class IntentBasedUninstallSession internal constructor(
 		) { intent ->
 			intent.data = "ackpine://session/$id/confirmation".toUri()
 			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_NAME, packageName)
+			intent.putExtra(UninstallActivity.EXTRA_PACKAGE_VERSION_CODE, uninstallVersion.code)
+			intent.putExtra(UninstallActivity.EXTRA_VERSIONED_UNINSTALL_POLICY, uninstallVersion.policy.ordinal)
 		}
 	}
 }
