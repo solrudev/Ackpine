@@ -36,7 +36,7 @@ internal fun resolveUninstallerCapabilities(
 	val context = UninstallCapabilityContext(sdkInt, finalType)
 	return UninstallerCapabilities(
 		uninstallerType = finalType,
-		packageVersionCode = if (finalType == UninstallerType.INTENT_BASED || sdkInt < 26) {
+		uninstallVersion = if (finalType == UninstallerType.INTENT_BASED || sdkInt < 26) {
 			CapabilityStatus.UNSUPPORTED
 		} else {
 			CapabilityStatus.SUPPORTED

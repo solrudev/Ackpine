@@ -55,11 +55,11 @@ class UninstallerCapabilitiesResolverTest {
 	}
 
 	@Test
-	fun packageVersionCodeSupportedStartingAtApi26() {
+	fun uninstallVersionSupportedStartingAtApi26() {
 		SdkInt.set(25)
-		assertEquals(CapabilityStatus.UNSUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).packageVersionCode)
+		assertEquals(CapabilityStatus.UNSUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).uninstallVersion)
 		SdkInt.set(26)
-		assertEquals(CapabilityStatus.SUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).packageVersionCode)
+		assertEquals(CapabilityStatus.SUPPORTED, resolve(UninstallerType.PACKAGE_INSTALLER_BASED).uninstallVersion)
 	}
 
 	@Test
